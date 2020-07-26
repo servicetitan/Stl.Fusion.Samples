@@ -5,6 +5,20 @@
 
 ### Blazor Sample ###
 
+Features:
+* "Server Time" and "Server Screen" - show simplest timeout-based invalidation
+* "Chat" - a tiny chat app that shows how to properly invalidate parts of the state 
+  on changes
+* "Composition" - shows Fusion's ability to compose the state by using both 
+  local and remote parts:
+  * The state used by the left pane is
+    [composed on the server side](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Server/Services/ServerSideComposerService.cs);
+    its replica is used by the client
+  * And the one used by the right pane is
+    [composed completely on the client](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Client/Services/ClientSideComposerService.cs) 
+    by combining other server-side replicas.
+  * **The surprising part:** two above files are almost identical!
+
 ![](./docs/img/Samples-Blazor.gif)
 
 ### Console Sample ###
