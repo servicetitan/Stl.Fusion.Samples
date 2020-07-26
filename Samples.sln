@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{9B29BD3F-7D94-4936-8379-61A2F48259AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Common", "D:\C\Projects\Stl.Fusion.Samples\src\Blazor\Common\Samples.Blazor.Common.csproj", "{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Client", "D:\C\Projects\Stl.Fusion.Samples\src\Blazor\Client\Samples.Blazor.Client.csproj", "{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Server", "D:\C\Projects\Stl.Fusion.Samples\src\Blazor\Server\Samples.Blazor.Server.csproj", "{F58743D4-2576-4354-8B59-89BCFF1154ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
+		{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
+		{F58743D4-2576-4354-8B59-89BCFF1154ED} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F58743D4-2576-4354-8B59-89BCFF1154ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F58743D4-2576-4354-8B59-89BCFF1154ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F58743D4-2576-4354-8B59-89BCFF1154ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F58743D4-2576-4354-8B59-89BCFF1154ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
