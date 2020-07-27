@@ -1,21 +1,21 @@
 # Stl.Fusion Tutorial
 
-> This tutorial is interactive &ndash; you can simply browse it, but you won't
-> be able to see the output of C# fragments, modify, and run them. 
+> This tutorial is interactive &ndash; you can simply browse it, 
+> but to modify and run the C# code presented here, you need
 > [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
-> or [Docker](https://www.docker.com/) is required to run it in interactive mode.
+> or [Docker](https://www.docker.com/).
 
 The simplest way to run this tutorial:
 - Install [Docker](https://docs.docker.com/get-docker/) and
   [Docker Compose](https://docs.docker.com/compose/install/)
-- Run `docker-compose up tutorial` in the root folder of this repository
+- Run `docker-compose up --build tutorial` in the root folder of this repository
 - Open https://localhost:50005/README.md.
 
 Alternatively, you can run it with `dotnet try` CLI tool:
-- Install the latest version of [.NET Core SDK 3.1](https://dotnet.microsoft.com/download)
-- Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) -
-  it's the tool to "run" the tutorial. Its release version may fail to run
-  the code, so we recommend to install the preview version of this tool.
+- Install the latest [.NET Core SDK 3.1](https://dotnet.microsoft.com/download)
+- Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md).
+  Its release version may fail to run the code, so we recommend to install 
+  the preview version of this tool.
 - Run `dotnet try --port 50005 docs/tutorial` in the root folder of this repository
 - Open https://localhost:50005/README.md.
 
