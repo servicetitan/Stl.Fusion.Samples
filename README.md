@@ -45,8 +45,9 @@ It's a [Blazor WebAssembly](https://devblogs.microsoft.com/aspnet/blazor-webasse
 which also serves its API. The application includes:
 * "Server Time" and "Server Screen" pages showing the simplest timeout-based invalidation
 * "Chat" - a tiny chat relying on event-based invalidation
-* "Composition" shows Fusion's ability to compose the state by using both 
-  local `IComputed<T>` instances and client-side replicas of similar remote instances.
+* "Composition" shows Fusion's ability to use both  local `IComputed<T>` instances 
+  and client-side replicas of similar server-side instances to compute a new value
+  that properly tracks both local and remote dependencies.
 
 ![](docs/img/Samples-Blazor.gif)
 
