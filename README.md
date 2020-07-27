@@ -1,35 +1,35 @@
 ![](docs/img/Banner.jpg)
 
-**Stl.Fusion.Samples** is a collection of samples for [Stl.Fusion](https://github.com/servicetitan/Stl.Fusion).
+Welcome to a collection of samples for [Stl.Fusion](https://github.com/servicetitan/Stl.Fusion)!
 
 > All project updates are published on our [Discord Server](https://discord.gg/EKEwv6d); it's also the best place for Q/A.\
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Extras/actions?query=workflow%3A%22Build%22)
 
 ## Running Samples
 
-The simplest way to run everything in this repository:
+The simplest way:
 - Install [Docker](https://docs.docker.com/get-docker/) and
   [Docker Compose](https://docs.docker.com/compose/install/)
-- To run [Tutorial](docs/tutorial/README.md):
-  1. Run `docker-compose up --build tutorial` in the root folder of this repository
-  2. Open https://localhost:50005/README.md.
 - To run [Blazor Samples](src/Blazor):
   1. Run `docker-compose up --build sample_blazor` in the root folder of this repository
   2. Open http://localhost:5005/.
+- To run [Tutorial](docs/tutorial/README.md):
+  1. Run `docker-compose up --build tutorial` in the root folder of this repository
+  2. Open https://localhost:50005/README.md.
 
-And if you want to run them locally:
+And if you'd rather run everything locally:
 - Install the latest [.NET Core SDK 3.1](https://dotnet.microsoft.com/download)
+- To run [Blazor Samples](src/Blazor):
+  1. Run `dotnet run --project src/Blazor/Server/Samples.Blazor.Server.csproj`
+  2. Open http://localhost:5005/.
 - To run [Tutorial](docs/tutorial/README.md):
   1. Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md).
      Its release version may fail to run the code, so we recommend to install 
      the preview version of this tool.
   2. Run `dotnet try --port 50005 docs/tutorial` in the root folder of this repository
   3. Open https://localhost:50005/README.md.
-- To run [Blazor Samples](src/Blazor):
-  1. Run `dotnet run --project src/Blazor/Server/Samples.Blazor.Server.csproj`
-  2. Open http://localhost:5005/.
 
-## Stl.Fusion Samples
+## What's Inside?
 
 ### 1. Tutorial
 
@@ -38,7 +38,6 @@ you can simply [browse it](docs/tutorial/README.md), but to
 modify and run the C# code presented there, you need
 [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
 or [Docker](https://www.docker.com/).
-
 
 ### 2. Blazor Samples
 
@@ -67,6 +66,8 @@ state used by left and right panes:
     by combining other server-side replicas.
   * **The surprising part:** two above files are almost identical!
 
-### 3. Console Samples
+## Useful Links
 
-TBD.
+* Check out [Stl.Fusion repository](https://github.com/servicetitan/Stl.Fusion) 
+* Read [Documentation](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md)
+* Join [Discord Server](https://discord.gg/EKEwv6d) to ask questions and track project updates.
