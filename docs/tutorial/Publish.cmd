@@ -1,1 +1,1 @@
-dotnet try publish
+dotnet-try publish --format Markdown --target-directory .
