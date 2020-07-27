@@ -68,5 +68,5 @@ state used by left and right panes:
 ## Useful Links
 
 * Check out [Stl.Fusion repository](https://github.com/servicetitan/Stl.Fusion) 
-* Read [Documentation](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md)
+* Read the [Documentation](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md)
 * Join [Discord Server](https://discord.gg/EKEwv6d) to ask questions and track project updates.
