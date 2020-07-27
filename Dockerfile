@@ -1,24 +1,24 @@
 # Create a base image with code and restored NuGet packages
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster as base
-WORKDIR /src
-
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster as build
+WORKDIR /samples
 COPY ["src/", "src/"]
 COPY ["docs/", "docs/"]
-
 COPY Samples.sln .
-COPY Directory.Build.props .
-COPY Directory.Build.targets .
-COPY Packages.props .
+RUN dotnet build
 
-# Collect application artifacts
-FROM base as build
-RUN dotnet build -c
+# Create Tutorial image
+FROM build as tutorial
+WORKDIR /samples/docs/tutorial
+RUN dotnet tool install -g --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" Microsoft.dotnet-try
+ENV PATH="$PATH:/root/.dotnet/tools"
+ENV DOTNET_TRY_CLI_TELEMETRY_OPTOUT=1
+RUN apt-get update
+RUN apt-get install -y simpleproxy
+RUN echo "simpleproxy -L 50005 -R 127.0.0.1:50004 &" >> start.sh
+RUN echo "dotnet try --port 50004 /samples/docs/tutorial" >> start.sh
+ENTRYPOINT ["sh", "start.sh"]
 
-# Create runtime image
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1.1-alpine as runtime
-RUN apk add icu-libs
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-WORKDIR /src
-COPY --from=build /src .
-WORKDIR /Blazor/Server/bin/Debug
-ENTRYPOINT ["dotnet", "StlFusionSamples.Blazor.Server.dll"]
+# Create Blazor sample image
+FROM build as sample_blazor
+WORKDIR /samples/src/Blazor
+ENTRYPOINT ["dotnet", "Server/bin/Debug/netcoreapp3.1/Samples.Blazor.Server.dll"]

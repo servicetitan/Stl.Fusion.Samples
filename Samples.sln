@@ -1,12 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{01FE6776-E788-46B2-93E4-1CEDB01AA851}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial", "docs\tutorial\Tutorial.csproj", "{B3AC9B52-96D7-4CBD-9873-8B427BB09BEB}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{9B29BD3F-7D94-4936-8379-61A2F48259AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Common", "D:\C\Projects\Stl.Fusion.Samples\src\Blazor\Common\Samples.Blazor.Common.csproj", "{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Common", "src\Blazor\Common\Samples.Blazor.Common.csproj", "{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Client", "D:\C\Projects\Stl.Fusion.Samples\src\Blazor\Client\Samples.Blazor.Client.csproj", "{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Client", "src\Blazor\Client\Samples.Blazor.Client.csproj", "{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Server", "D:\C\Projects\Stl.Fusion.Samples\src\Blazor\Server\Samples.Blazor.Server.csproj", "{F58743D4-2576-4354-8B59-89BCFF1154ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Server", "src\Blazor\Server\Samples.Blazor.Server.csproj", "{F58743D4-2576-4354-8B59-89BCFF1154ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,6 +23,8 @@ Global
 		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
 		{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
 		{F58743D4-2576-4354-8B59-89BCFF1154ED} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
+		{B3AC9B52-96D7-4CBD-9873-8B427BB09BEB} = {01FE6776-E788-46B2-93E4-1CEDB01AA851}
+		{9B29BD3F-7D94-4936-8379-61A2F48259AF} = {B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -31,5 +39,9 @@ Global
 		{F58743D4-2576-4354-8B59-89BCFF1154ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F58743D4-2576-4354-8B59-89BCFF1154ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F58743D4-2576-4354-8B59-89BCFF1154ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3AC9B52-96D7-4CBD-9873-8B427BB09BEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3AC9B52-96D7-4CBD-9873-8B427BB09BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3AC9B52-96D7-4CBD-9873-8B427BB09BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3AC9B52-96D7-4CBD-9873-8B427BB09BEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

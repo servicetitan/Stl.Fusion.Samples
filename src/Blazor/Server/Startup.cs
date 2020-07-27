@@ -1,14 +1,14 @@
 using System;
+using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using RestEase;
@@ -25,8 +25,13 @@ namespace Samples.Blazor.Server
     public class Startup
     {
         private IConfiguration Cfg { get; }
+        private IWebHostEnvironment Env { get; }
 
-        public Startup(IConfiguration cfg) => Cfg = cfg;
+        public Startup(IConfiguration cfg, IWebHostEnvironment environment)
+        {
+            Cfg = cfg;
+            Env = environment;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -34,7 +39,6 @@ namespace Samples.Blazor.Server
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "Chat.db";
             services
-                .AddEntityFrameworkSqlite()
                 .AddDbContextPool<ChatDbContext>(builder => {
                     builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
                 });
@@ -74,9 +78,19 @@ namespace Samples.Blazor.Server
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment()) {
+            // This server serves static content from Blazor Client,
+            // and since we don't copy it to local wwwroot,
+            // we need to find Client's wwwroot in bin/(Debug/Release) folder
+            // and set it as this server's content root.
+            var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
+            var binCfgPart = Regex.Match(baseDir, @"[\\/]bin[\\/]\w+[\\/]").Value;
+            Env.WebRootPath = Path.GetFullPath(Path.Combine(baseDir,
+                $"../../../../Client/{binCfgPart}/netstandard2.1/")) + "wwwroot";
+            Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
+
+            if (Env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
                 app.UseWebAssemblyDebugging();
             }
