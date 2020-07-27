@@ -5,18 +5,50 @@
 > All project updates are published on our [Discord Server](https://discord.gg/EKEwv6d); it's also the best place for Q/A.\
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Extras/actions?query=workflow%3A%22Build%22)
 
-## Tutorial ##
+## Running Samples
 
-* You can browse it [here](docs/tutorial/README.md)
+The simplest way to run everything in this repository:
+- Install [Docker](https://docs.docker.com/get-docker/) and
+  [Docker Compose](https://docs.docker.com/compose/install/)
+- To run [Tutorial](docs/tutorial/README.md):
+  1. Run `docker-compose up --build tutorial` in the root folder of this repository
+  2. Open https://localhost:50005/README.md.
+- To run [Blazor Samples](src/Blazor):
+  1. Run `docker-compose up --build sample_blazor` in the root folder of this repository
+  2. Open http://localhost:5005/.
 
-## Blazor Sample ###
+And if you want to run them locally:
+- Install the latest [.NET Core SDK 3.1](https://dotnet.microsoft.com/download)
+- To run [Tutorial](docs/tutorial/README.md):
+  1. Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md).
+     Its release version may fail to run the code, so we recommend to install 
+     the preview version of this tool.
+  2. Run `dotnet try --port 50005 docs/tutorial` in the root folder of this repository
+  3. Open https://localhost:50005/README.md.
+- To run [Blazor Samples](src/Blazor):
+  1. Run `dotnet run --project src/Blazor/Server/Samples.Blazor.Server.csproj`
+  2. Open http://localhost:5005/.
 
-Features:
-* "Server Time" and "Server Screen" - show simplest timeout-based invalidation
-* "Chat" - a tiny chat app that shows how to properly invalidate parts of the state 
-  on changes
+## Stl.Fusion Samples
+
+### 1. Tutorial
+
+The tutorial is interactive &ndash; 
+you can simply [browse it](docs/tutorial/README.md), but to
+modify and run the C# code presented there, you need
+[Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
+or [Docker](https://www.docker.com/).
+
+
+### 2. Blazor Samples
+
+It's a [Blazor WebAssembly](https://devblogs.microsoft.com/aspnet/blazor-webassembly-3-2-0-now-available/)-based SPA hosted by
+[ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet) website,
+which also serves its API. The application includes:
+* "Server Time" and "Server Screen" pages showing the simplest timeout-based invalidation
+* "Chat" - a tiny chat relying on event-based invalidation
 * "Composition" shows Fusion's ability to compose the state by using both 
-  local and remote parts.
+  local `IComputed<T>` instances and client-side replicas of similar remote instances.
 
 ![](docs/img/Samples-Blazor.gif)
 
@@ -35,26 +67,6 @@ state used by left and right panes:
     by combining other server-side replicas.
   * **The surprising part:** two above files are almost identical!
 
-### Running Blazor Sample
-
-From Visual Studio or Rider:
-* Open the `Samples.sln` in your favorite IDE
-(note that Blazor *debugging* is currently supported only in Visual Studio and VSCode though)
-* Run `Samples.Blazor.Server` project
-* Open http://localhost:5005.
-
-Using command line (Windows, Unix, Mac OS):
-```
-dotnet build
-cd src/Blazor/Server
-dotnet run
-```
-
-Alternatively, you can run this sample from Docker:
-```cmd
-docker-compose up sample_blazor
-```
-
-## Console Sample ###
+### 3. Console Samples
 
 TBD.

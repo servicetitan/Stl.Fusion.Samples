@@ -1,5 +1,11 @@
 version: '3.4'
 services:
+  tutorial:
+    build: 
+      context: .
+      target: tutorial
+    ports:
+     - "50005:50005"
   sample_blazor:
     build: 
       context: .
@@ -9,9 +15,3 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
-  tutorial:
-    build: 
-      context: .
-      target: tutorial
-    ports:
-     - "50005:50005"

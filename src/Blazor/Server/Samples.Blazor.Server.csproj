@@ -16,6 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+    The dependency on Client is necessary only because Server
+    "serves" its output; it's fine to remove it if you run
+    "Build All" before running the Server.
+    -->
+    <ProjectReference Include="..\Client\Samples.Blazor.Client.csproj" />
     <ProjectReference Include="..\Common\Samples.Blazor.Common.csproj" />
   </ItemGroup>
 

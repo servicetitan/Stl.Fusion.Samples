@@ -1,29 +1,28 @@
 # Stl.Fusion Tutorial
 
-## Prerequisites
+> This tutorial is interactive &ndash; you can simply browse it, but you won't
+> be able to see the output of C# fragments, modify, and run them. 
+> [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
+> or [Docker](https://www.docker.com/) is required to run it in interactive mode.
+
+The simplest way to run this tutorial:
+- Install [Docker](https://docs.docker.com/get-docker/) and
+  [Docker Compose](https://docs.docker.com/compose/install/)
+- Run `docker-compose up tutorial` in the root folder of this repository
+- Open https://localhost:50005/README.md.
+
+Alternatively, you can run it with `dotnet try` CLI tool:
+- Install the latest version of [.NET Core SDK 3.1](https://dotnet.microsoft.com/download)
+- Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) -
+  it's the tool to "run" the tutorial. Its release version may fail to run
+  the code, so we recommend to install the preview version of this tool.
+- Run `dotnet try --port 50005 docs/tutorial` in the root folder of this repository
+- Open https://localhost:50005/README.md.
+
+## Tutorial
 
 > We highly recommended you to read the
 > [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md) first.
-
-Install:
-
-- [.NET Core SDK 3.1](https://dotnet.microsoft.com/download) - you need it
-  to build `Stl.Fusion`, its samples, and this tutorial
-- [try-dotnet](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) -
-  it's the tool to "run" the tutorial. If its release version fails to run
-  the code (right now it does, the bug is reported), you'll need to install
-  its preview version using the following command:
-  ```bash
-  dotnet tool install -g --add-source "https://dotnet.myget.org/F/dotnet-try/api/v3/index.json" Microsoft.dotnet-try
-  ```
-
-To run the tutorial, `cd` to the "tutorial" folder and type:
-
-```bash
-dotnet try
-```
-
-## Tutorial
 
 The code based on `Stl.Fusion` (we'll refer to it as "Fusion" further)
 might look completely weird at first - that's because it is based
