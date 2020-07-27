@@ -13,11 +13,11 @@ namespace Samples.Blazor.Server
         public static async Task Main(string[] args)
         {
             var host = Host.CreateDefaultBuilder()
-                .ConfigureHostConfiguration(cfg => {
+                .ConfigureAppConfiguration(cfg => {
                     // Looks like there is no better way to set _default_ URL
                     cfg.Sources.Insert(0, new MemoryConfigurationSource() {
                         InitialData = new Dictionary<string, string>() {
-                            {"ASPNETCORE_URLS", "http://localhost:5005"},
+                            {WebHostDefaults.ServerUrlsKey, "http://localhost:5005"},
                         }
                     });
                 })
