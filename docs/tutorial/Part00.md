@@ -1,23 +1,25 @@
 # Part 0: NuGet packages
 
-Overall, it's fairly simple:
+All Stl.Fusion packages are 
+[available on NuGet](https://www.nuget.org/packages?q=Owner%3Aservicetitan+Tags%3Astl_fusion):\
+[![Build](https://github.com/servicetitan/Stl.Fusion/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion/actions?query=workflow%3A%22Build%22)
+[![NuGetVersion](https://img.shields.io/nuget/v/Stl.Fusion)](https://www.nuget.org/packages?q=Owner%3Aservicetitan+Tags%3Astl_fusion) 
 
-* Server-side code should reference
-  [Stl.Fusion.Server](https://www.nuget.org/packages/Stl.Fusion.Server/) NuGet package
-* Client-side code should reference
-  [Stl.Fusion.Client](https://www.nuget.org/packages/Stl.Fusion.Client/)
-  * Though if it's a Blazor client, it's a good idea to reference
-    [Stl.Fusion.Blazor](https://www.nuget.org/packages/Stl.Fusion.Blazor/) instead
-* A library that could be used both by client and server should reference only
-  [Stl.Fusion](https://www.nuget.org/packages/Stl.Fusion/).
+Your should reference:
+
+* [Stl.Fusion.Server](https://www.nuget.org/packages/Stl.Fusion.Server/) &ndash; from server-side assemblies 
+* [Stl.Fusion.Client](https://www.nuget.org/packages/Stl.Fusion.Client/) &ndash; from client-side assemblies;
+  Blazor clients may reference [Stl.Fusion.Blazor](https://www.nuget.org/packages/Stl.Fusion.Blazor/) instead
+* [Stl.Fusion](https://www.nuget.org/packages/Stl.Fusion/) &ndash; from shared assemblies, 
+  i.e. the ones to be used on both sides.
 
 The full list of Fusion packages:
 
-* [Stl](https://www.nuget.org/packages/Stl/) -
-  depends on [Castle.Core](https://www.nuget.org/packages/Castle.Core/) & maybe some other
+* [Stl](https://www.nuget.org/packages/Stl/) - stands for "ServiceTitan Library" 
+  (yeah, every company needs its own [STL](https://en.wikipedia.org/wiki/Standard_Template_Library)).
+  It's a collection of relatively isolated abstractions and helpers we couldn't find in BCL.
+  `Stl` depends on [Castle.Core](https://www.nuget.org/packages/Castle.Core/) & maybe some other
   third-party packages.
-  "Stl" stands for "ServiceTitan Library" (we know, we know ☺) - it's a collection of relatively
-  isolated abstractions and methods we couldn't find in BCL.
 * [Stl.Fusion](https://www.nuget.org/packages/Stl.Fusion/) - depends on `Stl`.
   Nearly everything related to Fusion is there.
 * [Stl.Fusion.Server](https://www.nuget.org/packages/Stl.Fusion.Server/) - depends on `Stl.Fusion`.

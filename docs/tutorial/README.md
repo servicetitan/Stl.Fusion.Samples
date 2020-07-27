@@ -47,3 +47,5 @@ Without further ado:
 * [Part 6: Computed Instances and Computed Services - Review](./Part06.md)
 * Part 7+: To be added later this week.
 
+Join our [Discord Server](https://discord.gg/EKEwv6d) 
+to ask questions and track project updates.
