@@ -33,8 +33,7 @@ And if you'd rather run everything locally:
 
 ### 1. Tutorial
 
-The tutorial is interactive &ndash; 
-you can simply [browse it](docs/tutorial/README.md), but to
+It's interactive &ndash; you can simply [browse it](docs/tutorial/README.md), but to
 modify and run the C# code presented there, you need
 [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
 or [Docker](https://www.docker.com/).
