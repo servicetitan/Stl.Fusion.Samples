@@ -40,7 +40,7 @@ or [Docker](https://www.docker.com/).
 
 ### 2. Blazor Samples
 
-It's a [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
+It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
 [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet) website,
 which also serves its API. The application includes:
 * "Server Time" and "Server Screen" pages showing the simplest timeout-based invalidation
@@ -49,25 +49,17 @@ which also serves its API. The application includes:
   and client-side replicas of similar server-side instances to compute a new value
   that properly tracks both local and remote dependencies.
 
-The app supports **both** Server-Side Blazor and Blazor WebAssembly modes &ndash;
-you can switch the mode on "Home" page.
-
 ![](docs/img/Samples-Blazor.gif)
 
-Notice that `Samples.Blazor.Server` exposes a regular RESTful API -
+The app supports **both (!)** Server-Side Blazor and Blazor WebAssembly modes &ndash;
+you can switch the mode on "Home" page.
+
+![](docs/img/Samples-Blazor-DualMode.gif)
+
+Moreover, it also exposes a regular RESTful API &ndash;
 try invoking any of endpoints there right from embedded Swagger console.
 
 ![](docs/img/SwaggerDoc.jpg)
-
-Besides that, "Composition" sample uses two different ways of composing the
-state used by left and right panes:
-  * The left pane uses the state
-    [composed on the server-side](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Server/Services/ComposerService.cs);
-    its replica is used by the client
-  * The right pane uses the state
-    [composed completely on the client-side](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Client/Services/LocalComposerService.cs) 
-    by combining other server-side replicas.
-  * **The surprising part:** two above files are almost identical!
 
 ## Useful Links
 
