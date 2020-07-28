@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="3.2.1" PrivateAssets="all" />
     -->
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.6" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.1.277" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.1.277" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +32,9 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
     <Content Update="Shared\ComposedValueCard.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+    <Content Update="Shared\BlazorModeSwitch.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
   </ItemGroup>

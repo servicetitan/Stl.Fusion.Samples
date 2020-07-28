@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion.UI;
-using Samples.Blazor.Client.Services;
 using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Client.UI
@@ -37,16 +36,16 @@ namespace Samples.Blazor.Client.UI
 
         public class Updater : ILiveStateUpdater<Local, ChatState>
         {
-            protected IChatClient Client { get; }
+            protected IChatService Chat { get; }
 
-            public Updater(IChatClient client) => Client = client;
+            public Updater(IChatService chat) => Chat = chat;
 
             public virtual async Task<ChatState> UpdateAsync(
                 ILiveState<Local, ChatState> liveState, CancellationToken cancellationToken)
             {
-                var userCount = await Client.GetUserCountAsync(cancellationToken);
-                var activeUserCount = await Client.GetActiveUserCountAsync(cancellationToken);
-                var lastPage = await Client.GetChatTailAsync(30, cancellationToken);
+                var userCount = await Chat.GetUserCountAsync(cancellationToken);
+                var activeUserCount = await Chat.GetActiveUserCountAsync(cancellationToken);
+                var lastPage = await Chat.GetChatTailAsync(30, cancellationToken);
                 var state = new ChatState() {
                     UserCount = userCount,
                     ActiveUserCount = activeUserCount,

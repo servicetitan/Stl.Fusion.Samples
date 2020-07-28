@@ -1,13 +1,13 @@
 @page "/chat"
 @inherits LiveComponentBase<ChatState.Local, ChatState>
 @inject NavigationManager Navigator
-@inject IChatClient Client
+@inject IChatService ChatService
 
 @{
     var local = Local;
-    var state = State; 
+    var state = State;
     var lastPage = state.LastPage;
-    var lastUpdateError = LiveState.LastUpdateError; 
+    var lastUpdateError = LiveState.LastUpdateError;
 }
 
 <div>
@@ -25,7 +25,7 @@
 <p>
     To see the state replication in action,
     <a href="@Navigator.Uri" target="_blank">open this chat</a> or
-    <a href="/composition" target="_blank">Composition example</a> 
+    <a href="/composition" target="_blank">Composition example</a>
     in another window.
 </p>
 
@@ -48,7 +48,7 @@
         <input class="form-control" @bind-value="@local.MyName"/>
         <div class="input-group-append">
             <button type="submit" class="btn btn-warning">Change</button>
-        </div>        
+        </div>
     </div>
 </form>
 
@@ -77,12 +77,12 @@
         <div class="input-group-prepend">
             <span class="input-group-text">Message</span>
         </div>
-        <input class="form-control" 
+        <input class="form-control"
             placeholder="No ideas? Send an empty one!"
             @bind-value="@local.MyMessage" />
         <div class="input-group-append">
             <button type="submit" class="btn btn-success">Send</button>
-        </div>        
+        </div>
     </div>
 </form>
 
@@ -103,7 +103,7 @@
         try {
             if (local.Me != null) {
                 try {
-                    var user1 = await Client.SetUserNameAsync(local.Me.Id, local.MyName);
+                    var user1 = await ChatService.SetUserNameAsync(local.Me.Id, local.MyName);
                     UpdateLocal(s => s.Me = user1);
                     return;
                 }
@@ -111,7 +111,7 @@
                     // Prob. the user doesn't exist (server restarted), so we should try to recreate it.
                 }
             }
-            var user2 = await Client.CreateUserAsync(local.MyName);
+            var user2 = await ChatService.CreateUserAsync(local.MyName);
             UpdateLocal(s => s.Me = user2);
         }
         catch (Exception e) {
@@ -126,7 +126,7 @@
             var local = Local;
             if (local.Me == null)
                 throw new ApplicationException("Please set your name first.");
-            await Client.AddMessageAsync(local.Me.Id, local.MyMessage);
+            await ChatService.AddMessageAsync(local.Me.Id, local.MyMessage);
             UpdateLocal(s => s.MyMessage = "");
         }
         catch (Exception e) {
@@ -136,6 +136,6 @@
 
     private void ResetError() => SetError(null);
 
-    private void SetError(Exception? error) 
+    private void SetError(Exception? error)
         => UpdateLocal(local => local.Error = error);
 }

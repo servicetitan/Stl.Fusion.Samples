@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion.UI;
-using Samples.Blazor.Client.Services;
+using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Client.UI
 {
@@ -12,14 +12,14 @@ namespace Samples.Blazor.Client.UI
 
         public class Updater : ILiveStateUpdater<ServerTimeState>
         {
-            protected ITimeClient Client { get; }
+            protected ITimeService Time { get; }
 
-            public Updater(ITimeClient client) => Client = client;
+            public Updater(ITimeService time) => Time = time;
 
             public virtual async Task<ServerTimeState> UpdateAsync(
                 ILiveState<ServerTimeState> liveState, CancellationToken cancellationToken)
             {
-                var time = await Client.GetTimeAsync(cancellationToken);
+                var time = await Time.GetTimeAsync(cancellationToken);
                 return new ServerTimeState() { Time = time };
             }
         }

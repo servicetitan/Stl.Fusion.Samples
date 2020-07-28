@@ -4,9 +4,11 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
@@ -49,14 +51,22 @@ namespace Samples.Blazor.Server
             services.AddFusionWebSocketServer();
             services.AddComputedService<ITimeService, TimeService>();
             services.AddComputedService<IChatService, ChatService>();
-            services.AddComputedService<IComposerService, ServerSideComposerService>();
+            services.AddComputedService<IComposerService, ComposerService>();
+            services.AddComputedService<IScreenshotService, ScreenshotService>();
+
+            // Helpers used by ChatService
             services.AddSingleton(c => new RestClient(new Uri("https://uzby.com/api.php"))
                 .For<IUzbyClient>());
             services.AddSingleton(c => new RestClient(new Uri("https://api.forismatic.com/api/1.0/"))
                 .For<IForismaticClient>());
-            services.AddComputedService<IScreenshotService, ScreenshotService>();
+
+            Client.Program.ConfigureSharedServices(services);
 
             // Web
+            services.AddHttpContextAccessor();
+            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.TryAddSingleton<IBlazorModeSwitcher, BlazorModeSwitcher>();
+
             services.AddRouting();
             services.AddControllers()
                 .AddApplicationPart(Assembly.GetExecutingAssembly());
@@ -69,6 +79,7 @@ namespace Samples.Blazor.Server
                     settings.TypeNameHandling = TypeNameHandling.All;
                     settings.NullValueHandling = expected.NullValueHandling;
                 });
+            services.AddServerSideBlazor();
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
@@ -115,9 +126,10 @@ namespace Samples.Blazor.Server
             // API controllers
             app.UseRouting();
             app.UseEndpoints(endpoints => {
+                endpoints.MapBlazorHub();
                 endpoints.MapFusionWebSocketServer();
                 endpoints.MapControllers();
-                endpoints.MapFallbackToFile("index.html");
+                endpoints.MapFallbackToPage("/Index");
             });
         }
     }

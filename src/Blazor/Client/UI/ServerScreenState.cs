@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion.UI;
-using Samples.Blazor.Client.Services;
 using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Client.UI
@@ -32,15 +31,15 @@ namespace Samples.Blazor.Client.UI
 
         public class Updater : ILiveStateUpdater<Local, ServerScreenState>
         {
-            protected IScreenshotClient Client { get; }
+            protected IScreenshotService Screenshot { get; }
 
-            public Updater(IScreenshotClient client) => Client = client;
+            public Updater(IScreenshotService screenshot) => Screenshot = screenshot;
 
             public virtual async Task<ServerScreenState> UpdateAsync(
                 ILiveState<Local, ServerScreenState> liveState, CancellationToken cancellationToken)
             {
                 var local = liveState.Local;
-                var screenshot = await Client.GetScreenshotAsync(local.ActualWidth, cancellationToken);
+                var screenshot = await Screenshot.GetScreenshotAsync(local.ActualWidth, cancellationToken);
                 return new ServerScreenState() { Screenshot = screenshot };
             }
         }

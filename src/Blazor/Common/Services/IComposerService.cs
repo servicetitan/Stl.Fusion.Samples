@@ -27,4 +27,6 @@ namespace Samples.Blazor.Common.Services
     {
         Task<ComposedValue> GetComposedValueAsync(string parameter, CancellationToken cancellationToken = default);
     }
+
+    public interface ILocalComposerService : IComposerService { }
 }

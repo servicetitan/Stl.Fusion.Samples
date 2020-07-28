@@ -18,10 +18,10 @@
 @code {
     private bool IsExpanded { get; set; } = true;
 
-    private void ToggleExpanded() 
+    private void ToggleExpanded()
         => IsExpanded = !IsExpanded;
 
-    private RenderFragment MenuItem(string icon, string title, string href, NavLinkMatch match = NavLinkMatch.Prefix) => 
+    private RenderFragment MenuItem(string icon, string title, string href, NavLinkMatch match = NavLinkMatch.Prefix) =>
         @<li class="nav-item">
             <NavLink class="nav-link" href="@href" Match="@match">
                 <span class="oi oi-@icon" aria-hidden="true"></span> @title

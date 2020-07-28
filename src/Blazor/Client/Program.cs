@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using RestEase.Implementation;
-using Stl.Extensibility;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.UI;
@@ -40,16 +36,15 @@ namespace Samples.Blazor.Client
             return runTask;
         }
 
-        private static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
+        public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
         {
+            ConfigureSharedServices(services);
+
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             services.AddFusionWebSocketClient((c, o) => {
                 o.BaseUri = baseUri;
                 // o.MessageLogLevel = LogLevel.Information;
             });
-
-            // Computed services
-            services.AddComputedService<IComposerService, ClientSideComposerService>();
 
             // Replica services
             var apiBaseUri = new Uri($"{baseUri}api/");
@@ -58,6 +53,17 @@ namespace Samples.Blazor.Client
             services.AddReplicaService<IScreenshotClient>("screenshot");
             services.AddReplicaService<IChatClient>("chat");
             services.AddReplicaService<IComposerClient>("composer");
+            // Client-side versions of server-side services
+            services.AddSingleton<ITimeService, ClientTimeService>();
+            services.AddSingleton<IScreenshotService, ClientScreenshotService>();
+            services.AddSingleton<IChatService, ClientChatService>();
+            services.AddSingleton<IComposerService, ClientComposerService>();
+        }
+
+        public static void ConfigureSharedServices(IServiceCollection services)
+        {
+            // Computed services
+            services.AddComputedService<ILocalComposerService, LocalComposerService>();
 
             // Configuring live updaters
             services.AddSingleton(c => new UpdateDelayer.Options() {
@@ -83,6 +89,7 @@ namespace Samples.Blazor.Client
                     });
                 }
             });
+
         }
     }
 }

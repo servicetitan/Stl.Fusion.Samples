@@ -1,8 +1,6 @@
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion.UI;
-using Samples.Blazor.Client.Services;
 using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Client.UI
@@ -31,13 +29,13 @@ namespace Samples.Blazor.Client.UI
 
         public class Updater : ILiveStateUpdater<Local, CompositionState>
         {
-            protected IComposerService LocalComposer { get; }
-            protected IComposerClient RemoteComposer { get; }
+            protected ILocalComposerService LocalComposer { get; }
+            protected IComposerService Composer { get; }
 
-            public Updater(IComposerService localComposer, IComposerClient remoteComposer)
+            public Updater(ILocalComposerService localComposer, IComposerService composer)
             {
                 LocalComposer = localComposer;
-                RemoteComposer = remoteComposer;
+                Composer = composer;
             }
 
             public virtual async Task<CompositionState> UpdateAsync(
@@ -45,7 +43,7 @@ namespace Samples.Blazor.Client.UI
             {
                 var local = liveState.Local;
                 var localValue = await LocalComposer.GetComposedValueAsync(local.Parameter, cancellationToken);
-                var remoteValue = await RemoteComposer.GetComposedValueAsync(local.Parameter, cancellationToken);
+                var remoteValue = await Composer.GetComposedValueAsync(local.Parameter, cancellationToken);
                 return new CompositionState() {
                     LocallyComposedValue = localValue,
                     RemotelyComposedValue = remoteValue,
