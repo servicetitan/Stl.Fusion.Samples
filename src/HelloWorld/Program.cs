@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Stl;
 using Stl.Fusion;
 
-namespace HelloWorld
+namespace Samples.HelloWorld
 {
     class Program
     {
@@ -30,7 +31,7 @@ namespace HelloWorld
                     // to get a new one to observe the updated value.
                     computed = await computed.UpdateAsync(false);
                 }
-            });
+            }).Ignore();
 
             // Notice the code below doesn't even know there are some IComputed, etc.
             while (true) {

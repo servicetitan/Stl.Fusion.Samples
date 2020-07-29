@@ -1,4 +1,4 @@
-namespace HelloWorld
+namespace Samples.HelloWorld
 {
     public class User
     {

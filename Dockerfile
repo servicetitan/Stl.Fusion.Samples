@@ -18,6 +18,10 @@ RUN echo "simpleproxy -L 50005 -R 127.0.0.1:50004 &" >> start.sh
 RUN echo "dotnet try --port 50004 /samples/docs/tutorial" >> start.sh
 ENTRYPOINT ["sh", "start.sh"]
 
+# Create Console sample image
+FROM build as sample_hello_world
+WORKDIR /samples/src/HelloWorld/bin/Debug/netcoreapp3.1
+
 # Create Blazor sample image
 FROM build as sample_blazor
 WORKDIR /samples/src/Blazor

@@ -10,6 +10,8 @@ Welcome to a collection of samples for [Stl.Fusion](https://github.com/serviceti
 The simplest way:
 - Install [Docker](https://docs.docker.com/get-docker/) and
   [Docker Compose](https://docs.docker.com/compose/install/)
+- To run [Hello World](src/HelloWorld):
+  `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll`
 - To run [Blazor Samples](src/Blazor):
   1. Run `docker-compose up --build sample_blazor` in the root folder of this repository
   2. Open http://localhost:5005/.
@@ -19,6 +21,8 @@ The simplest way:
 
 And if you'd rather run everything locally:
 - Install the latest [.NET Core SDK 3.1](https://dotnet.microsoft.com/download)
+- To run [Hello World](src/HelloWorld):
+  `dotnet run -p src/HelloWorld/HelloWorld.csproj`
 - To run [Blazor Samples](src/Blazor):
   1. Run `dotnet run --project src/Blazor/Server/Samples.Blazor.Server.csproj`
   2. Open http://localhost:5005/.
@@ -60,6 +64,16 @@ Moreover, it also exposes a regular RESTful API &ndash;
 try invoking any of endpoints there right from embedded Swagger console.
 
 ![](docs/img/SwaggerDoc.jpg)
+
+### 3. Hello World Sample
+
+`HelloWorld` is a basic sample showing how to create a `[ComputedServiceMethod]`
+that depends on output of another method (i.e. how to create a dependency chain),
+invoke such methods from code, and react to changes in concurrent thread.
+
+Check out [its source code](src/HelloWorld/Program.cs).
+
+![](docs/img/Samples-HelloWorld.gif)
 
 ## Useful Links
 

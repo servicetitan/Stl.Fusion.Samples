@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
 
-namespace HelloWorld
+namespace Samples.HelloWorld
 {
     public class GreetingService : IComputedService
     {

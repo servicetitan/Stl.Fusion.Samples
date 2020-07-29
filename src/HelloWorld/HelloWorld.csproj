@@ -5,6 +5,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <AssemblyName>Samples.HelloWorld</AssemblyName>
+    <RootNamespace>Samples.HelloWorld</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

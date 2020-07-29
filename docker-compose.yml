@@ -6,6 +6,10 @@ services:
       target: tutorial
     ports:
      - "50005:50005"
+  sample_hello_world:
+    build: 
+      context: .
+      target: sample_hello_world
   sample_blazor:
     build: 
       context: .
