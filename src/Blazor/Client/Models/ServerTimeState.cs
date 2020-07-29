@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Stl.Fusion.UI;
 using Samples.Blazor.Common.Services;
 
-namespace Samples.Blazor.Client.UI
+namespace Samples.Blazor.Client.Models
 {
     public class ServerTimeState
     {

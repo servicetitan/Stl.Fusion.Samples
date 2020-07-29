@@ -10,7 +10,7 @@ using Stl.Fusion.Client;
 using Stl.Fusion.UI;
 using Stl.OS;
 using Samples.Blazor.Client.Services;
-using Samples.Blazor.Client.UI;
+using Samples.Blazor.Client.Models;
 using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Client

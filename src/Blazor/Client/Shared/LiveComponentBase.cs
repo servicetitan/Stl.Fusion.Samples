@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Stl.Frozen;
 using Stl.Fusion.UI;
 
-namespace Samples.Blazor.Client.UI
+namespace Samples.Blazor.Client.Shared
 {
     public abstract class LiveComponentBase<TState> : ComponentBase, IDisposable
     {
