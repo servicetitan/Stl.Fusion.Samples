@@ -18,9 +18,10 @@ namespace Samples.HelloBlazorServer.Models
         [LiveStateUpdater]
         public class Updater : ILiveStateUpdater<Local, WeatherForecastState>
         {
-            protected WeatherForecastService WeatherForecastService { get; }
+            private WeatherForecastService WeatherForecastService { get; }
 
-            public Updater(WeatherForecastService chat) => WeatherForecastService = chat;
+            public Updater(WeatherForecastService weatherForecastService)
+                => WeatherForecastService = weatherForecastService;
 
             public virtual async Task<WeatherForecastState> UpdateAsync(
                 ILiveState<Local, WeatherForecastState> liveState, CancellationToken cancellationToken)

@@ -29,9 +29,6 @@ namespace Samples.Blazor.Client.Models
             public string MyName { get; set; } = "";
             public string MyMessage { get; set; } = "";
             public Exception? Error { get; set; }
-
-            public Local Clone()
-                => (Local) MemberwiseClone();
         }
 
         [LiveStateUpdater]
@@ -56,5 +53,4 @@ namespace Samples.Blazor.Client.Models
             }
         }
     }
-
 }
