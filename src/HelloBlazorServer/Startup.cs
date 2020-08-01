@@ -1,9 +1,11 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Samples.HelloBlazorServer.Data;
+using Stl.DependencyInjection;
+using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer
 {
@@ -20,9 +22,15 @@ namespace Samples.HelloBlazorServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // Fusion services
+            services.AddFusionCore();
+            // This method registers services marked with any of ServiceAttributeBase descendants, including:
+            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            services.AddServices(Assembly.GetExecutingAssembly());
+
+            // Web
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

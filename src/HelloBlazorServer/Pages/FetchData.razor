@@ -1,7 +1,11 @@
 ﻿@page "/fetchdata"
-
-@using Samples.HelloBlazorServer.Data
+@inherits LiveComponentBase<WeatherForecastState.Local, WeatherForecastState>
 @inject WeatherForecastService ForecastService
+
+@{
+    // Let's read this property once per render
+    var forecasts = Forecasts;
+}
 
 <h1>Weather forecast</h1>
 
@@ -37,10 +41,5 @@ else
 }
 
 @code {
-    private WeatherForecast[] forecasts;
-
-    protected override async Task OnInitializedAsync()
-    {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
-    }
+    private WeatherForecast[] Forecasts => State.Forecasts;
 }
