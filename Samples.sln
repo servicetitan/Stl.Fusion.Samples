@@ -8,11 +8,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial", "docs\tutorial\T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{9B29BD3F-7D94-4936-8379-61A2F48259AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Common", "src\Blazor\Common\Samples.Blazor.Common.csproj", "{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\Blazor\Common\Common.csproj", "{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Client", "src\Blazor\Client\Samples.Blazor.Client.csproj", "{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "src\Blazor\Client\Client.csproj", "{670A20E9-B4BB-4EA2-A1A0-EC45463B3A01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Blazor.Server", "src\Blazor\Server\Samples.Blazor.Server.csproj", "{F58743D4-2576-4354-8B59-89BCFF1154ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "src\Blazor\Server\Server.csproj", "{F58743D4-2576-4354-8B59-89BCFF1154ED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld", "src\HelloWorld\HelloWorld.csproj", "{E43053F9-B7F9-4A57-B4B7-2E84C3179D0B}"
 EndProject
