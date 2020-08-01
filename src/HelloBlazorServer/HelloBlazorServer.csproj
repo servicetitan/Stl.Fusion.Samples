@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Samples.HelloBlazorServer</AssemblyName>
+    <RootNamespace>Samples.HelloBlazorServer</RootNamespace>
+  </PropertyGroup>
+
+</Project>
