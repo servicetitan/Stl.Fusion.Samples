@@ -1,16 +1,21 @@
 ﻿@page "/counter"
+@inherits LiveComponentBase<CounterState>
+@inject CounterService CounterService
 
 <h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
+<p>Current count: @State.Counter</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
+    private async Task IncrementCount()
     {
-        currentCount++;
+        await CounterService.IncrementCounterAsync();
+        // The next Invalidate() call is optional:
+        // it cancels the active update delay, nothing else.
+        // You can comment it out & see it still works, though
+        // the updates are coming with default 1 second delay.
+        Invalidate();
     }
 }
