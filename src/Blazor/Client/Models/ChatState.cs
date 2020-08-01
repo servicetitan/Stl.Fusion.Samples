@@ -34,6 +34,7 @@ namespace Samples.Blazor.Client.Models
                 => (Local) MemberwiseClone();
         }
 
+        [LiveStateUpdater]
         public class Updater : ILiveStateUpdater<Local, ChatState>
         {
             protected IChatService Chat { get; }

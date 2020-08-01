@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Stl.OS;
 using Stl.Pooling;
 using Samples.Blazor.Common.Services;
+using Stl.DependencyInjection;
 
 namespace Samples.Blazor.Server.Services
 {
+    [Service]
     public class ChatDbContextPool : ScopedServicePool<ChatDbContext>
     {
         public ChatDbContextPool(IServiceProvider services)

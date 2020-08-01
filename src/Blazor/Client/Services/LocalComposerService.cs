@@ -8,6 +8,7 @@ using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Client.Services
 {
+    [ComputedService(typeof(ILocalComposerService))]
     public class LocalComposerService : ILocalComposerService, IComputedService
     {
         protected ILogger Log { get; }

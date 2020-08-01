@@ -12,6 +12,7 @@ using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Server.Services
 {
+    [ComputedService(typeof(IScreenshotService))]
     public class ScreenshotService : IScreenshotService, IComputedService
     {
         private readonly ImageCodecInfo _jpegEncoder;

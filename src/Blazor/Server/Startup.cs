@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
@@ -16,8 +17,10 @@ using Newtonsoft.Json;
 using RestEase;
 using Samples.Blazor.Common.Services;
 using Samples.Blazor.Server.Services;
+using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
+using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 using Stl.IO;
 using Stl.Serialization;
@@ -44,28 +47,23 @@ namespace Samples.Blazor.Server
                 .AddDbContextPool<ChatDbContext>(builder => {
                     builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
                 });
-            services.AddSingleton<ChatDbContextPool>();
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
             services.AddFusionWebSocketServer();
-            services.AddComputedService<ITimeService, TimeService>();
-            services.AddComputedService<IChatService, ChatService>();
-            services.AddComputedService<IComposerService, ComposerService>();
-            services.AddComputedService<IScreenshotService, ScreenshotService>();
-
             // Helpers used by ChatService
-            services.AddSingleton(c => new RestClient(new Uri("https://uzby.com/api.php"))
-                .For<IUzbyClient>());
-            services.AddSingleton(c => new RestClient(new Uri("https://api.forismatic.com/api/1.0/"))
-                .For<IForismaticClient>());
-
+            services.AddTransient(c => new HttpClient());
+            services.AddRestEaseClient<IUzbyClient>("https://uzby.com/api.php");
+            services.AddRestEaseClient<IForismaticClient>("https://api.forismatic.com/api/1.0/");
+            // This method registers services marked with any of ServiceAttributeBase descendants, including:
+            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            services.AddServices(Assembly.GetExecutingAssembly());
+            // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 
             // Web
             services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.TryAddSingleton<IBlazorModeSwitcher, BlazorModeSwitcher>();
 
             services.AddRouting();
             services.AddControllers()

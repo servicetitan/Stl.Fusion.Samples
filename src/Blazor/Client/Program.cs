@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,14 +10,15 @@ using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.UI;
 using Stl.OS;
-using Samples.Blazor.Client.Services;
 using Samples.Blazor.Client.Models;
-using Samples.Blazor.Common.Services;
+using Stl.DependencyInjection;
 
 namespace Samples.Blazor.Client
 {
     public class Program
     {
+        public const string ClientSideScope = nameof(ClientSideScope);
+
         public static Task Main(string[] args)
         {
             if (OSInfo.Kind != OSKind.WebAssembly)
@@ -38,38 +40,28 @@ namespace Samples.Blazor.Client
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
         {
-            ConfigureSharedServices(services);
 
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
+            var apiBaseUri = new Uri($"{baseUri}api/");
+            services.AddTransient(c => new HttpClient() { BaseAddress = apiBaseUri });
             services.AddFusionWebSocketClient((c, o) => {
                 o.BaseUri = baseUri;
                 // o.MessageLogLevel = LogLevel.Information;
             });
 
-            // Replica services
-            var apiBaseUri = new Uri($"{baseUri}api/");
-            services.AddTransient(c => new HttpClient() { BaseAddress = apiBaseUri });
-            services.AddReplicaService<ITimeClient>("time");
-            services.AddReplicaService<IScreenshotClient>("screenshot");
-            services.AddReplicaService<IChatClient>("chat");
-            services.AddReplicaService<IComposerClient>("composer");
-            // Client-side versions of server-side services
-            services.AddSingleton<ITimeService, ClientTimeService>();
-            services.AddSingleton<IScreenshotService, ClientScreenshotService>();
-            services.AddSingleton<IChatService, ClientChatService>();
-            services.AddSingleton<IComposerService, ClientComposerService>();
+            // This method registers services marked with any of ServiceAttributeBase descendants, including:
+            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            services.AddServices(ClientSideScope, Assembly.GetExecutingAssembly());
+            ConfigureSharedServices(services);
         }
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
-            // Computed services
-            services.AddComputedService<ILocalComposerService, LocalComposerService>();
-
             // Configuring live updaters
             services.AddSingleton(c => new UpdateDelayer.Options() {
                 Delay = TimeSpan.FromSeconds(0.1),
             });
-            services.AutoAddLiveState(typeof(Program).Assembly, (c, options) => {
+            services.AddSingleton<Action<IServiceProvider, LiveState.Options>>((c, options) => {
                 if (options is LiveState<ServerScreenState.Local, ServerScreenState>.Options) {
                     // Server Screen part always updates as quickly as it can
                     options.UpdateDelayer = new UpdateDelayer(new UpdateDelayer.Options() {
@@ -90,6 +82,9 @@ namespace Samples.Blazor.Client
                 }
             });
 
+            // This method registers services marked with any of ServiceAttributeBase descendants, including:
+            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            services.AddServices(Assembly.GetExecutingAssembly());
         }
     }
 }

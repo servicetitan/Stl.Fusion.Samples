@@ -10,6 +10,7 @@ namespace Samples.Blazor.Client.Models
     {
         public DateTime? Time { get; set; }
 
+        [LiveStateUpdater]
         public class Updater : ILiveStateUpdater<ServerTimeState>
         {
             protected ITimeService Time { get; }

@@ -29,6 +29,7 @@ namespace Samples.Blazor.Client.Models
             public ILiveState<Local, ServerScreenState>? LiveState { get; set; }
         }
 
+        [LiveStateUpdater]
         public class Updater : ILiveStateUpdater<Local, ServerScreenState>
         {
             protected IScreenshotService Screenshot { get; }

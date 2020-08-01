@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Stl.DependencyInjection;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -10,6 +11,7 @@ namespace Samples.Blazor.Server.Services
         public bool TrySwitchMode();
     }
 
+    [Service(typeof(IBlazorModeSwitcher))]
     public class BlazorModeSwitcher : IBlazorModeSwitcher
     {
         public class Options

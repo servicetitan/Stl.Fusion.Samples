@@ -27,6 +27,7 @@ namespace Samples.Blazor.Client.Models
             public ILiveState<Local, CompositionState>? LiveState { get; set; }
         }
 
+        [LiveStateUpdater]
         public class Updater : ILiveStateUpdater<Local, CompositionState>
         {
             protected ILocalComposerService LocalComposer { get; }

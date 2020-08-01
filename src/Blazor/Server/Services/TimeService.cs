@@ -8,6 +8,7 @@ using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Server.Services
 {
+    [ComputedService(typeof(ITimeService))]
     public class TimeService : ITimeService, IComputedService
     {
         private readonly ILogger _log;

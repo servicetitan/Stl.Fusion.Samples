@@ -16,6 +16,7 @@ using Stl;
 
 namespace Samples.Blazor.Server.Services
 {
+    [ComputedService(typeof(IChatService))]
     public class ChatService : IChatService, IComputedService
     {
         private readonly ILogger _log;
