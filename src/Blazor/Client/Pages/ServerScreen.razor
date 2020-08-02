@@ -3,7 +3,7 @@
 
 @{
     var local = Local;
-    var lastUpdateError = LiveState.LastUpdateError; 
+    var lastUpdateError = LiveState.LastUpdateError;
 }
 
 <h1>Server Screen</h1>
@@ -12,7 +12,7 @@
     <div class="input-group-prepend">
         <span class="input-group-text">Screenshot width (in pixels):</span>
     </div>
-    <input class="form-control" 
+    <input class="form-control"
            @bind-value="@local.Width"
            @bind-value:event="oninput" />
     @if (local.Width != local.ActualWidth) {
@@ -25,7 +25,8 @@
 
 @if (lastUpdateError != null) {
     <div class="alert alert-warning" role="alert">
-        Update error: @lastUpdateError.Message
+        Update error: @lastUpdateError.Message<br/>
+        <b>Note:</b> This sample doesn't work on Unix / in Docker.
     </div>
 }
 
