@@ -7,21 +7,22 @@ Welcome to a collection of samples for [Stl.Fusion](https://github.com/serviceti
 
 ## What's Inside?
 
-### 1. Hello World Sample
+### 1. HelloWorld
 
-[HelloWorld](src/HelloWorld) is a basic sample showing how to create
+Fusion-style [HelloWorld](src/HelloWorld) shows how to create
 simple dependency chains and and react to invalidation events. 
 [Its Program.cs](src/HelloWorld/Program.cs) is just about 40 lines long.
 
 ![](docs/img/Samples-HelloWorld.gif)
 
-### 2. Hello Blazor Server
+### 2. HelloBlazorServer
 
-[HelloBlazorServer](src/HelloBlazorServer) is a modified version of a
-templated Blazor Server App that displays changes made to `CounterService` 
-and `WeatherForecastService` in real-time.
+[HelloBlazorServer](src/HelloBlazorServer) is a default Blazor Server App 
+that got a some Fusion powers. Contrary to the original app, it 
+displays changes made to a *global counter* and updates weather
+forecasts *in real-time*.
 
-The sample shows how to plug Fusion to server-side Blazor app:
+That's how this sample was created:
 1.  `dotnet new blazorserver -o HelloBlazorServer` was used to create Blazor Server App.
 2.  [First commit](https://github.com/servicetitan/Stl.Fusion.Samples/commit/334423ab42aa41b5c92dbab61472cda8ef9dab00) 
     adds Fusion packages, makes "Fetch Data" page to update in real time, 
@@ -34,7 +35,7 @@ The sample shows how to plug Fusion to server-side Blazor app:
     and makes it use a shared counter (the original app uses a local one
     stored right in the page component).
 
-Open this sample in 2 browser windows to see the difference:
+Open this sample in 2 browser windows to see the difference with the original app:
 
 ![](docs/img/Samples-HelloBlazorServer.gif)
 
