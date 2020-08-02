@@ -121,7 +121,7 @@ namespace Tutorial
                 await formatter.FormatUserNameAsync(0));
             for (var i = 0; i < 10; i++) {
                 WriteLine(cFormattedUser0.Value);
-                await cFormattedUser0.InvalidatedAsync();
+                await cFormattedUser0.WhenInvalidatedAsync();
                 // Note that nothing gets recomputed automatically;
                 // on a positive side, any IComputed knows how to recompute itself,
                 // so you can always do this manually:

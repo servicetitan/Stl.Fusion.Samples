@@ -26,10 +26,10 @@ namespace Samples.HelloWorld
                 var computed = await Computed.CaptureAsync(_ => greetings.GreetUserAsync(userId));
                 while (true) {
                     Console.WriteLine($"Background task: {computed.Value}");
-                    // Wait for invalidation of this computed;
-                    // it is triggered by AddOrUpdateUserAsync via invalidation
-                    // of GetUserAsync, which output is used in GreetUserAsync.
-                    await computed.InvalidatedAsync();
+                    // Wait for invalidation of GreetUserAsync(userId) result (IComputed);
+                    // The invalidation is triggered by the following chain:
+                    // AddOrUpdateUserAsync -> GetUserAsync -> GreetUserAsync.
+                    await computed.WhenInvalidatedAsync();
                     // Computed instances are immutable, so we need
                     // to get a new one to observe the updated value.
                     computed = await computed.UpdateAsync(false);
