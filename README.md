@@ -10,11 +10,8 @@ Welcome to a collection of samples for [Stl.Fusion](https://github.com/serviceti
 ### 1. Hello World Sample
 
 [HelloWorld](src/HelloWorld) is a basic sample showing how to create
-`[ComputedServiceMethod]`s that depend on output of other methods
-(i.e. how to create a dependency chain), invoke them, and react 
-to invalidation events from a background thread.
-
-Check out [its source code](src/HelloWorld/Program.cs).
+simple dependency chains and and react to invalidation events. 
+[Its Program.cs](src/HelloWorld/Program.cs) is just about 40 lines long.
 
 ![](docs/img/Samples-HelloWorld.gif)
 
