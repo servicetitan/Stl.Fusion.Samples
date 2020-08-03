@@ -7,11 +7,11 @@ Let's create a helper we'll be using for a few next samples first:
 
 ``` cs --editable false --region part03_createHelper --source-file Part03.cs
 public static TService Create<TService>()
-            where TService : class, IComputedService
+            where TService : class
 {
     var services = new ServiceCollection()
         .AddFusionCore()
-        .AddComputedService<TService>();
+        .AddComputeService<TService>();
 
     var provider = services.BuildServiceProvider();
     return provider.GetRequiredService<TService>();
@@ -38,16 +38,16 @@ As you might notice, it:
 Now, let's declare our first computed service:
 
 ``` cs --editable false --region part03_service1 --source-file Part03.cs
-public class Service1 : IComputedService
+public class Service1
 {
-    [ComputedServiceMethod]
+    [ComputeMethod]
     public virtual async Task<DateTime> GetTimeAsync()
     {
         WriteLine($"* {nameof(GetTimeAsync)}");
         return DateTime.Now;
     }
 
-    [ComputedServiceMethod]
+    [ComputeMethod]
     public virtual async Task<DateTime> GetTimeWithOffsetAsync(TimeSpan offset)
     {
         WriteLine($"* {nameof(GetTimeWithOffsetAsync)}({offset})");

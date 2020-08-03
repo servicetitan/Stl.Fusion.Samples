@@ -12,8 +12,8 @@ namespace Samples.HelloWorld
         {
             var services = new ServiceCollection()
                 .AddFusionCore()
-                .AddComputedService<UserService>()
-                .AddComputedService<GreetingService>()
+                .AddComputeService<UserService>()
+                .AddComputeService<GreetingService>()
                 .BuildServiceProvider();
 
             var users = services.GetRequiredService<UserService>();

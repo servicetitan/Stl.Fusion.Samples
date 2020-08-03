@@ -4,12 +4,12 @@ using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer.Services
 {
-    [ComputedService]
-    public class CounterService : IComputedService
+    [ComputeService]
+    public class CounterService
     {
         private int _value;
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual Task<int> GetCounterAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(_value);
 

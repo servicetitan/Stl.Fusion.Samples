@@ -16,8 +16,8 @@ using Stl;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputedService(typeof(IChatService))]
-    public class ChatService : IChatService, IComputedService
+    [ComputeService(typeof(IChatService))]
+    public class ChatService : IChatService
     {
         private readonly ILogger _log;
         private readonly ChatDbContextPool _dbContextPool;
@@ -97,7 +97,7 @@ namespace Samples.Blazor.Server.Services
 
         // Readers
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual async Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
         {
             using var lease = _dbContextPool.Rent();
@@ -105,7 +105,7 @@ namespace Samples.Blazor.Server.Services
             return await dbContext.Users.LongCountAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
         {
             var channelHub = _publisher.ChannelHub;
@@ -120,7 +120,7 @@ namespace Samples.Blazor.Server.Services
             return Task.FromResult(Math.Max(0, userCount));
         }
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual async Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
         {
             using var lease = _dbContextPool.Rent();
@@ -130,7 +130,7 @@ namespace Samples.Blazor.Server.Services
                 .ConfigureAwait(false);
         }
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual async Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
         {
             await EveryChatTail().ConfigureAwait(false);
@@ -146,13 +146,13 @@ namespace Samples.Blazor.Server.Services
             return new ChatPage(messages, userById);
         }
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 
         // Helpers
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         protected virtual Task<Unit> EveryChatTail() => TaskEx.UnitTask;
 
         protected virtual async ValueTask<string> NormalizeNameAsync(string name, CancellationToken cancellationToken = default)

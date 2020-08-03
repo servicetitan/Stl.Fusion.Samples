@@ -17,7 +17,7 @@ namespace Samples.HelloBlazorServer.Models
             public Updater(CounterService counterService)
                 => CounterService = counterService;
 
-            public virtual async Task<CounterState> UpdateAsync(
+            public async Task<CounterState> UpdateAsync(
                 ILiveState<CounterState> liveState, CancellationToken cancellationToken)
             {
                 var counter = await CounterService.GetCounterAsync(cancellationToken);

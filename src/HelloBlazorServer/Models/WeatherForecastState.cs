@@ -23,7 +23,7 @@ namespace Samples.HelloBlazorServer.Models
             public Updater(WeatherForecastService weatherForecastService)
                 => WeatherForecastService = weatherForecastService;
 
-            public virtual async Task<WeatherForecastState> UpdateAsync(
+            public async Task<WeatherForecastState> UpdateAsync(
                 ILiveState<Local, WeatherForecastState> liveState, CancellationToken cancellationToken)
             {
                 var local = liveState.Local;

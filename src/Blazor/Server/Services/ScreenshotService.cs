@@ -12,8 +12,8 @@ using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputedService(typeof(IScreenshotService))]
-    public class ScreenshotService : IScreenshotService, IComputedService
+    [ComputeService(typeof(IScreenshotService))]
+    public class ScreenshotService : IScreenshotService
     {
         private readonly ImageCodecInfo _jpegEncoder;
         private readonly EncoderParameters _jpegEncoderParameters;
@@ -30,24 +30,14 @@ namespace Samples.Blazor.Server.Services
             };
             _displayDimensions = DisplayInfo.PrimaryDisplayDimensions
                 ?? new Rectangle(0, 0, 1920, 1080);
-            _prevScreenshotTask = ScreenshotAsync(128);
+            _prevScreenshotTask = MakeScreenshotAsync(128);
         }
 
-        [ComputedServiceMethod(AutoInvalidateTime = 0.02)]
-        public virtual async Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default)
-        {
-            // The logic here is a bit complicated b/c we send the last screenshot
-            // here rather than wait for the current one.
-            var next = ScreenshotAsync(width);
-            var prev = Interlocked.Exchange(ref _prevScreenshotTask, next);
-            var result = await prev.ConfigureAwait(false);
-            if (result.Width != width)
-                // Width changed, let's wait for the current one
-                result = await next.ConfigureAwait(false);
-            return result;
-        }
+        [ComputeMethod(AutoInvalidateTime = 0.02)]
+        public virtual Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default)
+            => MakeScreenshotAsync(width);
 
-        private Task<Screenshot> ScreenshotAsync(int width)
+        private Task<Screenshot> MakeScreenshotAsync(int width)
             => Task.Run(() => {
                 var (w, h) = (_displayDimensions.Width, _displayDimensions.Height);
                 using var bScreen = new Bitmap(w, h);

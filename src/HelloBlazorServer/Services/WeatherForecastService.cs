@@ -7,15 +7,14 @@ using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer.Services
 {
-    [ComputedService]
-    public class WeatherForecastService : IComputedService
+    [ComputeService]
+    public class WeatherForecastService
     {
-        private static readonly string[] Summaries = new[]
-        {
+        private static readonly string[] Summaries = {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        [ComputedServiceMethod(AutoInvalidateTime = 1)]
+        [ComputeMethod(AutoInvalidateTime = 1)]
         public virtual Task<WeatherForecast[]> GetForecastAsync(
             DateTime startDate, CancellationToken cancellationToken = default)
         {

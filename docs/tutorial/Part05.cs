@@ -12,7 +12,7 @@ namespace Tutorial
     {
         public static Task DefineServices() => Task.CompletedTask;
         #region part05_defineServices
-        public class UserRegistry : IComputedService
+        public class UserRegistry
         {
             private readonly ConcurrentDictionary<long, string> _userNames =
                 new ConcurrentDictionary<long, string>();
@@ -26,7 +26,7 @@ namespace Tutorial
                 WriteLine($"! {nameof(GetUserNameAsync)}({userId}) -> invalidated");
             }
 
-            [ComputedServiceMethod]
+            [ComputeMethod]
             public virtual async Task<string?> GetUserNameAsync(long userId)
             {
                 WriteLine($"* {nameof(GetUserNameAsync)}({userId})");
@@ -34,12 +34,12 @@ namespace Tutorial
             }
         }
 
-        public class Clock : IComputedService
+        public class Clock
         {
             // A better way to implement auto-invalidation:
             // uncomment the next line and comment out the line with "Task.Delay".
             // [ComputedServiceMethod(AutoInvalidateTime = 0.1)]
-            [ComputedServiceMethod]
+            [ComputeMethod]
             public virtual async Task<DateTime> GetTimeAsync()
             {
                 WriteLine($"* {nameof(GetTimeAsync)}()");
@@ -55,7 +55,7 @@ namespace Tutorial
             }
         }
 
-        public class FormatService : IComputedService
+        public class FormatService
         {
             private readonly UserRegistry _users;
             private readonly Clock _clock;
@@ -66,7 +66,7 @@ namespace Tutorial
                 _clock = clock;
             }
 
-            [ComputedServiceMethod]
+            [ComputeMethod]
             public virtual async Task<string> FormatUserNameAsync(long userId)
             {
                 WriteLine($"* {nameof(FormatUserNameAsync)}({userId})");
@@ -82,9 +82,9 @@ namespace Tutorial
         {
             var services = new ServiceCollection()
                 .AddFusionCore()
-                .AddComputedService<UserRegistry>()
-                .AddComputedService<Clock>()
-                .AddComputedService<FormatService>();
+                .AddComputeService<UserRegistry>()
+                .AddComputeService<Clock>()
+                .AddComputeService<FormatService>();
 
             return services.BuildServiceProvider();
         }

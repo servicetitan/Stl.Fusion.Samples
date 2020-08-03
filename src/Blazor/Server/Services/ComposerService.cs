@@ -8,8 +8,8 @@ using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputedService(typeof(IComposerService))]
-    public class ComposerService : IComposerService, IComputedService
+    [ComputeService(typeof(IComposerService))]
+    public class ComposerService : IComposerService
     {
         protected ILogger Log { get; }
         private ITimeService Time { get; }
@@ -25,7 +25,7 @@ namespace Samples.Blazor.Server.Services
             Chat = chat;
         }
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual async Task<ComposedValue> GetComposedValueAsync(string parameter, CancellationToken cancellationToken)
         {
             var chatTail = await Chat.GetChatTailAsync(1, cancellationToken).ConfigureAwait(false);

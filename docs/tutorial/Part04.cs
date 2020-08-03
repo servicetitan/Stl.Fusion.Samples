@@ -13,11 +13,11 @@ namespace Tutorial
     {
         #region part04_createHelper
         public static TService Create<TService>()
-            where TService : class, IComputedService
+            where TService : class
         {
             var services = new ServiceCollection()
                 .AddFusionCore()
-                .AddComputedService<TService>();
+                .AddComputeService<TService>();
 
             var provider = services.BuildServiceProvider();
             return provider.GetRequiredService<TService>();
@@ -26,9 +26,9 @@ namespace Tutorial
 
         public static Task DefineCalculator() => Task.CompletedTask;
         #region part04_defineCalculator
-        public class Calculator : IComputedService
+        public class Calculator
         {
-            [ComputedServiceMethod]
+            [ComputeMethod]
             public virtual async Task<double> SumAsync(double a, double b, bool logEnterExit = true)
             {
                 if (logEnterExit)

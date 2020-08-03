@@ -8,15 +8,15 @@ using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputedService(typeof(ITimeService))]
-    public class TimeService : ITimeService, IComputedService
+    [ComputeService(typeof(ITimeService))]
+    public class TimeService : ITimeService
     {
         private readonly ILogger _log;
 
         public TimeService(ILogger<TimeService>? log = null)
             => _log = log ??= NullLogger<TimeService>.Instance;
 
-        [ComputedServiceMethod(AutoInvalidateTime = 0.1)]
+        [ComputeMethod(AutoInvalidateTime = 0.1)]
         public virtual Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(DateTime.Now);
     }

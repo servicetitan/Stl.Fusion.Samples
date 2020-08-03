@@ -5,11 +5,11 @@ using Stl.Fusion;
 
 namespace Samples.HelloWorld
 {
-    public class UserService : IComputedService
+    public class UserService
     {
-        private ConcurrentDictionary<long, User> _users = new ConcurrentDictionary<long, User>();
+        private readonly ConcurrentDictionary<long, User> _users = new ConcurrentDictionary<long, User>();
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual Task<User> GetUserAsync(long userId, CancellationToken cancellationToken = default)
             => Task.FromResult(_users[userId]);
 

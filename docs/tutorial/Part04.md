@@ -5,11 +5,11 @@ of computed service:
 
 ``` cs --editable false --region part04_createHelper --source-file Part04.cs
 public static TService Create<TService>()
-            where TService : class, IComputedService
+            where TService : class
 {
     var services = new ServiceCollection()
         .AddFusionCore()
-        .AddComputedService<TService>();
+        .AddComputeService<TService>();
 
     var provider = services.BuildServiceProvider();
     return provider.GetRequiredService<TService>();
@@ -32,9 +32,9 @@ public static TService Create<TService>()
 Let's create a simple service to show this:
 
 ``` cs --region part04_defineCalculator --source-file Part04.cs
-public class Calculator : IComputedService
+public class Calculator
 {
-    [ComputedServiceMethod]
+    [ComputeMethod]
     public virtual async Task<double> SumAsync(double a, double b, bool logEnterExit = true)
     {
         if (logEnterExit)

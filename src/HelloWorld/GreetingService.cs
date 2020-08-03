@@ -4,13 +4,13 @@ using Stl.Fusion;
 
 namespace Samples.HelloWorld
 {
-    public class GreetingService : IComputedService
+    public class GreetingService
     {
-        private UserService _users;
+        private readonly UserService _users;
 
         public GreetingService(UserService users) => _users = users;
 
-        [ComputedServiceMethod]
+        [ComputeMethod]
         public virtual async Task<string> GreetUserAsync(long userId, CancellationToken cancellationToken = default)
         {
             var user = await _users.GetUserAsync(userId, cancellationToken).ConfigureAwait(false);
