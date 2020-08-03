@@ -1,4 +1,4 @@
-# Part 3: `IComputedService` and a nicer way to create `IComputed<TOut>`
+# Part 3: `IComputeService` and a nicer way to create `IComputed<TOut>`
 
 So far we were creating computed instances relying on `SimpleComputed.New`,
 but there is a much better way to do this, which gives a number of advantages.
@@ -7,7 +7,7 @@ Let's create a helper we'll be using for a few next samples first:
 
 ``` cs --editable false --region part03_createHelper --source-file Part03.cs
 public static TService Create<TService>()
-            where TService : class
+    where TService : class
 {
     var services = new ServiceCollection()
         .AddFusionCore()
@@ -27,15 +27,15 @@ As you might notice, it:
 * Registers core Fusion services there. We aren't going to use all of them
   in the next example (and honestly, there aren't a lot of them - you're
   welcome to look at the source code of this method to understand what
-  it really does), but we need a couple of them to make our Computed Service
+  it really does), but we need a couple of them to make our Compute Service
   work.
 * And finally, it registers the service itself, but using a special helper:
-  `AddComputedService`. This method actually registers a singleton of the
+  `AddComputeService`. This method actually registers a singleton of the
   same type, but instead of returning the actual instance of this type
   it returns a Fusion-provided proxy for this class. You'll see what it
   does further.
 
-Now, let's declare our first computed service:
+Now, let's declare our first compute service:
 
 ``` cs --editable false --region part03_service1 --source-file Part03.cs
 public class Service1
@@ -84,7 +84,7 @@ So what's going on here?
 
 The reason is:
 
-* Both methods marked as `[ComputedServiceMethod]` were "wrapped" into a code similar
+* Both methods marked as `[ComputeMethod]` were "wrapped" into a code similar
   to the one you used to create computed instances earlier - but the instances that
   was created under the hood were "stripped off" (i.e. the proxy returned their `.Value`
   property), because otherwise the return type wouldn't match (it could be e.g. a
@@ -93,7 +93,7 @@ The reason is:
 * Nevertheless, the computed instance was created, which in turn enabled it to capture
   the dependencies that were "used" during the execution - namely, other computed instances
   accessed there.
-* The "wrapper" logic behind computed services doesn't create a new instance every
+* The "wrapper" logic behind compute service doesn't create a new instance every
   time you call the method - it does something that's a bit more complex:
   1. It transforms the method call arguments (including `this`, i.e. the service
      instance itself) into a `ComputedInput` instance - an object allowing to identify
@@ -107,7 +107,7 @@ The reason is:
      this instance is still consistent, it simply returns it.
      Otherwise it creates a new instance, runs the underlying computation to
      compute its value, and registers it in computed registry.
-* In other words, any computed service provides a cache that enables it to
+* In other words, any compute service provides a cache that enables it to
   avoid the computation, while *presumably* its result must be exactly the same as
   the cached one.
 

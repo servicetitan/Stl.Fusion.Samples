@@ -17,7 +17,7 @@ namespace Tutorial
             private readonly ConcurrentDictionary<long, string> _userNames =
                 new ConcurrentDictionary<long, string>();
 
-            // Notice there is no [ComputedServiceMethod], because it doesn't
+            // Notice there is no [ComputeMethod], because it doesn't
             // return anything on which other methods may depend
             public void SetUserName(long userId, string value)
             {
@@ -38,7 +38,7 @@ namespace Tutorial
         {
             // A better way to implement auto-invalidation:
             // uncomment the next line and comment out the line with "Task.Delay".
-            // [ComputedServiceMethod(AutoInvalidateTime = 0.1)]
+            // [ComputeMethod(AutoInvalidateTime = 0.1)]
             [ComputeMethod]
             public virtual async Task<DateTime> GetTimeAsync()
             {

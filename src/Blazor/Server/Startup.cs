@@ -56,7 +56,7 @@ namespace Samples.Blazor.Server
             services.AddRestEaseClient<IUzbyClient>("https://uzby.com/api.php");
             services.AddRestEaseClient<IForismaticClient>("https://api.forismatic.com/api/1.0/");
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AddServices(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);

@@ -1,7 +1,7 @@
-# Part 5: Computed Services: dependencies
+# Part 5: Compute Services: dependencies
 
-> When a computed service method is executed, its output becomes
-> dependent on every computed service output it calls.
+> When a `[ComputeMethod]` is executed, its output becomes
+> dependent on output of every `[ComputeMethod]` it calls.
 
 Here is how it works:
 
@@ -11,7 +11,7 @@ public class UserRegistry
     private readonly ConcurrentDictionary<long, string> _userNames =
         new ConcurrentDictionary<long, string>();
 
-    // Notice there is no [ComputedServiceMethod], because it doesn't
+    // Notice there is no [ComputeMethod], because it doesn't
     // return anything on which other methods may depend
     public void SetUserName(long userId, string value)
     {
@@ -32,7 +32,7 @@ public class Clock
 {
     // A better way to implement auto-invalidation:
     // uncomment the next line and comment out the line with "Task.Delay".
-    // [ComputedServiceMethod(AutoInvalidateTime = 0.1)]
+    // [ComputeMethod(AutoInvalidateTime = 0.1)]
     [ComputeMethod]
     public virtual async Task<DateTime> GetTimeAsync()
     {
@@ -108,7 +108,7 @@ WriteLine(await formatter.FormatUserNameAsync(0));
 
 I hope it's clear how it works now:
 
-* Any result produced by computed service gets cached till the moment
+* Any result produced by `[ComputeMethod]` gets cached till the moment
   it gets either invalidated or evicted. Eviction is possible only while
   no one uses or depends on it.
 * Invalidations are always cascading, i.e. if A uses B, B uses C, and C
@@ -136,8 +136,8 @@ for (var i = 0; i < 10; i++)
 }
 ```
 
-That's all on computed services. Let's summarize the most important
-pieces:
+That's all on compute services and methods. Let's summarize the most 
+important parts:
 
 `IComputed<TOut>` has:
 
@@ -168,10 +168,10 @@ pieces:
   computed, this "outer" computed registers the current one
   as its own dependency.
 
-`IComputedService`:
+`IComputeService`:
 
 * Is any type that implements this interface and is registered
-  in `IServiceCollection` via `AddComputedService` extension method.
+  in `IServiceCollection` via `AddComputeService` extension method.
 * It typically should
 
 #### [Next: Part 6 &raquo;](./Part06.md) | [Tutorial Home](./README.md)

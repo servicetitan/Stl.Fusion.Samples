@@ -41,10 +41,10 @@ Without further ado:
 * [Part 0: NuGet packages](./Part00.md)
 * [Part 1: `IComputed<TOut>` and `SimpleComputed<TOut>`](./Part01.md)
 * [Part 2: Dependencies between computed instances](./Part02.md)
-* [Part 3: `IComputedService` and a nicer way to create `IComputed<TOut>`](./Part03.md)
-* [Part 4: Computed Services: execution, caching, and invalidation](./Part04.md)
-* [Part 5: Computed Services: dependencies](./Part05.md)
-* [Part 6: Computed Instances and Computed Services - Review](./Part06.md)
+* [Part 3: `IComputeService` and a nicer way to create `IComputed<TOut>`](./Part03.md)
+* [Part 4: Compute Services: execution, caching, and invalidation](./Part04.md)
+* [Part 5: Compute Services: dependencies](./Part05.md)
+* [Part 6: Compute Instances and Compute Services - Review](./Part06.md)
 * Part 7+: To be added later this week.
 
 Join our [Discord Server](https://discord.gg/EKEwv6d)

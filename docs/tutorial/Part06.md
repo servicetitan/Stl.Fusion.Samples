@@ -1,4 +1,4 @@
-# Part 6: Computed Instances and Computed Services - Review
+# Part 6: Computed Instances and Compute Services - Review
 
 ## Computed Instance
 
@@ -54,16 +54,15 @@ Besides that:
     just keys of these instances are stored, so unreferenced dependants are
     available for GC even if what they "use" is still referenced.
 
-## Computed Service
+## Compute Service
 
-Computed Service is any type that implements `IComputedService` interface
-(just a tagging one) and gets registered in `IServiceCollection` via
-`AddComputedService` extension method.
+Compute Service is any type that is registered in `IServiceCollection` via
+`AddComputeService` extension method.
 
 * These services are always registered as singletons in the container.
   This is totally logical, assuming the keys of computed instances they
   produce include the reference to the service itself (`this`).
-* Normally it should declare methods decorated with [ComputedServiceMethod]
+* Normally it should declare methods decorated with [ComputeMethod]
   attribute (btw, check out its properties - they are useful)
 * Such methods have to be virtual, otherwise it's impossible to generate
   a proxy type that will override and "wrap" them.
@@ -76,13 +75,13 @@ Computed Service is any type that implements `IComputedService` interface
     we don't recommend to use this syntax, and there is a high
     likelihood we'll discard it in future (eliminating one extra check
     for something no one uses is always a good thing).
-* Computed service methods may call each other. When this happens,
+* `[ComputeMethods]` may call each other. When this happens,
   a dependency between corresponding computed instances is created
   automatically.
   * They don't have to share the same container
     to be able to call each other; same is relevant for almost anything
     else in Fusion.
-  * It's ok for computed service method to call itself recursively,
+  * It's ok for compute method to call itself recursively,
     though keep in mind that longer dependency chains mean longer
     invalidation and larger set of instances to keep in RAM.
 
@@ -94,7 +93,7 @@ Most of them are a part of `Computed` type (static class).
   *the last* computed instance, which `Output` was assigned. Typically it's
   the final output of the computation executed by `producer`.
 * `Computed.Invalidate(Func<Task<T>> producer)` invalidates the computed
-  instance corresponding to the first computed service method (incl. arguments)
+  instance corresponding to the first `[ComputeMethod]` (incl. arguments)
   invoked by `producer`. Notice the method isn't async, even though the producer
   is returning `Task<T>` &ndash; that's because Fusion proxies are completing
   method calls with "invalidate request" synchronously: all they need is

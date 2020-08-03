@@ -50,7 +50,7 @@ namespace Samples.Blazor.Client
             });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AddServices(ClientSideScope, Assembly.GetExecutingAssembly());
             ConfigureSharedServices(services);
         }
@@ -83,7 +83,7 @@ namespace Samples.Blazor.Client
             });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AddServices(Assembly.GetExecutingAssembly());
         }
     }

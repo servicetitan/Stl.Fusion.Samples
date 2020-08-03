@@ -1,11 +1,11 @@
-# Part 4: Computed Services: execution, caching, and invalidation
+# Part 4: Compute Services: execution, caching, and invalidation
 
 Just a reminder, we're going to use the same "shortcut" to create an instance
-of computed service:
+of compute service:
 
 ``` cs --editable false --region part04_createHelper --source-file Part04.cs
 public static TService Create<TService>()
-            where TService : class
+    where TService : class
 {
     var services = new ServiceCollection()
         .AddFusionCore()
@@ -18,7 +18,7 @@ public static TService Create<TService>()
 
 ## Call execution
 
-> When you simultaneously call the same method of computed service
+> When you simultaneously call the same method of compute service
 > with the same arguments from multiple threads, it's guaranteed
 > that:
 > 
@@ -80,7 +80,7 @@ await TestCalculator(fusionCalculator);
 As you see, even though the final sum is the same, the way it works
 is drastically different:
 
-* The computed service version runs every computation just
+* The compute service version runs every computation just
   once for each unique set of arguments
 * The computations for each unique set of arguments are running
   in parallel.
@@ -100,7 +100,7 @@ So everything stays in cache here. Let's check out how caching works.
 
 ## Cache invalidation & eviction
 
-> Every result of computed service method call is cached:
+> Every result of `[ComputeMethod]` call is cached:
 > 
 > * (this, methodInfo, arguments) is the key; in reality,
 >   it's a bit more complex: e.g. `CancellationToken` argument

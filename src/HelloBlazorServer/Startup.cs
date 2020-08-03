@@ -25,7 +25,7 @@ namespace Samples.HelloBlazorServer
             // Fusion services
             services.AddFusionCore();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputedService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AddServices(Assembly.GetExecutingAssembly());
 
             // Web
