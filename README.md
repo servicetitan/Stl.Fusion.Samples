@@ -1,4 +1,4 @@
-![](docs/img/Banner.jpg)
+![](docs/img/Banner.gif)
 
 Welcome to a collection of samples for [Stl.Fusion](https://github.com/servicetitan/Stl.Fusion)!
 
