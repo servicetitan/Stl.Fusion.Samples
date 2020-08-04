@@ -157,7 +157,7 @@ important parts:
   should never throw exceptions; besides that, this event is raised
   first, and only after that the dependencies get similar `Invalidate()`
   call.
-* `InvalidatedAsync` - an extension method that allows you to await
+* `WhenInvalidatedAsync` - an extension method that allows you to await
   for invalidation.
 * `UpdateAsync` method - returns the most up-to-date (*most likely*,
   consistent - unless it was invalidated right after the update)
