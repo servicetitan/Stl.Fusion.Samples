@@ -13,6 +13,7 @@ namespace Samples.HelloWorld
             var services = new ServiceCollection()
                 .AddFusionCore()
                 .AddComputeService<UserService>()
+                .AddComputeService<TimeService>()
                 .AddComputeService<GreetingService>()
                 .BuildServiceProvider();
 

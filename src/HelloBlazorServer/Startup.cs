@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Stl.DependencyInjection;
 using Stl.Fusion;
+using Stl.Fusion.UI;
 
 namespace Samples.HelloBlazorServer
 {
@@ -26,6 +28,9 @@ namespace Samples.HelloBlazorServer
             services.AddFusionCore();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
+            services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(new UpdateDelayer.Options() {
+                Delay = TimeSpan.FromSeconds(2),
+            }));
             services.AddServices(Assembly.GetExecutingAssembly());
 
             // Web

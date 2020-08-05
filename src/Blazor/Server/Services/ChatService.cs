@@ -21,12 +21,14 @@ namespace Samples.Blazor.Server.Services
     {
         private readonly ILogger _log;
         private readonly ChatDbContextPool _dbContextPool;
-        private readonly   IUzbyClient _uzbyClient;
+        private readonly  ITimeService _timeService;
+        private readonly  IUzbyClient _uzbyClient;
         private readonly  IForismaticClient _forismaticClient;
         private readonly  IPublisher _publisher;
 
         public ChatService(
             ChatDbContextPool dbContextPool,
+            ITimeService timeService,
             IUzbyClient uzbyClient,
             IForismaticClient forismaticClient,
             IPublisher publisher,
@@ -34,6 +36,7 @@ namespace Samples.Blazor.Server.Services
         {
             _log = log ??= NullLogger<ChatService>.Instance;
             _dbContextPool = dbContextPool;
+            _timeService = timeService;
             _uzbyClient = uzbyClient;
             _forismaticClient = forismaticClient;
             _publisher = publisher;
@@ -125,9 +128,18 @@ namespace Samples.Blazor.Server.Services
         {
             using var lease = _dbContextPool.Rent();
             var dbContext = lease.Subject;
-            return await dbContext.Users
+            var user = await dbContext.Users
                 .SingleAsync(u => u.Id == id, cancellationToken)
                 .ConfigureAwait(false);
+            var marker = "[Timer]";
+            if (user.Name.Contains(marker)) {
+                var now = await _timeService.GetTimeAsync(cancellationToken).ConfigureAwait(false);
+                user = new ChatUser() {
+                    Id = user.Id,
+                    Name = user.Name.Replace(marker, $"{marker}/{now.Second}")
+                };
+            }
+            return user;
         }
 
         [ComputeMethod]
