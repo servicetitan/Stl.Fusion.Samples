@@ -1,8 +1,14 @@
 ﻿@page "/counter"
 @inherits LiveComponentBase<CounterState>
 @inject CounterService CounterService
+@inject NavigationManager Navigator
 
 <h1>Counter</h1>
+
+<p>
+    Open this page in <a href="@Navigator.Uri" target="_blank">another window</a>
+    to see it updates in sync in real time.
+</p>
 
 <p>Current count: @State.Counter</p>
 
