@@ -127,7 +127,7 @@ namespace Samples.Blazor.Server
                 endpoints.MapBlazorHub();
                 endpoints.MapFusionWebSocketServer();
                 endpoints.MapControllers();
-                endpoints.MapFallbackToPage("/Index");
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }
