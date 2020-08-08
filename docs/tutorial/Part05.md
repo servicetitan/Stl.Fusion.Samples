@@ -136,7 +136,7 @@ for (var i = 0; i < 10; i++)
 }
 ```
 
-That's all on compute services and methods. Let's summarize the most 
+That's all on compute services and methods. Let's summarize the most
 important parts:
 
 `IComputed<TOut>` has:
