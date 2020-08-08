@@ -9,7 +9,7 @@ namespace Samples.Blazor.Server.Controllers
         public static string CookieName { get; set; } = "_ssb_";
 
         [Route("_blazorMode/{isServerSideBlazor}")]
-        public IActionResult Mode(bool isServerSideBlazor, string? redirectTo = null)
+        public IActionResult Switch(bool isServerSideBlazor, string? redirectTo = null)
         {
             if (isServerSideBlazor != IsServerSideBlazor(HttpContext)) {
                 var response = HttpContext.Response;
