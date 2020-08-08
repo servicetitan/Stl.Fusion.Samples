@@ -20,7 +20,7 @@ namespace Tutorial
             WriteLine($"{nameof(c.Error)}: {c.Error}");
             WriteLine($"{nameof(c.Output)}: {c.Output}");
             WriteLine($"{nameof(c.State)}: {c.State}");
-            WriteLine($"{nameof(c.LTag)}: {c.LTag}"); // It is similar to ETag in HTTP
+            WriteLine($"{nameof(c.Version)}: {c.Version}"); // Similar to ETag in HTTP
             #endregion
         }
 
