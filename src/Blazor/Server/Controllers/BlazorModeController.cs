@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Samples.Blazor.Server.Controllers
 {
+    [Route("_blazorMode")]
     public class BlazorModeController : ControllerBase
     {
         public static string CookieName { get; set; } = "_ssb_";
 
-        [Route("_blazorMode/{isServerSideBlazor}")]
+        [HttpGet("{isServerSideBlazor}")]
         public IActionResult Switch(bool isServerSideBlazor, string? redirectTo = null)
         {
             if (isServerSideBlazor != IsServerSideBlazor(HttpContext)) {
