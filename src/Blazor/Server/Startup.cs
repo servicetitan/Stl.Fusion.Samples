@@ -5,24 +5,20 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using RestEase;
 using Samples.Blazor.Common.Services;
 using Samples.Blazor.Server.Services;
 using Stl.DependencyInjection;
-using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 using Stl.IO;
+using Stl.Reflection;
 using Stl.Serialization;
 
 namespace Samples.Blazor.Server
@@ -62,21 +58,12 @@ namespace Samples.Blazor.Server
             Client.Program.ConfigureSharedServices(services);
 
             // Web
-            services.AddHttpContextAccessor();
-            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-
             services.AddRouting();
-            services.AddControllers()
-                .AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddMvc()
-                .AddNewtonsoftJson(options => {
-                    var settings = options.SerializerSettings;
-                    var expected = JsonNetSerializer.DefaultSettings;
-                    settings.SerializationBinder = expected.SerializationBinder;
-                    settings.TypeNameAssemblyFormatHandling = expected.TypeNameAssemblyFormatHandling;
-                    settings.TypeNameHandling = TypeNameHandling.All;
-                    settings.NullValueHandling = expected.NullValueHandling;
-                });
+                .AddNewtonsoftJson(options => MemberwiseCopier
+                    .New(JsonNetSerializer.DefaultSettings)
+                    .Apply(options.SerializerSettings))
+                .AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor();
 
             // Swagger & debug tools

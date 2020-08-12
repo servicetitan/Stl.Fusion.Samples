@@ -40,7 +40,6 @@ namespace Samples.Blazor.Client
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
         {
-
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
             services.AddTransient(c => new HttpClient() { BaseAddress = apiBaseUri });
