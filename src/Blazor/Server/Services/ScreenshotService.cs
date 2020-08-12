@@ -52,7 +52,7 @@ namespace Samples.Blazor.Server.Services
             return new Screenshot(ow, oh, base64Content);
         }
 
-        [ComputeMethod(AutoInvalidateTime = 0.05)]
+        [ComputeMethod(AutoInvalidateTime = 0.1)]
         protected virtual Task<Bitmap> GetScreenshotAsync(CancellationToken cancellationToken = default)
         {
             // This method takes a full-resolution screenshot

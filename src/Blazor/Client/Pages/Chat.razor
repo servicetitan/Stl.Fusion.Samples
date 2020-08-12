@@ -7,7 +7,7 @@
     var local = Local;
     var state = State;
     var lastPage = state.LastPage;
-    var lastUpdateError = LiveState.LastUpdateError;
+    var updateError = LiveState.UpdateError;
 }
 
 <div>
@@ -34,9 +34,9 @@
         @local.Error.Message
     </div>
 }
-@if (lastUpdateError != null) {
+@if (updateError != null) {
     <div class="alert alert-warning" role="alert">
-        Update error: @lastUpdateError.Message
+        Update error: @updateError.Message
     </div>
 }
 

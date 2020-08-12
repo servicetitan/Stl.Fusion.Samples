@@ -3,7 +3,7 @@
 
 @{
     var local = Local;
-    var lastUpdateError = LiveState.LastUpdateError;
+    var updateError = LiveState.UpdateError;
 }
 
 <h1>Server Screen</h1>
@@ -23,9 +23,9 @@
 </div>
 
 
-@if (lastUpdateError != null) {
+@if (updateError != null) {
     <div class="alert alert-warning" role="alert">
-        Update error: @lastUpdateError.Message<br/>
+        Update error: @updateError.Message<br/>
         <b>Note:</b> This sample doesn't work on Unix / in Docker.
     </div>
 }
