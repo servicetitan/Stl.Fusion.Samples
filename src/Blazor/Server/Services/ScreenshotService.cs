@@ -18,6 +18,7 @@ namespace Samples.Blazor.Server.Services
         private readonly ImageCodecInfo _jpegEncoder;
         private readonly EncoderParameters _jpegEncoderParameters;
         private readonly Rectangle _displayDimensions;
+        private Task<Bitmap> _next = null!;
 
         public ScreenshotService()
         {
@@ -51,21 +52,28 @@ namespace Samples.Blazor.Server.Services
             return new Screenshot(ow, oh, base64Content);
         }
 
-        [ComputeMethod(AutoInvalidateTime = 0.02)]
+        [ComputeMethod(AutoInvalidateTime = 0.01)]
         protected virtual Task<Bitmap> GetScreenshotAsync(CancellationToken cancellationToken = default)
         {
-            // This method takes a full-resolution screenshot
-            var (w, h) = (_displayDimensions.Width, _displayDimensions.Height);
-            var bScreen = new Bitmap(w, h);
-            using var gScreen = Graphics.FromImage(bScreen);
-            gScreen.CopyFromScreen(0, 0, 0, 0, bScreen.Size);
+            // Captures a full-resolution screenshot; the code here is optimized
+            // to produce the next screeenshot in advance.
+            Task<Bitmap> Capture() => Task.Run(() => {
+                var (w, h) = (_displayDimensions.Width, _displayDimensions.Height);
+                var bScreen = new Bitmap(w, h);
+                using var gScreen = Graphics.FromImage(bScreen);
+                gScreen.CopyFromScreen(0, 0, 0, 0, bScreen.Size);
+                return bScreen;
+            }, default);
+
+            var current = Capture();
+            var prev = Interlocked.Exchange(ref _next, current) ?? current;
             Computed.GetCurrent()!.Invalidated += c => Task.Delay(2000).ContinueWith(_ => {
                 // Let's dispose these values in 2 seconds
                 var computed = (IComputed<Bitmap>) c;
                 if (computed.HasValue)
                     computed.Value.Dispose();
             });
-            return Task.FromResult(bScreen);
+            return prev;
         }
     }
 }
