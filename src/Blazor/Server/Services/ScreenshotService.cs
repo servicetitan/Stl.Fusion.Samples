@@ -31,7 +31,6 @@ namespace Samples.Blazor.Server.Services
                 ?? new Rectangle(0, 0, 1920, 1080);
         }
 
-        [ComputeMethod]
         public virtual async Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default)
         {
             var bScreen = await GetScreenshotAsync(cancellationToken).ConfigureAwait(false);
@@ -52,7 +51,7 @@ namespace Samples.Blazor.Server.Services
             return new Screenshot(ow, oh, base64Content);
         }
 
-        [ComputeMethod(AutoInvalidateTime = 0.1)]
+        [ComputeMethod(AutoInvalidateTime = 0.02)]
         protected virtual Task<Bitmap> GetScreenshotAsync(CancellationToken cancellationToken = default)
         {
             // This method takes a full-resolution screenshot

@@ -30,11 +30,11 @@ namespace Samples.Blazor.Client.Services
     public interface IChatClient : IRestEaseReplicaClient
     {
         // Writers
-        [Post("createUser"), ReplicaServiceMethod(false)]
+        [Post("createUser")]
         Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default);
-        [Post("setUserName"), ReplicaServiceMethod(false)]
+        [Post("setUserName")]
         Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default);
-        [Post("addMessage"), ReplicaServiceMethod(false)]
+        [Post("addMessage")]
         Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default);
 
         // Readers

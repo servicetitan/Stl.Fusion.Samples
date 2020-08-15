@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Stl.Fusion;
 
 namespace Samples.Blazor.Common.Services
 {
@@ -21,6 +22,7 @@ namespace Samples.Blazor.Common.Services
 
     public interface IScreenshotService
     {
+        [ComputeMethod]
         Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default);
     }
 }

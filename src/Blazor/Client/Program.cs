@@ -5,13 +5,17 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using RestEase;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.UI;
 using Stl.OS;
 using Samples.Blazor.Client.Models;
 using Stl.DependencyInjection;
+using Stl.Serialization;
 
 namespace Samples.Blazor.Client
 {
@@ -40,12 +44,18 @@ namespace Samples.Blazor.Client
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
         {
+            services.AddLogging(logging => {
+                logging.ClearProviders();
+                logging.SetMinimumLevel(LogLevel.Debug);
+                logging.AddDebug();
+            });
+
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
             services.AddTransient(c => new HttpClient() { BaseAddress = apiBaseUri });
             services.AddFusionWebSocketClient((c, o) => {
                 o.BaseUri = baseUri;
-                // o.MessageLogLevel = LogLevel.Information;
+                o.MessageLogLevel = LogLevel.Information;
             });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:

@@ -49,8 +49,7 @@ namespace Samples.Blazor.Server
             services.AddFusionWebSocketServer();
             // Helpers used by ChatService
             services.AddTransient(c => new HttpClient());
-            services.AddRestEaseClient<IUzbyClient>("https://uzby.com/api.php");
-            services.AddRestEaseClient<IForismaticClient>("https://api.forismatic.com/api/1.0/");
+            services.AddRestEaseCore();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AddServices(Assembly.GetExecutingAssembly());

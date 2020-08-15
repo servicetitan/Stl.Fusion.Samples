@@ -97,7 +97,6 @@ namespace Samples.Blazor.Server.Services
 
         // Readers
 
-        [ComputeMethod]
         public virtual async Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
         {
             using var lease = _dbContextPool.Rent();
@@ -105,7 +104,6 @@ namespace Samples.Blazor.Server.Services
             return await dbContext.Users.LongCountAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        [ComputeMethod]
         public virtual Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
         {
             var channelHub = _publisher.ChannelHub;
@@ -120,7 +118,6 @@ namespace Samples.Blazor.Server.Services
             return Task.FromResult(Math.Max(0, userCount));
         }
 
-        [ComputeMethod]
         public virtual async Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
         {
             using var lease = _dbContextPool.Rent();
@@ -130,7 +127,6 @@ namespace Samples.Blazor.Server.Services
                 .ConfigureAwait(false);
         }
 
-        [ComputeMethod]
         public virtual async Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
         {
             await EveryChatTail().ConfigureAwait(false);
@@ -146,7 +142,6 @@ namespace Samples.Blazor.Server.Services
             return new ChatPage(messages, userById);
         }
 
-        [ComputeMethod]
         public virtual Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 

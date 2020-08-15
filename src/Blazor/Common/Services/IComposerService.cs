@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Stl.Fusion;
 
 namespace Samples.Blazor.Common.Services
 {
@@ -25,6 +26,7 @@ namespace Samples.Blazor.Common.Services
 
     public interface IComposerService
     {
+        [ComputeMethod]
         Task<ComposedValue> GetComposedValueAsync(string parameter, CancellationToken cancellationToken = default);
     }
 

@@ -25,7 +25,6 @@ namespace Samples.Blazor.Server.Services
             Chat = chat;
         }
 
-        [ComputeMethod]
         public virtual async Task<ComposedValue> GetComposedValueAsync(string parameter, CancellationToken cancellationToken)
         {
             var chatTail = await Chat.GetChatTailAsync(1, cancellationToken).ConfigureAwait(false);

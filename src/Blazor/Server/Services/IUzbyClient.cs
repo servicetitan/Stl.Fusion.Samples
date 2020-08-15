@@ -1,9 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
+using Stl.Fusion.Client;
 
 namespace Samples.Blazor.Server.Services
 {
+    [RestEaseService]
+    [BasePath("https://uzby.com/api.php")]
     public interface IUzbyClient
     {
         [Get("")]

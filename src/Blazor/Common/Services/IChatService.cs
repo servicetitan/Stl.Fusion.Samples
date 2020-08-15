@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Stl;
+using Stl.Fusion;
 
 namespace Samples.Blazor.Common.Services
 {
@@ -62,10 +63,15 @@ namespace Samples.Blazor.Common.Services
         Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default);
 
         // Readers
+        [ComputeMethod]
         Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
+        [ComputeMethod]
         Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default);
+        [ComputeMethod]
         Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default);
+        [ComputeMethod]
         Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default);
+        [ComputeMethod]
         Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
     }
 }

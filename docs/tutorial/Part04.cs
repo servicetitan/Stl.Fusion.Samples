@@ -91,7 +91,7 @@ namespace Tutorial
             // wait at least this time to make sure the following Prune call
             // will evict the entry.
             await Task.Delay(1100);
-            var registry = ComputedRegistry.Default;
+            var registry = ComputedRegistry.Instance;
             var mPrune = registry.GetType().GetMethod("Prune", BindingFlags.Instance | BindingFlags.NonPublic);
             mPrune!.Invoke(registry, Array.Empty<object>());
             GC.Collect();
