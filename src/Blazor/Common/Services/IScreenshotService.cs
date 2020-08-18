@@ -22,7 +22,7 @@ namespace Samples.Blazor.Common.Services
 
     public interface IScreenshotService
     {
-        [ComputeMethod]
+        [ComputeMethod(KeepAliveTime = 0.1)]
         Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default);
     }
 }

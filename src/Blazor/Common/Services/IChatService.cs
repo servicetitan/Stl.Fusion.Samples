@@ -63,15 +63,15 @@ namespace Samples.Blazor.Common.Services
         Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default);
 
         // Readers
-        [ComputeMethod]
+        [ComputeMethod(KeepAliveTime = 10)]
         Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
-        [ComputeMethod]
+        [ComputeMethod(KeepAliveTime = 10)]
         Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default);
-        [ComputeMethod]
+        [ComputeMethod(KeepAliveTime = 1)]
         Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default);
-        [ComputeMethod]
+        [ComputeMethod(KeepAliveTime = 10)]
         Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default);
-        [ComputeMethod]
+        [ComputeMethod(KeepAliveTime = 1)]
         Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
     }
 }

@@ -49,7 +49,7 @@ namespace Samples.Blazor.Server.Services
             return Encode(bOut);
         }
 
-        [ComputeMethod(AutoInvalidateTime = 0.01)]
+        [ComputeMethod(KeepAliveTime = 0.1, AutoInvalidateTime = 0.05)]
         protected virtual Task<(Screenshot, Bitmap)> GetScreenshotAsync(CancellationToken cancellationToken = default)
         {
             // Captures a full-resolution screenshot; the code here is optimized

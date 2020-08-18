@@ -7,7 +7,7 @@ namespace Samples.Blazor.Common.Services
 {
     public interface ITimeService
     {
-        [ComputeMethod]
+        [ComputeMethod(KeepAliveTime = 1)]
         Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -133,30 +133,10 @@ GC.Collect();
 await TestCalculator(c);
 ```
 
-`ComputedRegistry.Prune` removes strong references to the
-entries with expired `KeepAliveTime` (which is 1 second by default)
-and removes the entries those `IComputed` instances are collected by GC.
-We invoked it in above example to ensure strong references to our cached
-computed instances (method outputs) are removed, so GC can pick it up.
-
-`Prune` is triggered once per `O(registry.Capacity)` operations (reads and
-updates) with `ComputedRegistry`. This ensures the amortized cost of pruning
-is `O(1)` per operation. So in reality, you don't have to invoke it manually -
-it will be invoked after a certain number of operations anyway:
-
-``` cs --region part04_useCalculator4 --source-file Part04.cs
-var c = Create<Calculator>();
-await TestCalculator(c);
-
-await Task.Delay(1100);
-var tasks = new List<Task>();
-for (var i = 0; i < 200_000; i++)
-    tasks.Add(c.SumAsync(3, i, false));
-await Task.WhenAll(tasks);
-GC.Collect();
-
-await TestCalculator(c);
-```
+`ComputedRegistry` uses `GCHandle`s to reference computed instances;
+in addition to that, `RefHolder` (one of Fusion's internal types)
+prevents computed instances to be garbage collected while their
+keep alive period is ongoing.
 
 Ok, now let's check out how the invalidation impacts our cache.
 Can we somehow pull an instance of `IComputed` that represents
@@ -164,7 +144,7 @@ the result of specific call and invalidate it manually?
 
 Yes:
 
-``` cs --region part04_useCalculator5 --source-file Part04.cs
+``` cs --region part04_useCalculator4 --source-file Part04.cs
 var calc = Create<Calculator>();
 
 var s1 = await calc.SumAsync(1, 1);
@@ -188,7 +168,7 @@ WriteLine($"{nameof(s1)} = {s1}");
 
 There is a shorter way to invalidate method call result:
 
-``` cs --region part04_useCalculator6 --source-file Part04.cs
+``` cs --region part04_useCalculator5 --source-file Part04.cs
 var calc = Create<Calculator>();
 
 WriteLine("Calling & invalidating SumAsync(1, 1)");
