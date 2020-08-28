@@ -16,7 +16,7 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    protected override Task<int> ComputeStateAsync(ILiveState<int> state, CancellationToken cancellationToken)
+    protected override Task<int> ComputeStateAsync(CancellationToken cancellationToken)
         => CounterService.GetCounterAsync(cancellationToken);
 
     private async Task IncrementCount()

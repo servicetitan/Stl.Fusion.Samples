@@ -43,9 +43,8 @@ else
 
 @code {
     protected override void ConfigureState(LiveState<WeatherForecast[], DateTime>.Options options)
-        => options.OwnStateOptions.InitialOutputFactory = _ => DateTime.Today;
+        => options.LocalsOptions.InitialOutputFactory = _ => DateTime.Today;
 
-    protected override Task<WeatherForecast[]> ComputeStateAsync(
-        ILiveState<WeatherForecast[], DateTime> state, CancellationToken cancellationToken)
-        => ForecastService.GetForecastAsync(state.OwnState.Value, cancellationToken);
+    protected override Task<WeatherForecast[]> ComputeStateAsync(CancellationToken cancellationToken)
+        => ForecastService.GetForecastAsync(Locals.Value, cancellationToken);
 }

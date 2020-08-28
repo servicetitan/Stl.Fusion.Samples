@@ -1,11 +1,12 @@
 @page "/composition"
 @using System.Threading
-@inherits LiveComponentBase<Composition.Composed, Composition.Own>
+@using Stl
+@inherits LiveComponentBase<Composition.Model, Composition.LocalsModel>
 @inject ILocalComposerService LocalComposer;
 @inject IComposerService Composer;
 
 @{
-    var own = OwnState.Value;
+    var locals = Locals.Value;
     var state = State.LastValue;
     var error = State.Error;
 }
@@ -23,7 +24,7 @@
         <span class="input-group-text">Parameter</span>
     </div>
     <input class="form-control"
-           @bind-value="@own.Parameter"
+           @bind-value="@locals.Parameter"
            @bind-value:event="oninput"
            @onkeyup="@OnParameterChange"/>
 </div>
@@ -42,31 +43,31 @@
 </div>
 
 @code {
-    public class Own
+    public class LocalsModel
     {
         public string Parameter { get; set; } = "Type something here";
     }
 
-    public class Composed
+    public class Model
     {
         public ComposedValue LocallyComposedValue { get; set; } = new ComposedValue();
         public ComposedValue RemotelyComposedValue { get; set; } = new ComposedValue();
     }
 
-    protected override void ConfigureState(LiveState<Composed, Own>.Options options)
+    protected override void ConfigureState(LiveState<Model, LocalsModel>.Options options)
         => options.WithUpdateDelayer(0.5);
 
-    protected override async Task<Composed> ComputeStateAsync(ILiveState<Composed, Own> state, CancellationToken cancellationToken)
+    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        var local = state.OwnState.Value;
-        var localValue = await LocalComposer.GetComposedValueAsync(local.Parameter, cancellationToken);
-        var remoteValue = await Composer.GetComposedValueAsync(local.Parameter, cancellationToken);
-        return new Composed() {
+        var locals = Locals.Value;
+        var localValue = await LocalComposer.GetComposedValueAsync(locals.Parameter, cancellationToken);
+        var remoteValue = await Composer.GetComposedValueAsync(locals.Parameter, cancellationToken);
+        return new Model() {
             LocallyComposedValue = localValue,
             RemotelyComposedValue = remoteValue,
         };
     }
 
     private void OnParameterChange()
-        => OwnState.Value = OwnState.Value.Clone();
+        => Locals.Update(l => {});
 }

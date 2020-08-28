@@ -1,10 +1,11 @@
 @page "/serverScreen"
 @using System.Threading
-@inherits LiveComponentBase<Screenshot, ServerScreen.Own>
+@using Stl
+@inherits LiveComponentBase<Screenshot, ServerScreen.LocalsModel>
 @inject IScreenshotService ScreenshotService
 
 @{
-    var own = OwnState.Value;
+    var locals = Locals.Value;
     var error = State.Error;
 }
 
@@ -15,12 +16,12 @@
         <span class="input-group-text">Screenshot width (in pixels):</span>
     </div>
     <input class="form-control"
-           @bind-value="@own.Width"
+           @bind-value="@locals.Width"
            @bind-value:event="oninput"
            @onkeyup="@OnWidthChange"/>
-    @if (own.Width != own.ActualWidth) {
+    @if (locals.Width != locals.ActualWidth) {
         <div class="input-group-append">
-            <span class="input-group-text">(actual width: @own.ActualWidth)</span>
+            <span class="input-group-text">(actual width: @locals.ActualWidth)</span>
         </div>
     }
 </div>
@@ -35,18 +36,18 @@
 <p><img src="data:image/jpeg;base64,@State.LastValue.Base64Content" alt="Server screen" width="100%" /><br/></p>
 
 @code {
-    public class Own
+    public class LocalsModel
     {
         public int Width { get; set; } = 1280;
         public int ActualWidth => Math.Max(8, Math.Min(1920, Width));
     }
 
-    protected override void ConfigureState(LiveState<Screenshot, Own>.Options options)
+    protected override void ConfigureState(LiveState<Screenshot, LocalsModel>.Options options)
         => options.WithUpdateDelayer(0);
 
-    protected override Task<Screenshot> ComputeStateAsync(ILiveState<Screenshot, Own> state, CancellationToken cancellationToken)
-        => ScreenshotService.GetScreenshotAsync(state.OwnState.Value.ActualWidth, cancellationToken);
+    protected override Task<Screenshot> ComputeStateAsync(CancellationToken cancellationToken)
+        => ScreenshotService.GetScreenshotAsync(Locals.Value.ActualWidth, cancellationToken);
 
     private void OnWidthChange()
-        => OwnState.Value = OwnState.Value.Clone();
+        => Locals.Update(l => {});
 }
