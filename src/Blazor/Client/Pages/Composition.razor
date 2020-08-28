@@ -1,17 +1,20 @@
 @page "/composition"
-@inherits LiveComponentBase<CompositionState.Local, CompositionState>
+@using System.Threading
+@inherits LiveComponentBase<Composition.Composed, Composition.Own>
+@inject ILocalComposerService LocalComposer;
+@inject IComposerService Composer;
 
 @{
-    var local = Local;
-    var state = State;
-    var updateError = LiveState.UpdateError;
+    var own = OwnState.Value;
+    var state = State.LastValue;
+    var error = State.Error;
 }
 
 <h1>Composition</h1>
 
-@if (updateError != null) {
+@if (error != null) {
     <div class="alert alert-warning" role="alert">
-        Update error: @updateError.Message
+        Update error: @error.Message
     </div>
 }
 
@@ -20,8 +23,9 @@
         <span class="input-group-text">Parameter</span>
     </div>
     <input class="form-control"
-           @bind-value="@local.Parameter"
-           @bind-value:event="oninput" />
+           @bind-value="@own.Parameter"
+           @bind-value:event="oninput"
+           @onkeyup="@OnParameterChange"/>
 </div>
 
 <div class="d-flex">
@@ -38,9 +42,31 @@
 </div>
 
 @code {
-    protected override void OnInitialized()
+    public class Own
     {
-        base.OnInitialized();
-        UpdateLocal(s => s.LiveState = LiveState);
+        public string Parameter { get; set; } = "Type something here";
     }
+
+    public class Composed
+    {
+        public ComposedValue LocallyComposedValue { get; set; } = new ComposedValue();
+        public ComposedValue RemotelyComposedValue { get; set; } = new ComposedValue();
+    }
+
+    protected override void ConfigureState(LiveState<Composed, Own>.Options options)
+        => options.WithUpdateDelayer(0.5);
+
+    protected override async Task<Composed> ComputeStateAsync(ILiveState<Composed, Own> state, CancellationToken cancellationToken)
+    {
+        var local = state.OwnState.Value;
+        var localValue = await LocalComposer.GetComposedValueAsync(local.Parameter, cancellationToken);
+        var remoteValue = await Composer.GetComposedValueAsync(local.Parameter, cancellationToken);
+        return new Composed() {
+            LocallyComposedValue = localValue,
+            RemotelyComposedValue = remoteValue,
+        };
+    }
+
+    private void OnParameterChange()
+        => OwnState.Value = OwnState.Value.Clone();
 }

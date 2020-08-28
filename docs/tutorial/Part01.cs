@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Stl;
 using Stl.Fusion;
 using static System.Console;
@@ -13,13 +14,17 @@ namespace Tutorial
             #region part01_create
             // Later we'll show you much nicer ways to create IComputed instances,
             // but for now let's stick to the basics:
-            var c = SimpleComputed.New(async (prev, ct) => prev.Value + 1, Result.New(1));
+            var stateFactory = new ServiceCollection()
+                .AddFusionCore()
+                .BuildServiceProvider()
+                .GetStateFactory();
+            var c = stateFactory.NewComputed<int>(async (state, ct) => state.Value + 1).Computed;
             WriteLine($"{c}, Value = {c.Value}");
             WriteLine($"Properties:");
             WriteLine($"{nameof(c.Value)}: {c.Value}");
             WriteLine($"{nameof(c.Error)}: {c.Error}");
             WriteLine($"{nameof(c.Output)}: {c.Output}");
-            WriteLine($"{nameof(c.State)}: {c.State}");
+            WriteLine($"{nameof(c.ConsistencyState)}: {c.ConsistencyState}");
             WriteLine($"{nameof(c.Version)}: {c.Version}"); // Similar to ETag in HTTP
             #endregion
         }
@@ -27,7 +32,11 @@ namespace Tutorial
         public static async Task InvalidateAndUpdate()
         {
             #region part01_invalidateAndUpdate
-            var c = SimpleComputed.New(async (prev, ct) => prev.Value + 1, Result.New(1));
+            var stateFactory = new ServiceCollection()
+                .AddFusionCore()
+                .BuildServiceProvider()
+                .GetStateFactory();
+            var c = stateFactory.NewComputed<int>(async (state, ct) => state.Value + 1).Computed;
             c.Invalidate();
             WriteLine($"{c}, Value = {c.Value}"); // Must be in Invalidated state
 
@@ -43,7 +52,11 @@ namespace Tutorial
         public static async Task CreateNoDefault()
         {
             #region part01_createNoDefault
-            var c = SimpleComputed.New<DateTime>(async (prev, ct) => DateTime.Now);
+            var stateFactory = new ServiceCollection()
+                .AddFusionCore()
+                .BuildServiceProvider()
+                .GetStateFactory();
+            var c = stateFactory.NewComputed<DateTime>(async (state, ct) => DateTime.Now).Computed;
             WriteLine($"{c}, Value = {c.Value}"); // Must be in Invalidated state
             c = await c.UpdateAsync(false);
             WriteLine($"{c}, Value = {c.Value}"); // Must be in Consistent state

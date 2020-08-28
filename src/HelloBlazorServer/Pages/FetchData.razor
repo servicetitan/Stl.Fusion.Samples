@@ -1,10 +1,11 @@
 ﻿@page "/fetchdata"
-@inherits LiveComponentBase<WeatherForecastState.Local, WeatherForecastState>
+@using System.Threading
+@inherits LiveComponentBase<WeatherForecast[], DateTime>
 @inject WeatherForecastService ForecastService
 
 @{
     // Let's read this property once per render
-    var forecasts = Forecasts;
+    var forecasts = State.LastValue;
 }
 
 <h1>Weather forecast</h1>
@@ -41,5 +42,10 @@ else
 }
 
 @code {
-    private WeatherForecast[] Forecasts => State.Forecasts;
+    protected override void ConfigureState(LiveState<WeatherForecast[], DateTime>.Options options)
+        => options.OwnStateOptions.InitialOutputFactory = _ => DateTime.Today;
+
+    protected override Task<WeatherForecast[]> ComputeStateAsync(
+        ILiveState<WeatherForecast[], DateTime> state, CancellationToken cancellationToken)
+        => ForecastService.GetForecastAsync(state.OwnState.Value, cancellationToken);
 }

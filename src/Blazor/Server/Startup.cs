@@ -52,7 +52,7 @@ namespace Samples.Blazor.Server
             services.AddRestEaseCore();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AddServices(Assembly.GetExecutingAssembly());
+            services.AddDiscoveredServices(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 

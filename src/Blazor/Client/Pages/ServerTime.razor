@@ -1,18 +1,29 @@
 @page "/serverTime"
-@inherits LiveComponentBase<ServerTimeState>
+@using System.Threading
+@inherits LiveComponentBase<DateTime>
+@inject ITimeService Time
 
 @{
-    var updateError = LiveState.UpdateError;
+    var error = State.Error;
+    var time = State.LastValue.Format();
 }
 
 <h1>Server Time</h1>
 
-<p>Server Time: @(State.Time.Format())</p>
+<p>Server Time: @time</p>
 
-@if (updateError != null) {
+@if (error != null) {
     <div class="alert alert-warning" role="alert">
-        Update error: @updateError.Message
+        Update error: @error.Message
     </div>
 }
 
-<button class="btn btn-primary" @onclick="() => Invalidate()">Refresh</button>
+<button class="btn btn-primary" @onclick="() => State.Invalidate(true)">Refresh</button>
+
+@code {
+    protected override void ConfigureState(LiveState<DateTime>.Options options)
+        => options.WithUpdateDelayer(0.5);
+
+    protected override Task<DateTime> ComputeStateAsync(ILiveState<DateTime> state, CancellationToken cancellationToken)
+        => Time.GetTimeAsync(cancellationToken);
+}

@@ -11,9 +11,7 @@ using Microsoft.Extensions.Logging;
 using RestEase;
 using Stl.Fusion;
 using Stl.Fusion.Client;
-using Stl.Fusion.UI;
 using Stl.OS;
-using Samples.Blazor.Client.Models;
 using Stl.DependencyInjection;
 using Stl.Serialization;
 
@@ -60,40 +58,20 @@ namespace Samples.Blazor.Client
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AddServices(ClientSideScope, Assembly.GetExecutingAssembly());
+            services.AddDiscoveredServices(ClientSideScope, Assembly.GetExecutingAssembly());
             ConfigureSharedServices(services);
         }
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
-            // Configuring live updaters
+            // Default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {
                 Delay = TimeSpan.FromSeconds(0.1),
-            });
-            services.AddSingleton<Action<IServiceProvider, LiveState.Options>>((c, options) => {
-                if (options is LiveState<ServerScreenState.Local, ServerScreenState>.Options) {
-                    // Server Screen part always updates as quickly as it can
-                    options.UpdateDelayer = new UpdateDelayer(new UpdateDelayer.Options() {
-                        Delay = TimeSpan.FromSeconds(0),
-                    });
-                }
-                if (options is LiveState<ServerTimeState>.Options) {
-                    // Slower auto-updates for Server Time part
-                    options.UpdateDelayer = new UpdateDelayer(new UpdateDelayer.Options() {
-                        Delay = TimeSpan.FromSeconds(0.5),
-                    });
-                }
-                if (options is LiveState<CompositionState.Local, CompositionState>.Options) {
-                    // Slower auto-updates for Composition part
-                    options.UpdateDelayer = new UpdateDelayer(new UpdateDelayer.Options() {
-                        Delay = TimeSpan.FromSeconds(0.5),
-                    });
-                }
             });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AddServices(Assembly.GetExecutingAssembly());
+            services.AddDiscoveredServices(Assembly.GetExecutingAssembly());
         }
     }
 }

@@ -1,9 +1,11 @@
 @page "/serverScreen"
-@inherits LiveComponentBase<ServerScreenState.Local, ServerScreenState>
+@using System.Threading
+@inherits LiveComponentBase<Screenshot, ServerScreen.Own>
+@inject IScreenshotService ScreenshotService
 
 @{
-    var local = Local;
-    var updateError = LiveState.UpdateError;
+    var own = OwnState.Value;
+    var error = State.Error;
 }
 
 <h1>Server Screen</h1>
@@ -13,28 +15,38 @@
         <span class="input-group-text">Screenshot width (in pixels):</span>
     </div>
     <input class="form-control"
-           @bind-value="@local.Width"
-           @bind-value:event="oninput" />
-    @if (local.Width != local.ActualWidth) {
+           @bind-value="@own.Width"
+           @bind-value:event="oninput"
+           @onkeyup="@OnWidthChange"/>
+    @if (own.Width != own.ActualWidth) {
         <div class="input-group-append">
-            <span class="input-group-text">(actual width: @local.ActualWidth)</span>
+            <span class="input-group-text">(actual width: @own.ActualWidth)</span>
         </div>
     }
 </div>
 
-@if (updateError != null) {
+@if (error != null) {
     <div class="alert alert-warning" role="alert">
-        Update error: @updateError.Message<br/>
+        Update error: @error.Message<br/>
         <b>Note:</b> This sample doesn't work on Unix / in Docker.
     </div>
 }
 
-<p><img src="data:image/png;base64, @State.Screenshot.Base64Content" alt="Server screen" width="100%" /><br/></p>
+<p><img src="data:image/jpeg;base64,@State.LastValue.Base64Content" alt="Server screen" width="100%" /><br/></p>
 
 @code {
-    protected override void OnInitialized()
+    public class Own
     {
-        base.OnInitialized();
-        UpdateLocal(s => s.LiveState = LiveState);
+        public int Width { get; set; } = 1280;
+        public int ActualWidth => Math.Max(8, Math.Min(1920, Width));
     }
+
+    protected override void ConfigureState(LiveState<Screenshot, Own>.Options options)
+        => options.WithUpdateDelayer(0);
+
+    protected override Task<Screenshot> ComputeStateAsync(ILiveState<Screenshot, Own> state, CancellationToken cancellationToken)
+        => ScreenshotService.GetScreenshotAsync(state.OwnState.Value.ActualWidth, cancellationToken);
+
+    private void OnWidthChange()
+        => OwnState.Value = OwnState.Value.Clone();
 }

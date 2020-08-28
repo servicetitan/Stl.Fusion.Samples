@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl;
@@ -117,8 +118,7 @@ namespace Tutorial
             var formatter = services.GetRequiredService<FormatService>();
 
             users.SetUserName(0, "John Carmack");
-            var cFormattedUser0 = await Computed.CaptureAsync(async _ =>
-                await formatter.FormatUserNameAsync(0));
+            var cFormattedUser0 = await Computed.CaptureAsync(_ => formatter.FormatUserNameAsync(0));
             for (var i = 0; i < 10; i++) {
                 WriteLine(cFormattedUser0.Value);
                 await cFormattedUser0.WhenInvalidatedAsync();

@@ -1,13 +1,14 @@
 @page "/chat"
-@inherits LiveComponentBase<ChatState.Local, ChatState>
-@inject NavigationManager Navigator
+@using System.Threading
+@inherits LiveComponentBase<Chat.Composed, Chat.Own>
 @inject IChatService ChatService
+@inject NavigationManager Navigator
 
 @{
-    var local = Local;
-    var state = State;
+    var own = OwnState.Value;
+    var state = State.LastValue;
     var lastPage = state.LastPage;
-    var updateError = LiveState.UpdateError;
+    var error = State.Error;
 }
 
 <div>
@@ -29,14 +30,14 @@
     in another window.
 </p>
 
-@if (local.Error != null) {
+@if (own.Error != null) {
     <div class="alert alert-danger" role="alert">
-        @local.Error.Message
+        @own.Error.Message
     </div>
 }
-@if (updateError != null) {
+@if (error != null) {
     <div class="alert alert-warning" role="alert">
-        Update error: @updateError.Message
+        Update error: @error.Message
     </div>
 }
 
@@ -45,7 +46,7 @@
         <div class="input-group-prepend">
             <span class="input-group-text">Your name</span>
         </div>
-        <input class="form-control" @bind-value="@local.MyName"/>
+        <input class="form-control" @bind-value="@own.Name"/>
         <div class="input-group-append">
             <button type="submit" class="btn btn-warning">Change</button>
         </div>
@@ -79,7 +80,7 @@
         </div>
         <input class="form-control"
             placeholder="No ideas? Send an empty one!"
-            @bind-value="@local.MyMessage" />
+            @bind-value="@own.Message" />
         <div class="input-group-append">
             <button type="submit" class="btn btn-success">Send</button>
         </div>
@@ -87,32 +88,70 @@
 </form>
 
 @code {
+    public class Own
+    {
+        // It's global to the app, so we store it in static field
+        private static volatile ChatUser? _user;
+
+        public ChatUser? User {
+            get => _user;
+            set {
+                _user = value;
+                if (string.IsNullOrEmpty(Name) && value != null)
+                    Name = value.Name;
+            }
+        }
+
+        public string Name { get; set; } = "";
+        public string Message { get; set; } = "";
+        public Exception? Error { get; set; }
+    }
+
+    public class Composed
+    {
+        public long UserCount { get; set; } = 0;
+        public long ActiveUserCount { get; set; } = 0;
+        public ChatPage LastPage { get; set; } = new ChatPage();
+    }
+
+    protected override async Task<Composed> ComputeStateAsync(ILiveState<Composed, Own> state, CancellationToken cancellationToken)
+    {
+        var userCount = await ChatService.GetUserCountAsync(cancellationToken);
+        var activeUserCount = await ChatService.GetActiveUserCountAsync(cancellationToken);
+        var lastPage = await ChatService.GetChatTailAsync(30, cancellationToken);
+        return new Composed() {
+            UserCount = userCount,
+            ActiveUserCount = activeUserCount,
+            LastPage = lastPage,
+        };
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        if (Local.Me == null)
+        if (OwnState.Value.User == null)
             // Let's pre-create the user
             await SetNameAsync();
         else
-            UpdateLocal(s => s.MyName = s.Me?.Name ?? "");
+            Update(o => o.Name = o.User?.Name ?? "");
     }
 
     private async Task SetNameAsync()
     {
         ResetError();
-        var local = Local;
+        var own = OwnState.Value;
         try {
-            if (local.Me != null) {
+            if (own.User != null) {
                 try {
-                    var user1 = await ChatService.SetUserNameAsync(local.Me.Id, local.MyName);
-                    UpdateLocal(s => s.Me = user1);
+                    var user1 = await ChatService.SetUserNameAsync(own.User.Id, own.Name);
+                    Update(o => o.User = user1);
                     return;
                 }
                 catch {
                     // Prob. the user doesn't exist (server restarted), so we should try to recreate it.
                 }
             }
-            var user2 = await ChatService.CreateUserAsync(local.MyName);
-            UpdateLocal(s => s.Me = user2);
+            var user2 = await ChatService.CreateUserAsync(own.Name);
+            Update(o => o.User = user2);
         }
         catch (Exception e) {
             SetError(e);
@@ -123,19 +162,25 @@
     {
         ResetError();
         try {
-            var local = Local;
-            if (local.Me == null)
+            var own = OwnState.Value;
+            if (own.User == null)
                 throw new ApplicationException("Please set your name first.");
-            await ChatService.AddMessageAsync(local.Me.Id, local.MyMessage);
-            UpdateLocal(s => s.MyMessage = "");
+            await ChatService.AddMessageAsync(own.User.Id, own.Message);
+            Update(o => o.Message = "");
         }
         catch (Exception e) {
             SetError(e);
         }
     }
 
-    private void ResetError() => SetError(null);
+    // Convenience shortcuts
+
+    private void ResetError()
+        => SetError(null);
 
     private void SetError(Exception? error)
-        => UpdateLocal(local => local.Error = error);
+        => Update(o => o.Error = error);
+
+    private void Update(Action<Own> updater)
+        => OwnState.Value = OwnState.Value.Clone(updater);
 }

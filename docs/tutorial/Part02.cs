@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Stl;
 using Stl.Fusion;
 using static System.Console;
@@ -11,24 +12,29 @@ namespace Tutorial
         public static async Task Dependencies()
         {
             #region part02_dependencies
+            var stateFactory = new ServiceCollection()
+                .AddFusionCore()
+                .BuildServiceProvider()
+                .GetStateFactory();
+
             WriteLine("Creating computed instances...");
-            var cDate = SimpleComputed.New<DateTime>(async (prev, ct) => {
+            var cDate = stateFactory.NewComputed<DateTime>(async (prev, ct) => {
                 var result = DateTime.Now;
                 WriteLine($"Computing cDate: {result}");
                 return result;
-            });
-            var cCount = SimpleComputed.New<int>(async (prev, ct) => {
+            }).Computed;
+            var cCount = stateFactory.NewComputed<int>(async (prev, ct) => {
                 var result = prev.Value + 1;
                 WriteLine($"Computing cCount: {result}");
                 return result;
-            });
-            var cTitle = SimpleComputed.New<string>(async (prev, ct) => {
+            }).Computed;
+            var cTitle = stateFactory.NewComputed<string>(async (prev, ct) => {
                 var date = await cDate.UseAsync(ct);
                 var count = await cCount.UseAsync(ct);
                 var result = $"{date}: {count}";
                 WriteLine($"Computing cTitle: {result}");
                 return result;
-            });
+            }).Computed;
 
             WriteLine("All the computed values below should be in invalidated state.");
             WriteLine($"{cDate}, Value = {cDate.Value}");
