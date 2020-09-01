@@ -58,9 +58,9 @@ As you may notice, `IComputed<T>` has:
 - State: `Consistent`
 - Value: `0`
 
-Overall, its important properties and methods include:
+Overall, its important properties include:
 
-* `ConsistencyState` property, which transitions from
+* `ConsistencyState`, which transitions from
   `Computing` to `Computed` and `Invalidated` over its lifetime.
   `IsConsistent()` extension method is a shortcut checking whether the state
   is exactly `Consistent`.
@@ -68,15 +68,14 @@ Overall, its important properties and methods include:
 * `Version` property - a unique value for any `IComputed<T>` instance
   in each process. `LTag` struct uses 64-bit integer under the hood,
   so "unique" actually means "unique with very high probability".
-* `Invalidate()` method - turns computed into `Invalidated` state.
-  As with `IDisposable.Dispose`, you can call it multiple times,
-  though only the first call matters.
-* `Invalidated` event - raised on invalidation. Handlers of this event
-  should never throw exceptions. Invalidation is *always cascading*.
+* `Output`, `Value` and `Error` - the properties describing the 
+  result of the computation.
+* `Invalidated` - an event raised on invalidation. Handlers of this event
+  should never throw exceptions.
 
 `IComputed<T>` implements a few interfaces - most notably,
 
-* `IResult<T>` - and interestingly, it both "mimics" `IResult<T>` behavior,
+* `IResult<T>` - interestingly, it both "mimics" `IResult<T>` behavior,
   but also exposes a property of `Result<T>` type.
   * `IResult<T>` describes an object that stores the result of computation
     of type `T`, which is either a `Value` of `T`, or an `Error`
@@ -93,14 +92,26 @@ Overall, its important properties and methods include:
     `IState<T>`.
 * `IComputedImpl` - an interface  allowing computed instances
   to list themselves as dependencies of other computed instances.
-  Normally you shouldn't use it, which is why the interface is declared in
-  `Stl.Fusion.Internal` namespace and implemented explicitly.
+  Most likely you won't ever need to use it, which is why the interface 
+  is declared in `Stl.Fusion.Internal` namespace and implemented explicitly.
+  It's mentioned here mostly to explain that dependency graph in Fusion
+  is explicit, and this interface provides a way to update it. Most of
+  other frameworks rely on event handlers to implement cascading invalidations,
+  which actually is quite inefficient from GC perspective: it's enough
+  to keep reference to *either* dependency or dependent instance to ensure
+  *both* stay in RAM. Fusion, on contrary, doesn't prevent unreferenced 
+  dependent instances to be garbage collected.
 
-And finally, there are a few asynchronous methods. The most important
-ones are:
+And finally, there are a few important methods:
 
+* `Invalidate()` - triggers invalidation, which turns the instance 
+  into `Invalidated` state. This is the only change that may happen
+  with `IComputed<T>` over its lifetime; other than that, computed
+  instances are immutable.
+  As with `IDisposable.Dispose`, you are free to call this method 
+  multiple times, though only the first call matters.
 * `WhenInvalidatedAsync(...)` - an extension method allowing to await
-  for invalidation of this instance.
+  for invalidation.
 * `UpdateAsync(...)` - *finds or computes* the consistent version
   of this computed instance. *Finds* means the computation will happen
   if and only if there is no cached consistent instance in
