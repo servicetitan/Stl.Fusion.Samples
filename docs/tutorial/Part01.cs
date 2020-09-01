@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Concurrent;
+using System.Reactive;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Stl;
+using Stl.DependencyInjection;
 using Stl.Fusion;
 using static System.Console;
 
@@ -9,57 +12,145 @@ namespace Tutorial
 {
     public static class Part01
     {
-        public static async Task Create()
-        {
-            #region part01_create
-            // Later we'll show you much nicer ways to create IComputed instances,
-            // but for now let's stick to the basics:
-            var stateFactory = new ServiceCollection()
+        #region Part01_CreateServices
+        public static IServiceProvider CreateServices()
+            => new ServiceCollection()
                 .AddFusionCore()
-                .BuildServiceProvider()
-                .GetStateFactory();
-            var c = stateFactory.NewComputed<int>(async (state, ct) => state.Value + 1).Computed;
-            WriteLine($"{c}, Value = {c.Value}");
-            WriteLine($"Properties:");
-            WriteLine($"{nameof(c.Value)}: {c.Value}");
-            WriteLine($"{nameof(c.Error)}: {c.Error}");
-            WriteLine($"{nameof(c.Output)}: {c.Output}");
-            WriteLine($"{nameof(c.ConsistencyState)}: {c.ConsistencyState}");
-            WriteLine($"{nameof(c.Version)}: {c.Version}"); // Similar to ETag in HTTP
+                .AddDiscoveredServices(Assembly.GetExecutingAssembly())
+                .BuildServiceProvider();
+        #endregion
+
+        #region Part01_CounterService
+        [ComputeService] // You don't need this attribute if you manually register such services
+        public class CounterService
+        {
+            private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
+
+            [ComputeMethod]
+            public virtual async Task<int> GetAsync(string key)
+            {
+                WriteLine($"{nameof(GetAsync)}({key})");
+                return _counters.TryGetValue(key, out var value) ? value : 0;
+            }
+
+            public void Increment(string key)
+            {
+                WriteLine($"{nameof(Increment)}({key})");
+                _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
+                Computed.Invalidate(() => GetAsync(key));
+            }
+        }
+        #endregion
+
+        public static async Task UseCounterService1()
+        {
+            #region Part01_UseCounterService1
+            var counters = CreateServices().GetService<CounterService>();
+            WriteLine(await counters.GetAsync("a"));
+            WriteLine(await counters.GetAsync("b"));
             #endregion
         }
 
-        public static async Task InvalidateAndUpdate()
+        public static async Task UseCounterService2()
         {
-            #region part01_invalidateAndUpdate
-            var stateFactory = new ServiceCollection()
-                .AddFusionCore()
-                .BuildServiceProvider()
-                .GetStateFactory();
-            var c = stateFactory.NewComputed<int>(async (state, ct) => state.Value + 1).Computed;
-            c.Invalidate();
-            WriteLine($"{c}, Value = {c.Value}"); // Must be in Invalidated state
-
-            var c1 = await c.UpdateAsync(false);
-            WriteLine($"{c1}, Value = {c1.Value}"); // Must be in Consistent state
-
-            // Equality isn't overriden for any implementation of IComputed,
-            // so it relies on default Equals & GetHashCode (by-ref comparison).
-            WriteLine($"Are {nameof(c)} and {nameof(c1)} pointing to the same instance? {c == c1}");
+            #region Part01_UseCounterService2
+            var counters = CreateServices().GetService<CounterService>();
+            WriteLine(await counters.GetAsync("a"));
+            WriteLine(await counters.GetAsync("a"));
             #endregion
         }
 
-        public static async Task CreateNoDefault()
+        public static async Task UseCounterService3()
         {
-            #region part01_createNoDefault
-            var stateFactory = new ServiceCollection()
-                .AddFusionCore()
-                .BuildServiceProvider()
-                .GetStateFactory();
-            var c = stateFactory.NewComputed<DateTime>(async (state, ct) => DateTime.Now).Computed;
-            WriteLine($"{c}, Value = {c.Value}"); // Must be in Invalidated state
-            c = await c.UpdateAsync(false);
-            WriteLine($"{c}, Value = {c.Value}"); // Must be in Consistent state
+            #region Part01_UseCounterService3
+            var counters = CreateServices().GetService<CounterService>();
+            WriteLine(await counters.GetAsync("a"));
+            counters.Increment("a");
+            WriteLine(await counters.GetAsync("a"));
+            #endregion
+        }
+
+        #region Part01_CounterSumService
+        [ComputeService] // You don't need this attribute if you manually register such services
+        public class CounterSumService
+        {
+            public CounterService Counters { get; }
+
+            public CounterSumService(CounterService counters) => Counters = counters;
+
+            [ComputeMethod]
+            public virtual async Task<int> SumAsync(string key1, string key2)
+            {
+                WriteLine($"{nameof(SumAsync)}({key1}, {key2})");
+                return await Counters.GetAsync(key1) + await Counters.GetAsync(key2);
+            }
+        }
+        #endregion
+
+        public static async Task UseCounterSumService1()
+        {
+            #region Part01_UseCounterSumService1
+            var services = CreateServices();
+            var counterSum = services.GetService<CounterSumService>();
+            WriteLine(await counterSum.SumAsync("a", "b"));
+            WriteLine(await counterSum.SumAsync("a", "b"));
+            #endregion
+        }
+
+        public static async Task UseCounterSumService2()
+        {
+            #region Part01_UseCounterSumService2
+            var services = CreateServices();
+            var counterSum = services.GetService<CounterSumService>();
+            WriteLine("Nothing is cached (yet):");
+            WriteLine(await counterSum.SumAsync("a", "b"));
+            WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
+            WriteLine(await counterSum.SumAsync("b", "a"));
+            WriteLine("Everything is cached:");
+            WriteLine(await counterSum.SumAsync("a", "b"));
+            #endregion
+        }
+
+        public static async Task UseCounterSumService3()
+        {
+            #region Part01_UseCounterSumService3
+            var services = CreateServices();
+            var counters = services.GetService<CounterService>();
+            var counterSum = services.GetService<CounterSumService>();
+            WriteLine(await counterSum.SumAsync("a", "b"));
+            counters.Increment("a");
+            WriteLine(await counterSum.SumAsync("a", "b"));
+            #endregion
+        }
+
+        #region Part01_HelloService
+        [ComputeService] // You don't need this attribute if you manually register such services
+        public class HelloService
+        {
+            [ComputeMethod]
+            public virtual async Task<string> HelloAsync(string name)
+            {
+                WriteLine($"+ {nameof(HelloAsync)}({name})");
+                await Task.Delay(1000);
+                WriteLine($"- {nameof(HelloAsync)}({name})");
+                return $"Hello, {name}!";
+            }
+        }
+        #endregion
+
+        public static async Task UseHelloService1()
+        {
+            #region Part01_UseHelloService1
+            var hello = CreateServices().GetService<HelloService>();
+            var t1 = Task.Run(() => hello.HelloAsync("Alice"));
+            var t2 = Task.Run(() => hello.HelloAsync("Bob"));
+            var t3 = Task.Run(() => hello.HelloAsync("Bob"));
+            var t4 = Task.Run(() => hello.HelloAsync("Alice"));
+            await Task.WhenAll(t1, t2, t3, t4);
+            WriteLine(t1.Result);
+            WriteLine(t2.Result);
+            WriteLine(t3.Result);
+            WriteLine(t4.Result);
             #endregion
         }
     }

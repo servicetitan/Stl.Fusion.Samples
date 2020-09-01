@@ -39,9 +39,9 @@ code of Fusion samples.
 Without further ado:
 
 * [Part 0: NuGet packages](./Part00.md)
-* [Part 1: `IComputed<TOut>` and `SimpleComputed<TOut>`](./Part01.md)
-* [Part 2: Dependencies between computed instances](./Part02.md)
-* [Part 3: `IComputeService` and a nicer way to create `IComputed<TOut>`](./Part03.md)
+* [Part 1: Compute Services and Caching](./Part01.md)
+* [Part 2: IComputed<T>](./Part02.md)
+* [Part 3: ](./Part03.md)
 * [Part 4: Compute Services: execution, caching, and invalidation](./Part04.md)
 * [Part 5: Compute Services: dependencies](./Part05.md)
 * [Part 6: Compute Instances and Compute Services - Review](./Part06.md)
