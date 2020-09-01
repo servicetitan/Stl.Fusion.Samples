@@ -1,4 +1,4 @@
-# Part 1: Compute Services and Caching
+# Part 1: Compute Services
 
 Fusion offers 3 key abstractions enabling you to build real-time services:
 
