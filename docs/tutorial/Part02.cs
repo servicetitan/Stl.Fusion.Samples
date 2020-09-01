@@ -39,9 +39,9 @@ namespace Tutorial
                 .BuildServiceProvider();
         #endregion
 
-        public static async Task PullComputed()
+        public static async Task CaptureComputed()
         {
-            #region Part02_PullComputed
+            #region Part02_CaptureComputed
             var counters = CreateServices().GetService<CounterService>();
             var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine($"Computed: {computed}");
