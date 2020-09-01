@@ -32,9 +32,8 @@ The full list of Fusion packages:
   `FusionControler`-based API endpoints. All of that together allows you to get computed
   instances on the client that "mirror" their server-side counterparts.
 * [Stl.Fusion.Blazor](https://www.nuget.org/packages/Stl.Fusion.Blazor/) - depends on `Stl.Fusion.Client`.
-  Currently there are just two types - `LiveComponentBase<TState>` and
-  `LiveComponentBase<TLocal, TState>`. These are base classes for your own Blazor components
-  capable of updating their state in real time relying on `ILiveState`.
+  Implements handy Blazor components. Currently there is `StatefulCompontentBase<TState>`
+  and its 2 descendants: `LiveComponentBase<T>` and `LiveComponentBase<T, TLocals>`.
 
 #### [Next: Part 1 &raquo;](./Part01.md) | [Tutorial Home](./README.md)
 

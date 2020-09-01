@@ -1,81 +1,328 @@
-# Part 1: `IComputed<TOut>` and `SimpleComputed<TOut>`
+# Part 1: Compute Services and Caching
 
-Nearly everything in `Stl.Fusion` is based on `IComputed<TOut>` - an abstraction encapsulating
-a _computation_ and _its output_.
+Fusion offers 3 key abstractions enabling you to build real-time services:
 
-At glance, these instances are very similar to "Observable" \ "Computed observable" abstractions
-from such libraries as [Knockout.js](https://knockoutjs.com/) or [MobX](https://mobx.js.org/),
-but there are a few quite significant differences.
+1. **Computed Value** &ndash; an object describing the result of a computation
+   of type `T`, which is also capable of notifying you when this result
+   becomes *invalidated* (most likely inconsistent with the ground truth).
+   Such values always implement `IComputed<T>`; you don't need to implement
+   this interface though, because the most useful implementations of it
+   are already there.
+2. **Compute Service** &ndash; a service that automatically captures
+   dependencies of outputs of its methods and transparently "backs" them with
+   `IComputed<T>` instances allowing anyone to learn when such outputs become
+   invalidated (inconsistent with the ground truth).
+   Compute services are supposed to be written by you.
+3. **State** &ndash; an abstraction that "tracks" a single `IComputed<T>`,
+   i.e. continuously references the most up-to-date version of it.
+   Again, you typically don't need to implement your own `IState<T>` -
+   Fusion provides its 3 most useful flavors.
 
-Before jumping into the details, let's play with `IComputed` first.
+Since compute services is what you mostly have to deal with,
+let's start from this part.
 
-## Creating `IComputed<TOut>` instance
+But first, let's create a helper method allowing us to create an
+`IServiceProvider` hosting our compute services:
 
-The simplest way to create a new `IComputed<TOut>` instance ("computed" further) is
-to use `SimpestComputed.New` shortcuts.
-
-``` cs --region part01_create --source-file Part01.cs
-// Later we'll show you much nicer ways to create IComputed instances,
-// but for now let's stick to the basics:
-var c = SimpleComputed.New(async (prev, ct) => prev.Value + 1, Result.New(1));
-WriteLine($"{c}, Value = {c.Value}");
-WriteLine($"Properties:");
-WriteLine($"{nameof(c.Value)}: {c.Value}");
-WriteLine($"{nameof(c.Error)}: {c.Error}");
-WriteLine($"{nameof(c.Output)}: {c.Output}");
-WriteLine($"{nameof(c.State)}: {c.State}");
-WriteLine($"{nameof(c.Version)}: {c.Version}"); // Similar to ETag in HTTP
+``` cs --region Part01_CreateServices --source-file Part01.cs
+public static IServiceProvider CreateServices()
+            => new ServiceCollection()
+                .AddFusionCore()
+                .AddDiscoveredServices(Assembly.GetExecutingAssembly())
+                .BuildServiceProvider();
 ```
 
-As you might notice, every computed has `Value`, which stores the cached result of
-the computation that is tied to the instance.
+`IServiceCollection.AddDiscoveredServices` is an extension method that
+finds every type decorated with
+`Stl.DependencyInjection.ServiceAttributeBase`
+descendant and runs `[attribute].Register` method to ensure the type gets
+property registered as a service.
 
-In reality, `Value` is only a part of the `Output`, the other one is `Error` -
-an exception you'll see trying to access the `Value` if the computation completed
-with an error. `IComputed<TOut>` implements `IResult<TOut>` (for convenience),
-but also exposes the underlying `Result<TOut>` via its `Output` property.
+As you might guess, `ServiceAttributeBase` is an abstract class, the actual
+registration process is implemented by its descendants (you can
+declare them too); in this specific case the registration is performed
+by [[ComputeService] attribute](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/ComputeServiceAttribute.cs).
 
-You'll notice this design pattern (i.e. both expose `Result<TOut> Output` and
-implement `IResult<TOut>`) is used in some other abstractions - in particular,
-in `ILiveState`.
+Now we're ready to declare our first compute service:
 
-Computed instances are *semi-immutable*:
+``` cs --editable false --region Part01_CounterService --source-file Part01.cs
+[ComputeService] // You don't need this attribute if you manually register such services
+public class CounterService
+{
+    private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
-* Most of them are "born" in `Computing` state indicating the computation
-  that backs them is still running.
-* Once computed, they enter `Consistent` state. That's the moment they
-  turn immutable: no changes can be made to their `Output` after that.
-* The only thing that *may* happen is transition to `Invalidated` state.
-  It happens when either you manually call `Invalidate()` method on
-  computed instance, or when this happens automatically because one of
-  its dependencies was invalidated.
+    [ComputeMethod]
+    public virtual async Task<int> GetAsync(string key)
+    {
+        WriteLine($"{nameof(GetAsync)}({key})");
+        return _counters.TryGetValue(key, out var value) ? value : 0;
+    }
+
+    public void Increment(string key)
+    {
+        WriteLine($"{nameof(Increment)}({key})");
+        _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
+        Computed.Invalidate(() => GetAsync(key));
+    }
+}
+```
+
+For now, please ignore the fact `GetAsync` is declared as asynchronous method,
+even though it isn't truly asynchronous - later I'll explain why it's reasonable.
+
+Let's use `CounterService`:
+
+``` cs --region Part01_UseCounterService1 --source-file Part01.cs
+var counters = CreateServices().GetService<CounterService>();
+WriteLine(await counters.GetAsync("a"));
+WriteLine(await counters.GetAsync("b"));
+```
+
+The output should be:
+
+```text
+GetAsync(a)
+0
+GetAsync(b)
+0
+```
+
+It looks normal, right? But how about this:
+
+``` cs --region Part01_UseCounterService2 --source-file Part01.cs
+var counters = CreateServices().GetService<CounterService>();
+WriteLine(await counters.GetAsync("a"));
+WriteLine(await counters.GetAsync("a"));
+```
+
+The output looks weird now:
+
+```text
+GetAsync(a)
+0
+0
+```
+
+So why "GetAsync(a)" wasn't printed twice here? The answer is:
+
+* You may think *any compute method* automatically caches its output*.
+* The cache key is `(MethodInfo, this, argument1, argument2, ...)`
+* The cached value is method output
+* The entry expires once you call `Computed.Invalidate(() => ...)`
+  for the same method of the same service with the same set of arguments.
 
 Let's see how it works:
 
-``` cs --region part01_invalidateAndUpdate --source-file Part01.cs
-var c = SimpleComputed.New(async (prev, ct) => prev.Value + 1, Result.New(1));
-c.Invalidate();
-WriteLine($"{c}, Value = {c.Value}"); // Must be in Invalidated state
-
-var c1 = await c.UpdateAsync(false);
-WriteLine($"{c1}, Value = {c1.Value}"); // Must be in Consistent state
-
-// Equality isn't overriden for any implementation of IComputed,
-// so it relies on default Equals & GetHashCode (by-ref comparison).
-WriteLine($"Are {nameof(c)} and {nameof(c1)} pointing to the same instance? {c == c1}");
+``` cs --region Part01_UseCounterService3 --source-file Part01.cs
+var counters = CreateServices().GetService<CounterService>();
+WriteLine(await counters.GetAsync("a"));
+counters.Increment("a");
+WriteLine(await counters.GetAsync("a"));
 ```
 
-As you might notice, the instances we were playing with so far were "born"
-in `Consistent` state. That's because they were constructed using
-`SimpleComputed.New(..., Result<TOut> initialOutput)`; but there is a way
-to construct computed instances that are "born" invalidated:
+The output:
 
-``` cs --region part01_createNoDefault --source-file Part01.cs
-var c = SimpleComputed.New<DateTime>(async (prev, ct) => DateTime.Now);
-WriteLine($"{c}, Value = {c.Value}"); // Must be in Invalidated state
-c = await c.UpdateAsync(false);
-WriteLine($"{c}, Value = {c.Value}"); // Must be in Consistent state
+```text
+GetAsync(a)
+0
+Increment(a)
+GetAsync(a)
+1
 ```
+
+Check out `CounterService.Increment` source code above - it calls
+`Computed.Invalidate`, which evicts the entry. This explains why
+in this example "GetAsync(a)" is printed twice, even though previously
+it was printed just for the first call.
+
+## Dependencies
+
+Now let's add another compute service:
+
+``` cs --editable false --region Part01_CounterSumService --source-file Part01.cs
+[ComputeService] // You don't need this attribute if you manually register such services
+public class CounterSumService
+{
+    public CounterService Counters { get; }
+
+    public CounterSumService(CounterService counters) => Counters = counters;
+
+    [ComputeMethod]
+    public virtual async Task<int> SumAsync(string key1, string key2)
+    {
+        WriteLine($"{nameof(SumAsync)}({key1}, {key2})");
+        return await Counters.GetAsync(key1) + await Counters.GetAsync(key2);
+    }
+}
+```
+
+And use it:
+
+``` cs --region Part01_UseCounterSumService1 --source-file Part01.cs
+var services = CreateServices();
+var counterSum = services.GetService<CounterSumService>();
+WriteLine(await counterSum.SumAsync("a", "b"));
+WriteLine(await counterSum.SumAsync("a", "b"));
+```
+
+The output:
+
+```text
+SumAsync(a, b)
+GetAsync(a)
+GetAsync(b)
+0
+```
+
+Assuming you know how these services work now, this is exactly what you'd expect.
+
+Another example:
+
+``` cs --region Part01_UseCounterSumService2 --source-file Part01.cs
+var services = CreateServices();
+var counterSum = services.GetService<CounterSumService>();
+WriteLine("Nothing is cached (yet):");
+WriteLine(await counterSum.SumAsync("a", "b"));
+WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
+WriteLine(await counterSum.SumAsync("b", "a"));
+WriteLine("Everything is cached:");
+WriteLine(await counterSum.SumAsync("a", "b"));
+```
+
+The output:
+
+```text
+Nothing is cached (yet):
+SumAsync(a, b)
+GetAsync(a)
+GetAsync(b)
+0
+Only GetAsync(a) and GetAsync(b) results are cached:
+SumAsync(b, a)
+0
+Everything is cached:
+0
+```
+
+Again, nothing unexpected. The results are still cached, but since the
+key is sensitive to the order of arguments, entries for `("a", "b")` and
+`("b", "a")` differ.
+
+But what about this?
+
+``` cs --region Part01_UseCounterSumService3 --source-file Part01.cs
+var services = CreateServices();
+var counters = services.GetService<CounterService>();
+var counterSum = services.GetService<CounterSumService>();
+WriteLine(await counterSum.SumAsync("a", "b"));
+counters.Increment("a");
+WriteLine(await counterSum.SumAsync("a", "b"));
+```
+
+The output:
+
+```text
+SumAsync(a, b)
+GetAsync(a)
+GetAsync(b)
+0
+Increment(a)
+SumAsync(a, b)
+GetAsync(a)
+1
+```
+
+This is quite unusual, right? *Somehow* `SumAsync("a", "b")` figured out that
+it has to refresh `GetAsync("a")` result first, because it was invalidated
+due to increment. But how?
+
+In reality, every compute method either gets a cached output, or builds
+a new `IComputed<T>` instance "backing" the computation it's going to run,
+and *while the computation runs*, this instance stays available via
+`Computed.GetCurrent()` method. So any other compute method *invoked
+during the computation* gets a chance to enlist its own hidden output
+(`IComputed<T>` as well) as a *dependency* of the current computed instance.
+
+The actual process is a bit more complex, because it accounts for
+scenarios you may not anticipate yet:
+
+- Recursion and multiple levels of compute method calls are fully supported
+- Some results can be invalidated right during their computation
+- No more than one computation for each distinct result should
+  be running at any given moment.
+
+To close this section, let's look at the last property closer.
+
+## Concurrent Evaluations
+
+Let's create a simple service to test how Fusion handles concurrency:
+
+``` cs --editable false --region Part01_HelloService --source-file Part01.cs
+[ComputeService] // You don't need this attribute if you manually register such services
+public class HelloService
+{
+    [ComputeMethod]
+    public virtual async Task<string> HelloAsync(string name)
+    {
+        WriteLine($"+ {nameof(HelloAsync)}({name})");
+        await Task.Delay(1000);
+        WriteLine($"- {nameof(HelloAsync)}({name})");
+        return $"Hello, {name}!";
+    }
+}
+```
+
+As you see, `HelloAsync` method simply returns a formatted "Hello, X!" message,
+but with a 1-second delay. Let's try to run it concurrently:
+
+``` cs --region Part01_UseHelloService1 --source-file Part01.cs
+var hello = CreateServices().GetService<HelloService>();
+var t1 = Task.Run(() => hello.HelloAsync("Alice"));
+var t2 = Task.Run(() => hello.HelloAsync("Bob"));
+var t3 = Task.Run(() => hello.HelloAsync("Bob"));
+var t4 = Task.Run(() => hello.HelloAsync("Alice"));
+await Task.WhenAll(t1, t2, t3, t4);
+WriteLine(t1.Result);
+WriteLine(t2.Result);
+WriteLine(t3.Result);
+WriteLine(t4.Result);
+```
+
+The output:
+
+```text
++ HelloAsync(Bob)
++ HelloAsync(Alice)
+- HelloAsync(Bob)
+- HelloAsync(Alice)
+Hello, Alice!
+Hello, Bob!
+Hello, Bob!
+Hello, Alice!
+```
+
+As you see, even though all 4 values were computed, there were just
+2 `HelloAsync` evaluations (for distinct arguments only), and moreover,
+these two evaluations were running concurrently with each other.
+
+This is an expected behavior: even though nothing is cached in the
+beginning, there is no reason to run more than one computation
+for e.g. "Bob" argument concurrently, since all of them are supposed
+to produce the same result. This is exactly what Fusion ensures.
+
+And on contrary, it's totally reasonable to let `HelloAsync("Alice")`
+computation to run concurrently with `HelloAsync("Bob")`, because they
+might produce different output, and if they were launched concurrently,
+`HelloService` is designed to support this.
+
+Overall, nearly everything in Fusion supports concurrent invocations:
+
+- Compute services are supposed to be singletons that support concurrency
+- Any `IComputed<T>` implementation is fully concurrent
+- As well as any `IState<T>`
+- The exceptions are mostly such types as `XxxOptions` and methods that
+  are supposed to be used during the service registration stage, as well
+  as types that aren't supposed to be concurrent (e.g. all Blazor components - `StatefulComponentBase<TState>` and its descendants).
 
 #### [Next: Part 2 &raquo;](./Part02.md) | [Tutorial Home](./README.md)
 
