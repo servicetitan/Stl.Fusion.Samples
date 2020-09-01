@@ -40,12 +40,15 @@ Without further ado:
 
 * [Part 0: NuGet packages](./Part00.md)
 * [Part 1: Compute Services](./Part01.md)
-* [Part 2: Computed Values and IComputed&lt;T&gt;](./Part02.md)
-* [Part 3: ](./Part03.md)
-* [Part 4: Compute Services: execution, caching, and invalidation](./Part04.md)
-* [Part 5: Compute Services: dependencies](./Part05.md)
-* [Part 6: Compute Instances and Compute Services - Review](./Part06.md)
-* Part 7+: To be added later this week.
+* [Part 2: Computed Values: IComputed&lt;T&gt;](./Part02.md)
+
+To be added soon:
+* [Part 3: State: IState&lt;T&gt; and its flavors](./Part03.md)
+* [Part 4: Replica Services](./Part04.md)
+* [Part 5: Use case: Transparent In-Process Caching + Swapping to External Cache](./Part05.md)
+* [Part 6: Use case: Server-Side Blazor (SSB) Apps](./Part06.md)
+* [Part 7: Use case: Blazor WebAssembly Apps](./Part07.md)
+* [Part 8: Use case: Hybrid Blazor (SSB + WASM) Apps](./Part08.md)
 
 Join our [Discord Server](https://discord.gg/EKEwv6d)
 to ask questions and track project updates.

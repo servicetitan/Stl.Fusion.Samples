@@ -11,8 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="img/**/*" />
     <None Remove=".trydotnet" />
     <None Remove="msbuild.log" />
+    <None Remove="*.binlog" />
   </ItemGroup>
 
   <ItemGroup>
