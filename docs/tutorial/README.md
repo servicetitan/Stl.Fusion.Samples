@@ -43,6 +43,7 @@ Without further ado:
 * [Part 2: Computed Values: IComputed&lt;T&gt;](./Part02.md)
 
 To be added soon:
+
 * [Part 3: State: IState&lt;T&gt; and its flavors](./Part03.md)
 * [Part 4: Replica Services](./Part04.md)
 * [Part 5: Use case: Transparent In-Process Caching + Swapping to External Cache](./Part05.md)

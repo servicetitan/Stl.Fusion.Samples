@@ -61,47 +61,49 @@ As you may notice, `IComputed<T>` has:
 Overall, its important properties and methods include:
 
 * `ConsistencyState` property, which transitions from
-  `Computing` to `Computed` and `Invalidated` over its lifetime. 
-  `IsConsistent()` extension method is a shortcut checking whether the state 
-  is exactly `Consistent`. 
+  `Computing` to `Computed` and `Invalidated` over its lifetime.
+  `IsConsistent()` extension method is a shortcut checking whether the state
+  is exactly `Consistent`.
   You may find more of such shortcuts by Ctrl-clicking on `IsConsistent()`.
-* `Version` property - a unique value for any `IComputed<T>` instance 
+* `Version` property - a unique value for any `IComputed<T>` instance
   in each process. `LTag` struct uses 64-bit integer under the hood,
   so "unique" actually means "unique with very high probability".
 * `Invalidate()` method - turns computed into `Invalidated` state.
-  As with `IDisposable.Dispose`, you can call it multiple times, 
+  As with `IDisposable.Dispose`, you can call it multiple times,
   though only the first call matters.
 * `Invalidated` event - raised on invalidation. Handlers of this event
   should never throw exceptions. Invalidation is *always cascading*.
 
 `IComputed<T>` implements a few interfaces - most notably,
-* `IResult<T>` - and interestingly, it both "mimics" `IResult<T>` behavior, 
+
+* `IResult<T>` - and interestingly, it both "mimics" `IResult<T>` behavior,
   but also exposes a property of `Result<T>` type.
   * `IResult<T>` describes an object that stores the result of computation
-    of type `T`, which is either a `Value` of `T`, or an `Error` 
-    (of `Exception` type). The interface itself provides a number of 
+    of type `T`, which is either a `Value` of `T`, or an `Error`
+    (of `Exception` type). The interface itself provides a number of
     convenience methods (such as `ValueOr(...)`, `IsValue(out var value)`, etc.),
     and there are a few extension methods for it as well.
   * `Result<T>` is its struct-based implementation that's frequently used
     to store the actual result. `IComputed<T>.Output` is the property
-    of exactly this type. But since `IComputed<T>` implements `IResult<T>` 
+    of exactly this type. But since `IComputed<T>` implements `IResult<T>`
     as well (by, basically, forwarding all the calls to its `Output` property),
     you can write `computed.Value` instead of `computed.Output.Value` and so on.
   * Later you'll find out there are other types in `Stl.Fusion` that follow
     the same pattern (i.e. similarly implement `IResult<T>`) - in particular,
     `IState<T>`.
-* `IComputedImpl` - an interface  allowing computed instances 
-  to list themselves as dependencies of other computed instances. 
-  Normally you shouldn't use it, which is why the interface is declared in 
+* `IComputedImpl` - an interface  allowing computed instances
+  to list themselves as dependencies of other computed instances.
+  Normally you shouldn't use it, which is why the interface is declared in
   `Stl.Fusion.Internal` namespace and implemented explicitly.
 
 And finally, there are a few asynchronous methods. The most important
 ones are:
+
 * `WhenInvalidatedAsync(...)` - an extension method allowing to await
   for invalidation of this instance.
 * `UpdateAsync(...)` - *finds or computes* the consistent version
   of this computed instance. *Finds* means the computation will happen
-  if and only if there is no cached consistent instance in 
+  if and only if there is no cached consistent instance in
   `ComputedRegistry` (~ a cache tracking the most up-to-date version of
   every computed while they're used).
   Note that it returns the most up-to-date computed, which is *likely,
@@ -112,7 +114,7 @@ ones are:
   Gets the most up-to-date value of the current computed and
   makes sure that if this happens inside the computation of another
   computed value, the current `IComputed<T>` (more precisely, its
-  most recent version) gets listed as a dependency of this "outer" 
+  most recent version) gets listed as a dependency of this "outer"
   computed.
 
 A diagram to help remembering all of this:
@@ -123,5 +125,5 @@ And a diagram showing how `ConsistencyState` transition works:
 
 [<img src="./img/ConsistencyState.jpg" width="300"/>](./img/ConsistencyState.jpg)
 
-
 #### [Next: Part 3 &raquo;](./Part02.md) | [Tutorial Home](./README.md)
+
