@@ -39,8 +39,8 @@ code of Fusion samples.
 Without further ado:
 
 * [Part 0: NuGet packages](./Part00.md)
-* [Part 1: Compute Services and Caching](./Part01.md)
-* [Part 2: IComputed<T>](./Part02.md)
+* [Part 1: Compute Services](./Part01.md)
+* [Part 2: Computed Values and IComputed&lt;T&gt;](./Part02.md)
 * [Part 3: ](./Part03.md)
 * [Part 4: Compute Services: execution, caching, and invalidation](./Part04.md)
 * [Part 5: Compute Services: dependencies](./Part05.md)
