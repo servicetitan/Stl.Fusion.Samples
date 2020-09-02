@@ -70,11 +70,10 @@ namespace Tutorial
             var counters = CreateServices().GetService<CounterService>();
             var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine($"computed: {computed}");
-            Computed.Invalidate(() => counters.GetAsync("a"));
             WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
-            computed.Invalidate();
+            Computed.Invalidate(() => counters.GetAsync("a")); // <- This line
             WriteLine($"computed: {computed}");
-            var newComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+            var newComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a")); // <- This line
             WriteLine($"newComputed: {newComputed}");
             #endregion
         }
