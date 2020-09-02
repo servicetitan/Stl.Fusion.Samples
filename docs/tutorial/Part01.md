@@ -2,7 +2,7 @@
 
 Video covering this part:
 
-[<img src="./img/Part1-Screenshot.jpg" width="200"/>](https://youtu.be/G-MIdfDP3g)
+[<img src="./img/Part1-Screenshot.jpg" width="200"/>](https://youtu.be/G-MIdfDP3gI)
 
 Fusion offers 3 key abstractions enabling you to build real-time services:
 
