@@ -51,14 +51,14 @@ Computed: Computed`1(Intercepted:CounterService.GetAsync(a) @xIs0saqEU, State: C
 - Value:          0
 ```
 
-As you may notice, `IComputed<T>` has:
+As you may notice, `IComputed<T>` stores:
 
 - Some representation of its input: `Intercepted:CounterService.GetAsync(a`
 - Version: `@xIs0saqEU`
 - State: `Consistent`
 - Value: `0`
 
-Overall, its important properties include:
+Overall, its key properties include:
 
 * `ConsistencyState`, which transitions from
   `Computing` to `Computed` and `Invalidated` over its lifetime.
@@ -73,7 +73,7 @@ Overall, its important properties include:
 * `Invalidated` - an event raised on invalidation. Handlers of this event
   should never throw exceptions.
 
-`IComputed<T>` implements a few interfaces - most notably,
+`IComputed<T>` implements a set of interfaces - most notably,
 
 * `IResult<T>` - interestingly, it both "mimics" `IResult<T>` behavior,
   but also exposes a property of `Result<T>` type.
@@ -101,6 +101,9 @@ Overall, its important properties include:
   to keep reference to *either* dependency or dependent instance to ensure
   *both* stay in RAM. Fusion, on contrary, doesn't prevent unreferenced 
   dependent instances to be garbage collected.
+* `IComputed`, `IResult` - "untyped" versions of `IComputed<T>` and
+  `IResult<T>`. Similarly to `IEnumerable` (vs `IEnumerable<T>`), you can
+  use them when the type of result isn't known.
 
 And finally, there are a few important methods:
 
@@ -136,5 +139,111 @@ And a diagram showing how `ConsistencyState` transition works:
 
 [<img src="./img/ConsistencyState.jpg" width="300"/>](./img/ConsistencyState.jpg)
 
+Ok, let's get back to code and see how invalidation *really* works:
+
+``` cs --region Part02_InvalidateComputed1 --source-file Part02.cs
+```
+
+The output:
+``` text
+GetAsync(a)
+computed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaNN, State: Consistent)
+computed.Invalidate()
+computed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaNN, State: Invalidated)
+GetAsync(a)
+newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaPR, State: Consistent)
+```
+
+Compare above code with this example:
+
+``` cs --region Part02_InvalidateComputed2 --source-file Part02.cs
+```
+
+The output:
+``` text
+GetAsync(a)
+computed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVbo, State: Consistent)
+Computed.Invalidate(() => counters.GetAsync("a"))
+computed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVbo, State: Invalidated)
+GetAsync(a)
+newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVds, State: Consistent)
+```
+
+The output is ~ identical. As you might guess,
+* `Computed.Invalidate(...)` uses `Computed.Capture` under the hood
+  to capture the computed instance and invalidate it.
+* `IComputed.UpdateAsync(...)` invokes the method that was used to
+  produce it and similarly captures the newly produced computed.
+
+And finally, let's see how you can "observe" the invalidation to 
+trigger the update:
+
+``` cs --region Part02_IncrementCounter --source-file Part02.cs
+```
+
+The output:
+``` text
+GetAsync(a)
+9/1/2020 5:08:54 PM: 0
+Increment(a)
+GetAsync(a)
+9/1/2020 5:08:55 PM: 1
+Increment(a)
+GetAsync(a)
+9/1/2020 5:08:56 PM: 2
+Increment(a)
+GetAsync(a)
+9/1/2020 5:08:57 PM: 3
+Increment(a)
+GetAsync(a)
+9/1/2020 5:08:58 PM: 4
+Increment(a)
+GetAsync(a)
+9/1/2020 5:08:59 PM: 5
+```
+
+So even though Fusion doesn't update anything automatically,
+achieving exactly the same behavior with it is pretty straightforward.
+
+A good question to ask is: but why it doesn't, if literally everyone else 
+does? E.g. 
+[MobX even tries to re-compute all the derivations atomically](https://mobx.js.org/intro/concepts.html) - so why Fusion does literally the opposite?
+
+The answer is:
+* If your model is tiny (KO / MobX case), these computations are relatively cheap,
+  and moreover, they run on the client. So normally it's fine to run them
+  even if you aren't going to use the result.
+* On contrary, Fusion is designed to deal with huge models "covering" your 
+  whole data; and even though it works on the client too, the most significant
+  work it typically does happens on server, where most of its "compute services"
+  live. Recomputing every dependency on change isn't just inefficient, but 
+  almost never possible in this scenario. 
+  
+What's totally possible though is to notify the code using certain computed value 
+that it became obsolete and thus has to be recomputed. And this notification -
+plus maybe some other "knowns" about the domain would let the code to 
+determine the right strategy for triggering the recomputation.
+
+Think of these two cases:
+- We're recomputing the "view" of a Twitter post (tweet)
+- And in one case we know the current user just pressed "Like" icon there,
+  so most likely it was invalidated due to this action. In this case
+  we can immediately update it to reflect the result of user action;
+  there are no potential scalability problems here.
+- In another case the post was invalidated w/o current user action. 
+  And in this case we may delay the update for several seconds - in fact,
+  as for long as we think is reasonable taking into account such factors
+  as current backend load or the current rate of actions on this post.
+
+Such an approach allows you to have nearly instant updates in most cases, 
+but selectively (i.e. per piece of content + user) throttle the update
+rate (without affecting user-induced updates) in cases when instant updates 
+create performance problems.
+
+It worth mentioning that Fusion offers all the abstractions you need to
+have this behavior, and moreover, similarly to almost-invisible `IComputed<T>`,
+you normally don't even need to know these abstractions exist. 
+But they'll be ready to help you once you conclude you need throttling.
+  
 #### [Next: Part 3 &raquo;](./Part02.md) | [Tutorial Home](./README.md)
 
