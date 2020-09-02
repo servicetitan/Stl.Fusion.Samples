@@ -68,7 +68,7 @@ Overall, its key properties include:
 * `Version` property - a unique value for any `IComputed<T>` instance
   in each process. `LTag` struct uses 64-bit integer under the hood,
   so "unique" actually means "unique with very high probability".
-* `Output`, `Value` and `Error` - the properties describing the 
+* `Output`, `Value` and `Error` - the properties describing the
   result of the computation.
 * `Invalidated` - an event raised on invalidation. Handlers of this event
   should never throw exceptions.
@@ -92,14 +92,14 @@ Overall, its key properties include:
     `IState<T>`.
 * `IComputedImpl` - an interface  allowing computed instances
   to list themselves as dependencies of other computed instances.
-  Most likely you won't ever need to use it, which is why the interface 
+  Most likely you won't ever need to use it, which is why the interface
   is declared in `Stl.Fusion.Internal` namespace and implemented explicitly.
   It's mentioned here mostly to explain that dependency graph in Fusion
   is explicit, and this interface provides a way to update it. Most of
   other frameworks rely on event handlers to implement cascading invalidations,
   which actually is quite inefficient from GC perspective: it's enough
   to keep reference to *either* dependency or dependent instance to ensure
-  *both* stay in RAM. Fusion, on contrary, doesn't prevent unreferenced 
+  *both* stay in RAM. Fusion, on contrary, doesn't prevent unreferenced
   dependent instances to be garbage collected.
 * `IComputed`, `IResult` - "untyped" versions of `IComputed<T>` and
   `IResult<T>`. Similarly to `IEnumerable` (vs `IEnumerable<T>`), you can
@@ -107,11 +107,11 @@ Overall, its key properties include:
 
 And finally, there are a few important methods:
 
-* `Invalidate()` - triggers invalidation, which turns the instance 
+* `Invalidate()` - triggers invalidation, which turns the instance
   into `Invalidated` state. This is the only change that may happen
   with `IComputed<T>` over its lifetime; other than that, computed
   instances are immutable.
-  As with `IDisposable.Dispose`, you are free to call this method 
+  As with `IDisposable.Dispose`, you are free to call this method
   multiple times, though only the first call matters.
 * `WhenInvalidatedAsync(...)` - an extension method allowing to await
   for invalidation.
@@ -142,10 +142,19 @@ And a diagram showing how `ConsistencyState` transition works:
 Ok, let's get back to code and see how invalidation *really* works:
 
 ``` cs --region Part02_InvalidateComputed1 --source-file Part02.cs
+var counters = CreateServices().GetService<CounterService>();
+var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+WriteLine($"computed: {computed}");
+WriteLine("computed.Invalidate()");
+computed.Invalidate();
+WriteLine($"computed: {computed}");
+var newComputed = await computed.UpdateAsync(false);
+WriteLine($"newComputed: {newComputed}");
 ```
 
 The output:
-``` text
+
+```text
 GetAsync(a)
 computed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaNN, State: Consistent)
 computed.Invalidate()
@@ -157,10 +166,20 @@ newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaPR, Stat
 Compare above code with this example:
 
 ``` cs --region Part02_InvalidateComputed2 --source-file Part02.cs
+var counters = CreateServices().GetService<CounterService>();
+var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+WriteLine($"computed: {computed}");
+Computed.Invalidate(() => counters.GetAsync("a"));
+WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
+computed.Invalidate();
+WriteLine($"computed: {computed}");
+var newComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+WriteLine($"newComputed: {newComputed}");
 ```
 
 The output:
-``` text
+
+```text
 GetAsync(a)
 computed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVbo, State: Consistent)
 Computed.Invalidate(() => counters.GetAsync("a"))
@@ -170,19 +189,40 @@ newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVds, State
 ```
 
 The output is ~ identical. As you might guess,
+
 * `Computed.Invalidate(...)` uses `Computed.Capture` under the hood
   to capture the computed instance and invalidate it.
 * `IComputed.UpdateAsync(...)` invokes the method that was used to
   produce it and similarly captures the newly produced computed.
 
-And finally, let's see how you can "observe" the invalidation to 
+And finally, let's see how you can "observe" the invalidation to
 trigger the update:
 
 ``` cs --region Part02_IncrementCounter --source-file Part02.cs
+var counters = CreateServices().GetService<CounterService>();
+
+Task.Run(async () =>
+{
+    for (var i = 0; i <= 5; i++)
+    {
+        await Task.Delay(1000);
+        counters.Increment("a");
+    }
+});
+
+var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+WriteLine($"{DateTime.Now}: {computed.Value}");
+for (var i = 0; i < 5; i++)
+{
+    await computed.WhenInvalidatedAsync();
+    computed = await computed.UpdateAsync(false);
+    WriteLine($"{DateTime.Now}: {computed.Value}");
+}
 ```
 
 The output:
-``` text
+
+```text
 GetAsync(a)
 9/1/2020 5:08:54 PM: 0
 Increment(a)
@@ -205,45 +245,47 @@ GetAsync(a)
 So even though Fusion doesn't update anything automatically,
 achieving exactly the same behavior with it is pretty straightforward.
 
-A good question to ask is: but why it doesn't, if literally everyone else 
-does? E.g. 
+A good question to ask is: but why it doesn't, if literally everyone else
+does? E.g.
 [MobX even tries to re-compute all the derivations atomically](https://mobx.js.org/intro/concepts.html) - so why Fusion does literally the opposite?
 
 The answer is:
+
 * If your model is tiny (KO / MobX case), these computations are relatively cheap,
   and moreover, they run on the client. So normally it's fine to run them
   even if you aren't going to use the result.
-* On contrary, Fusion is designed to deal with huge models "covering" your 
+* On contrary, Fusion is designed to deal with huge models "covering" your
   whole data; and even though it works on the client too, the most significant
   work it typically does happens on server, where most of its "compute services"
-  live. Recomputing every dependency on change isn't just inefficient, but 
-  almost never possible in this scenario. 
-  
-What's totally possible though is to notify the code using certain computed value 
+  live. Recomputing every dependency on change isn't just inefficient, but
+  almost never possible in this scenario.
+
+What's totally possible though is to notify the code using certain computed value
 that it became obsolete and thus has to be recomputed. And this notification -
-plus maybe some other "knowns" about the domain would let the code to 
+plus maybe some other "knowns" about the domain would let the code to
 determine the right strategy for triggering the recomputation.
 
 Think of these two cases:
+
 - We're recomputing the "view" of a Twitter post (tweet)
 - And in one case we know the current user just pressed "Like" icon there,
   so most likely it was invalidated due to this action. In this case
   we can immediately update it to reflect the result of user action;
   there are no potential scalability problems here.
-- In another case the post was invalidated w/o current user action. 
+- In another case the post was invalidated w/o current user action.
   And in this case we may delay the update for several seconds - in fact,
   as for long as we think is reasonable taking into account such factors
   as current backend load or the current rate of actions on this post.
 
-Such an approach allows you to have nearly instant updates in most cases, 
+Such an approach allows you to have nearly instant updates in most cases,
 but selectively (i.e. per piece of content + user) throttle the update
-rate (without affecting user-induced updates) in cases when instant updates 
+rate (without affecting user-induced updates) in cases when instant updates
 create performance problems.
 
 It worth mentioning that Fusion offers all the abstractions you need to
 have this behavior, and moreover, similarly to almost-invisible `IComputed<T>`,
-you normally don't even need to know these abstractions exist. 
+you normally don't even need to know these abstractions exist.
 But they'll be ready to help you once you conclude you need throttling.
-  
+
 #### [Next: Part 3 &raquo;](./Part02.md) | [Tutorial Home](./README.md)
 
