@@ -163,17 +163,16 @@ GetAsync(a)
 newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaPR, State: Consistent)
 ```
 
-Compare above code with this example:
+Compare the above code with this one:
 
 ``` cs --region Part02_InvalidateComputed2 --source-file Part02.cs
 var counters = CreateServices().GetService<CounterService>();
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"computed: {computed}");
-Computed.Invalidate(() => counters.GetAsync("a"));
 WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
-computed.Invalidate();
+Computed.Invalidate(() => counters.GetAsync("a")); // <- This line
 WriteLine($"computed: {computed}");
-var newComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+var newComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a")); // <- This line
 WriteLine($"newComputed: {newComputed}");
 ```
 
