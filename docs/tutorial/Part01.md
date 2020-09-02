@@ -1,5 +1,9 @@
 # Part 1: Compute Services
 
+Video covering this part:
+
+[<img src="./img/Part1-Screenshot.jpg" width="200"/>](https://youtu.be/G-MIdfDP3g)
+
 Fusion offers 3 key abstractions enabling you to build real-time services:
 
 1. **Computed Value** &ndash; an object describing the result of a computation
