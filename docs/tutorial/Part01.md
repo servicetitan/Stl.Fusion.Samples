@@ -2,7 +2,7 @@
 
 Video covering this part:
 
-[<img src="./img/Part1-Screenshot.jpg" width="200"/>](https://youtu.be/G-MIdfDP3g)
+[<img src="./img/Part1-Screenshot.jpg" width="200"/>](https://youtu.be/G-MIdfDP3gI)
 
 Fusion offers 3 key abstractions enabling you to build real-time services:
 
@@ -109,7 +109,7 @@ GetAsync(a)
 
 So why "GetAsync(a)" wasn't printed twice here? The answer is:
 
-* You may think *any compute method* automatically caches its output*.
+* You may think *any compute method automatically caches its output*.
 * The cache key is `(MethodInfo, this, argument1, argument2, ...)`
 * The cached value is method output
 * The entry expires once you call `Computed.Invalidate(() => ...)`

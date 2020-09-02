@@ -1,5 +1,7 @@
 # Part 2: Computed Values and IComputed&lt;T&gt;
 
+Video covering this part: **TBD**.
+
 We're going to use the same `CounterService` and `CreateServices` helper
 as in Part 1:
 
