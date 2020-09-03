@@ -154,7 +154,9 @@ Value: 2, Computed: StateBoundComputed`1(MutableState`1(#63646052) @2AULKFZxlK, 
 Old computed: StateBoundComputed`1(MutableState`1(#63646052) @2AULKFZxjG, State: Invalidated)
 ```
 
-Note that `oldComputed` is in `Invalidated` state at the last line.
+Note that:
+* `services.GetStateFactory()` is a shortcut for `services.GetRequiredService<IStateFactory>()`
+* Old `computed` is in `Invalidated` state at the last line.
 
 Let's look at error handling example:
 
