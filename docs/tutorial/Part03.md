@@ -1,4 +1,4 @@
-# Part 2: State: IState&lt;T&gt; and its flavors
+# Part 3: State: IState&lt;T&gt; and its flavors
 
 Video covering this part: **TBD**.
 
