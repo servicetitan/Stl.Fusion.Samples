@@ -2,6 +2,11 @@
 
 Video covering this part: **TBD**.
 
+Fusion's `IComputed<T>` is a fairly unique abstraction describing
+the result of a computation:
+
+![](./img/IComputed-Features.jpg)
+
 We're going to use the same `CounterService` and `CreateServices` helper
 as in Part 1:
 
@@ -137,9 +142,18 @@ A diagram to help remembering all of this:
 
 [<img src="./img/IComputed-Class.jpg" width="300"/>](./img/IComputed-Class.jpg)
 
-And a diagram showing how `ConsistencyState` transition works:
+A diagram showing how `ConsistencyState` transition works:
 
 [<img src="./img/ConsistencyState.jpg" width="300"/>](./img/ConsistencyState.jpg)
+
+And finally, an ugly visualization showing how `IComputed<T>` instances
+are getting invalidated and eventually replaced with their consistent
+versions on update:
+
+![](./img/Invalidate-Update.gif)
+
+> Earlier `IComputed<T>.UpdateAsync(...)` was called `RenewAsync`,
+> so as you might guess, the animation was made before this rename :)
 
 Ok, let's get back to code and see how invalidation *really* works:
 
