@@ -95,12 +95,12 @@ There are two ways of doing this:
 
 1. Using `IStateFactory`. Any `IServiceProvider` configured to use
    Fusion (with `.AddFusionCore()`) should resolve it.
-2. By creating descendants of `MutableState<T>`, `LiveState<T>`, etc.
-   and registering them in your service container via `.AddState(...)`
-   method.
+2. Subclassing `MutableState<T>`, `LiveState<T>`, etc.
+   and (optionally) registering a new type as a service 
+   via `.AddState(...)` method.
 
-Normally you need just the first option, and here we'll going to
-cover this part.
+Normally you need just the first option, and the remaining part of 
+this document sticks to it.
 
 ## Mutable State
 
