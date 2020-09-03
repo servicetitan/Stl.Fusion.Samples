@@ -329,4 +329,3 @@ Overall, nearly everything in Fusion supports concurrent invocations:
   as types that aren't supposed to be concurrent (e.g. all Blazor components - `StatefulComponentBase<TState>` and its descendants).
 
 #### [Next: Part 2 &raquo;](./Part02.md) | [Tutorial Home](./README.md)
-

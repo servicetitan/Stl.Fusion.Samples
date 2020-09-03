@@ -36,4 +36,3 @@ The full list of Fusion packages:
   and its 2 descendants: `LiveComponentBase<T>` and `LiveComponentBase<T, TLocals>`.
 
 #### [Next: Part 1 &raquo;](./Part01.md) | [Tutorial Home](./README.md)
-

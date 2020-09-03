@@ -50,8 +50,6 @@ So `IState<T>` is what "tracks" the most up-to-date version. There are a few fla
 
 Let's summarize all of this in a single table:
 
----
-
 | Type                                   | IMutableState<T> | IComputedState<T> | ILiveState<T>         | ILiveState<T, TLocals>                                                     |
 |----------------------------------------|------------------|-------------------|-----------------------|----------------------------------------------------------------------------|
 | Auto-update behavior                   | On Update        | Undefined         | On invalidation       | On invalidation                                                            |
@@ -60,13 +58,12 @@ Let's summarize all of this in a single table:
 | `state.Computed` is always consistent?   | Yes              | Undefined         | No                    | No                                                                         |
 | `state.Value/Error` can be set manually? | Yes              | No                | No                    | No                                                                         |
 
----
-
 And finally, states have a few extra properties:
 - Similarly to `IEnumerable<T>` \ `IEnumerable`, there are typed
   and untyped versions of any `IState` interface.
-- Any state implements `IResult<T>`
-- `IMutableState<T>` implements `IMutableResult<T>`
+- Similarly to `IComputed<T>`, any state implements `IResult<T>`
+  by forwarding all the calls to its `Computed` property.
+- `IMutableState<T>` also implements `IMutableResult<T>`
 - Any state has `Snapshot` property of `IStateSnapshot<T>` type.
   This property is updated atomically and returns an immutable object describing the current "state" of the `IState<T>`. If you'll
   ever need a "consistent" view of the state, `Snapshot` is
@@ -104,9 +101,87 @@ There are two ways of doing this:
    method.
    
 Normally you need just the first option, and here we'll going to 
-cover this part. Time to write some code!
+cover this part. 
 
+## Mutable State
 
+Time to write some code! We'll be using the same "stub" 
+with `CounterService` and `CreateServices` here:
+
+``` cs --editable false --region Part03_CounterService --source-file Part03.cs
+```
+
+Here is how you use `MutableState<T>`:
+
+``` cs --region Part03_MutableState --source-file Part03.cs
+```
+
+The output:
+``` text
+Value: 1, Computed: StateBoundComputed`1(MutableState`1(#63646052) @2AULKFZxjG, State: Consistent)
+Value: 2, Computed: StateBoundComputed`1(MutableState`1(#63646052) @2AULKFZxlK, State: Consistent)
+Old computed: StateBoundComputed`1(MutableState`1(#63646052) @2AULKFZxjG, State: Invalidated)
+```
+
+Note that `oldComputed` is in `Invalidated` state at the last line.
+
+Let's look at error handling example:
+
+``` cs --region Part03_MutableStateError --source-file Part03.cs
+```
+
+The output:
+``` text
+Value: 0, Computed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Consistent)
+Setting state.Error.
+Error: System.ApplicationException, Computed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqej, State: Consistent)
+LastValue: 0, LastValueComputed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Invalidated)
+```
+
+As you see, `Value` property throws an exception here &ndash;
+as per `IResult<T>` contract, it re-throws an exception stored 
+in `Error`.
+
+The last "valid" value is still available via `LastValue` property;
+similarly, the last "valid" computed instance is still available 
+via `LastValueComputed`.
+
+## Live State
+
+Let's play with `ILiveState<T>` now:
+
+``` cs --region Part03_LiveState --source-file Part03.cs
+```
+
+The output:
+``` text
+Creating aCounterState.
+9/2/2020 10:07:23 PM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCR, State: Consistent)
+9/2/2020 10:07:23 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCR, State: Invalidated)
+Before aCounterState.UpdateAsync(false).
+GetAsync(a)
+9/2/2020 10:07:23 PM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJEV, State: Consistent)
+After aCounterState.UpdateAsync(false).
+Increment(a)
+9/2/2020 10:07:23 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJEV, State: Invalidated)
+GetAsync(a)
+9/2/2020 10:07:24 PM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCU, State: Consistent)
+Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCU, State: Consistent)
+```
+
+Some observations:
+* New `ILiveState<T>` initially gets a default value 
+  (the first "Updated: ..." output)
+* This value gets invalidated immediately (i.e. while
+  `stateFactory.NewLive<T>(...)` runs)
+* `aCounterState.UpdateAsync(false)` triggers its update.
+  Interestingly, though, that this update will anyway happen
+  immediately by default - the very first update delay is 
+  always zero. You can check this by replacing the line
+  with `UpdateAsync(false)` to `await Task.Delay(100)`
+* Later the invalidation happens right after the value
+  state depends on gets invalidated.
+* But the update follows in 1 second - i.e. as it was 
+  specified in options we've provided.
 
 #### [Next: Part 4 &raquo;](./Part04.md) | [Tutorial Home](./README.md)
-
