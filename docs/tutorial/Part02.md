@@ -1,6 +1,8 @@
 # Part 2: Computed Values and IComputed&lt;T&gt;
 
-Video covering this part: **TBD**.
+Video covering this part:
+
+[<img src="./img/Part2-Screenshot.jpg" width="200"/>](https://youtu.be/DogHOuyRX20)
 
 Fusion's `IComputed<T>` is a fairly unique abstraction describing
 the result of a computation:
