@@ -96,8 +96,9 @@ There are two ways of doing this:
 1. Using `IStateFactory`. Any `IServiceProvider` configured to use
    Fusion (with `.AddFusionCore()`) should resolve it.
 2. Subclassing `MutableState<T>`, `LiveState<T>`, etc.
-   and (optionally) registering a new type as a service 
-   via `.AddState(...)` method.
+   and either creating its instance manually, or registering 
+   a new type as a service via `.AddState(...)` method and
+   resolving it via `IServiceProvider`.
 
 Normally you need just the first option, and the remaining part of 
 this document sticks to it.
