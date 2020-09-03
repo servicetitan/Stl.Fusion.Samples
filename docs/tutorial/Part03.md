@@ -53,7 +53,9 @@ So `IState<T>` is what "tracks" the most up-to-date version. There are a few fla
 
 Let's summarize all of this in a single table:
 
-TypeIMutableState<T>IComputedState<T>ILiveState<T>ILiveState<T, TLocals>Auto-update behaviorOn UpdateUndefinedOn invalidationOn invalidationAuto-update delay0Undefined`UpdateDelayer` decides`UpdateDelayer` decides; `0` on setting `Locals` if `UpdateOnLocalsUpdate == true`Has `IMutableState<TLocals> Locals`?NoUndefinedNoYes`state.Computed` is always consistent?YesUndefinedNoNo`state.Value/Error` can be set manually?YesNoNoNoAnd finally, states have a few extra properties:
+![](./img/IState-Features.jpg)
+
+And finally, states have a few extra properties:
 
 - Similarly to `IEnumerable<T>` \ `IEnumerable`, there are typed
   and untyped versions of any `IState` interface.
@@ -206,14 +208,12 @@ var counters = services.GetService<CounterService>();
 var stateFactory = services.GetStateFactory();
 WriteLine("Creating aCounterState.");
 var aCounterState = stateFactory.NewLive<string>(
-    options =>
-    {
+    options => {
         options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
-                    options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
+        options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
         options.Updated += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
     },
-    async (state, cancellationToken) =>
-    {
+    async (state, cancellationToken) => {
         var counter = await counters.GetAsync("a");
         return $"counters.GetAsync(a) -> {counter}";
     });
