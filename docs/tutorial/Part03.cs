@@ -83,7 +83,7 @@ namespace Tutorial
             WriteLine("Creating aCounterState.");
             var aCounterState = stateFactory.NewLive<string>(
                 options => {
-                    options.WithUpdateDelayer(1); // 1 second delay
+                    options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
                     options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
                     options.Updated     += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
                 },
