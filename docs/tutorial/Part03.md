@@ -100,8 +100,8 @@ There are two ways of doing this:
    a new type as a service via `.AddState(...)` method and
    resolving it via `IServiceProvider`.
 
-Normally you need just the first option, and the remaining part of 
-this document sticks to it.
+Normally you need just the first option. 
+The remaining part of this document relies on it.
 
 ## Mutable State
 
