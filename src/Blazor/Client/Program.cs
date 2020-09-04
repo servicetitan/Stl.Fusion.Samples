@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using RestEase;
 using Stl.Fusion;
@@ -50,7 +51,9 @@ namespace Samples.Blazor.Client
 
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
-            services.AddTransient(c => new HttpClient() { BaseAddress = apiBaseUri });
+            services.ConfigureAll<HttpClientFactoryOptions>(o => {
+                o.HttpClientActions.Add(client => client.BaseAddress = apiBaseUri);
+            });
             services.AddFusionWebSocketClient((c, o) => {
                 o.BaseUri = baseUri;
                 o.MessageLogLevel = LogLevel.Information;

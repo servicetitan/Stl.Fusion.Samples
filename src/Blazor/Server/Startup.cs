@@ -48,7 +48,6 @@ namespace Samples.Blazor.Server
             services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
             services.AddFusionWebSocketServer();
             // Helpers used by ChatService
-            services.AddTransient(c => new HttpClient());
             services.AddRestEaseCore();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
