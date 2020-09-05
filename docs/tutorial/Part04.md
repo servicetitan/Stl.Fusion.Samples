@@ -289,14 +289,15 @@ aComputed: 11, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync
 bComputed: 10, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(b, System.Threading.CancellationToken) @29, State: Consistent)
 ```
 
-As you see, Replica Service does its job. You may also notice that `CounterController`
-methods are invoked just once for a given set of arguments &ndash; that's because
-while some replica exists, Replica Services uses it to update its value, i.e. the updates
+So Replica Service does its job &ndash; it perfectly mimics the underlying Compute Service!
+
+Notice that `CounterController` methods are invoked just once for a given set of arguments &ndash; 
+that's because while some replica exists, Replica Services uses it to update its value, i.e. the updates
 are requested and delivered via WebSocket channel.
 
 As you might guess, the controller we were using here is a regular Web API controller.
 If you're curious whether it's possible to call its methods without Fusion - yes, it is.
-In other words, **every Fusion endpoint is also a regular Web API endpoint!** The proof:
+**So every Fusion endpoint is also a regular Web API endpoint!** The proof:
 
 [<img src="./img/SwaggerPost.jpg" width="600"/>](https://www.youtube.com/watch?v=jYVe5yd0xuQ&t=6044s)
 
