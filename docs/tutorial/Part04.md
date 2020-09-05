@@ -50,16 +50,16 @@ The sequence diagram below shows what happens when a regular Web API client
 "Web API" is controller forwarding the call to the underlying
 service (`GreetingService` in this example):
 
-![](./img/WebApi-Regular.jpg)
+[<img src="./img/WebApi-Regular.jpg" width="600"/>](./img/WebApi-Regular.jpg)
 
 And that's a similar diagram showing what happens when a Replica Service
 processes the call + invalidates & updates the value later:
 
-![](./img/WebApi-Fusion.jpg)
+[<img src="./img/WebApi-Fusion.jpg" width="600"/>](./img/WebApi-Fusion.jpg)
 
 Gantt chart for this process could look as follows:
 
-![](./img/ComputedReplica-Gantt.jpg)
+[<img src="./img/ComputedReplica-Gantt.jpg" width="600"/>](./img/ComputedReplica-Gantt.jpg)
 
 Ok, let's write some code to learn how it works. Unfortunately this time the amount of
 code is going to explode a bit - that's mostly due to the fact we'll need a web server
@@ -116,7 +116,7 @@ public class CounterService : ICounterService
     }
 }
 
-// We need Web API controller to publish the service
+// We need a Web API controller to publish the service
 [Route("api/[controller]")]
 [ApiController]
 public class CounterController : FusionController
@@ -289,10 +289,16 @@ aComputed: 11, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync
 bComputed: 10, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(b, System.Threading.CancellationToken) @29, State: Consistent)
 ```
 
-As you see, Replica Services does its job. You may also notice that `CounterController`
+As you see, Replica Service does its job. You may also notice that `CounterController`
 methods are invoked just once for a given set of arguments &ndash; that's because
 while some replica exists, Replica Services uses it to update its value, i.e. the updates
 are requested and delivered via WebSocket channel.
+
+As you might guess, the controller we were using here is a regular Web API controller.
+If you're curious whether it's possible to call its methods without Fusion - yes, it is.
+In other words, **every Fusion endpoint is also a regular Web API endpoint!** The proof:
+
+[<img src="./img/SwaggerPost.jpg" width="600"/>](https://www.youtube.com/watch?v=jYVe5yd0xuQ&t=6044s)
 
 Now, let's show that client-side `LiveState<T>` can use Replica Service
 to "observe" the output of server-side Compute Service. The code below
