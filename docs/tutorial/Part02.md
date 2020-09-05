@@ -149,14 +149,14 @@ A diagram showing how `ConsistencyState` transition works:
 [<img src="./img/ConsistencyState.jpg" width="300"/>](./img/ConsistencyState.jpg)
 
 Since every `IComputed<T>` is *almost immutable*, a new instance of
-`IComputed` gets created on recomputation if the most recent one is 
+`IComputed` gets created on recomputation if the most recent one is
 already invalidated at this point (otherwise there is no reason to
-recompute). Here is how 3 computations (of the same value) look 
+recompute). Here is how 3 computations (of the same value) look
 on a Gantt chart:
 
 ![](./img/Computed-Gantt.jpg)
 
-And finally, an ugly visualization showing how multiple `IComputed<T>` 
+And finally, an ugly visualization showing how multiple `IComputed<T>`
 instances get invalidated and eventually replaced with their consistent
 versions:
 

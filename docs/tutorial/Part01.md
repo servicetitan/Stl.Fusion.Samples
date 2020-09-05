@@ -16,17 +16,17 @@ Fusion offers 3 key abstractions enabling you to build real-time services:
    dependencies of outputs of its methods and transparently "backs" them with
    `IComputed<T>` instances allowing anyone to learn when such outputs become
    invalidated (inconsistent with the ground truth).
-   Compute services are supposed to be written by you.
+   Compute Services are supposed to be written by you.
 3. **State** &ndash; an abstraction that "tracks" a single `IComputed<T>`,
    i.e. continuously references the most up-to-date version of it.
    Again, you typically don't need to implement your own `IState<T>` -
    Fusion provides its 3 most useful flavors.
 
-Since compute services is what you mostly have to deal with,
+Since Compute Services is what you mostly have to deal with,
 let's start from this part.
 
 But first, let's create a helper method allowing us to create an
-`IServiceProvider` hosting our compute services:
+`IServiceProvider` hosting our Compute Services:
 
 ``` cs --region Part01_CreateServices --source-file Part01.cs
 public static IServiceProvider CreateServices()
@@ -47,7 +47,7 @@ registration process is implemented by its descendants (you can
 declare them too); in this specific case the registration is performed
 by [[ComputeService] attribute](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/ComputeServiceAttribute.cs).
 
-Now we're ready to declare our first compute service:
+Now we're ready to declare our first Compute Service:
 
 ``` cs --editable false --region Part01_CounterService --source-file Part01.cs
 [ComputeService] // You don't need this attribute if you manually register such services
@@ -141,7 +141,7 @@ it was printed just for the first call.
 
 ## Dependencies
 
-Now let's add another compute service:
+Now let's add another Compute Service:
 
 ``` cs --editable false --region Part01_CounterSumService --source-file Part01.cs
 [ComputeService] // You don't need this attribute if you manually register such services
@@ -321,7 +321,7 @@ might produce different output, and if they were launched concurrently,
 
 Overall, nearly everything in Fusion supports concurrent invocations:
 
-- Compute services are supposed to be singletons that support concurrency
+- Compute Services are supposed to be singletons that support concurrency
 - Any `IComputed<T>` implementation is fully concurrent
 - As well as any `IState<T>`
 - The exceptions are mostly such types as `XxxOptions` and methods that

@@ -79,7 +79,7 @@ namespace Tutorial
             var services = CreateServices();
             var counters = services.GetService<CounterService>();
             var stateFactory = services.GetStateFactory();
-            WriteLine("Creating aCounterState.");
+            WriteLine("Creating state.");
             using var state = stateFactory.NewLive<string>(
                 options => {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
@@ -90,9 +90,9 @@ namespace Tutorial
                     var counter = await counters.GetAsync("a");
                     return $"counters.GetAsync(a) -> {counter}";
                 });
-            WriteLine("Before aCounterState.UpdateAsync(false).");
+            WriteLine("Before state.UpdateAsync(false).");
             await state.UpdateAsync(false); // Ensures the state gets up-to-date value
-            WriteLine("After aCounterState.UpdateAsync(false).");
+            WriteLine("After state.UpdateAsync(false).");
             counters.Increment("a");
             await Task.Delay(2000);
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");

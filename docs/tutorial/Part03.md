@@ -1,10 +1,12 @@
 # Part 3: State: IState&lt;T&gt; and its flavors
 
-Video covering this part: **TBD**.
+Video covering this part:
+
+[<img src="./img/Part3-Screenshot.jpg" width="200"/>](https://youtu.be/9maSiI29kvI)
 
 You already know two key concepts of Fusion:
 
-1. **Compute services** allow to write functions that compute everything just
+1. **Compute Services** allow to write functions that compute everything just
    once and keep the result cached till the moment it either stopped being used,
    or one of its dependencies (a similar output) gets invalidated.
 2. `IComputed<T>` &ndash; an abstraction that's actually responsible for
@@ -168,7 +170,6 @@ Let's look at error handling example:
 var services = CreateServices();
 var stateFactory = services.GetStateFactory();
 var state = stateFactory.NewMutable<int>();
-var computed = state.Computed;
 WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
 WriteLine("Setting state.Error.");
 state.Error = new ApplicationException("Just a test");
@@ -208,42 +209,42 @@ Let's play with `ILiveState<T>` now:
 var services = CreateServices();
 var counters = services.GetService<CounterService>();
 var stateFactory = services.GetStateFactory();
-WriteLine("Creating aCounterState.");
-            using var aCounterState = stateFactory.NewLive<string>(
-                options =>
-                {
-                    options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
-                    options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
-                    options.Updated += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
-                },
-                async (state, cancellationToken) =>
-                {
-                    var counter = await counters.GetAsync("a");
-                    return $"counters.GetAsync(a) -> {counter}";
-                });
-WriteLine("Before aCounterState.UpdateAsync(false).");
-await aCounterState.UpdateAsync(false); // Ensures the state gets up-to-date value
-WriteLine("After aCounterState.UpdateAsync(false).");
+WriteLine("Creating state.");
+using var state = stateFactory.NewLive<string>(
+    options =>
+    {
+        options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
+        options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
+        options.Updated += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
+    },
+    async (state, cancellationToken) =>
+    {
+        var counter = await counters.GetAsync("a");
+        return $"counters.GetAsync(a) -> {counter}";
+    });
+WriteLine("Before state.UpdateAsync(false).");
+await state.UpdateAsync(false); // Ensures the state gets up-to-date value
+WriteLine("After state.UpdateAsync(false).");
 counters.Increment("a");
 await Task.Delay(2000);
-WriteLine($"Value: {aCounterState.Value}, Computed: {aCounterState.Computed}");
+WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
 ```
 
 The output:
 
 ```text
-Creating aCounterState.
-9/2/2020 10:07:23 PM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCR, State: Consistent)
-9/2/2020 10:07:23 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCR, State: Invalidated)
-Before aCounterState.UpdateAsync(false).
+Creating state.
+9/5/2020 3:33:07 AM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @26, State: Consistent)
+9/5/2020 3:33:07 AM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @26, State: Invalidated)
+Before state.UpdateAsync(false).
 GetAsync(a)
-9/2/2020 10:07:23 PM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJEV, State: Consistent)
-After aCounterState.UpdateAsync(false).
+9/5/2020 3:33:07 AM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @4a, State: Consistent)
+After state.UpdateAsync(false).
 Increment(a)
-9/2/2020 10:07:23 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJEV, State: Invalidated)
+9/5/2020 3:33:07 AM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @4a, State: Invalidated)
 GetAsync(a)
-9/2/2020 10:07:24 PM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCU, State: Consistent)
-Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#64854219) @2C3RmseJCU, State: Consistent)
+9/5/2020 3:33:08 AM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @29, State: Consistent)
+Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @29, State: Consistent)
 ```
 
 Some observations:

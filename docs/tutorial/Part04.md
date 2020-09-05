@@ -45,14 +45,14 @@ and its own
 [Castle.DynamicProxy](http://www.castleproject.org/projects/dynamicproxy/)-based proxies,
 even though in future there might be other implementations.
 
-The sequence diagram below shows what happens when a regular Web API client 
+The sequence diagram below shows what happens when a regular Web API client
 (e.g. a regular RestEase client) processes the call.
 "Web API" is controller forwarding the call to the underlying
 service (`GreetingService` in this example):
 
 ![](./img/WebApi-Regular.jpg)
 
-And that's a similar diagram showing what happens when a Replica Service 
+And that's a similar diagram showing what happens when a Replica Service
 processes the call + invalidates & updates the value later:
 
 ![](./img/WebApi-Fusion.jpg)
