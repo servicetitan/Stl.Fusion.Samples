@@ -42,10 +42,10 @@ Without further ado:
 * [Part 1: Compute Services](./Part01.md)
 * [Part 2: Computed Values: IComputed&lt;T&gt;](./Part02.md)
 * [Part 3: State: IState&lt;T&gt; and its flavors](./Part03.md)
+* [Part 4: Replica Services](./Part04.md)
 
 To be added soon:
 
-* [Part 4: Replica Services](./Part04.md)
 * [Part 5: Use case: Transparent In-Process Caching + Swapping to External Cache](./Part05.md)
 * [Part 6: Use case: Server-Side Blazor (SSB) Apps](./Part06.md)
 * [Part 7: Use case: Blazor WebAssembly Apps](./Part07.md)
