@@ -116,7 +116,7 @@ public class CounterService : ICounterService
     }
 }
 
-// We need a Web API controller to publish the service
+// We need Web API controller to publish the service
 [Route("api/[controller]")]
 [ApiController]
 public class CounterController : FusionController
@@ -189,7 +189,6 @@ public static IHost CreateHost()
             .AddApplicationPart(Assembly.GetExecutingAssembly())
             .AddNewtonsoftJson(options => MemberwiseCopier
                 .New(JsonNetSerializer.DefaultSettings).Apply(options.SerializerSettings));
-        services.AddHostedService<ApplicationPartsLogger>();
     });
     builder.ConfigureWebHost(b =>
     {
@@ -291,7 +290,7 @@ bComputed: 10, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync
 
 So Replica Service does its job &ndash; it perfectly mimics the underlying Compute Service!
 
-Notice that `CounterController` methods are invoked just once for a given set of arguments &ndash; 
+Notice that `CounterController` methods are invoked just once for a given set of arguments &ndash;
 that's because while some replica exists, Replica Services uses it to update its value, i.e. the updates
 are requested and delivered via WebSocket channel.
 

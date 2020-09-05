@@ -20,7 +20,6 @@ using Stl.Fusion.Client.RestEase;
 using Stl.Fusion.Server;
 using Stl.Reflection;
 using Stl.Serialization;
-using Stl.Testing;
 using static System.Console;
 
 namespace Tutorial
@@ -147,7 +146,6 @@ namespace Tutorial
                     .AddApplicationPart(Assembly.GetExecutingAssembly())
                     .AddNewtonsoftJson(options => MemberwiseCopier
                         .New(JsonNetSerializer.DefaultSettings).Apply(options.SerializerSettings));
-                services.AddHostedService<ApplicationPartsLogger>();
             });
             builder.ConfigureWebHost(b => {
                 b.UseKestrel();
