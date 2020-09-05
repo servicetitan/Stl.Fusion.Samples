@@ -18,8 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Client" Version="0.4.39" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.4.39" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.7" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.4.40" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.4.40" />
+    <PackageReference Include="Stl.Testing" Version="0.4.40" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.3.0-alpha.20303.1" />
   </ItemGroup>

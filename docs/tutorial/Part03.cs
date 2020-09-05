@@ -81,7 +81,7 @@ namespace Tutorial
             var counters = services.GetService<CounterService>();
             var stateFactory = services.GetStateFactory();
             WriteLine("Creating aCounterState.");
-            var aCounterState = stateFactory.NewLive<string>(
+            using var aCounterState = stateFactory.NewLive<string>(
                 options => {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
                     options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");

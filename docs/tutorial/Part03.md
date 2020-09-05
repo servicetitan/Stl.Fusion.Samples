@@ -96,11 +96,11 @@ There are two ways of doing this:
 1. Using `IStateFactory`. Any `IServiceProvider` configured to use
    Fusion (with `.AddFusionCore()`) should resolve it.
 2. Subclassing `MutableState<T>`, `LiveState<T>`, etc.
-   and either creating its instance manually, or registering 
+   and either creating its instance manually, or registering
    a new type as a service via `.AddState(...)` method and
    resolving it via `IServiceProvider`.
 
-Normally you need just the first option. 
+Normally you need just the first option.
 The remaining part of this document relies on it.
 
 ## Mutable State
@@ -158,6 +158,7 @@ Old computed: StateBoundComputed`1(MutableState`1(#63646052) @2AULKFZxjG, State:
 ```
 
 Note that:
+
 * `services.GetStateFactory()` is a shortcut for `services.GetRequiredService<IStateFactory>()`
 * Old `computed` is in `Invalidated` state at the last line.
 
@@ -208,16 +209,18 @@ var services = CreateServices();
 var counters = services.GetService<CounterService>();
 var stateFactory = services.GetStateFactory();
 WriteLine("Creating aCounterState.");
-var aCounterState = stateFactory.NewLive<string>(
-    options => {
-        options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
-        options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
-        options.Updated += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
-    },
-    async (state, cancellationToken) => {
-        var counter = await counters.GetAsync("a");
-        return $"counters.GetAsync(a) -> {counter}";
-    });
+            using var aCounterState = stateFactory.NewLive<string>(
+                options =>
+                {
+                    options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
+                    options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
+                    options.Updated += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
+                },
+                async (state, cancellationToken) =>
+                {
+                    var counter = await counters.GetAsync("a");
+                    return $"counters.GetAsync(a) -> {counter}";
+                });
 WriteLine("Before aCounterState.UpdateAsync(false).");
 await aCounterState.UpdateAsync(false); // Ensures the state gets up-to-date value
 WriteLine("After aCounterState.UpdateAsync(false).");
