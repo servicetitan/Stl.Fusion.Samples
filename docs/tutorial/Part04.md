@@ -1,6 +1,8 @@
 # Part 4: Replica Services
 
-Video covering this part: **TBD**.
+Video covering this part:
+
+[<img src="./img/Part4-Screenshot.jpg" width="200"/>](https://youtu.be/_wFhi11Eb0o)
 
 Replica Services are remote proxies of Compute Services that take
 the behavior of `IComputed<T>` into account to be more efficient

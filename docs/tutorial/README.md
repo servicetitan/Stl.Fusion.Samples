@@ -1,7 +1,9 @@
 # Stl.Fusion Tutorial
 
-> This tutorial is interactive &ndash; you can simply browse it,
-> but to modify and run the C# code presented here, you need
+> This is an **interactive** tutorial for
+> [Stl.Fusion](https://github.com/servicetitan/Stl.Fusion).
+> And although you can simply browse it, you can also run and modify any
+> C# code featured here. All you need is
 > [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
 > or [Docker](https://www.docker.com/).
 
@@ -23,9 +25,6 @@ Alternatively, you can run it with `dotnet try` CLI tool:
 
 ## Tutorial
 
-> We highly recommended you to read the
-> [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md) first.
-
 The code based on `Stl.Fusion` (we'll refer to it as "Fusion" further)
 might look completely weird at first - that's because it is based
 on abstractions you need to learn about before starting
@@ -46,10 +45,14 @@ Without further ado:
 
 To be added soon:
 
-* [Part 5: Use case: Transparent In-Process Caching + Swapping to External Cache](./Part05.md)
-* [Part 6: Use case: Server-Side Blazor (SSB) Apps](./Part06.md)
-* [Part 7: Use case: Blazor WebAssembly Apps](./Part07.md)
-* [Part 8: Use case: Hybrid Blazor (SSB + WASM) Apps](./Part08.md)
+* [Part 5: Use case: Transparent In-Process Caching + Swapping to External Caches](./Part05.md)
+* [Part 6: Use case: Real-time UI in Server-Side Blazor (SSB) Apps](./Part06.md)
+* [Part 7: Use case: Real-time UI in Blazor WebAssembly Apps](./Part07.md)
+* [Part 8: Use case: Real-time UI in Hybrid Blazor (SSB + WASM) Apps](./Part08.md)
+* [Part 9: Use case: Real-time UI in JS / React Apps](./Part09.md)
+
+Check out the [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
+as well - it provides a high-level description of Fusion abstractions.
 
 Join our [Discord Server](https://discord.gg/EKEwv6d)
 to ask questions and track project updates.
