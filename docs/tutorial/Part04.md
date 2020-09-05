@@ -299,7 +299,7 @@ As you might guess, the controller we were using here is a regular Web API contr
 If you're curious whether it's possible to call its methods without Fusion - yes, it is.
 **So every Fusion endpoint is also a regular Web API endpoint!** The proof:
 
-[<img src="./img/SwaggerPost.jpg" width="600"/>](https://www.youtube.com/watch?v=jYVe5yd0xuQ&t=6044s)
+[<img src="./img/SwaggerPost.jpg" width="600"/>](https://www.youtube.com/watch?v=jYVe5yd0xuQ&t=4173s)
 
 Now, let's show that client-side `LiveState<T>` can use Replica Service
 to "observe" the output of server-side Compute Service. The code below
