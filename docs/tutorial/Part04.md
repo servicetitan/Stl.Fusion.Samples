@@ -45,7 +45,25 @@ and its own
 [Castle.DynamicProxy](http://www.castleproject.org/projects/dynamicproxy/)-based proxies,
 even though in future there might be other implementations.
 
-Ok, let's write some code to learn how it works.
+The sequence diagram below shows what happens when a regular Web API client 
+(e.g. a regular RestEase client) processes the call.
+"Web API" is controller forwarding the call to the underlying
+service (`GreetingService` in this example):
+
+![](./img/WebApi-Regular.jpg)
+
+And that's a similar diagram showing what happens when a Replica Service 
+processes the call + invalidates & updates the value later:
+
+![](./img/WebApi-Fusion.jpg)
+
+Gantt chart for this process could look as follows:
+
+![](./img/ComputedReplica-Gantt.jpg)
+
+Ok, let's write some code to learn how it works. Unfortunately this time the amount of
+code is going to explode a bit - that's mostly due to the fact we'll need a web server
+hosting Compute Service itself, a controller publishing its invocable endpoints, etc.
 
 1. Common interface (don't run this code yet):
 

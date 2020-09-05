@@ -148,9 +148,17 @@ A diagram showing how `ConsistencyState` transition works:
 
 [<img src="./img/ConsistencyState.jpg" width="300"/>](./img/ConsistencyState.jpg)
 
-And finally, an ugly visualization showing how `IComputed<T>` instances
-are getting invalidated and eventually replaced with their consistent
-versions on update:
+Since every `IComputed<T>` is *almost immutable*, a new instance of
+`IComputed` gets created on recomputation if the most recent one is 
+already invalidated at this point (otherwise there is no reason to
+recompute). Here is how 3 computations (of the same value) look 
+on a Gantt chart:
+
+![](./img/Computed-Gantt.jpg)
+
+And finally, an ugly visualization showing how multiple `IComputed<T>` 
+instances get invalidated and eventually replaced with their consistent
+versions:
 
 ![](./img/Invalidate-Update.gif)
 
@@ -273,7 +281,7 @@ The answer is:
   even if you aren't going to use the result.
 * On contrary, Fusion is designed to deal with huge models "covering" your
   whole data; and even though it works on the client too, the most significant
-  work it typically does happens on server, where most of its "compute services"
+  work it typically does happens on server, where most of its Compute Services
   live. Recomputing every dependency on change isn't just inefficient, but
   almost never possible in this scenario.
 

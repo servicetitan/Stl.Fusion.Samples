@@ -60,7 +60,6 @@ namespace Tutorial
             var services = CreateServices();
             var stateFactory = services.GetStateFactory();
             var state = stateFactory.NewMutable<int>();
-            var computed = state.Computed;
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
             WriteLine("Setting state.Error.");
             state.Error = new ApplicationException("Just a test");
@@ -81,7 +80,7 @@ namespace Tutorial
             var counters = services.GetService<CounterService>();
             var stateFactory = services.GetStateFactory();
             WriteLine("Creating aCounterState.");
-            using var aCounterState = stateFactory.NewLive<string>(
+            using var state = stateFactory.NewLive<string>(
                 options => {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
                     options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
@@ -92,11 +91,11 @@ namespace Tutorial
                     return $"counters.GetAsync(a) -> {counter}";
                 });
             WriteLine("Before aCounterState.UpdateAsync(false).");
-            await aCounterState.UpdateAsync(false); // Ensures the state gets up-to-date value
+            await state.UpdateAsync(false); // Ensures the state gets up-to-date value
             WriteLine("After aCounterState.UpdateAsync(false).");
             counters.Increment("a");
             await Task.Delay(2000);
-            WriteLine($"Value: {aCounterState.Value}, Computed: {aCounterState.Computed}");
+            WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
             #endregion
         }
     }
