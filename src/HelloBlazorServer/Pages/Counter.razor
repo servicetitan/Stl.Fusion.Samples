@@ -1,7 +1,8 @@
 ﻿@page "/counter"
 @using System.Threading
-@inherits LiveComponentBase<int>
+@inherits LiveComponentBase<string>
 @inject CounterService CounterService
+@inject TimeService TimeService
 @inject NavigationManager Navigator
 
 <h1>Counter</h1>
@@ -11,21 +12,26 @@
     to see it updates in sync in real time.
 </p>
 
-<p>Current count: @State.LastValue</p>
+<p>Count: @State.LastValue</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="IncrementAsync">Increment</button>
 
 @code {
-    protected override Task<int> ComputeStateAsync(CancellationToken cancellationToken)
-        => CounterService.GetCounterAsync(cancellationToken);
+    protected override async Task<string> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        var (count, changeTime) = await CounterService.GetCounterAsync(cancellationToken).ConfigureAwait(false);
+        var momentsAgo = await TimeService.GetMomentsAgoAsync(changeTime, cancellationToken).ConfigureAwait(false);
+        return $"{count}, changed {momentsAgo}";
+    }
 
-    private async Task IncrementCount()
+    private async Task IncrementAsync()
     {
         await CounterService.IncrementCounterAsync();
         // The next Invalidate(true) call is optional:
-        // it cancels the active update delay, nothing else.
-        // You can comment it out & see it still works, though
-        // the updates are coming with default 1 second delay.
+        // it cancels active update delay, nothing else.
+        // You can comment it out & see it still works,
+        // though the counter changes with 0.5s delay
+        // (the default update delay is set to 0.5s in Startup.cs).
         State.Invalidate(true);
     }
 }

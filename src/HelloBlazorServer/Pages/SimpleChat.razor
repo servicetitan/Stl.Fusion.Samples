@@ -1,0 +1,78 @@
+﻿@page "/simpleChat"
+@using System.Threading
+@inherits LiveComponentBase<(string Name, string Message, string Time)[]>
+@inject ChatService ChatService
+@inject TimeService TimeService
+@inject NavigationManager Navigator
+
+@{
+    var messages = State.LastValue ?? Array.Empty<(string, string, string)>();
+}
+
+<h1>Simple Chat</h1>
+
+<p>
+    Open this page in <a href="@Navigator.Uri" target="_blank">another window</a>
+    to see it updates in sync in real time.
+</p>
+
+<table class="table table-sm table-striped">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Message</th>
+        <th scope="col">Time</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var (name, message, time) in messages) {
+            <tr>
+                <td style="width: 15%; max-width: 20%">@name</td>
+                <td style="width: auto; min-width: 60%">@message</td>
+                <td style="width: 15%; max-width: 20%">@time</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form @onsubmit="@PostAsync">
+<div class="input-group pb-3">
+<div class="input-group-prepend">
+    <input class="form-control" @bind-value="@Name" @bind-value:event="oninput" placeholder="Name" />
+</div>
+<input class="form-control" @bind-value="@Message" @bind-value:event="oninput" placeholder="Message" />
+<div class="input-group-append">
+    <button type="submit" class="btn btn-primary">Post</button>
+</div>
+</div>
+</form>
+
+@code {
+    private string Name { get; set; } = "Neo";
+    private string Message { get; set; } = "Red, please.";
+
+    protected override async Task OnInitializedAsync()
+        => await State.UpdateAsync(false);
+
+    protected override async Task<(string Name, string Message, string Time)[]> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        var messages = await ChatService.GetMessagesAsync(20, cancellationToken).ConfigureAwait(false);
+        var result = new List<(string Name, string Message, string Time)>();
+        foreach (var message in messages) {
+            var momentsAgo = await TimeService.GetMomentsAgoAsync(message.Time, cancellationToken).ConfigureAwait(false);
+            result.Add((message.Name, message.Message, momentsAgo));
+        }
+        return result.ToArray();
+    }
+
+    private async Task PostAsync()
+    {
+        if (Message == "")
+            return;
+        await ChatService.PostMessageAsync(Name, Message);
+        Message = "";
+        // The next Invalidate(true) call is optional: it cancels active update delay.
+        // You can comment it out & see it still works, though there will be 0.5s delay in message list update.
+        State.Invalidate(true);
+    }
+}

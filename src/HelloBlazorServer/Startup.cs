@@ -1,9 +1,11 @@
+using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Pluralize.NET;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 
@@ -27,6 +29,10 @@ namespace Samples.HelloBlazorServer
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AddDiscoveredServices(Assembly.GetExecutingAssembly());
+            // Default update delay is set to 0.5 seconds
+            services.AddSingleton(c => new UpdateDelayer.Options() { Delay = TimeSpan.FromSeconds(0.5) });
+
+            services.AddSingleton<IPluralize>(c => new Pluralizer());
 
             // Web
             services.AddRazorPages();
