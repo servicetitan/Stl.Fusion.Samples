@@ -6,15 +6,17 @@
 @inject NavigationManager Navigator
 
 @{
-    var messages = State.LastValue ?? Array.Empty<(string, string, string)>();
+    var state = State.LastValue ?? Array.Empty<(string, string, string)>();
+    var error = State.Error;
 }
 
 <h1>Simple Chat</h1>
 
-<p>
-    Open this page in <a href="@Navigator.Uri" target="_blank">another window</a>
-    to see it updates in sync in real time.
-</p>
+<p>Open this page in <a href="@Navigator.Uri" target="_blank">another window</a> to see it updates in sync.</p>
+
+@if (error != null) {
+    <div class="alert alert-warning" role="alert">Update error: @error.Message</div>
+}
 
 <table class="table table-sm table-striped">
     <thead>
@@ -25,7 +27,7 @@
     </tr>
     </thead>
     <tbody>
-        @foreach (var (name, message, time) in messages) {
+        @foreach (var (name, message, time) in state) {
             <tr>
                 <td style="width: 15%; max-width: 20%">@name</td>
                 <td style="width: auto; min-width: 60%">@message</td>

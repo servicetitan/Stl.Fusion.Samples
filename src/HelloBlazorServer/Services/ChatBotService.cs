@@ -23,7 +23,7 @@ namespace Samples.HelloBlazorServer.Services
         private static string Groot = "Groot";
         private static string GrootMessage = "I am Groot!";
         private static string TimeBot = "Time Bot";
-        private static HashSet<string> BotNames = new HashSet<string>() {Morpheus, Groot, TimeBot};
+        private static readonly HashSet<string> BotNames = new HashSet<string>() {Morpheus, Groot, TimeBot};
 
         private readonly ChatService _chatService;
         private readonly ILiveState<(DateTime Time, string Name, string Message)[]> _state;

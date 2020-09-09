@@ -5,14 +5,19 @@
 @inject TimeService TimeService
 @inject NavigationManager Navigator
 
+@{
+    var state = State.LastValue;
+    var error = State.Error;
+}
+
 <h1>Counter</h1>
 
-<p>
-    Open this page in <a href="@Navigator.Uri" target="_blank">another window</a>
-    to see it updates in sync in real time.
-</p>
+<p>Open this page in <a href="@Navigator.Uri" target="_blank">another window</a> to see it updates in sync.</p>
+@if (error != null) {
+    <div class="alert alert-warning" role="alert">Update error: @error.Message</div>
+}
 
-<p>Count: @State.LastValue</p>
+<p>Count: @state</p>
 
 <button class="btn btn-primary" @onclick="IncrementAsync">Increment</button>
 
