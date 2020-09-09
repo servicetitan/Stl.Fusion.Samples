@@ -59,7 +59,7 @@
         var messages = await ChatService.GetMessagesAsync(20, cancellationToken).ConfigureAwait(false);
         var result = new List<(string Name, string Message, string Time)>();
         foreach (var message in messages) {
-            var momentsAgo = await TimeService.GetMomentsAgoAsync(message.Time, cancellationToken).ConfigureAwait(false);
+            var momentsAgo = await TimeService.GetMomentsAgoAsync(message.Time).ConfigureAwait(false);
             result.Add((message.Name, message.Message, momentsAgo));
         }
         return result.ToArray();

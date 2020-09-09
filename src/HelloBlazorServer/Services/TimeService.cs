@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Pluralize.NET;
 using Stl;
@@ -14,12 +13,12 @@ namespace Samples.HelloBlazorServer.Services
 
         public TimeService(IPluralize pluralize) => _pluralize = pluralize;
 
-        [ComputeMethod(AutoInvalidateTime = 0.5)]
-        public virtual Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)
+        [ComputeMethod(AutoInvalidateTime = 0.5)] // Unconditional auto-invalidation
+        public virtual Task<DateTime> GetTimeAsync()
             => Task.FromResult(DateTime.Now);
 
         [ComputeMethod]
-        public virtual Task<string> GetMomentsAgoAsync(DateTime time, CancellationToken cancellationToken = default)
+        public virtual Task<string> GetMomentsAgoAsync(DateTime time)
         {
             var delta = DateTime.Now - time;
             if (delta < TimeSpan.Zero)
@@ -29,7 +28,7 @@ namespace Samples.HelloBlazorServer.Services
             var pluralizedUnitName = _pluralize.Format(unitName, unitCount);
             var result = $"{unitCount} {pluralizedUnitName} ago";
 
-            // Let's self-invalidate the result when it's supposed to change
+            // Invalidate the result when it's supposed to change
             var delay = (unitCount + 1) * unit - delta;
             var computed = Computed.GetCurrent();
             Task.Delay(delay, default).ContinueWith(_ => computed.Invalidate()).Ignore();

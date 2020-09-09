@@ -19,8 +19,8 @@
 @code {
     protected override async Task<string> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        var (count, changeTime) = await CounterService.GetCounterAsync(cancellationToken).ConfigureAwait(false);
-        var momentsAgo = await TimeService.GetMomentsAgoAsync(changeTime, cancellationToken).ConfigureAwait(false);
+        var (count, changeTime) = await CounterService.GetCounterAsync().ConfigureAwait(false);
+        var momentsAgo = await TimeService.GetMomentsAgoAsync(changeTime).ConfigureAwait(false);
         return $"{count}, changed {momentsAgo}";
     }
 
