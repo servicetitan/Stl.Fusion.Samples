@@ -88,6 +88,10 @@ Build & run with [Docker](https://docs.docker.com/get-docker/) +
 * Go to [Documentation Home]
 * Join our [Discord Server] to ask questions and track project updates.
 
+**P.S.** If you've already spent some time learning about Stl.Fusion, 
+please help us to make it better by completing [Stl.Fusion Feedback Form] 
+(1&hellip;3 min).
+
 
 [Stl.Fusion]: https://github.com/servicetitan/Stl.Fusion
 [Stl.Fusion repository]: https://github.com/servicetitan/Stl.Fusion
@@ -106,3 +110,4 @@ Build & run with [Docker](https://docs.docker.com/get-docker/) +
 [Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
 [Stl.Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
 [Discord Server]: https://discord.gg/EKEwv6d
+[Stl.Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
