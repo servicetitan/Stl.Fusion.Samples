@@ -144,8 +144,9 @@ namespace Tutorial
                 services.AddRouting();
                 services.AddMvc()
                     .AddApplicationPart(Assembly.GetExecutingAssembly())
-                    .AddNewtonsoftJson(options => MemberwiseCopier
-                        .New(JsonNetSerializer.DefaultSettings).Apply(options.SerializerSettings));
+                    .AddNewtonsoftJson(options => MemberwiseCopier.CopyMembers(
+                        JsonNetSerializer.DefaultSettings,
+                        options.SerializerSettings));
             });
             builder.ConfigureWebHost(b => {
                 b.UseKestrel();

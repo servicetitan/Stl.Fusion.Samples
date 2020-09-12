@@ -58,10 +58,10 @@ namespace Samples.Blazor.Server
             // Web
             services.AddRouting();
             services.AddMvc()
-                .AddNewtonsoftJson(options => MemberwiseCopier
-                    .New(JsonNetSerializer.DefaultSettings)
-                    .Apply(options.SerializerSettings))
-                .AddApplicationPart(Assembly.GetExecutingAssembly());
+                .AddApplicationPart(Assembly.GetExecutingAssembly())
+                .AddNewtonsoftJson(options => MemberwiseCopier.CopyMembers(
+                    JsonNetSerializer.DefaultSettings,
+                    options.SerializerSettings));
             services.AddServerSideBlazor();
 
             // Swagger & debug tools
