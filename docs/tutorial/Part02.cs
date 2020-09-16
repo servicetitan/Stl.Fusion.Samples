@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Stl;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using static System.Console;
@@ -88,7 +89,7 @@ namespace Tutorial
                     await Task.Delay(1000);
                     counters.Increment("a");
                 }
-            });
+            }).Ignore();
 
             var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine($"{DateTime.Now}: {computed.Value}");

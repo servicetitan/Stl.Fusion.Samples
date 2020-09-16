@@ -5,14 +5,13 @@ using Stl.Fusion;
 
 namespace Samples.Blazor.Common.Services
 {
-    // TODO: Implement this
+    // TODO: Implement Authenticator
     public interface IAuthenticator
     {
-        Task<bool> LogoutAsync(string sessionId, CancellationToken cancellationToken = default);
+        Task<string> GetLoginUrlAsync(CancellationToken cancellationToken = default);
+        Task<bool> LogoutAsync(string clientId, CancellationToken cancellationToken = default);
 
         [ComputeMethod]
-        Task<ClaimsPrincipal?> GetUserAsync(string sessionId, CancellationToken cancellationToken = default);
-        [ComputeMethod]
-        Task<string> GetLoginUrlAsync(string sessionId, CancellationToken cancellationToken = default);
+        Task<ClaimsPrincipal?> GetUserAsync(string clientId, CancellationToken cancellationToken = default);
     }
 }

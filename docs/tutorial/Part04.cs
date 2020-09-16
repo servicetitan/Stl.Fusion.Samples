@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using RestEase;
+using Stl;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
@@ -202,9 +203,9 @@ namespace Tutorial
             var services = CreateClientServices();
             var counters = services.GetService<ICounterService>();
             var aComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
-            Task.Run(() => WatchAsync(nameof(aComputed), aComputed));
+            Task.Run(() => WatchAsync(nameof(aComputed), aComputed)).Ignore();
             var bComputed = await Computed.CaptureAsync(_ => counters.GetAsync("b"));
-            Task.Run(() => WatchAsync(nameof(bComputed), bComputed));
+            Task.Run(() => WatchAsync(nameof(bComputed), bComputed)).Ignore();
 
             await Task.Delay(200);
             await counters.IncrementAsync("a");

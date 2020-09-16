@@ -233,7 +233,7 @@ Task.Run(async () =>
         await Task.Delay(1000);
         counters.Increment("a");
     }
-});
+}).Ignore();
 
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"{DateTime.Now}: {computed.Value}");

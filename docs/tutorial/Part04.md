@@ -189,8 +189,9 @@ public static IHost CreateHost()
         services.AddRouting();
         services.AddMvc()
             .AddApplicationPart(Assembly.GetExecutingAssembly())
-            .AddNewtonsoftJson(options => MemberwiseCopier
-                .New(JsonNetSerializer.DefaultSettings).Apply(options.SerializerSettings));
+            .AddNewtonsoftJson(options => MemberwiseCopier.CopyMembers(
+                JsonNetSerializer.DefaultSettings,
+                options.SerializerSettings));
     });
     builder.ConfigureWebHost(b =>
     {
@@ -251,9 +252,9 @@ async Task WatchAsync<T>(string name, IComputed<T> computed)
 var services = CreateClientServices();
 var counters = services.GetService<ICounterService>();
 var aComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
-Task.Run(() => WatchAsync(nameof(aComputed), aComputed));
+Task.Run(() => WatchAsync(nameof(aComputed), aComputed)).Ignore();
 var bComputed = await Computed.CaptureAsync(_ => counters.GetAsync("b"));
-Task.Run(() => WatchAsync(nameof(bComputed), bComputed));
+Task.Run(() => WatchAsync(nameof(bComputed), bComputed)).Ignore();
 
 await Task.Delay(200);
 await counters.IncrementAsync("a");

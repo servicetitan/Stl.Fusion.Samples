@@ -1,19 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Stl.Async;
-using Stl.Collections;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Samples.Blazor.Common.Services;
 using Stl;
+using Stl.Collections;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -21,23 +19,23 @@ namespace Samples.Blazor.Server.Services
     public class ChatService : IChatService
     {
         private readonly ILogger _log;
-        private readonly ChatDbContextPool _dbContextPool;
-        private readonly   IUzbyClient _uzbyClient;
-        private readonly  IForismaticClient _forismaticClient;
-        private readonly  IPublisher _publisher;
+        private readonly IUzbyClient _uzbyClient;
+        private readonly IForismaticClient _forismaticClient;
+        private readonly IPublisher _publisher;
+        private readonly IServiceProvider _services;
 
         public ChatService(
-            ChatDbContextPool dbContextPool,
             IUzbyClient uzbyClient,
             IForismaticClient forismaticClient,
             IPublisher publisher,
+            IServiceProvider services,
             ILogger<ChatService>? log = null)
         {
             _log = log ??= NullLogger<ChatService>.Instance;
-            _dbContextPool = dbContextPool;
             _uzbyClient = uzbyClient;
             _forismaticClient = forismaticClient;
             _publisher = publisher;
+            _services = services;
         }
 
         // Writers
@@ -45,10 +43,9 @@ namespace Samples.Blazor.Server.Services
         public async Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default)
         {
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
-            using var lease = _dbContextPool.Rent();
-            var dbContext = lease.Subject;
+            await using var dbContext = _services.RentDbContext();
 
-            var userEntry = dbContext.Users.Add(new ChatUser() {
+            var userEntry = dbContext.ChatUsers.Add(new ChatUser() {
                 Name = name
             });
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -63,12 +60,11 @@ namespace Samples.Blazor.Server.Services
         public async Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default)
         {
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
-            using var lease = _dbContextPool.Rent();
-            var dbContext = lease.Subject;
+            await using var dbContext = _services.RentDbContext();
 
             var user = await GetUserAsync(id, cancellationToken).ConfigureAwait(false);
             user.Name = name;
-            dbContext.Users.Update(user);
+            dbContext.ChatUsers.Update(user);
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             // Invalidation
@@ -79,11 +75,10 @@ namespace Samples.Blazor.Server.Services
         public async Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default)
         {
             text = await NormalizeTextAsync(text, cancellationToken).ConfigureAwait(false);
-            using var lease = _dbContextPool.Rent();
-            var dbContext = lease.Subject;
+            await using var dbContext = _services.RentDbContext();
 
             await GetUserAsync(userId, cancellationToken).ConfigureAwait(false); // Check to ensure the user exists
-            var messageEntry = dbContext.Messages.Add(new ChatMessage() {
+            var messageEntry = dbContext.ChatMessages.Add(new ChatMessage() {
                 CreatedAt = DateTime.UtcNow,
                 UserId = userId,
                 Text = text,
@@ -100,9 +95,8 @@ namespace Samples.Blazor.Server.Services
 
         public virtual async Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
         {
-            using var lease = _dbContextPool.Rent();
-            var dbContext = lease.Subject;
-            return await dbContext.Users.LongCountAsync(cancellationToken).ConfigureAwait(false);
+            await using var dbContext = _services.RentDbContext();
+            return await dbContext.ChatUsers.LongCountAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
@@ -121,9 +115,8 @@ namespace Samples.Blazor.Server.Services
 
         public virtual async Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
         {
-            using var lease = _dbContextPool.Rent();
-            var dbContext = lease.Subject;
-            return await dbContext.Users
+            await using var dbContext = _services.RentDbContext();
+            return await dbContext.ChatUsers
                 .SingleAsync(u => u.Id == id, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -131,9 +124,8 @@ namespace Samples.Blazor.Server.Services
         public virtual async Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
         {
             await EveryChatTail().ConfigureAwait(false);
-            using var lease = _dbContextPool.Rent();
-            var dbContext = lease.Subject;
-            var messages = dbContext.Messages.OrderByDescending(m => m.Id).Take(length).ToList();
+            await using var dbContext = _services.RentDbContext();
+            var messages = dbContext.ChatMessages.OrderByDescending(m => m.Id).Take(length).ToList();
             messages.Reverse();
             var users = await Task.WhenAll(messages
                     .DistinctBy(m => m.UserId)

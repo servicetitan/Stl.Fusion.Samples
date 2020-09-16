@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,22 +15,23 @@ namespace Samples.Blazor.Server
         public static async Task Main(string[] args)
         {
             var host = Host.CreateDefaultBuilder()
-                .ConfigureAppConfiguration(cfg => {
+                .ConfigureAppConfiguration((ctx, builder) => {
+                    if (ctx.HostingEnvironment.IsDevelopment())
+                        builder.AddUserSecrets<Program>();
                     // Looks like there is no better way to set _default_ URL
-                    cfg.Sources.Insert(0, new MemoryConfigurationSource() {
+                    builder.Sources.Insert(0, new MemoryConfigurationSource() {
                         InitialData = new Dictionary<string, string>() {
                             {WebHostDefaults.ServerUrlsKey, "http://localhost:5005"},
                         }
                     });
                 })
-                .ConfigureWebHostDefaults(b => b.UseStartup<Startup>())
+                .ConfigureWebHostDefaults(builder => builder.UseStartup<Startup>())
                 .Build();
 
             // Ensure the DB is created
             using (var scope = host.Services.CreateScope()) {
-                var services = scope.ServiceProvider;
-                var chatDbContext = services.GetRequiredService<ChatDbContext>();
-                await chatDbContext.Database.EnsureCreatedAsync();
+                await using var dbContext = scope.ServiceProvider.RentDbContext();
+                await dbContext.Database.EnsureCreatedAsync();
             }
 
             await host.RunAsync();

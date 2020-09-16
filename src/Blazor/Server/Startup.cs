@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -38,11 +38,10 @@ namespace Samples.Blazor.Server
         {
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
-            var dbPath = appTempDir & "Chat.db";
-            services
-                .AddDbContextPool<ChatDbContext>(builder => {
-                    builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
-                });
+            var dbPath = appTempDir & "App.db";
+            services.AddDbContextPool<AppDbContext>(builder => {
+                builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
+            });
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
@@ -54,6 +53,26 @@ namespace Samples.Blazor.Server
             services.AddDiscoveredServices(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
+
+            // Session
+            services.AddDistributedMemoryCache();
+            services.AddSession(options => {
+                options.IdleTimeout = TimeSpan.FromMinutes(1);
+                options.Cookie.HttpOnly = true;
+            });
+
+            // Authentication
+            services.AddAuthentication(options => {
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie(options => {
+                    options.LoginPath = "/signin";
+                    options.LogoutPath = "/signout";
+                })
+                .AddGitHub(options => {
+                    options.ClientId = Cfg["Authentication:GitHub:ClientId"];
+                    options.ClientSecret = Cfg["Authentication:GitHub:ClientSecret"];
+                });
 
             // Web
             services.AddRouting();
@@ -97,6 +116,7 @@ namespace Samples.Blazor.Server
                 ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
             });
+            app.UseSession();
 
             // Static + Swagger
             app.UseBlazorFrameworkFiles();
@@ -108,6 +128,8 @@ namespace Samples.Blazor.Server
 
             // API controllers
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints => {
                 endpoints.MapBlazorHub();
                 endpoints.MapFusionWebSocketServer();
