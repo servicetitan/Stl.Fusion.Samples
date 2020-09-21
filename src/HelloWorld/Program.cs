@@ -11,9 +11,10 @@ namespace Samples.HelloWorld
         static async Task Main(string[] args)
         {
             var services = new ServiceCollection()
-                .AddFusionCore()
-                .AddComputeService<UserService>()
-                .AddComputeService<GreetingService>()
+                .AddFusion()
+                    .AddComputeService<UserService>()
+                    .AddComputeService<GreetingService>()
+                    .BackToServices()
                 .BuildServiceProvider();
 
             var users = services.GetRequiredService<UserService>();

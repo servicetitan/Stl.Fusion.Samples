@@ -34,10 +34,12 @@ namespace Tutorial
         }
 
         public static IServiceProvider CreateServices()
-            => new ServiceCollection()
-                .AddFusionCore()
-                .AddDiscoveredServices(Assembly.GetExecutingAssembly())
-                .BuildServiceProvider();
+        {
+            var services = new ServiceCollection();
+            services.AddFusion();
+            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            return services.BuildServiceProvider();
+        }
         #endregion
 
         public static async Task CaptureComputed()

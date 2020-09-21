@@ -6,7 +6,7 @@ using Stl.Fusion.Client;
 
 namespace Samples.Blazor.Server.Services
 {
-    [RestEaseService]
+    [RestEaseClientService]
     [BasePath("https://api.forismatic.com/api/1.0/")]
     public interface IForismaticClient
     {

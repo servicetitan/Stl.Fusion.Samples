@@ -24,13 +24,12 @@
     <h1>Chat</h1>
 </div>
 
-<p>
+<div class="alert alert-primary">
     To see the state replication in action,
     <a href="@Navigator.Uri" target="_blank">open this chat</a> or
     <a href="/composition" target="_blank">Composition example</a>
     in another window.
-</p>
-
+</div>
 @if (locals.Error != null) {
     <div class="alert alert-danger" role="alert">
         @locals.Error.Message

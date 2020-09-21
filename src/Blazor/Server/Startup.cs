@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using Samples.Blazor.Common.Services;
 using Samples.Blazor.Server.Services;
 using Stl.DependencyInjection;
+using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
@@ -45,12 +46,12 @@ namespace Samples.Blazor.Server
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
-            services.AddFusionWebSocketServer();
-            // Helpers used by ChatService
-            services.AddRestEaseCore();
+            var fusion = services.AddFusion();
+            var fusionServer = fusion.AddWebSocketServer();
+            var fusionClient = fusion.AddRestEaseClient();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AddDiscoveredServices(Assembly.GetExecutingAssembly());
+            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 
@@ -70,8 +71,8 @@ namespace Samples.Blazor.Server
                     options.LogoutPath = "/signout";
                 })
                 .AddGitHub(options => {
-                    options.ClientId = Cfg["Authentication:GitHub:ClientId"];
-                    options.ClientSecret = Cfg["Authentication:GitHub:ClientSecret"];
+                    options.ClientId = Cfg["Authentication:GitHub:ClientId"] ?? "<None>";
+                    options.ClientSecret = Cfg["Authentication:GitHub:ClientSecret"] ?? "<None>";
                 });
 
             // Web

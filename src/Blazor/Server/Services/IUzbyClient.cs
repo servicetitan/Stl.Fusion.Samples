@@ -5,7 +5,7 @@ using Stl.Fusion.Client;
 
 namespace Samples.Blazor.Server.Services
 {
-    [RestEaseService]
+    [RestEaseClientService]
     [BasePath("https://uzby.com/api.php")]
     public interface IUzbyClient
     {

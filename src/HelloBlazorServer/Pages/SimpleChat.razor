@@ -12,8 +12,9 @@
 
 <h1>Simple Chat</h1>
 
-<p>Open this page in <a href="@Navigator.Uri" target="_blank">another window</a> to see it updates in sync.</p>
-
+<div class="alert alert-primary">
+    Open this page in <a href="@Navigator.Uri" target="_blank">another window</a> to see it updates in sync.
+</div>
 @if (error != null) {
     <div class="alert alert-warning" role="alert">Update error: @error.Message</div>
 }

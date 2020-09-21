@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,7 +9,7 @@ namespace Samples.Blazor.Server.Controllers
     {
         [HttpGet("~/signin")]
         [HttpGet("~/signin/{provider}")]
-        public async Task<IActionResult> SignIn(string? provider = null)
+        public IActionResult SignIn(string? provider = null)
         {
             provider ??= GitHubAuthenticationDefaults.AuthenticationScheme;
             // Instruct the middleware corresponding to the requested external identity

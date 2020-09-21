@@ -13,10 +13,12 @@ namespace Tutorial
     {
         #region Part01_CreateServices
         public static IServiceProvider CreateServices()
-            => new ServiceCollection()
-                .AddFusionCore()
-                .AddDiscoveredServices(Assembly.GetExecutingAssembly())
-                .BuildServiceProvider();
+        {
+            var services = new ServiceCollection();
+            services.AddFusion();
+            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            return services.BuildServiceProvider();
+        }
         #endregion
 
         #region Part01_CounterService

@@ -25,10 +25,10 @@ namespace Samples.HelloBlazorServer
         public void ConfigureServices(IServiceCollection services)
         {
             // Fusion services
-            services.AddFusionCore();
+            services.AddFusion();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AddDiscoveredServices(Assembly.GetExecutingAssembly());
+            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Default update delay is set to 0.5 seconds
             services.AddSingleton(c => new UpdateDelayer.Options() { Delay = TimeSpan.FromSeconds(0.5) });
 

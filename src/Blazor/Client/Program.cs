@@ -50,14 +50,14 @@ namespace Samples.Blazor.Client
             services.ConfigureAll<HttpClientFactoryOptions>(o => {
                 o.HttpClientActions.Add(client => client.BaseAddress = apiBaseUri);
             });
-            services.AddFusionWebSocketClient((c, o) => {
+            services.AddFusion().AddRestEaseClient((c, o) => {
                 o.BaseUri = baseUri;
                 o.MessageLogLevel = LogLevel.Information;
             });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AddDiscoveredServices(ClientSideScope, Assembly.GetExecutingAssembly());
+            services.AttributeBased(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
             ConfigureSharedServices(services);
         }
 
@@ -70,7 +70,7 @@ namespace Samples.Blazor.Client
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AddDiscoveredServices(Assembly.GetExecutingAssembly());
+            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }
 }
