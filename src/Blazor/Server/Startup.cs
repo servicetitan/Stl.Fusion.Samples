@@ -62,7 +62,7 @@ namespace Samples.Blazor.Server
                 options.Cookie.HttpOnly = true;
             });
 
-            // Authentication
+            // Authentication - unused for now, this is a work-in-progress
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 })
