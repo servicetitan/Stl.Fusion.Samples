@@ -1,14 +1,27 @@
 ﻿@page "/"
 @namespace Samples.Blazor.Server.Pages
-@using Microsoft.Extensions.DependencyInjection
 @using Samples.Blazor.Client
 @using Samples.Blazor.Server.Controllers
+@using Samples.Blazor.Server.Services
+@using Stl
 @using Stl.Fusion.Authentication
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IAuthSessionAccessor AuthSessionAccessor
+@inject AuthSyncService AuthSyncService
 @{
-    var authSessionId = HttpContext.RequestServices.GetRequiredService<IAuthSessionAccessor>().Session?.Id ?? "";
-    var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
+    var authSession = AuthSessionAccessor.Session;
+    var authSessionId = authSession?.Id ?? "";
+    var authSyncService = AuthSyncService;
+    var principal = HttpContext.User;
+    if (principal != null && authSession != null) {
+        Task.Run(() => authSyncService.SyncAsync(principal, authSession)).Ignore();
+    }
+
     Layout = null;
+    var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
+    var request = HttpContext.Request;
+    var mustClose = request.Path.Value == "/close";
+    var flowName = request.Query.TryGetValue("flow", out var flows) ? flows.FirstOrDefault() : "";
 }
 
 <!DOCTYPE html>
@@ -25,7 +38,16 @@
     <script src="js/app.js"></script>
 </head>
 <body>
-@if (!isServerSideBlazor) {
+@if (mustClose) {
+    <script>
+        setTimeout(function () {
+            window.close();
+        }, 500)
+    </script>
+    <div class="alert alert-primary">
+        @(flowName) completed, you can close this window.
+    </div>
+} else if (!isServerSideBlazor) {
     <app>Loading...</app>
 
     <div id="blazor-error-ui">
@@ -34,11 +56,10 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
-}
-else {
+} else {
     <app>
         @* <component type="typeof(App)" render-mode="ServerPrerendered"/> *@
-        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered, new { AuthSessionId = @authSessionId }))
+        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered, new { AuthSessionId = authSessionId }))
     </app>
 
     <div id="blazor-error-ui">

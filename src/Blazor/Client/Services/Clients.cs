@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
 using Samples.Blazor.Common.Services;
+using Stl.Fusion.Authentication;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Client.RestEase;
@@ -55,6 +56,6 @@ namespace Samples.Blazor.Client.Services
     public interface IComposerClient : IRestEaseReplicaClient
     {
         [Get("get")]
-        Task<ComposedValue> GetComposedValueAsync(string? parameter, CancellationToken cancellationToken = default);
+        Task<ComposedValue> GetComposedValueAsync(string? parameter, AuthSession session, CancellationToken cancellationToken = default);
     }
 }

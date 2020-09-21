@@ -1,10 +1,15 @@
 using System;
+using System.Buffers.Text;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
+using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -65,8 +70,11 @@ namespace Samples.Blazor.Server
             var gitHubClientId = Cfg["Authentication:GitHub:ClientId"];
             var gitHubClientSecret = Cfg["Authentication:GitHub:ClientSecret"];
             if (gitHubClientId == null || gitHubClientSecret == null) {
-                gitHubClientId = gitHubClientSecret = "<None>";
-                NoGitHubCredentials = true;
+                // Note that you should never store these secrets in your code.
+                // We put them here solely to simplify running this sample.
+                gitHubClientId = "7a38bc415f7e1200fee2";
+                gitHubClientSecret = Encoding.UTF8.GetString(
+                    Convert.FromBase64String("MGZjOWI2OTEzMzhhM2UzYzc5OTgzZGNmOGYyMjNmZjFmYzQ3MmMzNQ=="));
             }
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -78,6 +86,8 @@ namespace Samples.Blazor.Server
                 .AddGitHub(options => {
                     options.ClientId = gitHubClientId;
                     options.ClientSecret = gitHubClientSecret;
+                    options.Scope.Add("read:user");
+                    options.Scope.Add("user:email");
                 });
             services.AttributeBased()
                 .AddService<AuthSessionMiddleware>()

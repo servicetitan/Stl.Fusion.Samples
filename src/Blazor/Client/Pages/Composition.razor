@@ -1,9 +1,11 @@
 @page "/composition"
 @using System.Threading
 @using Stl
+@using Stl.Fusion.Authentication
 @inherits LiveComponentBase<Composition.Model, Composition.LocalsModel>
 @inject ILocalComposerService LocalComposer;
 @inject IComposerService Composer;
+@inject IAuthSessionAccessor AuthSessionAccessor
 
 @{
     var locals = Locals.Value;
@@ -60,8 +62,9 @@
     protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
     {
         var locals = Locals.Value;
-        var localValue = await LocalComposer.GetComposedValueAsync(locals.Parameter, cancellationToken);
-        var remoteValue = await Composer.GetComposedValueAsync(locals.Parameter, cancellationToken);
+        var session = AuthSessionAccessor.Session ?? throw new ApplicationException("No AuthSession.");
+        var localValue = await LocalComposer.GetComposedValueAsync(locals.Parameter, session, cancellationToken);
+        var remoteValue = await Composer.GetComposedValueAsync(locals.Parameter, session, cancellationToken);
         return new Model() {
             LocallyComposedValue = localValue,
             RemotelyComposedValue = remoteValue,

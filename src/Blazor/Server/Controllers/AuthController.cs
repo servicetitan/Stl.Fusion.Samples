@@ -9,24 +9,23 @@ namespace Samples.Blazor.Server.Controllers
     {
         [HttpGet("~/signin")]
         [HttpGet("~/signin/{provider}")]
-        public IActionResult SignIn(string? provider = null)
+        public IActionResult SignIn(string? provider = null, string? returnUrl = null)
         {
             provider ??= GitHubAuthenticationDefaults.AuthenticationScheme;
-            // Instruct the middleware corresponding to the requested external identity
-            // provider to redirect the user agent to its own authorization endpoint.
-            // Note: the authenticationScheme parameter must match the value configured in Startup.cs
-            return Challenge(new AuthenticationProperties { RedirectUri = "/" }, provider);
+            returnUrl ??= "/";
+            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, provider);
         }
 
         [HttpGet("~/signout")]
         [HttpPost("~/signout")]
-        public IActionResult SignOut()
+        public IActionResult SignOut(string? returnUrl = null)
         {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider
             // after a successful authentication flow (e.g Google or Facebook).
+            returnUrl ??= "/";
             return SignOut(
-                new AuthenticationProperties { RedirectUri = "/" },
+                new AuthenticationProperties { RedirectUri = returnUrl },
                 CookieAuthenticationDefaults.AuthenticationScheme);
         }
     }

@@ -1,0 +1,101 @@
+@page "/authentication"
+@using System.Threading
+@using Stl.Fusion.Authentication
+@inherits LiveComponentBase<AuthUser>
+@inject IAuthSessionAccessor AuthSessionAccessor
+@inject IAuthService AuthService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigator
+
+@{
+    var authSession = AuthSessionAccessor.Session;
+    var user = State.LastValue;
+    var error = State.Error;
+}
+
+<h1>Authentication</h1>
+
+<div class="alert alert-primary">
+    <div class="mb-1">
+        Open <a href="@Navigator.Uri" target="_blank">this page</a> or
+        <a href="/composition" target="_blank">Composition example</a>
+        in another window to see how authentication state is synchronized everywhere.
+    </div>
+    <div>
+        If authentication doesn't work, most likely you need to provide
+        <code>ClientId</code> and <code>ClientSecret</code> for a GitHub application;
+        you can create one:
+        <a href="https://github.com/settings/developers" target="_blank">https://github.com/settings/developers</a>.
+    </div>
+</div>
+
+@if (error != null) {
+    <div class="alert alert-warning" role="alert">
+        Update error: @error.Message
+    </div>
+}
+
+<div class="col-8">
+<div class="card">
+    <div class="card-header">
+        AuthUser &amp; AuthSession properties:
+    </div>
+    <div class="card-body">
+        <table class="table table-sm">
+            <tbody>
+            <tr>
+                <td>AuthSession.Id</td>
+                <td>@authSession?.Id</td>
+            </tr>
+            <tr>
+                <td>User.Id</td>
+                <td>@user.Id</td>
+            </tr>
+            <tr>
+                <td>User.Name</td>
+                <td>@user.Name</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="card-title">
+            Claims:
+        </div>
+        <table class="table table-sm">
+            <tbody>
+            @foreach (var (key, value) in user.Claims) {
+                <tr>
+                    <td>@key</td>
+                    <td>@value</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        @if (!user.IsAuthenticated) {
+            <div class="mb-2"><button class="btn btn-secondary" @onclick="SignIn">Sign in</button></div>
+        } else {
+            <div class="mb-2"><button class="btn btn-warning" @onclick="SignOut">Sign out</button></div>
+            <div class="alert alert-warning">
+                To sign out completely, you need to either sign out from GitHub,
+                or revoke access from this application here:
+                <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a>.
+            </div>
+        }
+    </div>
+</div>
+</div>
+
+@code {
+    protected override void ConfigureState(LiveState<AuthUser>.Options options)
+    {
+        options.InitialOutputFactory = _ => new AuthUser("");
+        options.WithUpdateDelayer(0.1, 10);
+    }
+
+    protected override Task<AuthUser> ComputeStateAsync(CancellationToken cancellationToken)
+        => AuthService.GetUserAsync(AuthSessionAccessor.Session, cancellationToken);
+
+    private void SignIn() => JSRuntime.InvokeVoidAsync("Auth.signIn");
+    private void SignOut() => JSRuntime.InvokeVoidAsync("Auth.signOut");
+}
