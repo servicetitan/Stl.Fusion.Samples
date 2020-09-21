@@ -1,4 +1,8 @@
 window.Auth = {
-    signin: function (element) {
+    sessionId: "",
+    getSessionId: function () {
+        return this.sessionId;
+    },
+    signin: function () {
     }
 };

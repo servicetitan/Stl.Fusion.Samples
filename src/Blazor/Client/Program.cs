@@ -11,6 +11,7 @@ using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Client
 {
@@ -70,7 +71,9 @@ namespace Samples.Blazor.Client
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeBased()
+                .AddServicesFrom(Assembly.GetExecutingAssembly())
+                .AddService<AuthSessionAccessor>();
         }
     }
 }

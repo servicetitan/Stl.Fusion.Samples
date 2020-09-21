@@ -10,14 +10,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Samples.Blazor.Common.Services;
 using Samples.Blazor.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
+using Stl.Fusion.Authentication;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
+using Stl.Fusion.Server.Authentication;
 using Stl.IO;
 using Stl.Reflection;
 using Stl.Serialization;
@@ -28,6 +32,8 @@ namespace Samples.Blazor.Server
     {
         private IConfiguration Cfg { get; }
         private IWebHostEnvironment Env { get; }
+        private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
+        private bool NoGitHubCredentials = false;
 
         public Startup(IConfiguration cfg, IWebHostEnvironment environment)
         {
@@ -55,14 +61,13 @@ namespace Samples.Blazor.Server
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 
-            // Session
-            services.AddDistributedMemoryCache();
-            services.AddSession(options => {
-                options.IdleTimeout = TimeSpan.FromMinutes(1);
-                options.Cookie.HttpOnly = true;
-            });
-
             // Authentication - unused for now, this is a work-in-progress
+            var gitHubClientId = Cfg["Authentication:GitHub:ClientId"];
+            var gitHubClientSecret = Cfg["Authentication:GitHub:ClientSecret"];
+            if (gitHubClientId == null || gitHubClientSecret == null) {
+                gitHubClientId = gitHubClientSecret = "<None>";
+                NoGitHubCredentials = true;
+            }
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 })
@@ -71,14 +76,18 @@ namespace Samples.Blazor.Server
                     options.LogoutPath = "/signout";
                 })
                 .AddGitHub(options => {
-                    options.ClientId = Cfg["Authentication:GitHub:ClientId"] ?? "<None>";
-                    options.ClientSecret = Cfg["Authentication:GitHub:ClientSecret"] ?? "<None>";
+                    options.ClientId = gitHubClientId;
+                    options.ClientSecret = gitHubClientSecret;
                 });
+            services.AttributeBased()
+                .AddService<AuthSessionMiddleware>()
+                .AddService<InProcessAuthService>();
 
             // Web
             services.AddRouting();
             services.AddMvc()
                 .AddApplicationPart(Assembly.GetExecutingAssembly())
+                .AddApplicationPart(typeof(AuthController).Assembly)
                 .AddNewtonsoftJson(options => MemberwiseCopier.CopyMembers(
                     JsonNetSerializer.DefaultSettings,
                     options.SerializerSettings));
@@ -92,8 +101,12 @@ namespace Samples.Blazor.Server
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILogger<Startup> log)
         {
+            Log = log;
+            if (NoGitHubCredentials)
+                Log.LogWarning("Authentication won't work: GitHub ClientId or ClientSecret isn't set.");
+
             // This server serves static content from Blazor Client,
             // and since we don't copy it to local wwwroot,
             // we need to find Client's wwwroot in bin/(Debug/Release) folder
@@ -117,7 +130,7 @@ namespace Samples.Blazor.Server
                 ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
             });
-            app.UseSession();
+            app.UseMiddleware<AuthSessionMiddleware>();
 
             // Static + Swagger
             app.UseBlazorFrameworkFiles();
