@@ -184,8 +184,9 @@ public static IHost CreateHost()
         logging.ClearProviders().SetMinimumLevel(LogLevel.Information).AddDebug());
     builder.ConfigureServices((b, services) =>
     {
-        services.AddFusionWebSocketServer();
-        services.AddComputeService<ICounterService, CounterService>();
+        services.AddFusion()
+            .AddWebSocketServer().BackToFusion()
+            .AddComputeService<ICounterService, CounterService>();
         services.AddRouting();
         services.AddMvc()
             .AddApplicationPart(Assembly.GetExecutingAssembly())
@@ -222,8 +223,9 @@ public static IServiceProvider CreateClientServices()
         // the right way to make all HttpClients to have BaseAddress = apiBaseUri by default.
         options.HttpClientActions.Add(client => client.BaseAddress = apiBaseUri);
     });
-    services.AddFusionWebSocketClient((c, options) => options.BaseUri = baseUri);
-    services.AddRestEaseReplicaService<ICounterService, ICounterServiceClient>();
+    var fusion = services.AddFusion();
+    var fusionClient = fusion.AddRestEaseClient((c, options) => options.BaseUri = baseUri);
+    fusionClient.AddReplicaService<ICounterService, ICounterServiceClient>();
     return services.BuildServiceProvider();
 }
 ```

@@ -34,10 +34,12 @@ public class CounterService
 }
 
 public static IServiceProvider CreateServices()
-    => new ServiceCollection()
-        .AddFusionCore()
-        .AddDiscoveredServices(Assembly.GetExecutingAssembly())
-        .BuildServiceProvider();
+{
+    var services = new ServiceCollection();
+    services.AddFusion();
+    services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+    return services.BuildServiceProvider();
+}
 ```
 
 First, let's try to "pull" `IComputed<T>` instance created behind the
