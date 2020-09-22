@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Stl.Fusion;
 using Samples.Blazor.Common.Services;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -12,26 +13,31 @@ namespace Samples.Blazor.Server.Services
     public class ComposerService : IComposerService
     {
         protected ILogger Log { get; }
-        private ITimeService Time { get; }
-        private IChatService Chat { get; }
+        private ITimeService TimeService { get; }
+        private IChatService ChatService { get; }
+        private IAuthService AuthService { get; }
 
         public ComposerService(
-            ITimeService time,
-            IChatService chat,
+            ITimeService timeService,
+            IChatService chatService,
+            IAuthService authService,
             ILogger<ComposerService>? log = null)
         {
             Log = log ??= NullLogger<ComposerService>.Instance;
-            Time = time;
-            Chat = chat;
+            TimeService = timeService;
+            ChatService = chatService;
+            AuthService = authService;
         }
 
-        public virtual async Task<ComposedValue> GetComposedValueAsync(string parameter, CancellationToken cancellationToken)
+        public virtual async Task<ComposedValue> GetComposedValueAsync(
+            string parameter, AuthContext? context, CancellationToken cancellationToken)
         {
-            var chatTail = await Chat.GetChatTailAsync(1, cancellationToken).ConfigureAwait(false);
-            var time = await Time.GetTimeAsync(cancellationToken).ConfigureAwait(false);
+            var chatTail = await ChatService.GetChatTailAsync(1, cancellationToken).ConfigureAwait(false);
+            var time = await TimeService.GetTimeAsync(cancellationToken).ConfigureAwait(false);
             var lastChatMessage = chatTail.Messages.SingleOrDefault()?.Text ?? "(no messages)";
-            var activeUserCount = await Chat.GetActiveUserCountAsync(cancellationToken).ConfigureAwait(false);
-            return new ComposedValue($"{parameter} - server", time, lastChatMessage, activeUserCount);
+            var user = await AuthService.GetUserAsync(context, cancellationToken).ConfigureAwait(false);
+            var activeUserCount = await ChatService.GetActiveUserCountAsync(cancellationToken).ConfigureAwait(false);
+            return new ComposedValue($"{parameter} - server", time, lastChatMessage, user, activeUserCount);
         }
     }
 }

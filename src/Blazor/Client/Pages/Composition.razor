@@ -1,9 +1,11 @@
 @page "/composition"
 @using System.Threading
 @using Stl
+@using Stl.Async
 @inherits LiveComponentBase<Composition.Model, Composition.LocalsModel>
 @inject ILocalComposerService LocalComposer;
 @inject IComposerService Composer;
+@inject Task<AuthContext> AuthContextTask
 
 @{
     var locals = Locals.Value;
@@ -59,9 +61,10 @@
 
     protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
     {
+        var authContext = await AuthContextTask.WithFakeCancellation(cancellationToken).ConfigureAwait(false);
         var locals = Locals.Value;
-        var localValue = await LocalComposer.GetComposedValueAsync(locals.Parameter, cancellationToken);
-        var remoteValue = await Composer.GetComposedValueAsync(locals.Parameter, cancellationToken);
+        var localValue = await LocalComposer.GetComposedValueAsync(locals.Parameter, authContext, cancellationToken);
+        var remoteValue = await Composer.GetComposedValueAsync(locals.Parameter, authContext, cancellationToken);
         return new Model() {
             LocallyComposedValue = localValue,
             RemotelyComposedValue = remoteValue,

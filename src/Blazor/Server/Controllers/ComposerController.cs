@@ -1,9 +1,11 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Server;
 using Samples.Blazor.Common.Services;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Controllers
 {
@@ -14,14 +16,14 @@ namespace Samples.Blazor.Server.Controllers
         private readonly IComposerService _composer;
 
         public ComposerController(IComposerService composer, IPublisher publisher)
-            : base(publisher)
-            => _composer = composer;
+            : base(publisher) =>
+            _composer = composer;
 
         [HttpGet("get")]
-        public Task<ComposedValue> GetComposedValueAsync(string? parameter, CancellationToken cancellationToken = default)
+        public Task<ComposedValue> GetComposedValueAsync(string? parameter, AuthContext? context = null, CancellationToken cancellationToken = default)
         {
             parameter ??= "";
-            return PublishAsync(ct => _composer.GetComposedValueAsync(parameter, ct));
+            return PublishAsync(ct => _composer.GetComposedValueAsync(parameter, context, ct));
         }
     }
 }

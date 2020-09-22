@@ -1,23 +1,33 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Samples.Blazor.Common.Services;
 using Samples.Blazor.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
+using Stl.Fusion.Authentication;
+using Stl.Fusion.Blazor;
+using Stl.Fusion.Blazor.Authentication;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
+using Stl.Fusion.Server.Authentication;
 using Stl.IO;
 using Stl.Reflection;
 using Stl.Serialization;
@@ -28,6 +38,8 @@ namespace Samples.Blazor.Server
     {
         private IConfiguration Cfg { get; }
         private IWebHostEnvironment Env { get; }
+        private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
+        private bool NoGitHubCredentials = false;
 
         public Startup(IConfiguration cfg, IWebHostEnvironment environment)
         {
@@ -49,20 +61,23 @@ namespace Samples.Blazor.Server
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebSocketServer();
             var fusionClient = fusion.AddRestEaseClient();
+            var fusionAuth = fusion.AddAuthentication().AddServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 
-            // Session
-            services.AddDistributedMemoryCache();
-            services.AddSession(options => {
-                options.IdleTimeout = TimeSpan.FromMinutes(1);
-                options.Cookie.HttpOnly = true;
-            });
-
             // Authentication - unused for now, this is a work-in-progress
+            var gitHubClientId = Cfg["Authentication:GitHub:ClientId"];
+            var gitHubClientSecret = Cfg["Authentication:GitHub:ClientSecret"];
+            if (gitHubClientId == null || gitHubClientSecret == null) {
+                // Note that you should never store these secrets in your code.
+                // We put them here solely to simplify running this sample.
+                gitHubClientId = "7a38bc415f7e1200fee2";
+                gitHubClientSecret = Encoding.UTF8.GetString(
+                    Convert.FromBase64String("MGZjOWI2OTEzMzhhM2UzYzc5OTgzZGNmOGYyMjNmZjFmYzQ3MmMzNQ=="));
+            }
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 })
@@ -71,18 +86,17 @@ namespace Samples.Blazor.Server
                     options.LogoutPath = "/signout";
                 })
                 .AddGitHub(options => {
-                    options.ClientId = Cfg["Authentication:GitHub:ClientId"] ?? "<None>";
-                    options.ClientSecret = Cfg["Authentication:GitHub:ClientSecret"] ?? "<None>";
+                    options.ClientId = gitHubClientId;
+                    options.ClientSecret = gitHubClientSecret;
+                    options.Scope.Add("read:user");
+                    options.Scope.Add("user:email");
                 });
 
             // Web
             services.AddRouting();
-            services.AddMvc()
-                .AddApplicationPart(Assembly.GetExecutingAssembly())
-                .AddNewtonsoftJson(options => MemberwiseCopier.CopyMembers(
-                    JsonNetSerializer.DefaultSettings,
-                    options.SerializerSettings));
-            services.AddServerSideBlazor();
+            services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+            services.AddServerSideBlazor(o => o.DetailedErrors = true);
+            fusionAuth.AddServerSideBlazor(); // Must follow services.AddServerSideBlazor()!
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
@@ -92,8 +106,12 @@ namespace Samples.Blazor.Server
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILogger<Startup> log)
         {
+            Log = log;
+            if (NoGitHubCredentials)
+                Log.LogWarning("Authentication won't work: GitHub ClientId or ClientSecret isn't set.");
+
             // This server serves static content from Blazor Client,
             // and since we don't copy it to local wwwroot,
             // we need to find Client's wwwroot in bin/(Debug/Release) folder
@@ -103,6 +121,7 @@ namespace Samples.Blazor.Server
             Env.WebRootPath = Path.GetFullPath(Path.Combine(baseDir,
                 $"../../../../Client/{binCfgPart}/netstandard2.1/")) + "wwwroot";
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
+            StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
 
             if (Env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
@@ -117,7 +136,7 @@ namespace Samples.Blazor.Server
                 ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
             });
-            app.UseSession();
+            app.UseAuthContext();
 
             // Static + Swagger
             app.UseBlazorFrameworkFiles();

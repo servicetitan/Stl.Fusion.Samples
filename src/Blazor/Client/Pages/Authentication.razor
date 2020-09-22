@@ -1,0 +1,88 @@
+@page "/authentication"
+@inject Task<AuthContext> AuthContextTask
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigator
+
+<h1>Authentication</h1>
+
+<div class="alert alert-primary">
+    <div class="mb-1">
+        Open <a href="@Navigator.Uri" target="_blank">this page</a> or
+        <a href="/composition" target="_blank">Composition example</a>
+        in another window to see how authentication state is synchronized everywhere.
+    </div>
+    <div>
+        If authentication doesn't work, most likely you need to provide
+        <code>ClientId</code> and <code>ClientSecret</code> for a GitHub application;
+        you can create one:
+        <a href="https://github.com/settings/developers" target="_blank">https://github.com/settings/developers</a>.
+    </div>
+</div>
+
+<div class="col-8">
+<div class="card">
+    <div class="card-header">
+        AuthUser &amp; AuthContext properties:
+    </div>
+    <div class="card-body">
+        <table class="table table-sm">
+            <tbody>
+            <tr>
+                <td>AuthSession.Id</td>
+                <td>@AuthContext.Id</td>
+            </tr>
+            <tr>
+                <td>User.Id</td>
+                <td>@User.Id</td>
+            </tr>
+            <tr>
+                <td>User.Name</td>
+                <td>@User.Name</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="card-title">
+            Claims:
+        </div>
+        <table class="table table-sm">
+            <tbody>
+            @foreach (var (key, value) in User.Claims) {
+                <tr>
+                    <td>@key</td>
+                    <td>@value</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <AuthorizeView>
+            <Authorized>
+                <div class="mb-2"><button class="btn btn-warning" @onclick="SignOut">Sign out @context.User.Identity.Name</button></div>
+                <div class="alert alert-warning">
+                    To sign out completely, you need to either sign out from GitHub,
+                    or revoke access from this application here:
+                    <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a>.
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="mb-2"><button class="btn btn-secondary" @onclick="SignIn">Sign in</button></div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private AuthContext AuthContext { get; set; } = null!;
+    [CascadingParameter]
+    private Task<AuthState> AuthStateTask { get; set; } = null!;
+    private AuthState AuthState { get; set; } = null!;
+    private AuthUser User => AuthState.User;
+
+    protected override async Task OnParametersSetAsync() => AuthState = await AuthStateTask;
+
+    private void SignIn() => JSRuntime.InvokeVoidAsync("FusionAuth.signIn");
+    private void SignOut() => JSRuntime.InvokeVoidAsync("FusionAuth.signOut");
+}

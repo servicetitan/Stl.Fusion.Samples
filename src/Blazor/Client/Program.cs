@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
+using Stl.Fusion.Blazor;
 
 namespace Samples.Blazor.Client
 {
@@ -47,13 +49,19 @@ namespace Samples.Blazor.Client
 
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
-            services.ConfigureAll<HttpClientFactoryOptions>(o => {
-                o.HttpClientActions.Add(client => client.BaseAddress = apiBaseUri);
-            });
-            services.AddFusion().AddRestEaseClient((c, o) => {
-                o.BaseUri = baseUri;
-                o.MessageLogLevel = LogLevel.Information;
-            });
+
+            var fusion = services.AddFusion();
+            var fusionClient = fusion.AddRestEaseClient(
+                (c, o) => {
+                    o.BaseUri = baseUri;
+                    o.MessageLogLevel = LogLevel.Information;
+                }).ConfigureHttpClientFactory(
+                (c, name, o) => {
+                    var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
+                    var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
+                    o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
+                });
+            var fusionAuth = fusion.AddAuthentication().AddClient().AddBlazor();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
