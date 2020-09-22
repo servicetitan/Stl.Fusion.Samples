@@ -28,7 +28,7 @@
         <table class="table table-sm">
             <tbody>
             <tr>
-                <td>AuthSession.Id</td>
+                <td>Session.Id</td>
                 <td>@Session.Id</td>
             </tr>
             <tr>
@@ -44,16 +44,13 @@
         <div class="card-title">
             Claims:
         </div>
-        <table class="table table-sm">
-            <tbody>
+        <div class="card-text">
+            <ul>
             @foreach (var (key, value) in User.Claims) {
-                <tr>
-                    <td>@key</td>
-                    <td>@value</td>
-                </tr>
+                <li><code>@key</code>: <b><code>@value</code></b></li>
             }
-            </tbody>
-        </table>
+            </ul>
+        </div>
     </div>
     <div class="card-footer">
         <AuthorizeView>
