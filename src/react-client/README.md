@@ -1,6 +1,6 @@
 # ⚠️ Warning! ⚠️ - This code is still experimental!
 
-NOTE: The sample code project currently uses the backend from the Blazor sample.
+**NOTE:** The sample code project currently requires running the Blazor sample server.
 
 Basic usage:
 
@@ -20,7 +20,7 @@ export default function Time() {
 }
 ```
 
-Configuration:
+Context configuration:
 
 ```js
 import StlFusionConfig from "./lib/StlFusionConfig";
@@ -34,6 +34,33 @@ ReactDOM.render(
   document.getElementById("root")
 );
 ```
+
+Hook configuration:
+
+```js
+import useStlFusion from "./lib/useStlFusion";
+
+export default function Time() {
+  const { data, loading, error } = useStlFusion(
+    "/api/Time/get",
+    { headers: { "Content-Type": "application/json" } },
+    {
+      uri: "ws://localhost:5005/fusion/ws",
+      options: { wait: 300 },
+    }
+  );
+
+  return loading ? (
+    <div>loading...</div>
+  ) : error ? (
+    <div>failed to load</div>
+  ) : (
+    <div>The time is {data}!</div>
+  );
+}
+```
+
+TODO: Document custom fetcher configuration using something like Axios.
 
 ---
 

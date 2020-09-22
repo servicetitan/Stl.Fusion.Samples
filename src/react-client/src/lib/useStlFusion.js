@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useContext } from "react";
+import merge from "lodash/merge";
 import throttle from "lodash/throttle";
 import { v4 as uuidv4 } from "uuid";
 import StlFusionContext from "./StlFusionContext";
@@ -56,6 +57,13 @@ const DEFAULT_URI = `${
   window.location.protocol === "https:" ? "wss:" : "ws:"
 }//${window.location.host}/fusion/ws`;
 const DEFAULT_WAIT = 300;
+const DEFAULT_CONFIG = {
+  uri: DEFAULT_URI,
+  options: {
+    wait: DEFAULT_WAIT,
+    fetcher: DEFAULT_FETCHER,
+  },
+};
 
 // global state
 let STL = {
@@ -63,28 +71,21 @@ let STL = {
   publishers: new Map(),
 };
 
-export default function useStlFusion(
-  url,
-  params,
-  overrideConfig = { options: {} }
-) {
+export default function useStlFusion(url, params, overrideConfig) {
   const [result, setResult] = useState({
     loading: true,
     error: undefined,
     data: undefined,
   });
 
+  const publicationRef = useRef(null);
+
   const contextConfig = useContext(StlFusionContext);
 
-  const uri = overrideConfig.uri ?? contextConfig.uri ?? DEFAULT_URI;
-  const wait =
-    overrideConfig.options.wait ?? contextConfig.options?.wait ?? DEFAULT_WAIT;
-  const fetcher =
-    overrideConfig.options.fetcher ??
-    contextConfig.options?.fetcher ??
-    DEFAULT_FETCHER;
-
-  const publicationRef = useRef(null);
+  const {
+    uri,
+    options: { wait, fetcher },
+  } = merge(DEFAULT_CONFIG, contextConfig, overrideConfig);
 
   useEffect(() => {
     let isMounted = true;
@@ -198,19 +199,17 @@ function handlePublicationMessage(socket, data) {
     .publications.get(PublicationId);
 
   if (data.IsConsistent === false) {
-    publication.throttledRequestUpdate(socket, data);
-
-    // if cancelWait === false
-    //    call throttled update request using socket
-    // else
-    //    updateRequest.cancel
-    //    updateRequest (no throttle)
-    //    cancelWait = false
+    // ...still testing cancelling the wait time...
+    if (publication.cancelWait === false) {
+      publication.throttledRequestUpdate(socket, data);
+    } else {
+      publication.throttledRequestUpdate.cancel();
+      sendRequestUpdateMessage(socket, data);
+      publication.cancelWait = false;
+    }
   }
 
   if (data.Output) {
-    // console.log("data.Output", data);
-
     publication.setState.forEach((setResult) => {
       setResult({
         loading: false,
