@@ -1,18 +1,17 @@
 using System;
-using System.Buffers.Text;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -23,6 +22,8 @@ using Samples.Blazor.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
+using Stl.Fusion.Blazor;
+using Stl.Fusion.Blazor.Authentication;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
@@ -60,6 +61,7 @@ namespace Samples.Blazor.Server
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebSocketServer();
             var fusionClient = fusion.AddRestEaseClient();
+            var fusionAuth = fusion.AddAuthentication().AddServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
@@ -89,19 +91,12 @@ namespace Samples.Blazor.Server
                     options.Scope.Add("read:user");
                     options.Scope.Add("user:email");
                 });
-            services.AttributeBased()
-                .AddService<AuthSessionMiddleware>()
-                .AddService<InProcessAuthService>();
 
             // Web
             services.AddRouting();
-            services.AddMvc()
-                .AddApplicationPart(Assembly.GetExecutingAssembly())
-                .AddApplicationPart(typeof(AuthController).Assembly)
-                .AddNewtonsoftJson(options => MemberwiseCopier.CopyMembers(
-                    JsonNetSerializer.DefaultSettings,
-                    options.SerializerSettings));
-            services.AddServerSideBlazor();
+            services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+            services.AddServerSideBlazor(o => o.DetailedErrors = true);
+            fusionAuth.AddServerSideBlazor(); // Must follow services.AddServerSideBlazor()!
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
@@ -126,6 +121,7 @@ namespace Samples.Blazor.Server
             Env.WebRootPath = Path.GetFullPath(Path.Combine(baseDir,
                 $"../../../../Client/{binCfgPart}/netstandard2.1/")) + "wwwroot";
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
+            StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
 
             if (Env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
@@ -140,7 +136,7 @@ namespace Samples.Blazor.Server
                 ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
             });
-            app.UseMiddleware<AuthSessionMiddleware>();
+            app.UseAuthContext();
 
             // Static + Swagger
             app.UseBlazorFrameworkFiles();

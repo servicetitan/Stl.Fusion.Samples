@@ -1,17 +1,7 @@
 @page "/authentication"
-@using System.Threading
-@using Stl.Fusion.Authentication
-@inherits LiveComponentBase<AuthUser>
-@inject IAuthSessionAccessor AuthSessionAccessor
-@inject IAuthService AuthService
+@inject Task<AuthContext> AuthContextTask
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigator
-
-@{
-    var authSession = AuthSessionAccessor.Session;
-    var user = State.LastValue;
-    var error = State.Error;
-}
 
 <h1>Authentication</h1>
 
@@ -29,31 +19,25 @@
     </div>
 </div>
 
-@if (error != null) {
-    <div class="alert alert-warning" role="alert">
-        Update error: @error.Message
-    </div>
-}
-
 <div class="col-8">
 <div class="card">
     <div class="card-header">
-        AuthUser &amp; AuthSession properties:
+        AuthUser &amp; AuthContext properties:
     </div>
     <div class="card-body">
         <table class="table table-sm">
             <tbody>
             <tr>
                 <td>AuthSession.Id</td>
-                <td>@authSession?.Id</td>
+                <td>@AuthContext.Id</td>
             </tr>
             <tr>
                 <td>User.Id</td>
-                <td>@user.Id</td>
+                <td>@User.Id</td>
             </tr>
             <tr>
                 <td>User.Name</td>
-                <td>@user.Name</td>
+                <td>@User.Name</td>
             </tr>
             </tbody>
         </table>
@@ -62,7 +46,7 @@
         </div>
         <table class="table table-sm">
             <tbody>
-            @foreach (var (key, value) in user.Claims) {
+            @foreach (var (key, value) in User.Claims) {
                 <tr>
                     <td>@key</td>
                     <td>@value</td>
@@ -72,30 +56,33 @@
         </table>
     </div>
     <div class="card-footer">
-        @if (!user.IsAuthenticated) {
-            <div class="mb-2"><button class="btn btn-secondary" @onclick="SignIn">Sign in</button></div>
-        } else {
-            <div class="mb-2"><button class="btn btn-warning" @onclick="SignOut">Sign out</button></div>
-            <div class="alert alert-warning">
-                To sign out completely, you need to either sign out from GitHub,
-                or revoke access from this application here:
-                <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a>.
-            </div>
-        }
+        <AuthorizeView>
+            <Authorized>
+                <div class="mb-2"><button class="btn btn-warning" @onclick="SignOut">Sign out @context.User.Identity.Name</button></div>
+                <div class="alert alert-warning">
+                    To sign out completely, you need to either sign out from GitHub,
+                    or revoke access from this application here:
+                    <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a>.
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="mb-2"><button class="btn btn-secondary" @onclick="SignIn">Sign in</button></div>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
 </div>
 
 @code {
-    protected override void ConfigureState(LiveState<AuthUser>.Options options)
-    {
-        options.InitialOutputFactory = _ => new AuthUser("");
-        options.WithUpdateDelayer(0.1, 10);
-    }
+    [CascadingParameter]
+    private AuthContext AuthContext { get; set; } = null!;
+    [CascadingParameter]
+    private Task<AuthState> AuthStateTask { get; set; } = null!;
+    private AuthState AuthState { get; set; } = null!;
+    private AuthUser User => AuthState.User;
 
-    protected override Task<AuthUser> ComputeStateAsync(CancellationToken cancellationToken)
-        => AuthService.GetUserAsync(AuthSessionAccessor.Session, cancellationToken);
+    protected override async Task OnParametersSetAsync() => AuthState = await AuthStateTask;
 
-    private void SignIn() => JSRuntime.InvokeVoidAsync("Auth.signIn");
-    private void SignOut() => JSRuntime.InvokeVoidAsync("Auth.signOut");
+    private void SignIn() => JSRuntime.InvokeVoidAsync("FusionAuth.signIn");
+    private void SignOut() => JSRuntime.InvokeVoidAsync("FusionAuth.signOut");
 }

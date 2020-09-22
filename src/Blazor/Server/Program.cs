@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +23,12 @@ namespace Samples.Blazor.Server
                         }
                     });
                 })
-                .ConfigureWebHostDefaults(builder => builder.UseStartup<Startup>())
+                .ConfigureWebHostDefaults(builder => builder
+                    .UseDefaultServiceProvider((ctx, options) => {
+                        options.ValidateScopes = ctx.HostingEnvironment.IsDevelopment();
+                        options.ValidateOnBuild = true;
+                    })
+                    .UseStartup<Startup>())
                 .Build();
 
             // Ensure the DB is created

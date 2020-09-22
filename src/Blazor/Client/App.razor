@@ -1,32 +1,17 @@
-@using Stl.Fusion.Authentication
-@using Stl.OS
-@inject IAuthSessionAccessor AuthSessionAccessor
-@inject IJSRuntime JSRuntime
-
-<Router AppAssembly="@typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+<CascadingAuthState AuthContextId="@AuthContextId">
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthState>
 
 @code {
     [Parameter]
-    public string AuthSessionId { get; set; } = "";
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (OSInfo.Kind == OSKind.WebAssembly)
-            AuthSessionId = await JSRuntime.InvokeAsync<string>("Auth.getSessionId");
-    }
-
-    protected override void OnParametersSet()
-    {
-        if (!string.IsNullOrEmpty(AuthSessionId))
-            AuthSessionAccessor.Session = new AuthSession(AuthSessionId);
-    }
+    public string AuthContextId { get; set; } = "";
 }

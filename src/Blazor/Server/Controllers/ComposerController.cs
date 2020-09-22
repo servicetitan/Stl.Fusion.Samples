@@ -14,23 +14,16 @@ namespace Samples.Blazor.Server.Controllers
     public class ComposerController : FusionController, IComposerService
     {
         private readonly IComposerService _composer;
-        private readonly IAuthSessionAccessor _authSessionAccessor;
 
-        public ComposerController(
-            IComposerService composer, IAuthSessionAccessor authSessionAccessor,
-            IPublisher publisher)
-            : base(publisher)
-        {
+        public ComposerController(IComposerService composer, IPublisher publisher)
+            : base(publisher) =>
             _composer = composer;
-            _authSessionAccessor = authSessionAccessor;
-        }
 
         [HttpGet("get")]
-        public Task<ComposedValue> GetComposedValueAsync(string? parameter, AuthSession? session, CancellationToken cancellationToken = default)
+        public Task<ComposedValue> GetComposedValueAsync(string? parameter, AuthContext? context = null, CancellationToken cancellationToken = default)
         {
             parameter ??= "";
-            session ??= _authSessionAccessor.Session;
-            return PublishAsync(ct => _composer.GetComposedValueAsync(parameter, session!, ct));
+            return PublishAsync(ct => _composer.GetComposedValueAsync(parameter, context, ct));
         }
     }
 }

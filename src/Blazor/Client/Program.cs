@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -11,8 +12,7 @@ using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
-using Stl.Fusion.Authentication;
-using Stl.Fusion.Client.Authentication;
+using Stl.Fusion.Blazor;
 
 namespace Samples.Blazor.Client
 {
@@ -49,23 +49,23 @@ namespace Samples.Blazor.Client
 
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
-            services.AddFusion()
-                .AddRestEaseClient((c, o) => {
+
+            var fusion = services.AddFusion();
+            var fusionClient = fusion.AddRestEaseClient(
+                (c, o) => {
                     o.BaseUri = baseUri;
                     o.MessageLogLevel = LogLevel.Information;
-                }).ConfigureHttpClientFactory((c, name, o) => {
+                }).ConfigureHttpClientFactory(
+                (c, name, o) => {
                     var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
                     var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-                    Debug.WriteLine($"O: {name} => {clientBaseUri}");
                     o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
                 });
+            var fusionAuth = fusion.AddAuthentication().AddClient().AddBlazor();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased()
-                .AddService<IAuthClient>()
-                .SetScope(ClientSideScope)
-                .AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeBased(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
             ConfigureSharedServices(services);
         }
 
@@ -78,9 +78,7 @@ namespace Samples.Blazor.Client
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased()
-                .AddServicesFrom(Assembly.GetExecutingAssembly())
-                .AddService<AuthSessionAccessor>();
+            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }
 }
