@@ -188,11 +188,7 @@ public static IHost CreateHost()
             .AddWebSocketServer().BackToFusion()
             .AddComputeService<ICounterService, CounterService>();
         services.AddRouting();
-        services.AddMvc()
-            .AddApplicationPart(Assembly.GetExecutingAssembly())
-            .AddNewtonsoftJson(options => MemberwiseCopier.CopyMembers(
-                JsonNetSerializer.DefaultSettings,
-                options.SerializerSettings));
+        services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
     });
     builder.ConfigureWebHost(b =>
     {
