@@ -1,4 +1,4 @@
-<CascadingAuthState AuthContextId="@AuthContextId">
+<CascadingAuthState SessionId="@SessionId">
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
@@ -13,5 +13,5 @@
 
 @code {
     [Parameter]
-    public string AuthContextId { get; set; } = "";
+    public string SessionId { get; set; } = "";
 }

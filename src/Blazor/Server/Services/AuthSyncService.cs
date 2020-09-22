@@ -17,22 +17,22 @@ namespace Samples.Blazor.Server.Services
         public AuthSyncService(IServerSideAuthService authService)
             => AuthService = authService;
 
-        public async Task SyncAsync(ClaimsPrincipal principal, AuthContext context, CancellationToken cancellationToken = default)
+        public async Task SyncAsync(ClaimsPrincipal principal, Session session, CancellationToken cancellationToken = default)
         {
-            var user = await AuthService.GetUserAsync(context, cancellationToken).ConfigureAwait(false);
+            var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
             if (user.Identity.Name == principal.Identity.Name)
                 return;
 
             var authenticationType = principal.Identity.AuthenticationType ?? "";
             if (authenticationType == "") {
-                await AuthService.LogoutAsync(context, cancellationToken).ConfigureAwait(false);
+                await AuthService.LogoutAsync(session, cancellationToken).ConfigureAwait(false);
             }
             else {
                 var id = principal.Identity.Name ?? "";
                 var claims = principal.Claims.ToDictionary(c => c.Type, c => c.Value);
                 var name = claims.GetValueOrDefault(GitHubAuthenticationConstants.Claims.Name) ?? "";
-                user = new AuthUser(authenticationType, id, name, claims);
-                await AuthService.LoginAsync(user, context, cancellationToken).ConfigureAwait(false);
+                user = new User(authenticationType, id, name, claims);
+                await AuthService.LoginAsync(user, session, cancellationToken).ConfigureAwait(false);
             }
         }
     }

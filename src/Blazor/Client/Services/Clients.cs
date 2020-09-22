@@ -56,6 +56,7 @@ namespace Samples.Blazor.Client.Services
     public interface IComposerClient : IRestEaseReplicaClient
     {
         [Get("get")]
-        Task<ComposedValue> GetComposedValueAsync(string? parameter, AuthContext context, CancellationToken cancellationToken = default);
+        Task<ComposedValue> GetComposedValueAsync(string? parameter,
+            Session? session, CancellationToken cancellationToken = default);
     }
 }

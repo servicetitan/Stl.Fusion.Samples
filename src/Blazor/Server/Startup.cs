@@ -136,7 +136,7 @@ namespace Samples.Blazor.Server
                 ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
             });
-            app.UseAuthContext();
+            app.UseFusionSession();
 
             // Static + Swagger
             app.UseBlazorFrameworkFiles();

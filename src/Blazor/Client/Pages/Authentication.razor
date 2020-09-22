@@ -1,5 +1,5 @@
 @page "/authentication"
-@inject Task<AuthContext> AuthContextTask
+@inject Session Session
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigator
 
@@ -22,14 +22,14 @@
 <div class="col-8">
 <div class="card">
     <div class="card-header">
-        AuthUser &amp; AuthContext properties:
+        User &amp; Session properties:
     </div>
     <div class="card-body">
         <table class="table table-sm">
             <tbody>
             <tr>
                 <td>AuthSession.Id</td>
-                <td>@AuthContext.Id</td>
+                <td>@Session.Id</td>
             </tr>
             <tr>
                 <td>User.Id</td>
@@ -58,7 +58,7 @@
     <div class="card-footer">
         <AuthorizeView>
             <Authorized>
-                <div class="mb-2"><button class="btn btn-warning" @onclick="SignOut">Sign out @context.User.Identity.Name</button></div>
+                <div class="mb-2"><button class="btn btn-warning" @onclick="SignOut">Sign out @User.Name</button></div>
                 <div class="alert alert-warning">
                     To sign out completely, you need to either sign out from GitHub,
                     or revoke access from this application here:
@@ -75,11 +75,9 @@
 
 @code {
     [CascadingParameter]
-    private AuthContext AuthContext { get; set; } = null!;
-    [CascadingParameter]
     private Task<AuthState> AuthStateTask { get; set; } = null!;
-    private AuthState AuthState { get; set; } = null!;
-    private AuthUser User => AuthState.User;
+    private AuthState AuthState { get; set; } = new AuthState(new User("")); // For SSB pre-render
+    private User User => AuthState.User;
 
     protected override async Task OnParametersSetAsync() => AuthState = await AuthStateTask;
 
