@@ -5,7 +5,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <RazorLangVersion>3.0</RazorLangVersion>
-<!--    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>-->
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <RootNamespace>Samples.Blazor.Client</RootNamespace>
     <AssemblyName>Samples.Blazor.Client</AssemblyName>
