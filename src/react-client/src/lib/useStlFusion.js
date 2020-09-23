@@ -12,19 +12,17 @@ import DEFAULT_FETCHER from "./defaultFetcher";
 
 // TODO: Reconnect on document.visibilityState (similar to SWR/react-query)
 
-// TODO: User should have to config URI and default options... throw error if they don't?
 // TODO: Allow user to fetch data however they want (fetch, axios, XHR),
 //       probably by providing a promise-returning function
 // TODO: ??? Allow user to set default headers, auth tokens, etc
 //       (could they just do this in the configured fetcher function?)
 // TODO: Allow user to configure clientId?
-// TODO: Defaults could be set via a wrapper component,
-//       then global state could live in context?
-// TODO: Figure out what optimization needs to happen so that updating
-//       context only re-renders the child components that care.
 
-// TODO: Doesn't currently work if different components ask for
-//       different throttle wait times. (First one wins.)
+// TODO: If different components ask for different throttle wait times for
+//       the same API endpoint, the first one wins.
+
+// TODO: Should multiple calls to the same endpoint try to use existing value
+//       instead of making their own API calls?
 
 // {
 //   clientId: "uuidv4",
@@ -34,19 +32,11 @@ import DEFAULT_FETCHER from "./defaultFetcher";
 //       publications: {
 //         [PublicationId]: Map
 //           throttledRequestUpdate: f(),
-//           setStates: Set,
+//           setResults: Set,
 //           cancelWait: false
 //         }
 //       }
 //     }
-//   }
-// }
-
-// config: {
-//   uri: "...",
-//   options: {
-//     wait: 300,
-//     fetcher: f()
 //   }
 // }
 
@@ -85,7 +75,7 @@ export default function useStlFusion(url, params, overrideConfig) {
   const {
     uri,
     options: { wait, fetcher },
-  } = merge(DEFAULT_CONFIG, contextConfig, overrideConfig);
+  } = merge({}, DEFAULT_CONFIG, contextConfig, overrideConfig);
 
   useEffect(() => {
     let isMounted = true;
@@ -127,10 +117,10 @@ export default function useStlFusion(url, params, overrideConfig) {
       const publication = publisher.publications.get(PublicationId);
 
       // remove set state
-      publication.setState.delete(setResult);
+      publication.setResults.delete(setResult);
 
       // if empty, remove publication
-      if (publication.setState.size === 0) {
+      if (publication.setResults.size === 0) {
         publisher.publications.delete(PublicationId);
       }
 
@@ -188,7 +178,7 @@ function handlePublicationMessage(socket, data) {
   const { PublisherId, PublicationId } = data;
 
   if (
-    !STL.publishers.has(PublisherId) ||
+    !STL.publishers.has(PublisherId) ??
     !STL.publishers.get(PublisherId).publications.has(PublicationId)
   ) {
     return;
@@ -199,7 +189,7 @@ function handlePublicationMessage(socket, data) {
     .publications.get(PublicationId);
 
   if (data.IsConsistent === false) {
-    // ...still testing cancelling the wait time...
+    // to avoid slamming the server, we usually add a small delay to update requests
     if (publication.cancelWait === false) {
       publication.throttledRequestUpdate(socket, data);
     } else {
@@ -210,7 +200,7 @@ function handlePublicationMessage(socket, data) {
   }
 
   if (data.Output) {
-    publication.setState.forEach((setResult) => {
+    publication.setResults.forEach((setResult) => {
       setResult({
         loading: false,
         data: data.Output.UnsafeValue,
@@ -225,7 +215,7 @@ function createPublication(socket, data, { options: { wait } }, setResult) {
 
   if (!publisher.publications.has(PublicationId)) {
     publisher.publications.set(PublicationId, {
-      setState: new Set([setResult]),
+      setResults: new Set([setResult]),
       throttledRequestUpdate: throttle(sendRequestUpdateMessage, wait, {
         leading: false,
       }),
@@ -234,7 +224,7 @@ function createPublication(socket, data, { options: { wait } }, setResult) {
 
     sendSubscribeMessage(socket, { data });
   } else {
-    publisher.publications.get(PublicationId).setState.add(setResult);
+    publisher.publications.get(PublicationId).setResults.add(setResult);
   }
 }
 
@@ -253,14 +243,18 @@ function sendRequestUpdateMessage(
   socket,
   { PublisherId, PublicationId, Version }
 ) {
-  socket.send(
-    `${MESSAGE_HEADER}|${JSON.stringify({
-      $type: MESSAGE_HEADER,
-      PublisherId,
-      PublicationId,
-      Version,
-      IsConsistent: false,
-      IsUpdateRequested: true,
-    })}`
-  );
+  // since this call is usually throttled, it's possible the socket
+  // has closed by the time we attempt to send this message
+  if (socket.readyState === 1) {
+    socket.send(
+      `${MESSAGE_HEADER}|${JSON.stringify({
+        $type: MESSAGE_HEADER,
+        PublisherId,
+        PublicationId,
+        Version,
+        IsConsistent: false,
+        IsUpdateRequested: true,
+      })}`
+    );
+  }
 }
