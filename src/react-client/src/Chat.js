@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash/debounce";
 import formatDate from "date-fns/format";
 import Section from "./Section";
@@ -82,21 +82,7 @@ function ChatMessages() {
 function ChatUser({ user, onUserChange }) {
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-
-    fetch(`/api/Chat/getUser?id=1`)
-      .then((res) => res.json())
-      .then((data) => {
-        onUserChange(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        throw err;
-      });
-  }, [onUserChange]);
-
-  function newUser() {
+  const newUser = useCallback(() => {
     setLoading(true);
 
     fetch(`/api/Chat/createUser`, {
@@ -108,9 +94,24 @@ function ChatUser({ user, onUserChange }) {
         setLoading(false);
       })
       .catch((err) => {
+        setLoading(false);
         throw err;
       });
-  }
+  }, [onUserChange]);
+
+  useEffect(() => {
+    setLoading(true);
+
+    fetch(`/api/Chat/getUser?id=1`)
+      .then((res) => res.json())
+      .then((data) => {
+        onUserChange(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        newUser();
+      });
+  }, [onUserChange, newUser]);
 
   const debouncedSetUserName = debounce((name) => {
     setLoading(true);
@@ -169,7 +170,6 @@ function AddChatMessage({ user }) {
     })
       .then((res) => res.json())
       .then((data) => {
-        // console.log("addMessage", data);
         setLoading(false);
       })
       .catch((err) => {

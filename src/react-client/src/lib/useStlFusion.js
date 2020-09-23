@@ -62,13 +62,21 @@ let STL = {
 };
 
 export default function useStlFusion(url, params, overrideConfig) {
+  const publicationRef = useRef(null);
+
   const [result, setResult] = useState({
     loading: true,
     error: undefined,
     data: undefined,
+    cancel: () => {
+      if (publicationRef.current) {
+        const { PublisherId, PublicationId } = publicationRef.current;
+        const publisher = STL.publishers.get(PublisherId);
+        const publication = publisher.publications.get(PublicationId);
+        publication.cancelWait = true;
+      }
+    },
   });
-
-  const publicationRef = useRef(null);
 
   const contextConfig = useContext(StlFusionContext);
 

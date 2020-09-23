@@ -107,7 +107,9 @@ function ComposerLocal({ parameter, onToggle }) {
             ? "Loading..."
             : chatError
             ? "There was an error!"
-            : chatData.messages?.[0]?.text ?? chatData.Messages?.[0]?.Text}
+            : chatData.messages?.[0]?.text ??
+              chatData.Messages?.[0]?.Text ??
+              "(no messages)"}
         </div>
         <div>
           {userLoading
