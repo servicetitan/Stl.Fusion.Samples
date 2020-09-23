@@ -41,6 +41,8 @@ which also serves its API. The application includes:
 * "Composition" shows Fusion's ability to use both  local `IComputed<T>` instances 
   and client-side replicas of similar server-side instances to compute a new value
   that properly tracks both local and remote dependencies.
+* "Authentication" shows GitHub authentication with Google-like real-time 
+  session tracking, "Kick" and "Sign-out everywhere".
 
 ![](docs/img/Samples-Blazor.gif)
 
