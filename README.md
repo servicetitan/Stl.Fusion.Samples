@@ -59,7 +59,7 @@ that properly tracks all these dependencies and updates accordingly:
 The sample supports **both (!)** Server-Side Blazor and Blazor WebAssembly modes &ndash;
 you can switch the mode on its "Home" page.
 
-![](docs/img/Samples-Blazor-DualMode.gif)
+![](docs/img/Samples-Blazor-Auth.gif)
 
 Moreover, it also exposes a regular RESTful API &ndash;
 try invoking any of endpoints there right from embedded Swagger console.
