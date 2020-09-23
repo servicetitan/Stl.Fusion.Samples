@@ -90,7 +90,7 @@
                                     <span>Current</span>
                                 } else {
                                     <button type="button" class="btn btn-sm btn-danger"
-                                            @onclick="_ => SignOut(session.Id)">Kick</button>
+                                            @onclick="_ => Kick(session.Id)">Kick</button>
                                 }
                             </td>
                         </tr>
@@ -171,20 +171,19 @@
 
     private void SignIn() => JSRuntime.InvokeVoidAsync("FusionAuth.signIn");
     private void SignOut() => JSRuntime.InvokeVoidAsync("FusionAuth.signOut");
-
-    private void SignOut(string sessionId)
+    private void Kick(string sessionId)
     {
         if (sessionId == Session.Id)
             SignOut();
         else
-            Task.Run(() => AuthService.LogoutAsync(new Session(sessionId))).Ignore();
+            Task.Run(() => AuthService.SignOutAsync(true, new Session(sessionId))).Ignore();
     }
 
     private void SignOutEverywhere()
     {
         var sessions = State.LastValue.Where(s => s.Id != Session.Id);
         foreach (var sessionModel in sessions) {
-            SignOut(sessionModel.Id);
+            Kick(sessionModel.Id);
         }
         SignOut(); // Let's do this at last - just in case :)
     }
