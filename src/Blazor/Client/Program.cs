@@ -8,11 +8,13 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Pluralize.NET;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
+using UAParser;
 
 namespace Samples.Blazor.Client
 {
@@ -75,6 +77,8 @@ namespace Samples.Blazor.Client
             services.AddSingleton(c => new UpdateDelayer.Options() {
                 Delay = TimeSpan.FromSeconds(0.1),
             });
+
+            services.AddSingleton<IPluralize, Pluralizer>();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]

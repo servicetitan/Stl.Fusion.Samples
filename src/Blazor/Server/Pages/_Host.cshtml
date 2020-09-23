@@ -12,7 +12,14 @@
     var authSyncService = AuthSyncService;
     var principal = HttpContext.User;
     var session = SessionResolver.Session;
-    Task.Run(() => authSyncService.SyncAsync(principal, session)).Ignore();
+    var now = DateTime.UtcNow;
+    var sessionInfo = new SessionInfo(session.Id) {
+        CreatedAt = now,
+        LastSeenAt = now,
+        IPAddress = HttpContext.Connection.RemoteIpAddress.ToString() ?? "",
+        UserAgent = Request.Headers["User-Agent"].ToString() ?? "",
+    };
+    Task.Run(() => authSyncService.SyncAsync(principal, sessionInfo, session)).Ignore();
 
     Layout = null;
     var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);

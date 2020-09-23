@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -17,7 +18,8 @@ namespace Samples.Blazor.Server.Services
         public AuthSyncService(IServerSideAuthService authService)
             => AuthService = authService;
 
-        public async Task SyncAsync(ClaimsPrincipal principal, Session session, CancellationToken cancellationToken = default)
+        public async Task SyncAsync(ClaimsPrincipal principal, SessionInfo sessionInfo, Session session,
+            CancellationToken cancellationToken = default)
         {
             var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
             if (user.Identity.Name == principal.Identity.Name)
@@ -33,6 +35,7 @@ namespace Samples.Blazor.Server.Services
                 var name = claims.GetValueOrDefault(GitHubAuthenticationConstants.Claims.Name) ?? "";
                 user = new User(authenticationType, id, name, claims);
                 await AuthService.LoginAsync(user, session, cancellationToken).ConfigureAwait(false);
+                await AuthService.SaveSessionInfoAsync(sessionInfo, session, cancellationToken).ConfigureAwait(false);
             }
         }
     }
