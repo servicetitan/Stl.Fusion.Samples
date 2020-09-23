@@ -181,10 +181,11 @@
 
     private void SignOutEverywhere()
     {
+        // No server-side API endpoint for this action(yet), so let's do this on the client
         var sessions = State.LastValue.Where(s => s.Id != Session.Id);
         foreach (var sessionModel in sessions) {
             Kick(sessionModel.Id);
         }
-        SignOut(); // Let's do this at last - just in case :)
+        SignOut();
     }
 }
