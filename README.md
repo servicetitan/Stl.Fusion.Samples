@@ -37,10 +37,12 @@ It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/ho
 [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet) website,
 which also serves its API. The application includes:
 * "Server Time" and "Server Screen" pages showing the simplest timeout-based invalidation
-* "Chat" - a tiny chat relying on event-based invalidation
-* "Composition" shows Fusion's ability to use both  local `IComputed<T>` instances 
-  and client-side replicas of similar server-side instances to compute a new value
-  that properly tracks both local and remote dependencies.
+* "Chat" &ndash; a tiny chat relying on event-based invalidation
+* "Composition" shows how Fusion tracks and updates a complex state built 
+  from the output of [Compute Services] (local producers) and 
+  [Replica Services] (remote producers)
+* "Authentication" &ndash; a GitHub authentication sample with Google-style real-time 
+  session tracking, "Kick", and "Sign-out everywhere" actions.
 
 ![](docs/img/Samples-Blazor.gif)
 
@@ -59,7 +61,7 @@ that properly tracks all these dependencies and updates accordingly:
 The sample supports **both (!)** Server-Side Blazor and Blazor WebAssembly modes &ndash;
 you can switch the mode on its "Home" page.
 
-![](docs/img/Samples-Blazor-DualMode.gif)
+![](docs/img/Samples-Blazor-Auth.gif)
 
 Moreover, it also exposes a regular RESTful API &ndash;
 try invoking any of endpoints there right from embedded Swagger console.

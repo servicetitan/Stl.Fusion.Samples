@@ -1,9 +1,26 @@
 @page "/authentication"
-@inject Task<AuthContext> AuthContextTask
+@using System.Threading
+@using Stl
+@using UAParser
+@inherits LiveComponentBase<List<Authentication.SessionModel>>
+@inject Session Session
+@inject IAuthService AuthService
+@inject MomentsAgoService MomentsAgoService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigator
 
+@{
+    var state = State.LastValue;
+    var error = State.Error;
+}
+
 <h1>Authentication</h1>
+
+@if (error != null) {
+    <div class="alert alert-warning" role="alert">
+        Update error: @error.Message
+    </div>
+}
 
 <div class="alert alert-primary">
     <div class="mb-1">
@@ -19,46 +36,77 @@
     </div>
 </div>
 
-<div class="col-8">
 <div class="card">
-    <div class="card-header">
-        AuthUser &amp; AuthContext properties:
-    </div>
     <div class="card-body">
-        <table class="table table-sm">
-            <tbody>
-            <tr>
-                <td>AuthSession.Id</td>
-                <td>@AuthContext.Id</td>
-            </tr>
-            <tr>
-                <td>User.Id</td>
-                <td>@User.Id</td>
-            </tr>
-            <tr>
-                <td>User.Name</td>
-                <td>@User.Name</td>
-            </tr>
-            </tbody>
-        </table>
         <div class="card-title">
-            Claims:
+            Session properties:
         </div>
-        <table class="table table-sm">
-            <tbody>
-            @foreach (var (key, value) in User.Claims) {
-                <tr>
-                    <td>@key</td>
-                    <td>@value</td>
-                </tr>
+        <div class="card-text">
+            <ul>
+                <li><code>Session.Id</code>: <b><code>@Session.Id</code></b></li>
+            </ul>
+        </div>
+        <div class="card-title">
+            User properties:
+        </div>
+        <div class="card-text">
+            <ul>
+                <li><code>User.Id</code>: <b><code>@User.Id</code></b></li>
+                <li><code>User.Name</code>: <b><code>@User.Name</code></b></li>
+            </ul>
+            @if (User.IsAuthenticated) {
+                <div class="card-subtitle">Claims:</div>
+                <ul>
+                    @foreach (var (key, value) in User.Claims) {
+                        <li><code>@key</code>: <b><code>@value</code></b></li>
+                    }
+                </ul>
             }
-            </tbody>
-        </table>
-    </div>
+        </div>
+        @if (User.IsAuthenticated && state.Count > 0) {
+            <div class="card-title">
+                Sessions:
+            </div>
+            <div class="card-text">
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">IP</th>
+                        <th scope="col">Browser</th>
+                        <th scope="col">Created</th>
+                        <th scope="col">Last Seen</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var session in state) {
+                        <tr>
+                            <td>@session.IPAddress</td>
+                            <td>@session.UserAgent</td>
+                            <td>@session.Created</td>
+                            <td>@session.LastSeen</td>
+                            <td>
+                                @if (session.IsCurrent) {
+                                    <span>Current</span>
+                                } else {
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            @onclick="_ => Kick(session.Id)">Kick</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div> @* card-body *@
     <div class="card-footer">
         <AuthorizeView>
             <Authorized>
-                <div class="mb-2"><button class="btn btn-warning" @onclick="SignOut">Sign out @context.User.Identity.Name</button></div>
+                <div class="mb-2">
+                    <button type="button" class="btn btn-warning" @onclick="SignOut">Sign out</button>
+                    <button type="button" class="btn btn-danger" @onclick="SignOutEverywhere">Sign out everywhere</button>
+                </div>
                 <div class="alert alert-warning">
                     To sign out completely, you need to either sign out from GitHub,
                     or revoke access from this application here:
@@ -71,18 +119,73 @@
         </AuthorizeView>
     </div>
 </div>
-</div>
 
 @code {
-    [CascadingParameter]
-    private AuthContext AuthContext { get; set; } = null!;
+    public class SessionModel
+    {
+        public string Id { get; set; } = "";
+        public string IPAddress { get; set; } = "";
+        public string UserAgent { get; set; } = "";
+        public string Created { get; set; } = "";
+        public string LastSeen { get; set; } = "";
+        public bool IsCurrent { get; set; }
+    }
+
     [CascadingParameter]
     private Task<AuthState> AuthStateTask { get; set; } = null!;
-    private AuthState AuthState { get; set; } = null!;
-    private AuthUser User => AuthState.User;
+    private AuthState AuthState { get; set; } = new AuthState(new User("")); // For SSB pre-render
+    private User User => AuthState.User;
 
     protected override async Task OnParametersSetAsync() => AuthState = await AuthStateTask;
 
+    protected override void ConfigureState(LiveState<List<SessionModel>>.Options options)
+        => options.InitialOutputFactory = _ => new List<SessionModel>();
+
+    protected override async Task<List<SessionModel>> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        var parser = Parser.GetDefault();
+        var sessions = await AuthService.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
+        var result = new List<SessionModel>();
+
+        Task<string> GetMomentsAgo(DateTime? dateTime)
+        {
+            if (!dateTime.HasValue)
+                return Task.FromResult("Unknown");
+            return MomentsAgoService.GetMomentsAgoAsync(dateTime.GetValueOrDefault());
+        }
+
+        foreach (var session in sessions) {
+            var userAgent = parser.ParseUserAgent(session.UserAgent);
+            var model = new SessionModel() {
+                Id = session.Id,
+                IsCurrent = Session.Id == session.Id,
+                IPAddress = session.IPAddress,
+                UserAgent = $"{userAgent.Family} {userAgent.Major}.{userAgent.Minor}",
+                Created = await GetMomentsAgo(session.CreatedAt),
+                LastSeen = await GetMomentsAgo(session.LastSeenAt),
+            };
+            result.Add(model);
+        }
+        return result;
+    }
+
     private void SignIn() => JSRuntime.InvokeVoidAsync("FusionAuth.signIn");
     private void SignOut() => JSRuntime.InvokeVoidAsync("FusionAuth.signOut");
+    private void Kick(string sessionId)
+    {
+        if (sessionId == Session.Id)
+            SignOut();
+        else
+            Task.Run(() => AuthService.SignOutAsync(true, new Session(sessionId))).Ignore();
+    }
+
+    private void SignOutEverywhere()
+    {
+        // No server-side API endpoint for this action(yet), so let's do this on the client
+        var sessions = State.LastValue.Where(s => s.Id != Session.Id);
+        foreach (var sessionModel in sessions) {
+            Kick(sessionModel.Id);
+        }
+        SignOut();
+    }
 }

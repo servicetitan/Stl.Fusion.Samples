@@ -39,7 +39,6 @@ namespace Samples.Blazor.Server
         private IConfiguration Cfg { get; }
         private IWebHostEnvironment Env { get; }
         private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
-        private bool NoGitHubCredentials = false;
 
         public Startup(IConfiguration cfg, IWebHostEnvironment environment)
         {
@@ -58,6 +57,7 @@ namespace Samples.Blazor.Server
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
+            services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebSocketServer();
             var fusionClient = fusion.AddRestEaseClient();
@@ -109,8 +109,6 @@ namespace Samples.Blazor.Server
         public void Configure(IApplicationBuilder app, ILogger<Startup> log)
         {
             Log = log;
-            if (NoGitHubCredentials)
-                Log.LogWarning("Authentication won't work: GitHub ClientId or ClientSecret isn't set.");
 
             // This server serves static content from Blazor Client,
             // and since we don't copy it to local wwwroot,
@@ -136,7 +134,7 @@ namespace Samples.Blazor.Server
                 ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
             });
-            app.UseAuthContext();
+            app.UseFusionSession();
 
             // Static + Swagger
             app.UseBlazorFrameworkFiles();

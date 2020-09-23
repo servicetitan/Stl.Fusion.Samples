@@ -12,12 +12,12 @@ namespace Samples.Blazor.Common.Services
         public string Parameter { get; } = "";
         public DateTime Time { get; }
         public string LastChatMessage { get; } = "";
-        public AuthUser User { get; } = new AuthUser("");
+        public User User { get; } = new User("");
         public long ActiveUserCount { get; }
 
         public ComposedValue() { }
         [JsonConstructor]
-        public ComposedValue(string parameter, DateTime time, string lastChatMessage, AuthUser user, long activeUserCount)
+        public ComposedValue(string parameter, DateTime time, string lastChatMessage, User user, long activeUserCount)
         {
             Parameter = parameter;
             Time = time;
@@ -30,7 +30,8 @@ namespace Samples.Blazor.Common.Services
     public interface IComposerService
     {
         [ComputeMethod(KeepAliveTime = 1)]
-        Task<ComposedValue> GetComposedValueAsync(string parameter, AuthContext? context, CancellationToken cancellationToken = default);
+        Task<ComposedValue> GetComposedValueAsync(string parameter,
+            Session? session, CancellationToken cancellationToken = default);
     }
 
     public interface ILocalComposerService : IComposerService { }
