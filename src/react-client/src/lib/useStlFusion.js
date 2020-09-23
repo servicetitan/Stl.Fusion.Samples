@@ -178,7 +178,7 @@ function handlePublicationMessage(socket, data) {
   const { PublisherId, PublicationId } = data;
 
   if (
-    !STL.publishers.has(PublisherId) ??
+    !STL.publishers.has(PublisherId) ||
     !STL.publishers.get(PublisherId).publications.has(PublicationId)
   ) {
     return;
