@@ -3,7 +3,7 @@ import formatDate from "date-fns/format";
 import Section from "./Section";
 import useStlFusion from "./lib/useStlFusion";
 
-export default function Composer() {
+export default function ComposerSection() {
   const [parameter, setParameter] = useState("Parameter");
 
   return (
@@ -22,12 +22,12 @@ export default function Composer() {
         </>
       }
     >
-      <ComposerSubscriptions parameter={parameter} />
+      <Composer parameter={parameter} />
     </Section>
   );
 }
 
-function ComposerSubscriptions({ parameter }) {
+function Composer({ parameter }) {
   const [showLocal, setShowLocal] = useState(true);
   const [showRemote, setShowRemote] = useState(true);
 

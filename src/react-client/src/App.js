@@ -4,6 +4,7 @@ import Wait from "./Wait";
 import Time from "./Time";
 import Composer from "./Composer";
 import Chat from "./Chat";
+import Auth from "./Auth";
 
 function App() {
   const [wait, setWait] = useState(300);
@@ -15,6 +16,7 @@ function App() {
         <Time />
         <Composer />
         <Chat />
+        <Auth />
       </div>
     </StlFusionConfig>
   );

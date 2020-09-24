@@ -7,19 +7,20 @@ import LoadingSVG from "./LoadingSVG";
 
 export default function Chat() {
   const [user, setUser] = useState(null);
+  const [cancel, setCancel] = useState(null);
 
   return (
     <Section
       title="Chat"
       header={<ChatUser user={user} onUserChange={setUser} />}
-      footer={<AddChatMessage user={user} />}
+      footer={<AddChatMessage user={user} cancel={cancel} />}
     >
-      <ChatMessages />
+      <ChatMessages onCancelChange={setCancel} />
     </Section>
   );
 }
 
-function ChatMessages() {
+function ChatMessages({ onCancelChange }) {
   const {
     data: activeUserData,
     loading: activeUserLoading,
@@ -29,9 +30,13 @@ function ChatMessages() {
   const activeUserCount =
     !activeUserLoading && !activeUserError ? activeUserData : 0;
 
-  const { data, loading, error } = useStlFusion(
+  const { data, loading, error, cancel } = useStlFusion(
     "/api/Chat/getChatTail?length=5"
   );
+
+  useEffect(() => {
+    onCancelChange(() => cancel);
+  }, [onCancelChange, cancel]);
 
   const messages = data?.messages ?? data?.Messages ?? [];
   const users = data?.users ?? data?.Users ?? {};
@@ -159,13 +164,10 @@ function ChatUser({ user, onUserChange }) {
   );
 }
 
-function AddChatMessage({ user }) {
+function AddChatMessage({ user, cancel }) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [shouldCancelWait, setShouldCancelWait] = useState(true);
-
-  // TODO: We shouldn't be making a second call here just to get the cancel function
-  const { cancel } = useStlFusion("/api/Chat/getChatTail?length=5");
+  const [shouldCancel, setShouldCancel] = useState(true);
 
   function addMessage() {
     setLoading(true);
@@ -174,7 +176,7 @@ function AddChatMessage({ user }) {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (shouldCancelWait) {
+        if (shouldCancel && cancel) {
           cancel();
         }
         setLoading(false);
@@ -222,9 +224,9 @@ function AddChatMessage({ user }) {
         <label className="text-xs font-semibold leading-5 text-gray-600">
           <input
             type="checkbox"
-            checked={shouldCancelWait}
+            checked={shouldCancel}
             onChange={({ target: { checked } }) => {
-              setShouldCancelWait(checked);
+              setShouldCancel(checked);
             }}
           />{" "}
           <span className="align-text-bottom">

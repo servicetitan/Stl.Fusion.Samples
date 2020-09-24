@@ -3,15 +3,15 @@ import formatDate from "date-fns/format";
 import Section from "./Section";
 import useStlFusion from "./lib/useStlFusion";
 
-export default function Time() {
+export default function TimeSection() {
   return (
     <Section title="Time">
-      <TimeSubscription />
+      <Time />
     </Section>
   );
 }
 
-function TimeSubscription() {
+function Time() {
   const { data, loading, error, cancel } = useStlFusion("/api/Time/get");
 
   return loading ? (
