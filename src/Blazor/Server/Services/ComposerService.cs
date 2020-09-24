@@ -30,7 +30,7 @@ namespace Samples.Blazor.Server.Services
         }
 
         public virtual async Task<ComposedValue> GetComposedValueAsync(
-            string parameter, Session? session, CancellationToken cancellationToken)
+            string parameter, Session session, CancellationToken cancellationToken)
         {
             var chatTail = await ChatService.GetChatTailAsync(1, cancellationToken).ConfigureAwait(false);
             var time = await TimeService.GetTimeAsync(cancellationToken).ConfigureAwait(false);

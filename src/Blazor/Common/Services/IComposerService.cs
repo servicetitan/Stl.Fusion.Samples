@@ -31,7 +31,7 @@ namespace Samples.Blazor.Common.Services
     {
         [ComputeMethod(KeepAliveTime = 1)]
         Task<ComposedValue> GetComposedValueAsync(string parameter,
-            Session? session, CancellationToken cancellationToken = default);
+            Session session, CancellationToken cancellationToken = default);
     }
 
     public interface ILocalComposerService : IComposerService { }

@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +19,7 @@ namespace Samples.Blazor.Server.Controllers
             _composer = composer;
 
         [HttpGet("get")]
-        public Task<ComposedValue> GetComposedValueAsync(string? parameter, Session? session = null, CancellationToken cancellationToken = default)
+        public Task<ComposedValue> GetComposedValueAsync(string? parameter, Session session, CancellationToken cancellationToken = default)
         {
             parameter ??= "";
             return PublishAsync(ct => _composer.GetComposedValueAsync(parameter, session, ct));
