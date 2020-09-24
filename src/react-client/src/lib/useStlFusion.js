@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext, useCallback } from "react";
 import merge from "lodash/merge";
 import throttle from "lodash/throttle";
 import { v4 as uuidv4 } from "uuid";
@@ -33,7 +33,6 @@ import DEFAULT_FETCHER from "./defaultFetcher";
 //         [PublicationId]: Map
 //           throttledRequestUpdate: f(),
 //           setResults: Set,
-//           cancelWait: false
 //         }
 //       }
 //     }
@@ -68,15 +67,18 @@ export default function useStlFusion(url, params, overrideConfig) {
     loading: true,
     error: undefined,
     data: undefined,
-    cancel: () => {
-      if (publicationRef.current) {
-        const { PublisherId, PublicationId } = publicationRef.current;
-        const publisher = STL.publishers.get(PublisherId);
-        const publication = publisher.publications.get(PublicationId);
-        publication.cancelWait = true;
-      }
-    },
   });
+
+  const cancel = useCallback(() => {
+    if (publicationRef.current) {
+      const { PublisherId, PublicationId } = publicationRef.current;
+      const publisher = STL.publishers.get(PublisherId);
+      const publication = publisher.publications.get(PublicationId);
+
+      publication.throttledRequestUpdate.cancel();
+      sendRequestUpdateMessage(publisher.socket, publicationRef.current);
+    }
+  }, []);
 
   const contextConfig = useContext(StlFusionContext);
 
@@ -140,7 +142,7 @@ export default function useStlFusion(url, params, overrideConfig) {
     };
   }, [url, params, uri, wait, fetcher]);
 
-  return result;
+  return { ...result, cancel };
 }
 
 /**
@@ -198,13 +200,7 @@ function handlePublicationMessage(socket, data) {
 
   if (data.IsConsistent === false) {
     // to avoid slamming the server, we usually add a small delay to update requests
-    if (publication.cancelWait === false) {
-      publication.throttledRequestUpdate(socket, data);
-    } else {
-      publication.throttledRequestUpdate.cancel();
-      sendRequestUpdateMessage(socket, data);
-      publication.cancelWait = false;
-    }
+    publication.throttledRequestUpdate(socket, data);
   }
 
   if (data.Output) {
@@ -227,7 +223,6 @@ function createPublication(socket, data, { options: { wait } }, setResult) {
       throttledRequestUpdate: throttle(sendRequestUpdateMessage, wait, {
         leading: false,
       }),
-      cancelWait: false,
     });
 
     sendSubscribeMessage(socket, { data });
