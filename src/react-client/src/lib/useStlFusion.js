@@ -16,13 +16,13 @@ import DEFAULT_FETCHER from "./defaultFetcher";
 //       probably by providing a promise-returning function
 // TODO: ??? Allow user to set default headers, auth tokens, etc
 //       (could they just do this in the configured fetcher function?)
-// TODO: Allow user to configure clientId?
+// TODO: ??? Allow user to configure clientId
 
 // TODO: If different components ask for different throttle wait times for
 //       the same API endpoint, the first one wins.
 
 // TODO: Should multiple calls to the same endpoint try to use existing value
-//       instead of making their own API calls?
+//       instead of each making their own API calls?
 
 // {
 //   clientId: "uuidv4",
@@ -73,10 +73,12 @@ export default function useStlFusion(url, params, overrideConfig) {
     if (publicationRef.current) {
       const { PublisherId, PublicationId } = publicationRef.current;
       const publisher = STL.publishers.get(PublisherId);
-      const publication = publisher.publications.get(PublicationId);
+      const publication = publisher?.publications.get(PublicationId);
 
-      publication.throttledRequestUpdate.cancel();
-      sendRequestUpdateMessage(publisher.socket, publicationRef.current);
+      if (publisher && publication) {
+        publication.throttledRequestUpdate.cancel();
+        sendRequestUpdateMessage(publisher.socket, publicationRef.current);
+      }
     }
   }, []);
 

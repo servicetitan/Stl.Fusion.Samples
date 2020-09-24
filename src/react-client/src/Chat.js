@@ -162,6 +162,10 @@ function ChatUser({ user, onUserChange }) {
 function AddChatMessage({ user }) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [shouldCancelWait, setShouldCancelWait] = useState(true);
+
+  // TODO: We shouldn't be making a second call here just to get the cancel function
+  const { cancel } = useStlFusion("/api/Chat/getChatTail?length=5");
 
   function addMessage() {
     setLoading(true);
@@ -170,6 +174,9 @@ function AddChatMessage({ user }) {
     })
       .then((res) => res.json())
       .then((data) => {
+        if (shouldCancelWait) {
+          cancel();
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -178,36 +185,53 @@ function AddChatMessage({ user }) {
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        addMessage();
-        e.target.reset();
-      }}
-    >
-      <div className="flex py-2">
-        <div className="relative flex-grow focus-within:z-10">
-          {loading ? (
-            <LoadingSVG
-              className="absolute"
-              style={{
-                top: "calc(1.25rem - 11px)",
-                left: "50%",
-                marginLeft: "-11px",
-              }}
-            />
-          ) : null}
+    <div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          addMessage();
+          e.target.reset();
+        }}
+      >
+        <div className="flex py-2">
+          <div className="relative flex-grow focus-within:z-10">
+            {loading ? (
+              <LoadingSVG
+                className="absolute"
+                style={{
+                  top: "calc(1.25rem - 11px)",
+                  left: "50%",
+                  marginLeft: "-11px",
+                }}
+              />
+            ) : null}
 
-          <input
-            className="block w-full h-10 pl-3 text-sm leading-5 transition duration-150 ease-in-out bg-gray-200 border border-gray-300 rounded-none rounded-l-md"
-            placeholder={`Send chat message as ${user?.name ?? user?.Name}`}
-            onChange={({ target: { value } }) => setText(value)}
-          />
+            <input
+              className="block w-full h-10 pl-3 text-sm leading-5 transition duration-150 ease-in-out bg-gray-200 border border-gray-300 rounded-none rounded-l-md"
+              placeholder={`Send chat message as ${user?.name ?? user?.Name}`}
+              onChange={({ target: { value } }) => setText(value)}
+            />
+          </div>
+          <button className="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium leading-5 text-gray-700 transition duration-150 ease-in-out border border-gray-300 rounded-r-md bg-gray-50 hover:text-gray-500 hover:bg-white focus:outline-none focus:shadow-outline-blue focus:border-blue-300 active:bg-gray-100 active:text-gray-700">
+            <span>Submit</span>
+          </button>
         </div>
-        <button className="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium leading-5 text-gray-700 transition duration-150 ease-in-out border border-gray-300 rounded-r-md bg-gray-50 hover:text-gray-500 hover:bg-white focus:outline-none focus:shadow-outline-blue focus:border-blue-300 active:bg-gray-100 active:text-gray-700">
-          <span>Submit</span>
-        </button>
+      </form>
+
+      <div>
+        <label className="text-xs font-semibold leading-5 text-gray-600">
+          <input
+            type="checkbox"
+            checked={shouldCancelWait}
+            onChange={({ target: { checked } }) => {
+              setShouldCancelWait(checked);
+            }}
+          />{" "}
+          <span className="align-text-bottom">
+            Cancel wait when sending message
+          </span>
+        </label>
       </div>
-    </form>
+    </div>
   );
 }

@@ -40,7 +40,7 @@ export default function Section({ title, header, children, footer }) {
         ? range(count).map((index) => <div key={index}>{children}</div>)
         : null}
 
-      {footer ? footer : null}
+      {footer && children && count > 0 ? footer : null}
     </section>
   );
 }
