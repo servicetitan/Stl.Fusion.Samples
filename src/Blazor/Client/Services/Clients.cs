@@ -57,6 +57,6 @@ namespace Samples.Blazor.Client.Services
     {
         [Get("get")]
         Task<ComposedValue> GetComposedValueAsync(string? parameter,
-            Session? session, CancellationToken cancellationToken = default);
+            Session session, CancellationToken cancellationToken = default);
     }
 }

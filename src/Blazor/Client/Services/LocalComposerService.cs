@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Samples.Blazor.Client.Pages;
 using Stl.Fusion;
 using Samples.Blazor.Common.Services;
 using Stl.Fusion.Authentication;
@@ -31,7 +30,7 @@ namespace Samples.Blazor.Client.Services
         }
 
         public virtual async Task<ComposedValue> GetComposedValueAsync(
-            string parameter, Session? session, CancellationToken cancellationToken)
+            string parameter, Session session, CancellationToken cancellationToken)
         {
             var chatTail = await ChatService.GetChatTailAsync(1, cancellationToken).ConfigureAwait(false);
             var time = await TimeService.GetTimeAsync(cancellationToken).ConfigureAwait(false);
