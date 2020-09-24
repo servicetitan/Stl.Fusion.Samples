@@ -60,7 +60,32 @@ export default function Time() {
 }
 ```
 
-TODO: Document custom fetcher configuration using something like Axios.
+Custom fetcher, using `axios` as an example:
+
+```js
+import StlFusionConfig from "./lib/StlFusionConfig";
+import axios from "axios";
+
+ReactDOM.render(
+  <React.StrictMode>
+    <StlFusionConfig
+      uri="ws://localhost:5005/fusion/ws"
+      wait={300}
+      fetcher={async (url, params) => {
+        const { data, headers } = await axios.get(url, {
+          ...params,
+          headers: { ...params?.headers, "x-fusion-publish": 1 },
+        });
+
+        return { data, header: JSON.parse(headers["x-fusion-publication"]) };
+      }}
+    >
+      <App />
+    </StlFusionConfig>
+  </React.StrictMode>,
+  document.getElementById("root")
+);
+```
 
 ---
 

@@ -95,18 +95,25 @@ export default function useStlFusion(url, params, overrideConfig) {
     // Allow the user to pass null "url" arg to unsubscribe
     if (url != null) {
       fetcher(url, params)
-        .then(async ({ data, headers }) => {
+        .then(async ({ data, header }) => {
           if (isMounted) {
             // update the state with REST call response
             setResult({ loading: false, data });
 
+            const flatHeaders = {
+              PublisherId: header.PublicationRef.PublisherId,
+              PublicationId: header.PublicationRef.PublicationId,
+              Version: header.Version,
+              IsConsistent: header.IsConsistent,
+            };
+
             // store the publication data
-            publicationRef.current = headers;
+            publicationRef.current = flatHeaders;
 
             // wire up all the websocket stuff
             const config = { uri, options: { wait } };
-            const socket = await createPublisher(headers, config);
-            createPublication(socket, headers, config, setResult);
+            const socket = await createPublisher(flatHeaders, config);
+            createPublication(socket, flatHeaders, config, setResult);
           }
         })
         .catch((error) => {
