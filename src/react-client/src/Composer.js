@@ -85,6 +85,11 @@ function ComposerLocal({ parameter, onToggle }) {
     data: userData,
     loading: userLoading,
     error: userError,
+  } = useStlFusion("/fusion/auth/getUser");
+  const {
+    data: userCountData,
+    loading: userCountLoading,
+    error: userCountError,
   } = useStlFusion("/api/Chat/getActiveUserCount");
 
   return (
@@ -116,8 +121,22 @@ function ComposerLocal({ parameter, onToggle }) {
             ? "Loading..."
             : userError
             ? "There was an error!"
-            : `${userData} active
-      user${userData === 1 ? "" : "s"}`}
+            : userData.id ?? userData.Id}
+        </div>
+        <div>
+          {userLoading
+            ? "Loading..."
+            : userError
+            ? "There was an error!"
+            : userData.name ?? userData.Name}
+        </div>
+        <div>
+          {userCountLoading
+            ? "Loading..."
+            : userCountError
+            ? "There was an error!"
+            : `${userCountData} active
+      user${userCountData === 1 ? "" : "s"}`}
         </div>
       </div>
     </div>
@@ -125,8 +144,19 @@ function ComposerLocal({ parameter, onToggle }) {
 }
 
 function ComposerRemote({ parameter, onToggle }) {
+  const {
+    data: sessionData,
+    loading: sessionLoading,
+    error: sessionError,
+  } = useStlFusion("/fusion/auth/getSessionInfo");
+
+  const sessionId =
+    !sessionLoading && !sessionError ? sessionData.id ?? sessionData.Id : null;
+
   const { data, loading, error } = useStlFusion(
-    `/api/composer/get?parameter=${parameter ?? ""}`
+    sessionId
+      ? `/api/composer/get?parameter=${parameter ?? ""}&session=${sessionId}`
+      : null
   );
 
   return (
@@ -149,6 +179,8 @@ function ComposerRemote({ parameter, onToggle }) {
             )}
           </div>
           <div>{data.lastChatMessage ?? data.LastChatMessage}</div>
+          <div>{data?.user?.id ?? data?.User?.Id}</div>
+          <div>{data?.user?.name ?? data?.User?.Name}</div>
           <div>
             {data.activeUserCount ?? data.ActiveUserCount} active user
             {data.activeUserCount ?? data.ActiveUserCount === 1 ? "" : "s"}
