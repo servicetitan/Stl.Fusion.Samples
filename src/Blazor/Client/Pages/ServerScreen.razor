@@ -42,6 +42,9 @@
         public int ActualWidth => Math.Max(8, Math.Min(1920, Width));
     }
 
+    protected override async Task OnInitializedAsync()
+        => await State.UpdateAsync(false); // An example showing how to load the State before the first render
+
     protected override void ConfigureState(LiveState<Screenshot, LocalsModel>.Options options)
         => options.WithUpdateDelayer(0);
 

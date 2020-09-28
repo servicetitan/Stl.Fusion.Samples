@@ -10,7 +10,7 @@
 
 <h1>Server Time</h1>
 
-<p>Server Time: @time</p>
+<StatefulComponentState Component="@this" />
 
 @if (error != null) {
     <div class="alert alert-warning" role="alert">
@@ -18,9 +18,18 @@
     </div>
 }
 
+<p>Server Time: @time</p>
+
 <button class="btn btn-primary" @onclick="() => State.Invalidate(true)">Refresh</button>
 
 @code {
+    protected override void OnInitialized()
+    {
+        // StateEventHandlers.All is needed to make StatefulComponentState react to all state changes
+        UsedStateEventHandlers = StateEventHandlers.All;
+        base.OnInitialized();
+    }
+
     protected override void ConfigureState(LiveState<DateTime>.Options options)
         => options.WithUpdateDelayer(0.5);
 
