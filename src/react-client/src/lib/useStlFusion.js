@@ -4,6 +4,7 @@ import throttle from "lodash/throttle";
 import { v4 as uuidv4 } from "uuid";
 import StlFusionContext from "./StlFusionContext";
 import DEFAULT_FETCHER from "./defaultFetcher";
+import { useSameObject } from "./utils";
 
 // TODO: Write an actual README
 
@@ -60,7 +61,7 @@ let STL = {
   publishers: new Map(),
 };
 
-export default function useStlFusion(url, params, overrideConfig) {
+export default function useStlFusion(url, argParams, argConfig) {
   const publicationRef = useRef(null);
 
   const [result, setResult] = useState({
@@ -82,19 +83,20 @@ export default function useStlFusion(url, params, overrideConfig) {
     }
   }, []);
 
-  const contextConfig = useContext(StlFusionContext);
+  const params = useSameObject(argParams);
 
-  const {
-    uri,
-    options: { wait, fetcher },
-  } = merge({}, DEFAULT_CONFIG, contextConfig, overrideConfig);
+  const contextConfig = useContext(StlFusionContext);
+  const config = useSameObject(
+    merge({}, DEFAULT_CONFIG, contextConfig, argConfig)
+  );
 
   useEffect(() => {
     let isMounted = true;
 
     // Allow the user to pass null "url" arg to unsubscribe
     if (url != null) {
-      fetcher(url, params)
+      config.options
+        .fetcher(url, params)
         .then(async ({ data, header }) => {
           if (isMounted) {
             // update the state with REST call response
@@ -104,7 +106,6 @@ export default function useStlFusion(url, params, overrideConfig) {
             publicationRef.current = header.PublicationRef;
 
             // wire up all the websocket stuff
-            const config = { uri, options: { wait } };
             const socket = await createPublisher(
               publicationRef.current,
               config
@@ -150,7 +151,7 @@ export default function useStlFusion(url, params, overrideConfig) {
         STL.publishers.delete(PublisherId);
       }
     };
-  }, [url, params, uri, wait, fetcher]);
+  }, [url, params, config]);
 
   return { ...result, cancel };
 }
