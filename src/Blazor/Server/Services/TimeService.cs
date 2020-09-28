@@ -16,8 +16,15 @@ namespace Samples.Blazor.Server.Services
         public TimeService(ILogger<TimeService>? log = null)
             => _log = log ??= NullLogger<TimeService>.Instance;
 
-        [ComputeMethod(AutoInvalidateTime = 0.1)]
-        public virtual Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult(DateTime.Now);
+        [ComputeMethod(AutoInvalidateTime = 0.25)]
+        public virtual async Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)
+        {
+            var time = DateTime.Now;
+            if (time.Second % 10 == 0)
+                // This delay is here solely to let you see ServerTime page in
+                // in "Loading" / "Updating" state.
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+            return time;
+        }
     }
 }

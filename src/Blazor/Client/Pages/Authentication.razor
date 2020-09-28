@@ -150,12 +150,7 @@
         var sessions = await AuthService.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
         var result = new List<SessionModel>();
 
-        Task<string> GetMomentsAgo(DateTime? dateTime)
-        {
-            if (!dateTime.HasValue)
-                return Task.FromResult("Unknown");
-            return MomentsAgoService.GetMomentsAgoAsync(dateTime.GetValueOrDefault());
-        }
+        Task<string> GetMomentsAgo(DateTime dateTime) => MomentsAgoService.GetMomentsAgoAsync(dateTime);
 
         foreach (var session in sessions) {
             var userAgent = UserAgentCache.GetOrAdd(session.UserAgent, ua => Parser.ParseUserAgent(ua));
