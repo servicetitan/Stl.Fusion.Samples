@@ -16,9 +16,9 @@
         <span class="input-group-text">Screenshot width (in pixels):</span>
     </div>
     <input class="form-control"
-           @bind-value="@locals.Width"
+           @bind-value="locals.Width"
            @bind-value:event="oninput"
-           @onkeyup="@OnWidthChange"/>
+           @onkeyup="OnWidthChange"/>
     @if (locals.Width != locals.ActualWidth) {
         <div class="input-group-append">
             <span class="input-group-text">(actual width: @locals.ActualWidth)</span>

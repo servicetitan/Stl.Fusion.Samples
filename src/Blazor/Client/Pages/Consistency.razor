@@ -1,0 +1,48 @@
+@page "/consistency"
+@inject NavigationManager Navigator
+
+<h1>Consistency</h1>
+
+<p>
+    This page shows the values displayed in any component here
+    are always<sup>(*)</sup> consistent - e.g. the sum they show is always correct,
+    even though there are update delays.
+</p>
+<p>
+    This proves there are no delays (except the networking one) in propagation
+    of the invalidation messages - in other words, it's always known whether
+    any cached value is consistent or not (and thus it has to be updated).
+    This is why once the update delay ends, the following update always
+    produces a consistent "view" - i.e. even though it mostly reuses the
+    cached values or replicas, it still updates the inconsistent ones.
+</p>
+<p>
+    This also indicates that all the update delays you see here are local
+    to <code>LiveComponent.State</code>, so they don't interfere with any
+    other component or logic.
+</p>
+<p>
+    Open <a href="@Navigator.Uri" target="_blank">this page</a> or
+    <a href="/composition" target="_blank">Composition example</a>
+    in another window to see is updated in real time.
+</p>
+
+<div class="input-group pb-3 pl-3 col-2">
+    <div class="input-group-prepend">
+        <span class="input-group-text">Update Delay</span>
+    </div>
+    <input class="form-control" @bind-value="UpdateDelay" @bind-value:event="oninput" />
+</div>
+
+<div class="col-6 pb-3">
+    <AccumulatorCard UpdateDelay="@UpdateDelayTimeSpan" />
+</div>
+<div class="d-flex">
+    <div class="col-6"><SumCard Title="Sum 1" UpdateDelay="@UpdateDelayTimeSpan"/></div>
+    <div class="col-6"><SumCard Title="Sum 2" UpdateDelay="@UpdateDelayTimeSpan"/></div>
+</div>
+
+@code {
+    private double UpdateDelay { get; set; } = 1;
+    private TimeSpan UpdateDelayTimeSpan => TimeSpan.FromSeconds(Math.Max(0, UpdateDelay));
+}

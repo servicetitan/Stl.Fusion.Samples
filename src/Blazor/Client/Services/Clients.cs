@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using RestEase;
 using Samples.Blazor.Common.Services;
 using Stl.Fusion.Authentication;
-using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Client.RestEase;
 
@@ -16,6 +15,8 @@ namespace Samples.Blazor.Client.Services
     {
         [Get("get")]
         Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default);
+        [Get("getUptime")]
+        Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
     }
 
     [RestEaseReplicaService(typeof(IScreenshotService), Scope = Program.ClientSideScope)]
@@ -58,5 +59,19 @@ namespace Samples.Blazor.Client.Services
         [Get("get")]
         Task<ComposedValue> GetComposedValueAsync(string? parameter,
             Session session, CancellationToken cancellationToken = default);
+    }
+
+    [RestEaseReplicaService(typeof(ISumService), Scope = Program.ClientSideScope)]
+    [BasePath("sum")]
+    public interface ISumClient : IRestEaseReplicaClient
+    {
+        [Post("reset")]
+        Task ResetAsync(CancellationToken cancellationToken);
+        [Post("accumulate")]
+        Task AccumulateAsync(double value, CancellationToken cancellationToken);
+        [Get("getAccumulator")]
+        Task<double> GetAccumulatorAsync(CancellationToken cancellationToken);
+        [Get("sum")]
+        Task<double> SumAsync(double[] values, bool addAccumulator, CancellationToken cancellationToken);
     }
 }

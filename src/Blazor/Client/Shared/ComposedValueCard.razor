@@ -1,3 +1,6 @@
+@using Pluralize.NET
+@inject IPluralize Pluralize
+
 <div class="@CssClass">
     <div class="card-header">
         @(Title)
@@ -7,23 +10,30 @@
             <tbody>
             <tr>
                 <td>Parameter:</td>
-                <td>@(Source.Parameter)</td>
+                <td>@Source.Parameter</td>
             </tr>
             <tr>
-                <td>Time:</td>
-                <td>@(Source.Time.Format())</td>
+                <td>Uptime:</td>
+                @{
+                    var uptime = (int) Source.Uptime.TotalSeconds;
+                }
+                <td>@Pluralize.Format("second", uptime, true)</td>
+            </tr>
+            <tr>
+                <td>Acc.+Parameter:</td>
+                <td>@(Source.Sum?.ToString() ?? "(n/a)")</td>
             </tr>
             <tr>
                 <td>Last Chat Message:</td>
-                <td>@(Source.LastChatMessage)</td>
+                <td>@Source.LastChatMessage</td>
             </tr>
             <tr>
                 <td>Current User.Name:</td>
-                <td>@(Source.User?.Name)</td>
+                <td>@(Source.User?.Name ?? "(n/a)")</td>
             </tr>
             <tr>
                 <td>Active User Count:</td>
-                <td>@(Source.ActiveUserCount)</td>
+                <td>@Source.ActiveUserCount</td>
             </tr>
             </tbody>
         </table>
