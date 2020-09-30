@@ -10,17 +10,19 @@ namespace Samples.Blazor.Common.Services
     public class ComposedValue
     {
         public string Parameter { get; } = "";
-        public DateTime Time { get; }
+        public TimeSpan Uptime { get; set; }
+        public double? Sum { get; set; }
         public string LastChatMessage { get; } = "";
         public User User { get; } = new User("");
         public long ActiveUserCount { get; }
 
         public ComposedValue() { }
         [JsonConstructor]
-        public ComposedValue(string parameter, DateTime time, string lastChatMessage, User user, long activeUserCount)
+        public ComposedValue(string parameter, TimeSpan uptime, double? sum, string lastChatMessage, User user, long activeUserCount)
         {
             Parameter = parameter;
-            Time = time;
+            Uptime = uptime;
+            Sum = sum;
             LastChatMessage = lastChatMessage;
             User = user;
             ActiveUserCount = activeUserCount;

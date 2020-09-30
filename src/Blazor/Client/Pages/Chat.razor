@@ -73,14 +73,14 @@
     </tbody>
 </table>
 
-<form @onsubmit="@SendMessageAsync">
+<form @onsubmit="SendMessageAsync">
     <div class="input-group pb-3">
         <div class="input-group-prepend">
             <span class="input-group-text">Message</span>
         </div>
         <input class="form-control"
             placeholder="No ideas? Send an empty one!"
-            @bind-value="@locals.Message" />
+            @bind-value="locals.Message" />
         <div class="input-group-append">
             <button type="submit" class="btn btn-success">Send</button>
         </div>

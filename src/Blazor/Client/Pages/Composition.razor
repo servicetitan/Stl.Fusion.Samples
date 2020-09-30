@@ -5,6 +5,7 @@
 @inject ILocalComposerService LocalComposer;
 @inject IComposerService Composer;
 @inject Session Session;
+@inject NavigationManager Navigator
 
 @{
     var locals = Locals.Value;
@@ -13,6 +14,16 @@
 }
 
 <h1>Composition</h1>
+
+<div class="alert alert-primary">
+    Open <a href="/chat" target="_blank">Chat</a>,
+    <a href="/consistency" target="_blank">Consistency</a>, or
+    <a href="/authentication" target="_blank">Authentication</a>
+    examples in other window(s) to see how values on this page
+    are updated in real-time due to changes made there.
+</div>
+
+<StatefulComponentState Component="@this" />
 
 @if (error != null) {
     <div class="alert alert-warning" role="alert">
@@ -25,9 +36,9 @@
         <span class="input-group-text">Parameter</span>
     </div>
     <input class="form-control"
-           @bind-value="@locals.Parameter"
+           @bind-value="locals.Parameter"
            @bind-value:event="oninput"
-           @onkeyup="@OnParameterChange"/>
+           @onkeyup="OnParameterChange"/>
 </div>
 
 <div class="d-flex">
@@ -53,6 +64,13 @@
     {
         public ComposedValue LocallyComposedValue { get; set; } = new ComposedValue();
         public ComposedValue RemotelyComposedValue { get; set; } = new ComposedValue();
+    }
+
+    protected override void OnInitialized()
+    {
+        // StateEventHandlers.All is needed to make StatefulComponentState react to all state changes
+        UsedStateEventHandlers = StateEventHandlers.All;
+        base.OnInitialized();
     }
 
     protected override void ConfigureState(LiveState<Model, LocalsModel>.Options options)

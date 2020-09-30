@@ -21,5 +21,9 @@ namespace Samples.Blazor.Server.Controllers
         [HttpGet("get")]
         public Task<DateTime> GetTimeAsync(CancellationToken cancellationToken)
             => PublishAsync(ct => _time.GetTimeAsync(ct));
+
+        [HttpGet("getUptime")]
+        public Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
+            => PublishAsync(ct => _time.GetUptimeAsync(updatePeriod, ct));
     }
 }

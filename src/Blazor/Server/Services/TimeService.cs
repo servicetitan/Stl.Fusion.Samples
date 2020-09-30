@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Stl.Fusion;
 using Samples.Blazor.Common.Services;
 
@@ -11,12 +9,9 @@ namespace Samples.Blazor.Server.Services
     [ComputeService(typeof(ITimeService))]
     public class TimeService : ITimeService
     {
-        private readonly ILogger _log;
+        private DateTime _startTime = DateTime.UtcNow;
 
-        public TimeService(ILogger<TimeService>? log = null)
-            => _log = log ??= NullLogger<TimeService>.Instance;
-
-        [ComputeMethod(AutoInvalidateTime = 0.25)]
+        [ComputeMethod(AutoInvalidateTime = 0.25, KeepAliveTime = 1)]
         public virtual async Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)
         {
             var time = DateTime.Now;
@@ -25,6 +20,13 @@ namespace Samples.Blazor.Server.Services
                 // in "Loading" / "Updating" state.
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
             return time;
+        }
+
+        public virtual Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
+        {
+            var computed = Computed.GetCurrent();
+            Task.Delay(updatePeriod, cancellationToken).ContinueWith(_ => computed!.Invalidate(), cancellationToken);
+            return Task.FromResult(DateTime.UtcNow - _startTime);
         }
     }
 }
