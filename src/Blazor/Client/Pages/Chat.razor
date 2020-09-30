@@ -41,7 +41,7 @@
     </div>
 }
 
-<form @onsubmit="@SetNameAsync">
+<form @onsubmit="SetNameAsync">
     <div class="input-group pb-3">
         <div class="input-group-prepend">
             <span class="input-group-text">Your name</span>
@@ -123,6 +123,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (ReferenceEquals(State, null))
+            return; // Not sure why this happens on SSB sometimes, but...
         if (ChatUser == null)
             // Let's pre-create the user
             await SetNameAsync();
