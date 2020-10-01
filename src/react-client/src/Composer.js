@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import formatDate from "date-fns/format";
 import Section from "./Section";
 import useStlFusion from "./lib/useStlFusion";
 
@@ -75,7 +74,7 @@ function ComposerLocal({ parameter, onToggle }) {
     data: timeData,
     loading: timeLoading,
     error: timeError,
-  } = useStlFusion("/api/Time/get");
+  } = useStlFusion("/api/Time/getUptime");
   const {
     data: chatData,
     loading: chatLoading,
@@ -105,7 +104,7 @@ function ComposerLocal({ parameter, onToggle }) {
             ? "Loading..."
             : timeError
             ? "There was an error!"
-            : formatDate(new Date(timeData), "yyyy-MM-dd HH:mm:ss.SSS xxx")}
+            : timeData}
         </div>
         <div>
           {chatLoading
@@ -172,12 +171,7 @@ function ComposerRemote({ parameter, onToggle }) {
       ) : (
         <div className="space-y-1 divide-y">
           <div>{data.parameter ?? data.Parameter}</div>
-          <div>
-            {formatDate(
-              new Date(data.time ?? data.Time),
-              "yyyy-MM-dd HH:mm:ss.SSS xxx"
-            )}
-          </div>
+          <div>{data.uptime ?? data.Uptime}</div>
           <div>{data.lastChatMessage ?? data.LastChatMessage}</div>
           <div>{data?.user?.id ?? data?.User?.Id}</div>
           <div>{data?.user?.name ?? data?.User?.Name}</div>
