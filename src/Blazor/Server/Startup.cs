@@ -5,13 +5,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -23,14 +21,10 @@ using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
-using Stl.Fusion.Blazor.Authentication;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
-using Stl.Fusion.Server.Authentication;
 using Stl.IO;
-using Stl.Reflection;
-using Stl.Serialization;
 
 namespace Samples.Blazor.Server
 {
