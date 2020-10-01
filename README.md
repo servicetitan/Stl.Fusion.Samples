@@ -45,6 +45,9 @@ which also serves its API. The application includes:
 * "Authentication" &ndash; a GitHub authentication sample with Google-style real-time 
   session tracking, "Kick", and "Sign-out everywhere" actions.
 
+> Check out a [7-min. video walk-through](https://www.youtube.com/watch?v=nBJo9Y2TvEo) 
+> for this sample - the animations below show just some of its features.
+
 ![](docs/img/Samples-Blazor.gif)
 
 Note that "Composition" sample shown in a separate window in the bottom-right corner
