@@ -28,7 +28,7 @@ let's start from this part.
 But first, let's create a helper method allowing us to create an
 `IServiceProvider` hosting our Compute Services:
 
-``` cs --region Part01_CreateServices --source-file Part01.cs
+``` cs --editable false --region Part01_CreateServices --source-file Part01.cs
 public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();

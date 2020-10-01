@@ -1,7 +1,7 @@
-# Stl.Fusion Tutorial
+# Fusion Tutorial
 
-> This is an **interactive** tutorial for
-> [Stl.Fusion](https://github.com/servicetitan/Stl.Fusion).
+> This is an **interactive** tutorial for [Fusion] - a .NET Core library
+> trying to make real-time a new normal for any connected apps.
 > And although you can simply browse it, you can also run and modify any
 > C# code featured here. All you need is
 > [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
@@ -25,10 +25,9 @@ Alternatively, you can run it with `dotnet try` CLI tool:
 
 ## Tutorial
 
-The code based on `Stl.Fusion` (we'll refer to it as "Fusion" further)
-might look completely weird at first - that's because it is based
-on abstractions you need to learn about before starting
-to dig into the code.
+The code based on Fusion might look completely weird at first -
+that's because it is based on abstractions you need to learn about
+before starting to dig into the code.
 
 Understanding how they work will also eliminate a lot
 of questions you might get further, so we highly recommend you
