@@ -1,11 +1,15 @@
 # Fusion Tutorial
 
-> This is an **interactive** tutorial for [Fusion] - a .NET Core library
-> trying to make real-time a new normal for any connected apps.
-> And although you can simply browse it, you can also run and modify any
-> C# code featured here. All you need is
-> [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
-> or [Docker](https://www.docker.com/).
+> All project updates are published on [Gitter]; it's also the best place for Q/A.\
+> [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
+> [![Gitter](https://badges.gitter.im/Stl-Fusion/community.svg)](https://gitter.im/Stl-Fusion/community)
+
+This is an *interactive* tutorial for [Fusion] - a .NET Core library
+trying to make real-time a new normal for any connected apps.
+And although you can simply browse it, you can also run and modify any
+C# code featured here. All you need is
+[Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
+or [Docker](https://www.docker.com/).
 
 The simplest way to run this tutorial:
 
@@ -53,6 +57,9 @@ To be added soon:
 Check out the [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
 as well - it provides a high-level description of Fusion abstractions.
 
-Join our [Discord Server](https://discord.gg/EKEwv6d)
-to ask questions and track project updates.
+Join our [Gitter Chat Room] or [Discord Server] to ask questions and track project updates.
 
+[Gitter]: https://gitter.im/Stl-Fusion/community
+[Gitter Chat Room]: https://gitter.im/Stl-Fusion/community
+[Discord Server]: https://discord.gg/EKEwv6d
+[Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
