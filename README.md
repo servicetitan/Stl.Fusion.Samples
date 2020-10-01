@@ -1,13 +1,14 @@
 ![](docs/img/Banner.gif)
 
-Welcome to a collection of samples for [Stl.Fusion]!
+Welcome to a collection of [Fusion] samples!
 
-> All project updates are published on our [Discord Server]; it's also the best place for Q/A.\
+> All project updates are published on [Gitter]; it's also the best place for Q/A.\
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
+> [![Gitter](https://badges.gitter.im/Stl-Fusion/community.svg)](https://gitter.im/Stl-Fusion/community)
 
 ## What's Inside?
 
-### 1. HelloWorld
+### 1. HelloWorld Sample
 
 Fusion-style [HelloWorld](src/HelloWorld) shows how to create
 simple dependency chains and and react to invalidation events. 
@@ -15,7 +16,7 @@ simple dependency chains and and react to invalidation events.
 
 ![](docs/img/Samples-HelloWorld.gif)
 
-### 2. HelloBlazorServer
+### 2. HelloBlazorServer Sample
 
 [HelloBlazorServer](src/HelloBlazorServer) is a default Blazor Server App 
 modified to reveal some Fusion powers. Contrary to the original app:
@@ -29,7 +30,7 @@ modified to reveal some Fusion powers. Contrary to the original app:
 If you're curious how big is the difference between the code of
 these samples and a similar code without any real-time
 features, 
-[check out this part of Stl.Fusion README.md](https://github.com/servicetitan/Stl.Fusion#enough-talk---lets-fight-show-me-the-code).
+[check out this part of Fusion README.md](https://github.com/servicetitan/Stl.Fusion#enough-talk---lets-fight-show-me-the-code).
 
 ### 3. Blazor Samples
 
@@ -43,6 +44,9 @@ which also serves its API. The application includes:
   [Replica Services] (remote producers)
 * "Authentication" &ndash; a GitHub authentication sample with Google-style real-time 
   session tracking, "Kick", and "Sign-out everywhere" actions.
+
+> Check out a [7-min. video walk-through](https://www.youtube.com/watch?v=nBJo9Y2TvEo) 
+> for this sample - the animations below show just some of its features.
 
 ![](docs/img/Samples-Blazor.gif)
 
@@ -98,17 +102,17 @@ Build & run with [Docker](https://docs.docker.com/get-docker/) +
 
 ## Useful Links
 
-* Check out [Stl.Fusion repository]
+* Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
-* Join our [Discord Server] to ask questions and track project updates.
+* Join our [Gitter Chat Room] or [Discord Server] to ask questions and track project updates.
 
-**P.S.** If you've already spent some time learning about Stl.Fusion, 
-please help us to make it better by completing [Stl.Fusion Feedback Form] 
+**P.S.** If you've already spent some time learning about Fusion, 
+please help us to make it better by completing [Fusion Feedback Form] 
 (1&hellip;3 min).
 
 
-[Stl.Fusion]: https://github.com/servicetitan/Stl.Fusion
-[Stl.Fusion repository]: https://github.com/servicetitan/Stl.Fusion
+[Fusion]: https://github.com/servicetitan/Stl.Fusion
+[Fusion repository on GitHub]: https://github.com/servicetitan/Stl.Fusion
 
 [HelloWorld]: src/HelloWorld
 [HelloBlazorServer]: src/HelloBlazorServer
@@ -122,6 +126,9 @@ please help us to make it better by completing [Stl.Fusion Feedback Form]
 [Computed Value]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part02.md
 [Live State]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part03.md
 [Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
-[Stl.Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
+[Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
+
+[Gitter]: https://gitter.im/Stl-Fusion/community
+[Gitter Chat Room]: https://gitter.im/Stl-Fusion/community
 [Discord Server]: https://discord.gg/EKEwv6d
-[Stl.Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
+[Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6

@@ -69,7 +69,7 @@ hosting Compute Service itself, a controller publishing its invocable endpoints,
 
 1. Common interface (don't run this code yet):
 
-``` cs --region Part04_CommonServices --source-file Part04.cs
+``` cs --editable false --region Part04_CommonServices --source-file Part04.cs
 // Ideally, we want Replica Service to be exactly the same as corresponding
 // Compute Service. A good way to enforce this is to expose an interface
 // that should be implemented by Compute Service + tell Fusion to "expose"
@@ -85,7 +85,7 @@ public interface ICounterService
 
 2. Web host services (don't run this code yet):
 
-``` cs --region Part04_HostServices --source-file Part04.cs
+``` cs --editable false --region Part04_HostServices --source-file Part04.cs
 public class CounterService : ICounterService
 {
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
@@ -157,7 +157,7 @@ public class CounterController : FusionController
 
 3. Client services (don't run this code yet):
 
-``` cs --region Part04_ClientServices --source-file Part04.cs
+``` cs --editable false --region Part04_ClientServices --source-file Part04.cs
 // ICounterServiceClient tells how ICounterService methods map to HTTP methods.
 // As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
 [BasePath("counter")]
@@ -174,7 +174,7 @@ public interface ICounterServiceClient : IRestEaseReplicaClient
 
 4. `CreateHost` and `CreateClientServices` methods (don't run this code yet):
 
-``` cs --region Part04_CreateXxx --source-file Part04.cs
+``` cs --editable false --region Part04_CreateXxx --source-file Part04.cs
 public static IHost CreateHost()
 {
     var builder = Host.CreateDefaultBuilder();
@@ -226,7 +226,7 @@ public static IServiceProvider CreateClientServices()
 }
 ```
 
-And finally, let's see how to use Replica Service:
+And finally, we're ready to try our Replica Service:
 
 ``` cs --region Part04_ReplicaService --source-file Part04.cs
 using var host = CreateHost();
@@ -370,7 +370,7 @@ use to have the same UI components working in WASM and Server-Side Blazor mode:
   and that's what makes any `IState<T>` to update in real time there, which
   in turn makes UI components to re-render.
 
-**That's pretty much it - now you learned all key features of Stl.Fusion.**
+**That's pretty much it - now you learned all key features of Fusion.**
 There are details, of course, and the rest of the tutorial is mostly about them.
 
 #### [Next: Part 5 &raquo;](./Part05.md) | [Tutorial Home](./README.md)

@@ -98,7 +98,7 @@ Overall, its key properties include:
     of exactly this type. But since `IComputed<T>` implements `IResult<T>`
     as well (by, basically, forwarding all the calls to its `Output` property),
     you can write `computed.Value` instead of `computed.Output.Value` and so on.
-  * Later you'll find out there are other types in `Stl.Fusion` that follow
+  * Later you'll find out there are other types in Fusion that follow
     the same pattern (i.e. similarly implement `IResult<T>`) - in particular,
     `IState<T>`.
 * `IComputedImpl` - an interface  allowing computed instances
