@@ -41,8 +41,8 @@
 </table>
 
 @code {
-    protected override void ConfigureState(LiveState<WeatherForecast[], DateTime>.Options options)
-        => options.LocalsOptions.InitialOutputFactory = _ => DateTime.Today;
+    protected override void ConfigureLocals(MutableState<DateTime>.Options options)
+        => options.InitialOutputFactory = _ => DateTime.Today;
 
     protected override Task<WeatherForecast[]> ComputeStateAsync(CancellationToken cancellationToken)
         => ForecastService.GetForecastAsync(Locals.Value, cancellationToken);

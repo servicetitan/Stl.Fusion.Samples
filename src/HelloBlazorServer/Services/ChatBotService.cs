@@ -34,7 +34,9 @@ namespace Samples.HelloBlazorServer.Services
             _state = stateFactory.NewLive<(DateTime Time, string Name, string Message)[]>(
                 options => {
                     options.WithZeroUpdateDelay();
-                    options.Updated = _ => Task.Run(TryRespondAsync);
+                    options.EventConfigurator = state => {
+                        state.Updated += (s, e) => Task.Run(TryRespondAsync);
+                    };
                 },
                 (state, cancellationToken) => _chatService.GetMessagesAsync(5, cancellationToken));
         }

@@ -229,8 +229,11 @@ namespace Tutorial
             using var state = stateFactory.NewLive<string>(
                 options => {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
-                    options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
-                    options.Updated     += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
+                    options.EventConfigurator += state1 => {
+                        // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
+                        state1.AddEventHandler(StateEventKind.All,
+                            (s, e) => WriteLine($"{DateTime.Now}: {e}, Value: {s.Value}, Computed: {s.Computed}"));
+                    };
                 },
                 async (state, cancellationToken) => {
                     var counter = await counters.GetAsync("a", cancellationToken);

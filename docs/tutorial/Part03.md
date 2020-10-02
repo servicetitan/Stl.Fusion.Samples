@@ -216,8 +216,12 @@ WriteLine("Creating state.");
                 options =>
                 {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
-                    options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
-                    options.Updated += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
+                    options.EventConfigurator += state1 =>
+                    {
+                        // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
+                        state1.AddEventHandler(StateEventKind.All,
+                            (s, e) => WriteLine($"{DateTime.Now}: {e}, Value: {s.Value}, Computed: {s.Computed}"));
+                    };
                 },
                 async (state, cancellationToken) =>
                 {
@@ -235,18 +239,22 @@ WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
 The output:
 
 ```text
+
+
 Creating state.
-9/5/2020 3:33:07 AM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @26, State: Consistent)
-9/5/2020 3:33:07 AM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @26, State: Invalidated)
+10/2/2020 6:26:04 AM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Consistent)
+10/2/2020 6:26:04 AM: Invalidated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Invalidated)
 Before state.UpdateAsync(false).
+10/2/2020 6:26:04 AM: Updating, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Invalidated)
 GetAsync(a)
-9/5/2020 3:33:07 AM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @4a, State: Consistent)
+10/2/2020 6:26:04 AM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Consistent)
 After state.UpdateAsync(false).
 Increment(a)
-9/5/2020 3:33:07 AM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @4a, State: Invalidated)
+10/2/2020 6:26:04 AM: Invalidated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
+10/2/2020 6:26:05 AM: Updating, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
 GetAsync(a)
-9/5/2020 3:33:08 AM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @29, State: Consistent)
-Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#9487824) @29, State: Consistent)
+10/2/2020 6:26:05 AM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @29, State: Consistent)
+Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @29, State: Consistent)
 ```
 
 Some observations:

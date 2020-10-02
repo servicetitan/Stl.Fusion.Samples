@@ -25,8 +25,7 @@
 @code {
     protected override void OnInitialized()
     {
-        // StateEventHandlers.All is needed to make StatefulComponentState react to all state changes
-        UsedStateEventHandlers = StateEventHandlers.All;
+        StateHasChangedTriggers = StateEventKind.All;
         base.OnInitialized();
     }
 
