@@ -95,7 +95,7 @@ namespace Samples.Blazor.Server
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "Stl.Sample.Blazor.Server API", Version = "v1"
+                    Title = "Samples.Blazor.Server API", Version = "v1"
                 });
             });
         }
@@ -126,7 +126,7 @@ namespace Samples.Blazor.Server
 
             app.UseWebSockets(new WebSocketOptions() {
                 ReceiveBufferSize = 16_384,
-                KeepAliveInterval = TimeSpan.FromSeconds(15),
+                KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
             app.UseFusionSession();
 
