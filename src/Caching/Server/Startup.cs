@@ -44,7 +44,8 @@ namespace Samples.Caching.Server
                 builder.UseSqlServer(
                     $"Server=127.0.0.1,5020; " +
                     $"Database={ServerSettings.DatabaseName}; " +
-                    $"User Id=sa; Password=Fusion.0.to.1;",
+                    $"User Id=sa; Password=Fusion.0.to.1; " +
+                    $"MultipleActiveResultSets=True; ",
                     sqlServer => { });
             });
 

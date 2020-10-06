@@ -37,16 +37,16 @@ namespace Samples.Caching.Client
 
             benchmark.Services = localServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-            await benchmark.RunAsync("Local Service (Fusion over EF)");
+            await benchmark.RunAsync("Compute Service (Fusion -> EF Core -> SQL Server)");
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("Local Service (EF)");
+            await benchmark.RunAsync("Regular Service (EF Core -> SQL Server)");
 
             var remoteServices = await CreateRemoteServiceProviderAsync();
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-            await benchmark.RunAsync("Remote Service (Fusion over EF)");
+            await benchmark.RunAsync("Replica Service -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)");
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("Remote Service (EF)");
+            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Regular Service (EF Core -> SQL Server)");
         }
 
         public static Task<IServiceProvider> CreateRemoteServiceProviderAsync()

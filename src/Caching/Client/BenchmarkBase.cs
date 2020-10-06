@@ -23,7 +23,7 @@ namespace Samples.Caching.Client
 
         public async Task RunAsync(string title, CancellationToken cancellationToken = default)
         {
-            Console.WriteLine($"Benchmarking '{title}':");
+            Console.WriteLine($"{title}:");
             await RunAsync(WarmupDuration, cancellationToken).ConfigureAwait(false);
             Console.WriteLine($"  Parameters: {FormatParameters()}");
             await RunAsync(Duration, cancellationToken).ConfigureAwait(false);
