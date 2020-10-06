@@ -32,6 +32,13 @@ namespace Samples.Caching.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging(logging => {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Information);
+                logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+            });
+
             // DbContext & related services
             services.AddDbContext<AppDbContext>(builder => {
                 builder.UseSqlServer(

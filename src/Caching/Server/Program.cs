@@ -18,6 +18,7 @@ namespace Samples.Caching.Server
                     // Looks like there is no better way to set _default_ URL
                     builder.Sources.Insert(0, new MemoryConfigurationSource() {
                         InitialData = new Dictionary<string, string>() {
+                            {WebHostDefaults.EnvironmentKey, "Production"},
                             {WebHostDefaults.ServerUrlsKey, "http://localhost:5010"},
                         }
                     });

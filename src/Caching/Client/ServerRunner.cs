@@ -47,27 +47,26 @@ namespace Samples.Caching.Client
                 await Task.Delay(250, cancellationToken);
             } while (!IsPortOpen(SqlServerIp, SqlServerPort));
 
-            var output = new StringBuilder();
+            var sb = new StringBuilder();
+            var sbTarget = PipeTarget.ToDelegate(s => { lock (sb) { sb.Append(s); } });
             outputTarget = PipeTarget.Merge(
-                PipeTarget.ToDelegate(s => {
-                    lock (output) { output.Append(s); }
-                }),
-                PipeTarget.ToStream(Console.OpenStandardOutput()));
+                // PipeTarget.ToStream(Console.OpenStandardOutput()),
+                sbTarget);
             var startServer = Cli.Wrap("dotnet")
                 .WithArguments("Samples.Caching.Server.dll")
                 .WithWorkingDirectory(ServerBinDir)
-                .WithStandardOutputPipe(outputTarget)
-                .WithStandardErrorPipe(outputTarget);
+                .WithStandardOutputPipe(sbTarget)
+                .WithStandardErrorPipe(sbTarget);
             ServerTask = startServer.ExecuteBufferedAsync(cancellationToken);
             for (;;) {
                 await Task.Delay(100, cancellationToken);
-                lock (output) {
-                    if (output.ToString().Contains("Content root"))
+                lock (sb) {
+                    if (sb.ToString().Contains("Content root"))
                         break;
                 }
             }
-            TaskSource.For(ReadyTask).SetResult(default);
 
+            TaskSource.For(ReadyTask).SetResult(default);
             await ServerTask;
         }
 
