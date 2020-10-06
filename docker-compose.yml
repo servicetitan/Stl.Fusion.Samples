@@ -1,5 +1,12 @@
 version: '3.4'
 services:
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    environment:
+      SA_PASSWORD: "Fusion.0.to.1"
+      ACCEPT_EULA: "Y"
+    ports:
+     - "127.0.0.1:5020:1433"
   tutorial:
     build: 
       context: .
