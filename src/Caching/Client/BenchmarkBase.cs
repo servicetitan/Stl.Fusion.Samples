@@ -11,8 +11,8 @@ namespace Samples.Caching.Client
 {
     public abstract class BenchmarkBase
     {
-        public int ConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount * 20;
-        public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(10);
+        public int ConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount;
+        public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(5);
         public TimeSpan WarmupDuration { get; set; } = TimeSpan.FromSeconds(1);
         public bool ForceGCCollect { get; set; }
         public int TimeCheckOperationIndexMask { get; set; } = 0;
@@ -31,7 +31,7 @@ namespace Samples.Caching.Client
         }
 
         public virtual string FormatParameters()
-            => $"{Duration.TotalSeconds:N}s x {ConcurrencyLevel} threads";
+            => $"{Duration.TotalSeconds:N}s x {ConcurrencyLevel} workers";
 
         protected virtual async Task RunAsync(TimeSpan duration, CancellationToken cancellationToken)
         {

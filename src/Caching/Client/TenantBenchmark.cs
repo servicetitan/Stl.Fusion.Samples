@@ -16,7 +16,7 @@ namespace Samples.Caching.Client
         private long _updateErrorCount;
 
         public int TenantCount { get; set; } = 10_000;
-        public int InitializeConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount * 20;
+        public int InitializeConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount;
         public double ReadRatio { get; set; } = 0.999;
         public IServiceProvider Services { get; set; }
         public Func<IServiceProvider, ITenantService> TenantServiceResolver { get; set; } =

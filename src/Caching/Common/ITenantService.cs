@@ -10,9 +10,9 @@ namespace Samples.Caching.Common
         Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default);
 
         // Compute methods
-        [ComputeMethod(KeepAliveTime = 1)]
+        [ComputeMethod(KeepAliveTime = 10)]
         Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default);
-        [ComputeMethod(KeepAliveTime = 1)]
+        [ComputeMethod(KeepAliveTime = 10)]
         Task<Tenant?> TryGetAsync(string tenantId, CancellationToken cancellationToken = default);
     }
 

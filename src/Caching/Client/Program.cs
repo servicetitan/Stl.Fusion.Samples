@@ -14,6 +14,7 @@ using Stl;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Client;
+using Stl.OS;
 
 namespace Samples.Caching.Client
 {
@@ -36,6 +37,7 @@ namespace Samples.Caching.Client
             await benchmark.InitializeAsync();
 
             benchmark.Services = localServices;
+            benchmark.ConcurrencyLevel = HardwareInfo.ProcessorCount;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
             await benchmark.RunAsync("Compute Service (Fusion -> EF Core -> SQL Server)");
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
@@ -45,6 +47,8 @@ namespace Samples.Caching.Client
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
             await benchmark.RunAsync("Replica Service -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)");
+            benchmark.TenantServiceResolver = c => c.GetRequiredService<IRestEaseTenantService>();
+            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)");
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
             await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Regular Service (EF Core -> SQL Server)");
         }
