@@ -40,14 +40,14 @@ namespace Samples.Caching.Server
             });
 
             // DbContext & related services
-            services.AddDbContext<AppDbContext>(builder => {
+            services.AddDbContextPool<AppDbContext>(builder => {
                 builder.UseSqlServer(
                     $"Server=127.0.0.1,5020; " +
                     $"Database={ServerSettings.DatabaseName}; " +
                     $"User Id=sa; Password=Fusion.0.to.1; " +
                     $"MultipleActiveResultSets=True; ",
                     sqlServer => { });
-            });
+            }, 512);
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = CommonSettings.PublisherId });
