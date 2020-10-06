@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
 
 namespace Samples.Caching.Server
@@ -30,18 +29,6 @@ namespace Samples.Caching.Server
                     })
                     .UseStartup<Startup>())
                 .Build();
-
-            // Ensure the DB is re-created
-            using (var scope = host.Services.CreateScope()) {
-                await using var dbContext = scope.ServiceProvider.RentDbContext<AppDbContext>();
-                await dbContext.Database.EnsureDeletedAsync();
-                await dbContext.Database.EnsureCreatedAsync();
-                await dbContext.Database.ExecuteSqlRawAsync(
-                    $"ALTER DATABASE {ServerSettings.DatabaseName} SET ALLOW_SNAPSHOT_ISOLATION ON");
-                await dbContext.Database.ExecuteSqlRawAsync(
-                    $"ALTER DATABASE {ServerSettings.DatabaseName} SET RECOVERY SIMPLE WITH NO_WAIT");
-            }
-
             await host.RunAsync();
         }
     }

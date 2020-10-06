@@ -1,20 +1,17 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Samples.Caching.Common;
-using Stl.Fusion.Bridge;
-using Stl.Fusion.Server;
 
 namespace Samples.Caching.Server.Controllers
 {
-    [Route("api/tenants")]
+    [Route("api/sqlTenants")]
     [ApiController]
-    public class TenantController : FusionController, ITenantService
+    public class SqlTenantController : Controller, ISqlTenantService
     {
-        private ITenantService Tenants { get; }
+        private ISqlTenantService Tenants { get; }
 
-        public TenantController(ITenantService tenants, IPublisher publisher)
-            : base(publisher)
+        public SqlTenantController(ISqlTenantService tenants)
             => Tenants = tenants;
 
         [HttpPost("addOrUpdate")]
@@ -29,10 +26,10 @@ namespace Samples.Caching.Server.Controllers
 
         [HttpGet("getAll")]
         public Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default)
-            => PublishAsync(ct => Tenants.GetAllAsync(ct), cancellationToken);
+            => Tenants.GetAllAsync(cancellationToken);
 
         [HttpGet("get")]
         public Task<Tenant?> TryGetAsync(string tenantId, CancellationToken cancellationToken = default)
-            => PublishAsync(ct => Tenants.TryGetAsync(tenantId ?? "", ct), cancellationToken);
+            => Tenants.TryGetAsync(tenantId ?? "", cancellationToken);
     }
 }

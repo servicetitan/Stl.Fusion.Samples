@@ -13,11 +13,8 @@ using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
-using Stl.Fusion.Authentication;
 using Stl.Fusion.Bridge;
-using Stl.Fusion.Client;
 using Stl.Fusion.Server;
-using Stl.IO;
 
 namespace Samples.Caching.Server
 {
@@ -36,12 +33,11 @@ namespace Samples.Caching.Server
         public void ConfigureServices(IServiceCollection services)
         {
             // DbContext & related services
-            services.AddDbContextPool<AppDbContext>(builder => {
+            services.AddDbContext<AppDbContext>(builder => {
                 builder.UseSqlServer(
-                    $"Server=127.0.0.1,5020;" +
-                    $"Database={ServerSettings.DatabaseName};" +
-                    $"User=sa;Password=Fusion.0.to.1;" +
-                    $"MultipleActiveResultSets=true;",
+                    $"Server=127.0.0.1,5020; " +
+                    $"Database={ServerSettings.DatabaseName}; " +
+                    $"User Id=sa; Password=Fusion.0.to.1;",
                     sqlServer => { });
             });
 
@@ -80,7 +76,6 @@ namespace Samples.Caching.Server
                 ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
-            app.UseFusionSession();
 
             // Static + Swagger
             app.UseStaticFiles();

@@ -3,7 +3,7 @@ using Samples.Caching.Common;
 
 namespace Samples.Caching.Server.Services
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : ScopedDbContext
     {
         public DbSet<Tenant> Tenants { get; protected set; } = null!;
 
