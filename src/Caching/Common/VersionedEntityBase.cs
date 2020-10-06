@@ -1,7 +1,7 @@
 using System;
 using Stl.Frozen;
 
-namespace Samples.Caching.Client
+namespace Samples.Caching.Common
 {
     public abstract class VersionedEntityBase : FrozenBase
     {

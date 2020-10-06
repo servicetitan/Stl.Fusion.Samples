@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Samples.Caching.Client;
+using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
@@ -39,14 +39,14 @@ namespace Samples.Caching.Server
             services.AddDbContextPool<AppDbContext>(builder => {
                 builder.UseSqlServer(
                     $"Server=127.0.0.1,5020;" +
-                    $"Database={Settings.DatabaseName};" +
+                    $"Database={ServerSettings.DatabaseName};" +
                     $"User=sa;Password=Fusion.0.to.1;" +
                     $"MultipleActiveResultSets=true;",
                     sqlServer => { });
             });
 
             // Fusion services
-            services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
+            services.AddSingleton(new Publisher.Options() { Id = CommonSettings.PublisherId });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebSocketServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:

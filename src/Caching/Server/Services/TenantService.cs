@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Samples.Caching.Client;
+using Samples.Caching.Common;
 using Stl.Fusion;
 
 namespace Samples.Caching.Server.Services

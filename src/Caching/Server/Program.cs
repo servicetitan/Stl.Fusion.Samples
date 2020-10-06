@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Samples.Caching.Client;
+using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
 
 namespace Samples.Caching.Server
@@ -37,9 +37,9 @@ namespace Samples.Caching.Server
                 await dbContext.Database.EnsureDeletedAsync();
                 await dbContext.Database.EnsureCreatedAsync();
                 await dbContext.Database.ExecuteSqlRawAsync(
-                    $"ALTER DATABASE {Settings.DatabaseName} SET ALLOW_SNAPSHOT_ISOLATION ON");
+                    $"ALTER DATABASE {ServerSettings.DatabaseName} SET ALLOW_SNAPSHOT_ISOLATION ON");
                 await dbContext.Database.ExecuteSqlRawAsync(
-                    $"ALTER DATABASE {Settings.DatabaseName} SET RECOVERY SIMPLE WITH NO_WAIT");
+                    $"ALTER DATABASE {ServerSettings.DatabaseName} SET RECOVERY SIMPLE WITH NO_WAIT");
             }
 
             await host.RunAsync();

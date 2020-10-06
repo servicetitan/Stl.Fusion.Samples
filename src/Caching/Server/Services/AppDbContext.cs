@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Samples.Caching.Client;
+using Samples.Caching.Common;
 
 namespace Samples.Caching.Server.Services
 {

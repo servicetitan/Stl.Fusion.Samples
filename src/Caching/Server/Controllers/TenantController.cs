@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Samples.Caching.Client;
+using Samples.Caching.Common;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Server;
 
@@ -27,11 +27,11 @@ namespace Samples.Caching.Server.Controllers
 
         // Compute methods
 
-        [HttpPost("getAll")]
+        [HttpGet("getAll")]
         public Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default)
             => PublishAsync(ct => Tenants.GetAllAsync(ct), cancellationToken);
 
-        [HttpPost("get")]
+        [HttpGet("get")]
         public Task<Tenant> GetAsync(string tenantId, CancellationToken cancellationToken = default)
             => PublishAsync(ct => Tenants.GetAsync(tenantId ?? "", ct), cancellationToken);
     }

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Stl;
 
-namespace Samples.Caching.Client
+namespace Samples.Caching.Common
 {
     public class Tenant : VersionedEntityBase, IHasId<string>
     {
