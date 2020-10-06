@@ -5,8 +5,8 @@ namespace Samples.Caching.Client
 {
     public class Tenant : VersionedEntityBase, IHasId<string>
     {
-        private string _id;
-        private string _name;
+        private string _id = "";
+        private string _name = "";
 
         [Key]
         public string Id {

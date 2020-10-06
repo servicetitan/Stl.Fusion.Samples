@@ -11,7 +11,7 @@ namespace Samples.Caching.Server.Services
     {
         public TenantService(IServiceProvider services) : base(services) { }
 
-        public async Task CreateOrUpdateAsync(Tenant tenant, long? version, CancellationToken cancellationToken = default)
+        public async Task AddOrUpdate(Tenant tenant, long? version, CancellationToken cancellationToken = default)
         {
             await using var dbContext = RentDbContext();
             var entry = dbContext.Tenants.Add(tenant);
@@ -24,7 +24,7 @@ namespace Samples.Caching.Server.Services
             Computed.Invalidate(() => GetAllAsync(CancellationToken.None));
         }
 
-        public async Task DeleteAsync(string tenantId, long? version, CancellationToken cancellationToken = default)
+        public async Task RemoveAsync(string tenantId, long? version, CancellationToken cancellationToken = default)
         {
             var tenant = await GetAsync(tenantId, cancellationToken).ConfigureAwait(false);
 

@@ -6,8 +6,8 @@ namespace Samples.Caching.Client
 {
     public interface ITenantService
     {
-        Task CreateOrUpdateAsync(Tenant tenant, long? version, CancellationToken cancellationToken = default);
-        Task DeleteAsync(string tenantId, long? version, CancellationToken cancellationToken = default);
+        Task AddOrUpdate(Tenant tenant, long? version, CancellationToken cancellationToken = default);
+        Task RemoveAsync(string tenantId, long? version, CancellationToken cancellationToken = default);
 
         // Compute methods
         [ComputeMethod(KeepAliveTime = 10)]
