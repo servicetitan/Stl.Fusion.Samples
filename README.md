@@ -120,7 +120,7 @@ for cached values that are known to be consistent. But nevertheless,
 it's still a pretty unique feature Fusion brings to the table &ndash; and that's
 exactly what allows it Blazor samples to share the same code for both WASM and SSB
 modes. So even though Replica Service is just a client for remote Compute Service,
-they are almost identical from performance standpoint!
+its performance is very similar!
 
 ### 5. Tutorial
 
