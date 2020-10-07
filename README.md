@@ -97,6 +97,9 @@ RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Se
   Writes        : 92.80 operations/s
 ```
 
+For the sake of clarity, the rate of writes (updates) isn't benchmarked here &ndash;
+Fusion can't speed up writes (at least, directly), so only one worker is busy with this.
+
 What's interesting in this output?
 - Fusion-based API endpoint serving relatively small amount of cacheable data
     scales to ~ **110,000 RPS** while running the test on the same machine 
