@@ -6,15 +6,12 @@
     <AssemblyName>Samples.Caching.Client</AssemblyName>
     <RootNamespace>Samples.Caching.Client</RootNamespace>
     <Nullable>enable</Nullable>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Server\Server.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.2.0" />
   </ItemGroup>
 
 </Project>

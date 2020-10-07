@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,29 +9,27 @@ using Samples.Caching.Common;
 using Stl.Frozen;
 using Stl.OS;
 using Stl.Time;
+using static System.Console;
 
 namespace Samples.Caching.Client
 {
     public class TenantBenchmark : BenchmarkBase
     {
-        private long _updateErrorCount;
-
+        public int InitConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount;
+        public int WriteConcurrencyLevel { get; set; } = 1;
         public int TenantCount { get; set; } = 10_000;
-        public int InitializeConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount;
-        public double ReadRatio { get; set; } = 0.999;
         public IServiceProvider Services { get; set; }
         public Func<IServiceProvider, ITenantService> TenantServiceResolver { get; set; } =
             c => c.GetRequiredService<ITenantService>();
-        public long UpdateErrorCount => Interlocked.Read(ref _updateErrorCount);
 
         public TenantBenchmark(IServiceProvider services) => Services = services;
 
-        public async Task InitializeAsync(CancellationToken cancellationToken = default)
+        public async Task InitAsync(CancellationToken cancellationToken = default)
         {
-            Console.WriteLine($"Initializing ({InitializeConcurrencyLevel} threads)...");
+            WriteLine($"Initializing using {InitConcurrencyLevel} workers...");
             var tenantIds = new ConcurrentQueue<string>(
                 Enumerable.Range(0, TenantCount).Select(i => i.ToString()).ToArray());
-            var tasks = Enumerable.Range(0, InitializeConcurrencyLevel).Select(async i => {
+            var tasks = Enumerable.Range(0, InitConcurrencyLevel).Select(async i => {
                 var tenants = TenantServiceResolver(Services);
                 var clock = Services.GetRequiredService<IMomentClock>();
                 while (tenantIds.TryDequeue(out var tenantId)) {
@@ -50,59 +49,58 @@ namespace Samples.Caching.Client
             });
             var dumpTask = Task.Run(async () => {
                 while (!tenantIds.IsEmpty) {
-                    Console.WriteLine($"  Remaining tenant count: {tenantIds.Count}");
+                    WriteLine($"  Remaining tenant count: {tenantIds.Count}");
                     await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
                 }
             }, cancellationToken);
             await Task.WhenAll(tasks).ConfigureAwait(false);
-            Console.WriteLine("  Done.");
+            WriteLine("  Done.");
         }
 
         public override string FormatParameters()
-            => $"{base.FormatParameters()}, {ReadRatio:P} reads";
+            => $"{base.FormatParameters()} (writers/readers: {WriteConcurrencyLevel}/{ConcurrencyLevel - WriteConcurrencyLevel})";
 
-        protected override async Task RunAsync(TimeSpan duration, CancellationToken cancellationToken)
+        protected override async Task<Dictionary<string, Counter>> BenchmarkAsync(int workerId, TimeSpan duration, CancellationToken cancellationToken)
         {
-            Interlocked.Exchange(ref _updateErrorCount, 0);
-            await base.RunAsync(duration, cancellationToken).ConfigureAwait(false);
-        }
-
-        protected override async Task<long> BenchmarkAsync(int threadIndex, TimeSpan duration, CancellationToken cancellationToken)
-        {
-            var rnd = new Random(threadIndex * 347);
+            var rnd = new Random(workerId * 347);
             var stopwatch = Stopwatch;
             var durationTicks = duration.Ticks;
             var tcIndexMask = TimeCheckOperationIndexMask;
             var tenants = TenantServiceResolver(Services);
+            var isWriter = workerId < WriteConcurrencyLevel;
 
-            async Task<Tenant> ReadAsync()
+            async Task ReadAsync()
             {
                 var tenantId = rnd.Next(0, TenantCount).ToString();
-                return await tenants.GetAsync(tenantId, cancellationToken);
+                await tenants.GetAsync(tenantId, cancellationToken);
             }
 
-            async Task UpdateAsync()
+            async Task WriteAsync()
             {
-                var tenant = await ReadAsync().ConfigureAwait(false);
+                var tenantId = rnd.Next(0, TenantCount).ToString();
+                var tenant = await tenants.GetAsync(tenantId, cancellationToken);
                 tenant = tenant.ToUnfrozen();
                 tenant.Name = $"Tenant-{tenant.Id}-{tenant.Version + 1}";
-                try {
-                    await tenants.AddOrUpdateAsync(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception) {
-                    Interlocked.Increment(ref _updateErrorCount);
-                }
+                await tenants.AddOrUpdateAsync(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
             }
 
+            var operationAsync = isWriter ? (Func<Task>) WriteAsync : ReadAsync;
+
             // The benchmarking loop
-            var operationIndex = 0L;
-            for (; (operationIndex & tcIndexMask) != 0 || stopwatch.ElapsedTicks < durationTicks; operationIndex++) {
-                if (rnd.NextDouble() < ReadRatio)
-                    await ReadAsync().ConfigureAwait(false);
-                else
-                    await UpdateAsync().ConfigureAwait(false);
+            var count = 0L;
+            var errorCount = 0L;
+            for (; (count & tcIndexMask) != 0 || stopwatch.ElapsedTicks < durationTicks; count++) {
+                try {
+                    await operationAsync().ConfigureAwait(false);
+                }
+                catch (Exception) {
+                    errorCount++;
+                }
             }
-            return operationIndex;
+            return new Dictionary<string, Counter>() {
+                { isWriter ? "Writes" : "Reads", new OpsCounter(count) },
+                { isWriter ? "Write Errors" : "Read Errors", new OpsCounter(errorCount) }
+            };
         }
     }
 }

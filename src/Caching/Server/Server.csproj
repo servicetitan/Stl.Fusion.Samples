@@ -5,6 +5,7 @@
     <AssemblyName>Samples.Caching.Server</AssemblyName>
     <RootNamespace>Samples.Caching.Server</RootNamespace>
     <Nullable>enable</Nullable>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration.Memory;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Samples.Caching.Common;
 using Samples.Caching.Server;
 using Samples.Caching.Server.Services;
-using Stl;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Client;
@@ -22,38 +22,36 @@ namespace Samples.Caching.Client
     {
         static async Task Main(string[] args)
         {
-            await using var serverRunner = new ServerRunner();
-            // ReSharper disable once AccessToDisposedClosure
-            Console.CancelKeyPress += (s, ea) => serverRunner.Dispose();
-            serverRunner.RunAsync().Ignore();
-            await serverRunner.ReadyTask;
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, ea) => cts.Cancel();
+            var cancellationToken = cts.Token;
+            var serviceChecker = new ServiceChecker();
+            await serviceChecker.WaitForServicesAsync(cancellationToken);
 
-            var localServices = await CreateLocalServiceProviderAsync();
-
-            // Benchmarks
+            var localServices = await CreateLocalServiceProviderAsync(cancellationToken);
             var benchmark = new TenantBenchmark(localServices) {
                 TimeCheckOperationIndexMask = 7
             };
-            await benchmark.InitializeAsync();
+            await benchmark.InitAsync(cancellationToken);
 
             benchmark.Services = localServices;
-            benchmark.ConcurrencyLevel = HardwareInfo.ProcessorCount;
+            benchmark.ConcurrencyLevel = HardwareInfo.ProcessorCount * 4/3;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-            await benchmark.RunAsync("Compute Service (Fusion -> EF Core -> SQL Server)");
+            await benchmark.RunAsync("Compute Service (Fusion -> EF Core -> SQL Server)", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("Regular Service (EF Core -> SQL Server)");
+            await benchmark.RunAsync("Regular Service (EF Core -> SQL Server)", cancellationToken);
 
-            var remoteServices = await CreateRemoteServiceProviderAsync();
+            var remoteServices = await CreateRemoteServiceProviderAsync(cancellationToken);
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-            await benchmark.RunAsync("Replica Service -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)");
+            await benchmark.RunAsync("Replica Service -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<IRestEaseTenantService>();
-            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)");
+            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Regular Service (EF Core -> SQL Server)");
+            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Regular Service (EF Core -> SQL Server)", cancellationToken);
         }
 
-        public static Task<IServiceProvider> CreateRemoteServiceProviderAsync()
+        public static Task<IServiceProvider> CreateRemoteServiceProviderAsync(CancellationToken cancellationToken)
         {
             var services = new ServiceCollection();
             var baseUri = new Uri($"http://localhost:5010/");
@@ -70,7 +68,7 @@ namespace Samples.Caching.Client
             return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
         }
 
-        public static async Task<IServiceProvider> CreateLocalServiceProviderAsync()
+        public static async Task<IServiceProvider> CreateLocalServiceProviderAsync(CancellationToken cancellationToken)
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration((ctx, builder) => {
@@ -92,7 +90,7 @@ namespace Samples.Caching.Client
 
             var services = host.Services;
             var dbInitializer = services.GetRequiredService<DbInitializer>();
-            await dbInitializer.InitializeAsync(true);
+            await dbInitializer.InitializeAsync(true, cancellationToken);
             return services;
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
@@ -17,24 +18,26 @@ namespace Samples.Caching.Client
         public bool ForceGCCollect { get; set; }
         public int TimeCheckOperationIndexMask { get; set; } = 0;
 
-        public long TotalOperationCount { get; private set; }
-        public double OperationsPerSecond => TotalOperationCount / Duration.TotalSeconds;
         protected Stopwatch Stopwatch { get; private set; } = null!;
+        protected Dictionary<string, Counter> Counters { get; set; } = new Dictionary<string, Counter>();
 
         public async Task RunAsync(string title, CancellationToken cancellationToken = default)
         {
             Console.WriteLine($"{title}:");
             await RunAsync(WarmupDuration, cancellationToken).ConfigureAwait(false);
-            Console.WriteLine($"  Parameters: {FormatParameters()}");
+            Console.WriteLine($"  {"Parameters",-14}: {FormatParameters()}");
             await RunAsync(Duration, cancellationToken).ConfigureAwait(false);
-            Console.WriteLine($"  Speed:      {OperationsPerSecond / 1000:N3}K operations/s");
+            foreach (var (key, counter) in Counters.OrderBy(p => p.Key))
+                if (counter.HasValue)
+                    Console.WriteLine($"  {key,-14}: {counter.Format(Duration)}");
         }
 
         public virtual string FormatParameters()
-            => $"{Duration.TotalSeconds:N}s x {ConcurrencyLevel} workers";
+            => $"{Duration.TotalSeconds:N}s, {ConcurrencyLevel} workers";
 
         protected virtual async Task RunAsync(TimeSpan duration, CancellationToken cancellationToken)
         {
+            Counters.Clear();
             var startTaskSource = TaskSource.New<Unit>(true);
             var tasks = Enumerable.Range(0, ConcurrencyLevel)
                 .Select(async i => {
@@ -48,12 +51,17 @@ namespace Samples.Caching.Client
             Stopwatch = Stopwatch.StartNew();
             startTaskSource.SetResult(default);
 
-            var totalOperationCount = 0L;
-            foreach (var task in tasks)
-                totalOperationCount += await task.ConfigureAwait(false);
-            TotalOperationCount = totalOperationCount;
+            foreach (var task in tasks) {
+                var counters = await task.ConfigureAwait(false);
+                foreach (var (key, counter) in counters) {
+                    if (Counters.TryGetValue(key, out var existingCounter))
+                        Counters[key] = existingCounter.CombineWith(counter);
+                    else
+                        Counters[key] = counter;
+                }
+            }
         }
 
-        protected abstract Task<long> BenchmarkAsync(int threadIndex, TimeSpan duration, CancellationToken cancellationToken);
+        protected abstract Task<Dictionary<string, Counter>> BenchmarkAsync(int workerId, TimeSpan duration, CancellationToken cancellationToken);
     }
 }
