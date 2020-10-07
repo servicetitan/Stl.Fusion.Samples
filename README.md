@@ -85,7 +85,7 @@ Regular Service [-> EF Core -> SQL Server]:
   Reads         : 24.99K operations/s
   Writes        : 104.00 operations/s
 
-Remote services used by local clients:
+Remote services:
 Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
   Reads         : 21.87M operations/s
   Writes        : 89.60 operations/s

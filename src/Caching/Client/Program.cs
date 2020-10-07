@@ -46,7 +46,7 @@ namespace Samples.Caching.Client
             await benchmark.RunAsync("Regular Service [-> EF Core -> SQL Server]", cancellationToken);
 
             WriteLine();
-            WriteLine("Remote services used by local clients:");
+            WriteLine("Remote services:");
             var remoteServices = await CreateRemoteServiceProviderAsync(cancellationToken);
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
