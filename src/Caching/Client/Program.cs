@@ -15,6 +15,7 @@ using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
+using static System.Console;
 
 namespace Samples.Caching.Client
 {
@@ -23,7 +24,7 @@ namespace Samples.Caching.Client
         static async Task Main(string[] args)
         {
             using var cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (s, ea) => cts.Cancel();
+            CancelKeyPress += (s, ea) => cts.Cancel();
             var cancellationToken = cts.Token;
             var serviceChecker = new ServiceChecker();
             await serviceChecker.WaitForServicesAsync(cancellationToken);
@@ -36,19 +37,24 @@ namespace Samples.Caching.Client
 
             benchmark.Services = localServices;
             benchmark.ConcurrencyLevel = HardwareInfo.ProcessorCount - 2;
+            benchmark.DumpParameters();
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-            await benchmark.RunAsync("Compute Service (Fusion -> EF Core -> SQL Server)", cancellationToken);
+            WriteLine();
+            WriteLine("Local services:");
+            await benchmark.RunAsync("Fusion's Compute Service [-> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("Regular Service (EF Core -> SQL Server)", cancellationToken);
+            await benchmark.RunAsync("Regular Service [-> EF Core -> SQL Server]", cancellationToken);
 
+            WriteLine();
+            WriteLine("Remote services used by local clients:");
             var remoteServices = await CreateRemoteServiceProviderAsync(cancellationToken);
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-            await benchmark.RunAsync("Replica Service -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)", cancellationToken);
+            await benchmark.RunAsync("Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<IRestEaseTenantService>();
-            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Compute Service (Fusion -> EF Core -> SQL Server)", cancellationToken);
+            await benchmark.RunAsync("RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("RestEase Proxy -> (HttpClient -> ASP.NET Core) -> Regular Service (EF Core -> SQL Server)", cancellationToken);
+            await benchmark.RunAsync("RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]", cancellationToken);
         }
 
         public static Task<IServiceProvider> CreateRemoteServiceProviderAsync(CancellationToken cancellationToken)

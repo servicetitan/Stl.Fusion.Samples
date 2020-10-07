@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stl.Async;
 using Stl.OS;
+using static System.Console;
 
 namespace Samples.Caching.Client
 {
@@ -23,17 +24,20 @@ namespace Samples.Caching.Client
 
         public async Task RunAsync(string title, CancellationToken cancellationToken = default)
         {
-            Console.WriteLine($"{title}:");
+            WriteLine($"{title}:");
             await RunAsync(WarmupDuration, cancellationToken).ConfigureAwait(false);
-            Console.WriteLine($"  {"Parameters",-14}: {FormatParameters()}");
             await RunAsync(Duration, cancellationToken).ConfigureAwait(false);
             foreach (var (key, counter) in Counters.OrderBy(p => p.Key))
                 if (counter.HasValue)
-                    Console.WriteLine($"  {key,-14}: {counter.Format(Duration)}");
+                    WriteLine($"  {key,-14}: {counter.Format(Duration)}");
         }
 
-        public virtual string FormatParameters()
-            => $"{Duration.TotalSeconds:N}s, {ConcurrencyLevel} workers";
+        public virtual void DumpParameters()
+        {
+            WriteLine("Benchmark parameters:");
+            WriteLine($"  {"Duration",-14}: {Duration.TotalSeconds:N}s");
+            WriteLine($"  {"Worker #",-14}: {ConcurrencyLevel}");
+        }
 
         protected virtual async Task RunAsync(TimeSpan duration, CancellationToken cancellationToken)
         {

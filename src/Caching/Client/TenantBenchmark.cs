@@ -57,8 +57,12 @@ namespace Samples.Caching.Client
             WriteLine("  Done.");
         }
 
-        public override string FormatParameters()
-            => $"{base.FormatParameters()} (writers/readers: {WriteConcurrencyLevel}/{ConcurrencyLevel - WriteConcurrencyLevel})";
+        public override void DumpParameters()
+        {
+            base.DumpParameters();
+            WriteLine($"  - {"Writer #",-12}: {WriteConcurrencyLevel}");
+            WriteLine($"  - {"Reader #",-12}: {ConcurrencyLevel - WriteConcurrencyLevel}");
+        }
 
         protected override async Task<Dictionary<string, Counter>> BenchmarkAsync(int workerId, TimeSpan duration, CancellationToken cancellationToken)
         {
