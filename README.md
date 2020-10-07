@@ -101,10 +101,10 @@ For the sake of clarity, the rate of writes (updates) isn't benchmarked here &nd
 Fusion can't speed up writes (at least, directly), so only one worker is busy with this.
 
 What's interesting in this output?
-- Fusion-based API endpoint serving relatively small amount of cacheable data
+- Fusion-backed API endpoint serving relatively small amount of cacheable data
     scales to ~ **110,000 RPS** while running the test on the same machine 
     (that's a disadvantage).
-- Identical EF Core-based controller scales to just 20K RPS.
+- Identical EF Core-based API endpoint scales to just 20K RPS.
 
 So there is a ~ 5.5x difference (~ 8x if we'd run the client on another machine),
 and that's even for ~ the simplest EF service hitting a tiny DB tuned 
