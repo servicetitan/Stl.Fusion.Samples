@@ -72,7 +72,54 @@ try invoking any of endpoints there right from embedded Swagger console.
 
 ![](docs/img/SwaggerDoc.jpg)
 
-### 4. Tutorial
+### 4. Caching Sample
+
+It's a Client (console app running the tests) + ASP.NET Core server. The output it produces on Ryzen Threadripper 3960X:
+
+```text
+Local services:
+Fusion's Compute Service [-> EF Core -> SQL Server]:
+  Reads         : 24.14M operations/s
+  Writes        : 102.40 operations/s
+Regular Service [-> EF Core -> SQL Server]:
+  Reads         : 24.99K operations/s
+  Writes        : 104.00 operations/s
+
+Remote services used by local clients:
+Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
+  Reads         : 21.87M operations/s
+  Writes        : 89.60 operations/s
+RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
+  Reads         : 110.09K operations/s
+  Writes        : 62.40 operations/s
+RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
+  Reads         : 20.51K operations/s
+  Writes        : 92.80 operations/s
+```
+
+What's interesting in this output?
+- Fusion-based API endpoint serving relatively small amount of cacheable data
+    scales to ~ **110,000 RPS** while running the test on the same machine 
+    (that's a disadvantage).
+- Identical EF Core-based controller scales to just 20K RPS.
+
+So there is a ~ 5.5x difference (~ 8x if we'd run the client on another machine),
+and that's even for ~ the simplest EF service hitting a tiny DB tuned 
+to work as in-memory cache (running in simple recovery mode, etc.).
+
+In other words, use of Fusion on server-side only brings ~ an order of magnitude 
+performance boost even when there is almost nothing to speed up! 
+
+Besides that, the test shows [Replica Services] scale ~ as local [Compute Services],
+i.e. to ~ **22-24 million "RPS"**. 
+These aren't true RPS, of course - Replica Service simply kills any RPC 
+for cached values that are known to be consistent. But nevertheless,
+it's still a pretty unique feature Fusion brings to the table &ndash; and that's
+exactly what allows it Blazor samples to share the same code for both WASM and SSB
+modes. So even though Replica Service is just a client for remote Compute Service,
+they are almost identical from performance standpoint!
+
+### 5. Tutorial
 
 It's interactive &ndash; you can simply [browse it](docs/tutorial/README.md), but to
 modify and run the C# code presented there, you need
