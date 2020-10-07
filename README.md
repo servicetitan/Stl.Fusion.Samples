@@ -74,7 +74,7 @@ try invoking any of endpoints there right from embedded Swagger console.
 
 ### 4. Caching Sample
 
-It's a Client (console app running the tests) + ASP.NET Core server. The output it produces on Ryzen Threadripper 3960X:
+It's a console app running the tests (`Client`) + ASP.NET Core API `Server`. Its output on Ryzen Threadripper 3960X:
 
 ```text
 Local services:
