@@ -35,7 +35,7 @@ namespace Samples.Caching.Client
             await benchmark.InitAsync(cancellationToken);
 
             benchmark.Services = localServices;
-            benchmark.ConcurrencyLevel = HardwareInfo.ProcessorCount * 4/3;
+            benchmark.ConcurrencyLevel = HardwareInfo.ProcessorCount - 2;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
             await benchmark.RunAsync("Compute Service (Fusion -> EF Core -> SQL Server)", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
