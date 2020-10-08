@@ -74,8 +74,10 @@
             return;
         await ChatService.PostMessageAsync(Name, Message);
         Message = "";
-        // The next Invalidate(true) call is optional: it cancels active update delay.
-        // You can comment it out & see it still works, though there will be 0.5s delay in message list update.
-        State.Invalidate(true);
+        // The next call just improves UX: it cancels active update delay.
+        // You can comment it out & see everything still works, though the
+        // counter updates with 0.5s delay.
+        // The default update delay is set to 0.5s in Startup.cs (~ line 33).
+        State.CancelUpdateDelay();
     }
 }

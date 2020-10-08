@@ -20,7 +20,7 @@
 
 <p>Server Time: @time</p>
 
-<button class="btn btn-primary" @onclick="() => State.Invalidate(true)">Refresh</button>
+<button class="btn btn-primary" @onclick="() => State.CancelUpdateDelay()">Refresh</button>
 
 @code {
     protected override void OnInitialized()

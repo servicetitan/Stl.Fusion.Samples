@@ -62,7 +62,10 @@
     }
 
     protected override void OnParametersSet()
-        => State?.UpdateDelayer.SetUpdateDelay(UpdateDelay);
+    {
+        if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
+            updateDelayer.Delay = UpdateDelay;
+    }
 
     protected override void ConfigureState(LiveState<double>.Options options)
         => options.WithUpdateDelayer(UpdateDelay);
@@ -76,5 +79,5 @@
 
     // Action handlers
 
-    private void Apply() => Locals.Invalidate(true);
+    private void Apply() => Locals.Invalidate();
 }

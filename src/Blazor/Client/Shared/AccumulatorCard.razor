@@ -58,7 +58,10 @@
     }
 
     protected override void OnParametersSet()
-        => State?.UpdateDelayer.SetUpdateDelay(UpdateDelay);
+    {
+        if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
+            updateDelayer.Delay = UpdateDelay;
+    }
 
     protected override void ConfigureState(LiveState<double>.Options options)
         => options.WithUpdateDelayer(UpdateDelay);
@@ -71,12 +74,12 @@
     private async Task ResetAsync()
     {
         await SumService.ResetAsync();
-        State.Invalidate(true);
+        State.CancelUpdateDelay();
     }
 
     private async Task AccumulateAsync()
     {
         await SumService.AccumulateAsync(Locals.Value.Value);
-        State.Invalidate(true);
+        State.CancelUpdateDelay();
     }
 }

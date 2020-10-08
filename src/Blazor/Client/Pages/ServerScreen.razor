@@ -51,5 +51,5 @@
         => ScreenshotService.GetScreenshotAsync(Locals.Value.ActualWidth, cancellationToken);
 
     private void OnWidthChange()
-        => State.Invalidate(true);
+        => State.CancelUpdateDelay();
 }

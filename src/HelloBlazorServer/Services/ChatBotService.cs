@@ -33,7 +33,7 @@ namespace Samples.HelloBlazorServer.Services
             _chatService = chatService;
             _state = stateFactory.NewLive<(DateTime Time, string Name, string Message)[]>(
                 options => {
-                    options.WithZeroUpdateDelay();
+                    options.WithInstantUpdates();
                     options.EventConfigurator = state => {
                         state.Updated += (s, e) => Task.Run(TryRespondAsync);
                     };
