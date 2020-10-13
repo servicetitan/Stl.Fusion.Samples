@@ -1,7 +1,12 @@
+using Samples.Caching.Common;
+
 namespace Samples.Caching.Server
 {
-    public static class ServerSettings
+    [Settings]
+    public class ServerSettings : ISettings
     {
-        public static string DatabaseName = "Samples_Caching";
+        public string SectionName => "Server";
+
+        public string PublisherId { get; set; } = "p";
     }
 }

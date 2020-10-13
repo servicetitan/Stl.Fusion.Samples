@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Samples.Caching.Common;
+using Stl.DependencyInjection;
 using Stl.Frozen;
 using Stl.OS;
 using Stl.Time;
@@ -13,6 +15,7 @@ using static System.Console;
 
 namespace Samples.Caching.Client
 {
+    [Service]
     public class TenantBenchmark : BenchmarkBase
     {
         public int InitConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount;
@@ -68,7 +71,6 @@ namespace Samples.Caching.Client
         {
             var rnd = new Random(workerId * 347);
             var stopwatch = Stopwatch;
-            var durationTicks = duration.Ticks;
             var tcIndexMask = TimeCheckOperationIndexMask;
             var tenants = TenantServiceResolver(Services);
             var isWriter = workerId < WriteConcurrencyLevel;
@@ -93,7 +95,7 @@ namespace Samples.Caching.Client
             // The benchmarking loop
             var count = 0L;
             var errorCount = 0L;
-            for (; (count & tcIndexMask) != 0 || stopwatch.ElapsedTicks < durationTicks; count++) {
+            for (; (count & tcIndexMask) != 0 || stopwatch.Elapsed < duration; count++) {
                 try {
                     await operationAsync().ConfigureAwait(false);
                 }

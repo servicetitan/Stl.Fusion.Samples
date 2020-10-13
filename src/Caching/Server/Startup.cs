@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
@@ -40,17 +41,21 @@ namespace Samples.Caching.Server
             });
 
             // DbContext & related services
-            services.AddDbContextPool<AppDbContext>(builder => {
-                builder.UseSqlServer(
-                    $"Server=127.0.0.1,5020; " +
-                    $"Database={ServerSettings.DatabaseName}; " +
+            services.AddDbContextPool<AppDbContext>((c, builder) => {
+                var dbSettings = c.GetRequiredService<DbSettings>();
+                var connectionString =
+                    $"Server={dbSettings.ServerHost},{dbSettings.ServerPort}; " +
+                    $"Database={dbSettings.DatabaseName}; " +
                     $"User Id=sa; Password=Fusion.0.to.1; " +
-                    $"MultipleActiveResultSets=True; ",
-                    sqlServer => { });
+                    $"MultipleActiveResultSets=True; ";
+                builder.UseSqlServer(connectionString, sqlServer => { });
             }, 512);
 
             // Fusion services
-            services.AddSingleton(new Publisher.Options() { Id = CommonSettings.PublisherId });
+            services.AddSingleton(c => {
+                var serverSettings = c.GetRequiredService<ServerSettings>();
+                return new Publisher.Options() {Id = serverSettings.PublisherId};
+            });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebSocketServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:

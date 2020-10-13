@@ -4,7 +4,8 @@ WORKDIR /samples
 COPY ["src/", "src/"]
 COPY ["docs/", "docs/"]
 COPY Samples.sln .
-RUN dotnet build
+RUN dotnet build -c Debug
+RUN dotnet build -c Release
 
 # Create Tutorial image
 FROM build as tutorial
@@ -31,3 +32,12 @@ ENTRYPOINT ["dotnet", "bin/Debug/netcoreapp3.1/Samples.HelloBlazorServer.dll"]
 FROM build as sample_blazor
 WORKDIR /samples/src/Blazor/Server
 ENTRYPOINT ["dotnet", "bin/Debug/netcoreapp3.1/Samples.Blazor.Server.dll"]
+
+# Create Caching Server sample image
+FROM build as sample_caching_server
+WORKDIR /samples/src/Caching/Server
+ENTRYPOINT ["dotnet", "bin/Release/netcoreapp3.1/Samples.Caching.Server.dll"]
+
+# Create Caching Client sample image
+FROM build as sample_caching_client
+WORKDIR /samples/src/Caching/Client/bin/Release/netcoreapp3.1

@@ -11,7 +11,7 @@ Welcome to a collection of [Fusion] samples!
 ### 1. HelloWorld Sample
 
 Fusion-style [HelloWorld](src/HelloWorld) shows how to create
-simple dependency chains and and react to invalidation events. 
+simple dependency chains and react to invalidation events. 
 [Its Program.cs](src/HelloWorld/Program.cs) is just about 40 lines long.
 
 ![](docs/img/Samples-HelloWorld.gif)
@@ -138,6 +138,7 @@ Build & run locally with [.NET Core SDK 3.1](https://dotnet.microsoft.com/downlo
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
 | [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + http://localhost:5000/ |
 | [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + http://localhost:5005/ |
+| [Caching] | `Run-Sample-Caching.cmd`. See [Run-Sample-Caching.cmd](Run-Sample-Caching.cmd) to run this sample on Unix. |
 | [Tutorial] | [Install Try .NET (preview version)](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
 
 Build & run with [Docker](https://docs.docker.com/get-docker/) + 
@@ -148,6 +149,7 @@ Build & run with [Docker](https://docs.docker.com/get-docker/) +
 | [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
 | [HelloBlazorServer] | `docker-compose up --build sample_hello_blazor_server` + http://localhost:5000/ |
 | [Blazor Samples] | `docker-compose up --build sample_blazor` + http://localhost:5005/ |
+| [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
 | [Tutorial] | `docker-compose up --build tutorial` + https://localhost:50005/README.md |
 
 ## Useful Links
@@ -167,6 +169,7 @@ please help us to make it better by completing [Fusion Feedback Form]
 [HelloWorld]: src/HelloWorld
 [HelloBlazorServer]: src/HelloBlazorServer
 [Blazor Samples]: src/Blazor
+[Caching]: src/Caching
 [Tutorial]: docs/tutorial/README.md
 [Documentation Home]: https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md
 

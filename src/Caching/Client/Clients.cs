@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.OpenApi.Writers;
 using RestEase;
 using Samples.Caching.Common;
 using Stl.Fusion.Client;
@@ -7,8 +8,8 @@ using Stl.Fusion.Client.RestEase;
 
 namespace Samples.Caching.Client
 {
-    [RestEaseReplicaService(typeof(ITenantService))]
-    [RestEaseClientService(typeof(IRestEaseTenantService))]
+    [RestEaseReplicaService(typeof(ITenantService), Scope = Program.ClientSideScope)]
+    [RestEaseClientService(typeof(IRestEaseTenantService), Scope = Program.ClientSideScope)]
     [BasePath("tenants")]
     public interface ITenantClient : IRestEaseReplicaClient
     {
@@ -24,7 +25,7 @@ namespace Samples.Caching.Client
 
     public interface IRestEaseTenantService : ITenantService { }
 
-    [RestEaseClientService(typeof(IRestEaseTenantService))]
+    [RestEaseClientService(typeof(IRestEaseTenantService), Scope = Program.ClientSideScope)]
     [BasePath("tenants")]
     public interface IRestEaseTenantClient
     {
@@ -38,7 +39,7 @@ namespace Samples.Caching.Client
         Task<Tenant> TryGetAsync(string tenantId, CancellationToken cancellationToken = default);
     }
 
-    [RestEaseClientService(typeof(ISqlTenantService))]
+    [RestEaseClientService(typeof(ISqlTenantService), Scope = Program.ClientSideScope)]
     [BasePath("sqlTenants")]
     public interface ISqlTenantClient
     {

@@ -1,20 +1,29 @@
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Samples.Caching.Server;
+using Stl.DependencyInjection;
 using static System.Console;
 
 namespace Samples.Caching.Client
 {
+    [Service]
     public class ServiceChecker
     {
         public string SamplesDir { get; set; }
         public string ServerBinDir { get; set; }
+        public DbSettings DbSettings { get; set; }
+        public ClientSettings ClientSettings { get; set; }
 
-        public ServiceChecker()
+        public ServiceChecker(DbSettings dbSettings, ClientSettings clientSettings)
         {
+            DbSettings = dbSettings;
+            ClientSettings = clientSettings;
             var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
             var binCfgPart = Regex.Match(baseDir, @"[\\/]bin[\\/]\w+[\\/]").Value;
             var cachingSampleDir = Path.GetFullPath(Path.Combine(baseDir, "../../../.."));
@@ -24,8 +33,10 @@ namespace Samples.Caching.Client
 
         public async Task WaitForServicesAsync(CancellationToken cancellationToken)
         {
-            await WaitForServiceAsync("SQL Server", "127.0.0.1", 5020, "docker-compose up -d db", cancellationToken);
-            await WaitForServiceAsync("Samples.Caching.Server", "127.0.0.1", 5010, "", cancellationToken);
+            await WaitForServiceAsync("SQL Server", DbSettings.ServerHost, DbSettings.ServerPort,
+                "docker-compose up -d db", cancellationToken);
+            await WaitForServiceAsync("Samples.Caching.Server", ClientSettings.ServerHost, ClientSettings.ServerPort,
+                "", cancellationToken);
         }
 
         private async Task WaitForServiceAsync(string name, string ipAddress, int port, string command, CancellationToken cancellationToken)

@@ -5,8 +5,10 @@ services:
     environment:
       SA_PASSWORD: "Fusion.0.to.1"
       ACCEPT_EULA: "Y"
+    expose:
+     - "1433"
     ports:
-     - "127.0.0.1:5020:1433"
+     - "5020:1433"
   tutorial:
     build: 
       context: .
@@ -35,3 +37,34 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
+  sample_caching_server:
+    build: 
+      context: .
+      target: sample_caching_server
+    depends_on:
+     - db
+    links:
+     - db
+    expose:
+     - "5010"
+    ports:
+     - "5010:5010"
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:5010"
+      DB__ServerHost: "db"
+      DB__ServerPort: "1433"
+  sample_caching_client:
+    build: 
+      context: .
+      target: sample_caching_client
+    depends_on:
+     - db
+     - sample_caching_server
+    links:
+     - db
+     - sample_caching_server
+    environment:
+      DB__ServerHost: "db"
+      DB__ServerPort: "1433"
+      Client__ServerHost: "sample_caching_server"
+      Client__ServerPort: "5010"

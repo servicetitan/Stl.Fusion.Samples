@@ -19,7 +19,7 @@ namespace Samples.Caching.Client
         public bool ForceGCCollect { get; set; }
         public int TimeCheckOperationIndexMask { get; set; } = 0;
 
-        protected Stopwatch Stopwatch { get; private set; } = null!;
+        protected Stopwatch Stopwatch { get; set; } = null!;
         protected Dictionary<string, Counter> Counters { get; set; } = new Dictionary<string, Counter>();
 
         public async Task RunAsync(string title, CancellationToken cancellationToken = default)
@@ -52,6 +52,7 @@ namespace Samples.Caching.Client
             await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Wait to make sure all the tasks are created & scheduled
             if (ForceGCCollect)
                 GC.Collect();
+
             Stopwatch = Stopwatch.StartNew();
             startTaskSource.SetResult(default);
 
