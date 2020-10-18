@@ -1,15 +1,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Stl.Fusion.Bridge;
 using Stl.Fusion.Server;
 using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Server.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class ChatController : FusionController, IChatService
+    [ApiController, JsonifyErrors]
+    public class ChatController : ControllerBase, IChatService
     {
         private readonly IChatService _chat;
 

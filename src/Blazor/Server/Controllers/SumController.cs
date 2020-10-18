@@ -2,14 +2,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Samples.Blazor.Common.Services;
-using Stl.Fusion.Bridge;
 using Stl.Fusion.Server;
 
 namespace Samples.Blazor.Server.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class SumController : FusionController, ISumService
+    [ApiController, JsonifyErrors]
+    public class SumController : ControllerBase, ISumService
     {
         private readonly ISumService _sumService;
 

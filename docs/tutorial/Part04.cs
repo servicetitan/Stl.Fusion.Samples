@@ -75,8 +75,8 @@ namespace Tutorial
 
         // We need Web API controller to publish the service
         [Route("api/[controller]")]
-        [ApiController]
-        public class CounterController : FusionController
+        [ApiController, JsonifyErrors]
+        public class CounterController : ControllerBase
         {
             private ICounterService Counters { get; }
 

@@ -7,8 +7,8 @@ using Stl.Fusion.Server;
 namespace Samples.Caching.Server.Controllers
 {
     [Route("api/tenants")]
-    [ApiController]
-    public class TenantController : FusionController, ITenantService
+    [ApiController, JsonifyErrors]
+    public class TenantController : ControllerBase, ITenantService
     {
         private ITenantService Tenants { get; }
 

@@ -7,8 +7,8 @@ using Samples.Blazor.Common.Services;
 namespace Samples.Blazor.Server.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class ScreenshotController : FusionController, IScreenshotService
+    [ApiController, JsonifyErrors]
+    public class ScreenshotController : ControllerBase, IScreenshotService
     {
         private readonly IScreenshotService _screenshots;
 
