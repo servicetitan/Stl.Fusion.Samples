@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Samples.Caching.Common;
-using Stl.Fusion.Bridge;
 using Stl.Fusion.Server;
 
 namespace Samples.Caching.Server.Controllers
@@ -13,8 +12,7 @@ namespace Samples.Caching.Server.Controllers
     {
         private ITenantService Tenants { get; }
 
-        public TenantController(ITenantService tenants, IPublisher publisher)
-            : base(publisher)
+        public TenantController(ITenantService tenants)
             => Tenants = tenants;
 
         [HttpPost("addOrUpdate")]
@@ -27,12 +25,12 @@ namespace Samples.Caching.Server.Controllers
 
         // Compute methods
 
-        [HttpGet("getAll")]
+        [HttpGet("getAll"), Publish]
         public Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default)
-            => PublishAsync(ct => Tenants.GetAllAsync(ct), cancellationToken);
+            => Tenants.GetAllAsync(cancellationToken);
 
-        [HttpGet("get")]
+        [HttpGet("get"), Publish]
         public Task<Tenant?> TryGetAsync(string tenantId, CancellationToken cancellationToken = default)
-            => PublishAsync(ct => Tenants.TryGetAsync(tenantId ?? "", ct), cancellationToken);
+            => Tenants.TryGetAsync(tenantId ?? "", cancellationToken);
     }
 }

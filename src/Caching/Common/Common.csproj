@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.8" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.5.98" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.6.1" />
   </ItemGroup>
 
 </Project>

@@ -13,9 +13,7 @@ namespace Samples.Blazor.Server.Controllers
     {
         private readonly ISumService _sumService;
 
-        public SumController(ISumService sumService, IPublisher publisher)
-            : base(publisher) =>
-            _sumService = sumService;
+        public SumController(ISumService sumService) => _sumService = sumService;
 
         [HttpPost("reset")]
         public Task ResetAsync(CancellationToken cancellationToken)
@@ -25,12 +23,12 @@ namespace Samples.Blazor.Server.Controllers
         public Task AccumulateAsync(double value, CancellationToken cancellationToken)
             => _sumService.AccumulateAsync(value, cancellationToken);
 
-        [HttpGet("getAccumulator")]
+        [HttpGet("getAccumulator"), Publish]
         public Task<double> GetAccumulatorAsync(CancellationToken cancellationToken)
-            => PublishAsync(ct => _sumService.GetAccumulatorAsync(ct), cancellationToken);
+            => _sumService.GetAccumulatorAsync(cancellationToken);
 
-        [HttpGet("sum")]
+        [HttpGet("sum"), Publish]
         public Task<double> SumAsync([FromQuery] double[] values, bool addAccumulator, CancellationToken cancellationToken)
-            => PublishAsync(ct => _sumService.SumAsync(values, addAccumulator, ct), cancellationToken);
+            => _sumService.SumAsync(values, addAccumulator, cancellationToken);
     }
 }

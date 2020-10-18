@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,16 +63,11 @@ namespace Samples.Blazor.Server
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 
-            // Authentication - unused for now, this is a work-in-progress
-            var gitHubClientId = Cfg["Authentication:GitHub:ClientId"];
-            var gitHubClientSecret = Cfg["Authentication:GitHub:ClientSecret"];
-            if (gitHubClientId == null || gitHubClientSecret == null) {
-                // Note that you should never store these secrets in your code.
-                // We put them here solely to simplify running this sample.
-                gitHubClientId = "7a38bc415f7e1200fee2";
-                gitHubClientSecret = Encoding.UTF8.GetString(
-                    Convert.FromBase64String("MGZjOWI2OTEzMzhhM2UzYzc5OTgzZGNmOGYyMjNmZjFmYzQ3MmMzNQ=="));
-            }
+            // Note that you should never store these secrets in your code.
+            // We put them here solely to simplify running this sample.
+            var gitHubClientId = "7a38bc415f7e1200fee2";
+            var gitHubClientSecret = Encoding.UTF8.GetString(
+                Convert.FromBase64String("OGNkMTAzM2JmZjljOTk3ODc5MjhjNTNmMmE3Y2Q1NWU0ZmNlNjU0OA=="));
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 })
@@ -83,7 +79,8 @@ namespace Samples.Blazor.Server
                     options.ClientId = gitHubClientId;
                     options.ClientSecret = gitHubClientSecret;
                     options.Scope.Add("read:user");
-                    options.Scope.Add("user:email");
+                    // options.Scope.Add("user:email");
+                    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
                 });
 
             // Web

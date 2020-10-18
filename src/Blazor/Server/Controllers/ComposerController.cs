@@ -14,15 +14,13 @@ namespace Samples.Blazor.Server.Controllers
     {
         private readonly IComposerService _composer;
 
-        public ComposerController(IComposerService composer, IPublisher publisher)
-            : base(publisher) =>
-            _composer = composer;
+        public ComposerController(IComposerService composer) => _composer = composer;
 
-        [HttpGet("get")]
+        [HttpGet("get"), Publish]
         public Task<ComposedValue> GetComposedValueAsync(string? parameter, Session session, CancellationToken cancellationToken = default)
         {
             parameter ??= "";
-            return PublishAsync(ct => _composer.GetComposedValueAsync(parameter, session, ct));
+            return _composer.GetComposedValueAsync(parameter, session, cancellationToken);
         }
     }
 }

@@ -14,16 +14,14 @@ namespace Samples.Blazor.Server.Controllers
     {
         private readonly ITimeService _time;
 
-        public TimeController(ITimeService time, IPublisher publisher)
-            : base(publisher)
-            => _time = time;
+        public TimeController(ITimeService time) => _time = time;
 
-        [HttpGet("get")]
+        [HttpGet("get"), Publish]
         public Task<DateTime> GetTimeAsync(CancellationToken cancellationToken)
-            => PublishAsync(ct => _time.GetTimeAsync(ct));
+            => _time.GetTimeAsync(cancellationToken);
 
-        [HttpGet("getUptime")]
+        [HttpGet("getUptime"), Publish]
         public Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
-            => PublishAsync(ct => _time.GetUptimeAsync(updatePeriod, ct));
+            => _time.GetUptimeAsync(updatePeriod, cancellationToken);
     }
 }

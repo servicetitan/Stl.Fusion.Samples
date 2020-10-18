@@ -1,17 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.OpenApi.Writers;
 using RestEase;
 using Samples.Caching.Common;
 using Stl.Fusion.Client;
-using Stl.Fusion.Client.RestEase;
 
 namespace Samples.Caching.Client
 {
     [RestEaseReplicaService(typeof(ITenantService), Scope = Program.ClientSideScope)]
     [RestEaseClientService(typeof(IRestEaseTenantService), Scope = Program.ClientSideScope)]
     [BasePath("tenants")]
-    public interface ITenantClient : IRestEaseReplicaClient
+    public interface ITenantClient
     {
         [Post("addOrUpdate")]
         Task AddOrUpdateAsync([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);

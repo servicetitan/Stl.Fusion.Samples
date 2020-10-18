@@ -125,17 +125,18 @@ public class CounterController : FusionController
 {
     private ICounterService Counters { get; }
 
-    public CounterController(IPublisher publisher, ICounterService counterService)
-        : base(publisher)
+    public CounterController(ICounterService counterService)
         => Counters = counterService;
 
-    [HttpGet("get")]
-    public async Task<int> GetAsync(string key)
+    // Publish ensures GetAsync output is published if publication was requested by the client:
+    // - Publication is created
+    // - Its Id is shared in response header.
+    [HttpGet("get"), Publish]
+    public Task<int> GetAsync(string key)
     {
         key ??= ""; // Empty value is bound to null value by default
         WriteLine($"{GetType().Name}.{nameof(GetAsync)}({key})");
-        // PublishAsync adds Fusion headers enabling the client to create Replica for this response
-        return await PublishAsync(ct => Counters.GetAsync(key, ct));
+        return Counters.GetAsync(key, HttpContext.RequestAborted);
     }
 
     [HttpPost("inc")]
@@ -161,7 +162,7 @@ public class CounterController : FusionController
 // ICounterServiceClient tells how ICounterService methods map to HTTP methods.
 // As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
 [BasePath("counter")]
-public interface ICounterServiceClient : IRestEaseReplicaClient
+public interface ICounterServiceClient
 {
     [Get("get")]
     Task<int> GetAsync(string key, CancellationToken cancellationToken = default);
