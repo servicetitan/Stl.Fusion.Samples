@@ -1,12 +1,10 @@
-using Samples.Caching.Common;
+using Stl.DependencyInjection;
 
 namespace Samples.Caching.Server
 {
-    [Settings]
-    public class ServerSettings : ISettings
+    [Settings("Server")]
+    public class ServerSettings
     {
-        public string SectionName => "Server";
-
         public string PublisherId { get; set; } = "p";
     }
 }
