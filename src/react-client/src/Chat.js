@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash/debounce";
 import formatDate from "date-fns/format";
 import Section from "./Section";
-import useStlFusion from "./lib/useStlFusion";
+import useFusionSubscription from "./lib/useFusionSubscription";
 import LoadingSVG from "./LoadingSVG";
 
 export default function Chat() {
@@ -25,12 +25,12 @@ function ChatMessages({ onCancelChange }) {
     data: activeUserData,
     loading: activeUserLoading,
     error: activeUserError,
-  } = useStlFusion("/api/Chat/getActiveUserCount");
+  } = useFusionSubscription("/api/Chat/getActiveUserCount");
 
   const activeUserCount =
     !activeUserLoading && !activeUserError ? activeUserData : 0;
 
-  const { data, loading, error, cancel } = useStlFusion(
+  const { data, loading, error, cancel } = useFusionSubscription(
     "/api/Chat/getChatTail?length=5"
   );
 

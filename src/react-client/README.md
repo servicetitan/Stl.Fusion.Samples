@@ -5,10 +5,10 @@
 Basic usage:
 
 ```js
-import useStlFusion from "./lib/useStlFusion";
+import useFusionSubscription from "./lib/useFusionSubscription";
 
 export default function Time() {
-  const { data, loading, error } = useStlFusion("/api/Time/get");
+  const { data, loading, error } = useFusionSubscription("/api/Time/get");
 
   return loading ? (
     <div>loading...</div>
@@ -23,13 +23,13 @@ export default function Time() {
 Context configuration:
 
 ```js
-import StlFusionConfig from "./lib/StlFusionConfig";
+import FusionConfig from "./lib/FusionConfig";
 
 ReactDOM.render(
   <React.StrictMode>
-    <StlFusionConfig uri="ws://localhost:5005/fusion/ws" wait={300}>
+    <FusionConfig uri="ws://localhost:5005/fusion/ws" wait={300}>
       <App />
-    </StlFusionConfig>
+    </FusionConfig>
   </React.StrictMode>,
   document.getElementById("root")
 );
@@ -38,10 +38,10 @@ ReactDOM.render(
 Hook configuration:
 
 ```js
-import useStlFusion from "./lib/useStlFusion";
+import useFusionSubscription from "./lib/useFusionSubscription";
 
 export default function Time() {
-  const { data, loading, error } = useStlFusion(
+  const { data, loading, error } = useFusionSubscription(
     "/api/Time/get",
     { headers: { "Content-Type": "application/json" } },
     {
@@ -63,12 +63,12 @@ export default function Time() {
 Custom fetcher, using `axios` as an example:
 
 ```js
-import StlFusionConfig from "./lib/StlFusionConfig";
+import FusionConfig from "./lib/FusionConfig";
 import axios from "axios";
 
 ReactDOM.render(
   <React.StrictMode>
-    <StlFusionConfig
+    <FusionConfig
       uri="ws://localhost:5005/fusion/ws"
       wait={300}
       fetcher={async (url, params) => {
@@ -81,7 +81,7 @@ ReactDOM.render(
       }}
     >
       <App />
-    </StlFusionConfig>
+    </FusionConfig>
   </React.StrictMode>,
   document.getElementById("root")
 );

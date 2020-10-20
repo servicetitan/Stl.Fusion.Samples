@@ -1,6 +1,6 @@
 import React from "react";
 import Section from "./Section";
-import useStlFusion from "./lib/useStlFusion";
+import useFusionSubscription from "./lib/useFusionSubscription";
 
 export default function AuthSection() {
   return (
@@ -15,12 +15,12 @@ function Auth() {
     data: sessionData,
     loading: sessionLoading,
     error: sessionError,
-  } = useStlFusion("/fusion/auth/getSessionInfo");
+  } = useFusionSubscription("/fusion/auth/getSessionInfo");
   const {
     data: userData,
     loading: userLoading,
     error: userError,
-  } = useStlFusion("/fusion/auth/getUser");
+  } = useFusionSubscription("/fusion/auth/getUser");
 
   return (
     <div className="mt-2">

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Section from "./Section";
-import useStlFusion from "./lib/useStlFusion";
+import useFusionSubscription from "./lib/useFusionSubscription";
 
 export default function ComposerSection() {
   const [parameter, setParameter] = useState("Parameter");
@@ -74,22 +74,22 @@ function ComposerLocal({ parameter, onToggle }) {
     data: timeData,
     loading: timeLoading,
     error: timeError,
-  } = useStlFusion("/api/Time/getUptime");
+  } = useFusionSubscription("/api/Time/getUptime");
   const {
     data: chatData,
     loading: chatLoading,
     error: chatError,
-  } = useStlFusion("/api/Chat/getChatTail?length=1");
+  } = useFusionSubscription("/api/Chat/getChatTail?length=1");
   const {
     data: userData,
     loading: userLoading,
     error: userError,
-  } = useStlFusion("/fusion/auth/getUser");
+  } = useFusionSubscription("/fusion/auth/getUser");
   const {
     data: userCountData,
     loading: userCountLoading,
     error: userCountError,
-  } = useStlFusion("/api/Chat/getActiveUserCount");
+  } = useFusionSubscription("/api/Chat/getActiveUserCount");
 
   return (
     <div>
@@ -147,12 +147,12 @@ function ComposerRemote({ parameter, onToggle }) {
     data: sessionData,
     loading: sessionLoading,
     error: sessionError,
-  } = useStlFusion("/fusion/auth/getSessionInfo");
+  } = useFusionSubscription("/fusion/auth/getSessionInfo");
 
   const sessionId =
     !sessionLoading && !sessionError ? sessionData.id ?? sessionData.Id : null;
 
-  const { data, loading, error } = useStlFusion(
+  const { data, loading, error } = useFusionSubscription(
     sessionId
       ? `/api/composer/get?parameter=${parameter ?? ""}&session=${sessionId}`
       : null
@@ -164,10 +164,10 @@ function ComposerRemote({ parameter, onToggle }) {
         Remote - <button onClick={onToggle}>Hide</button>
       </h3>
 
-      {loading ? (
-        "Loading..."
-      ) : error ? (
+      {sessionError || error ? (
         "There was an error!"
+      ) : loading ? (
+        "Loading..."
       ) : (
         <div className="space-y-1 divide-y">
           <div>{data.parameter ?? data.Parameter}</div>

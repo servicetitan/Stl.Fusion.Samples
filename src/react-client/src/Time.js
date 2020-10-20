@@ -1,7 +1,7 @@
 import React from "react";
 import formatDate from "date-fns/format";
 import Section from "./Section";
-import useStlFusion from "./lib/useStlFusion";
+import useFusionSubscription from "./lib/useFusionSubscription";
 
 export default function TimeSection() {
   return (
@@ -12,7 +12,9 @@ export default function TimeSection() {
 }
 
 function Time() {
-  const { data, loading, error, cancel } = useStlFusion("/api/Time/get");
+  const { data, loading, error, cancel } = useFusionSubscription(
+    "/api/Time/get"
+  );
 
   return loading ? (
     "Loading..."
