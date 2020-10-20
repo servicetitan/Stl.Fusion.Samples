@@ -17,10 +17,7 @@ using Stl;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
-using Stl.Fusion.Client.RestEase;
 using Stl.Fusion.Server;
-using Stl.Reflection;
-using Stl.Serialization;
 using static System.Console;
 
 namespace Tutorial
@@ -78,22 +75,23 @@ namespace Tutorial
 
         // We need Web API controller to publish the service
         [Route("api/[controller]")]
-        [ApiController]
-        public class CounterController : FusionController
+        [ApiController, JsonifyErrors]
+        public class CounterController : ControllerBase
         {
             private ICounterService Counters { get; }
 
-            public CounterController(IPublisher publisher, ICounterService counterService)
-                : base(publisher)
+            public CounterController(ICounterService counterService)
                 => Counters = counterService;
 
-            [HttpGet("get")]
-            public async Task<int> GetAsync(string key)
+            // Publish ensures GetAsync output is published if publication was requested by the client:
+            // - Publication is created
+            // - Its Id is shared in response header.
+            [HttpGet("get"), Publish]
+            public Task<int> GetAsync(string key)
             {
                 key ??= ""; // Empty value is bound to null value by default
                 WriteLine($"{GetType().Name}.{nameof(GetAsync)}({key})");
-                // PublishAsync adds Fusion headers enabling the client to create Replica for this response
-                return await PublishAsync(ct => Counters.GetAsync(key, ct));
+                return Counters.GetAsync(key, HttpContext.RequestAborted);
             }
 
             [HttpPost("inc")]
@@ -117,7 +115,7 @@ namespace Tutorial
         // ICounterServiceClient tells how ICounterService methods map to HTTP methods.
         // As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
         [BasePath("counter")]
-        public interface ICounterServiceClient : IRestEaseReplicaClient
+        public interface ICounterServiceClient
         {
             [Get("get")]
             Task<int> GetAsync(string key, CancellationToken cancellationToken = default);
@@ -229,8 +227,11 @@ namespace Tutorial
             using var state = stateFactory.NewLive<string>(
                 options => {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
-                    options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
-                    options.Updated     += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
+                    options.EventConfigurator += state1 => {
+                        // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
+                        state1.AddEventHandler(StateEventKind.All,
+                            (s, e) => WriteLine($"{DateTime.Now}: {e}, Value: {s.Value}, Computed: {s.Computed}"));
+                    };
                 },
                 async (state, cancellationToken) => {
                     var counter = await counters.GetAsync("a", cancellationToken);

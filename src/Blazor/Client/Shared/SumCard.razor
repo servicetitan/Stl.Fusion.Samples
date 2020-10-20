@@ -4,7 +4,7 @@
 
 @{
     var sum = State.LastValue;
-    var locals = State.Locals.Value;
+    var locals = Locals.Value;
     var error = State.Error;
 }
 
@@ -57,15 +57,17 @@
 
     protected override void OnInitialized()
     {
-        // StateEventHandlers.All is needed to make StatefulComponentState react to all state changes
-        UsedStateEventHandlers = StateEventHandlers.All;
+        StateHasChangedTriggers = StateEventKind.All;
         base.OnInitialized();
     }
 
     protected override void OnParametersSet()
-        => State?.UpdateDelayer.SetUpdateDelay(UpdateDelay);
+    {
+        if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
+            updateDelayer.Delay = UpdateDelay;
+    }
 
-    protected override void ConfigureState(LiveState<double, LocalsModel>.Options options)
+    protected override void ConfigureState(LiveState<double>.Options options)
         => options.WithUpdateDelayer(UpdateDelay);
 
     protected override async Task<double> ComputeStateAsync(CancellationToken cancellationToken)
@@ -77,5 +79,5 @@
 
     // Action handlers
 
-    private void Apply() => Locals.Invalidate(true);
+    private void Apply() => Locals.Invalidate();
 }

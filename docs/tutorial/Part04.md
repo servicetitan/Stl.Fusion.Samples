@@ -120,22 +120,23 @@ public class CounterService : ICounterService
 
 // We need Web API controller to publish the service
 [Route("api/[controller]")]
-[ApiController]
-public class CounterController : FusionController
+[ApiController, JsonifyErrors]
+public class CounterController : ControllerBase
 {
     private ICounterService Counters { get; }
 
-    public CounterController(IPublisher publisher, ICounterService counterService)
-        : base(publisher)
+    public CounterController(ICounterService counterService)
         => Counters = counterService;
 
-    [HttpGet("get")]
-    public async Task<int> GetAsync(string key)
+    // Publish ensures GetAsync output is published if publication was requested by the client:
+    // - Publication is created
+    // - Its Id is shared in response header.
+    [HttpGet("get"), Publish]
+    public Task<int> GetAsync(string key)
     {
         key ??= ""; // Empty value is bound to null value by default
         WriteLine($"{GetType().Name}.{nameof(GetAsync)}({key})");
-        // PublishAsync adds Fusion headers enabling the client to create Replica for this response
-        return await PublishAsync(ct => Counters.GetAsync(key, ct));
+        return Counters.GetAsync(key, HttpContext.RequestAborted);
     }
 
     [HttpPost("inc")]
@@ -161,7 +162,7 @@ public class CounterController : FusionController
 // ICounterServiceClient tells how ICounterService methods map to HTTP methods.
 // As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
 [BasePath("counter")]
-public interface ICounterServiceClient : IRestEaseReplicaClient
+public interface ICounterServiceClient
 {
     [Get("get")]
     Task<int> GetAsync(string key, CancellationToken cancellationToken = default);
@@ -318,8 +319,12 @@ var stateFactory = services.GetStateFactory();
                 options =>
                 {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
-                    options.Invalidated += state => WriteLine($"{DateTime.Now}: Invalidated, Computed: {state.Computed}");
-                    options.Updated += state => WriteLine($"{DateTime.Now}: Updated, Value: {state.Value}, Computed: {state.Computed}");
+                    options.EventConfigurator += state1 =>
+                    {
+                        // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
+                        state1.AddEventHandler(StateEventKind.All,
+                            (s, e) => WriteLine($"{DateTime.Now}: {e}, Value: {s.Value}, Computed: {s.Computed}"));
+                    };
                 },
                 async (state, cancellationToken) =>
                 {
@@ -339,22 +344,25 @@ The output:
 
 ```text
 Host started.
-9/4/2020 9:41:49 PM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @26, State: Consistent)
-9/4/2020 9:41:49 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @26, State: Invalidated)
+10/2/2020 6:27:48 AM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @26, State: Consistent)
+10/2/2020 6:27:48 AM: Invalidated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @26, State: Invalidated)
+10/2/2020 6:27:48 AM: Updating, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @26, State: Invalidated)
 CounterController.GetAsync(a)
 GetAsync(a)
-9/4/2020 9:41:49 PM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @4a, State: Consistent)
+10/2/2020 6:27:48 AM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Consistent)
 CounterController.IncrementAsync(a)
 IncrementAsync(a)
-9/4/2020 9:41:49 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @4a, State: Invalidated)
+10/2/2020 6:27:48 AM: Invalidated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Invalidated)
+10/2/2020 6:27:49 AM: Updating, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Invalidated)
 GetAsync(a)
-9/4/2020 9:41:50 PM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @2o, State: Consistent)
+10/2/2020 6:27:50 AM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Consistent)
 CounterController.SetOffsetAsync(10)
 SetOffsetAsync(10)
-9/4/2020 9:41:51 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @2o, State: Invalidated)
+10/2/2020 6:27:50 AM: Invalidated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Invalidated)
+10/2/2020 6:27:51 AM: Updating, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Invalidated)
 GetAsync(a)
-9/4/2020 9:41:52 PM: Updated, Value: counters.GetAsync(a) -> 11, Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @4q, State: Consistent)
-9/4/2020 9:41:53 PM: Invalidated, Computed: StateBoundComputed`1(FuncLiveState`1(#49967061) @4q, State: Invalidated)
+10/2/2020 6:27:51 AM: Updated, Value: counters.GetAsync(a) -> 11, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @ap, State: Consistent)
+10/2/2020 6:27:52 AM: Invalidated, Value: counters.GetAsync(a) -> 11, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @ap, State: Invalidated)
 ```
 
 As you might guess, this is exactly the logic out Blazor samples use to update

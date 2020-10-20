@@ -1,6 +1,7 @@
 @page "/chat"
 @using System.Threading
 @using Stl
+@using Stl.Reflection
 @inherits LiveComponentBase<Chat.Model, Chat.LocalsModel>
 @inject IChatService ChatService
 @inject ClientState ClientState
@@ -165,7 +166,7 @@
             if (ChatUser == null)
                 throw new ApplicationException("Please set your name first.");
             await ChatService.AddMessageAsync(ChatUser.Id, locals.Message);
-            Locals.Update(l => l.Message = "");
+            UpdateLocals(l => l.Message = "");
         }
         catch (Exception e) {
             SetError(e);
@@ -180,9 +181,16 @@
     private void ResetName()
     {
         var chatUser = ClientState.ChatUser.Value;
-        Locals.Update(l => l.Name = chatUser?.Name ?? "");
+        UpdateLocals(l => l.Name = chatUser?.Name ?? "");
     }
 
     private void SetError(Exception? error)
-        => Locals.Update(l => l.Error = error);
+        => UpdateLocals(l => l.Error = error);
+
+    private void UpdateLocals(Action<LocalsModel> updater)
+    {
+        var clone = MemberwiseCloner.Clone(Locals.Value);
+        updater.Invoke(clone);
+        Locals.Value = clone;
+    }
 }

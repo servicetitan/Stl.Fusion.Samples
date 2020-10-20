@@ -20,13 +20,12 @@
 
 <p>Server Time: @time</p>
 
-<button class="btn btn-primary" @onclick="() => State.Invalidate(true)">Refresh</button>
+<button class="btn btn-primary" @onclick="() => State.CancelUpdateDelay()">Refresh</button>
 
 @code {
     protected override void OnInitialized()
     {
-        // StateEventHandlers.All is needed to make StatefulComponentState react to all state changes
-        UsedStateEventHandlers = StateEventHandlers.All;
+        StateHasChangedTriggers = StateEventKind.All;
         base.OnInitialized();
     }
 

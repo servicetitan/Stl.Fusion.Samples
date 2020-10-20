@@ -2,28 +2,25 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Stl.Fusion.Bridge;
 using Stl.Fusion.Server;
 using Samples.Blazor.Common.Services;
 
 namespace Samples.Blazor.Server.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class TimeController : FusionController, ITimeService
+    [ApiController, JsonifyErrors]
+    public class TimeController : ControllerBase, ITimeService
     {
         private readonly ITimeService _time;
 
-        public TimeController(ITimeService time, IPublisher publisher)
-            : base(publisher)
-            => _time = time;
+        public TimeController(ITimeService time) => _time = time;
 
-        [HttpGet("get")]
+        [HttpGet("get"), Publish]
         public Task<DateTime> GetTimeAsync(CancellationToken cancellationToken)
-            => PublishAsync(ct => _time.GetTimeAsync(ct));
+            => _time.GetTimeAsync(cancellationToken);
 
-        [HttpGet("getUptime")]
+        [HttpGet("getUptime"), Publish]
         public Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
-            => PublishAsync(ct => _time.GetUptimeAsync(updatePeriod, ct));
+            => _time.GetUptimeAsync(updatePeriod, cancellationToken);
     }
 }
