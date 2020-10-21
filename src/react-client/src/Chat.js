@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import debounce from "lodash/debounce";
 import formatDate from "date-fns/format";
 import Section from "./Section";
@@ -86,6 +86,7 @@ function ChatMessages({ onCancelChange }) {
 
 function ChatUser({ user, onUserChange }) {
   const [loading, setLoading] = useState(false);
+  const inputRef = useRef(null);
 
   const newUser = useCallback(() => {
     setLoading(true);
@@ -96,6 +97,7 @@ function ChatUser({ user, onUserChange }) {
       .then((res) => res.json())
       .then((data) => {
         onUserChange(data);
+        inputRef.current.value = data ? data.name ?? data.Name : "";
         setLoading(false);
       })
       .catch((err) => {
@@ -150,6 +152,7 @@ function ChatUser({ user, onUserChange }) {
         You are:
       </span>{" "}
       <input
+        ref={inputRef}
         className="px-2 py-1 text-xs leading-5 align-bottom transition duration-150 ease-in-out bg-gray-200 border border-gray-300 rounded"
         defaultValue={user ? user.name ?? user.Name : ""}
         onChange={({ target: { value } }) => debouncedSetUserName(value)}
@@ -179,6 +182,7 @@ function AddChatMessage({ user, cancel }) {
         if (shouldCancel && cancel) {
           cancel();
         }
+        setText("");
         setLoading(false);
       })
       .catch((err) => {
