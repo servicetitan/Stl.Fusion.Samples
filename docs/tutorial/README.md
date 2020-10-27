@@ -1,8 +1,10 @@
 # Fusion Tutorial
 
-> All project updates are published on [Gitter]; it's also the best place for Q/A.\
-> [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
-> [![Gitter](https://badges.gitter.im/Stl-Fusion/community.svg)](https://gitter.im/Stl-Fusion/community)
+> All project updates are published on its [Discord Server]; it's also the best place for Q/A.\
+> [![Build](https://github.com/servicetitan/Stl.Fusion/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion/actions?query=workflow%3A%22Build%22)
+> [![codecov](https://codecov.io/gh/servicetitan/Stl.Fusion/branch/master/graph/badge.svg)](https://codecov.io/gh/servicetitan/Stl.Fusion)
+> [![NuGetVersion](https://img.shields.io/nuget/v/Stl.Fusion)](https://www.nuget.org/packages?q=Owner%3Aservicetitan+Tags%3Astl_fusion)
+> [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
 This is an *interactive* tutorial for [Fusion] - a .NET Core library
 trying to make real-time a new normal for any connected apps.
@@ -57,9 +59,8 @@ To be added soon:
 Check out the [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
 as well - it provides a high-level description of Fusion abstractions.
 
-Join our [Gitter Chat Room] or [Discord Server] to ask questions and track project updates.
+Join our [Discord Server] or [Gitter] to ask questions and track project updates.
 
-[Gitter]: https://gitter.im/Stl-Fusion/community
-[Gitter Chat Room]: https://gitter.im/Stl-Fusion/community
 [Discord Server]: https://discord.gg/EKEwv6d
+[Gitter]: https://gitter.im/Stl-Fusion/community
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6

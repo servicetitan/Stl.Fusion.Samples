@@ -2,9 +2,9 @@
 
 Welcome to a collection of [Fusion] samples!
 
-> All project updates are published on [Gitter]; it's also the best place for Q/A.\
+> All project updates are published on its [Discord Server]; it's also the best place for Q/A.\
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
-> [![Gitter](https://badges.gitter.im/Stl-Fusion/community.svg)](https://gitter.im/Stl-Fusion/community)
+> [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
 ## What's Inside?
 
@@ -156,7 +156,7 @@ Build & run with [Docker](https://docs.docker.com/get-docker/) +
 
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
-* Join our [Gitter Chat Room] or [Discord Server] to ask questions and track project updates.
+* Join our [Discord Server] or [Gitter] to ask questions and track project updates.
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 
@@ -181,7 +181,6 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
 [Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
 
-[Gitter]: https://gitter.im/Stl-Fusion/community
-[Gitter Chat Room]: https://gitter.im/Stl-Fusion/community
 [Discord Server]: https://discord.gg/EKEwv6d
+[Gitter]: https://gitter.im/Stl-Fusion/community
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
