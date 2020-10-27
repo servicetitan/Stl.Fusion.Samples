@@ -113,28 +113,33 @@ namespace Samples.Blazor.Server.Services
             return Task.FromResult(Math.Max(0, userCount));
         }
 
-        public virtual async Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
+        public virtual Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
         {
-            await using var dbContext = RentDbContext();
-            return await dbContext.ChatUsers
-                .SingleAsync(u => u.Id == id, cancellationToken)
-                .ConfigureAwait(false);
+            var userResolver = GetBatchEntityResolver<long, ChatUser>();
+            return userResolver.GetAsync(id, cancellationToken);
         }
 
         public virtual async Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
         {
             await EveryChatTail().ConfigureAwait(false);
             await using var dbContext = RentDbContext();
-            var userResolver = GetBatchEntityResolver<long, ChatUser>();
+
+            // Fetching messages from DB
             var messages = await dbContext.ChatMessages
                 .OrderByDescending(m => m.Id)
                 .Take(length)
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
             messages.Reverse();
-            var users = await userResolver.GetManyAsync(messages.Select(m => m.UserId), cancellationToken)
-                .ConfigureAwait(false);
-            return new ChatPage(messages, users);
+
+            // Fetching users via GetUserAsync
+            var userTasks = messages
+                .DistinctBy(m => m.UserId)
+                .Select(m => GetUserAsync(m.UserId, cancellationToken));
+            var users = await Task.WhenAll(userTasks).ConfigureAwait(false);
+
+            // Composing the end result
+            return new ChatPage(messages, users.ToDictionary(u => u.Id));
         }
 
         public virtual Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
