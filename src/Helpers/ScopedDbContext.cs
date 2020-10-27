@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Stl.Internal;
 
-namespace Samples.Caching.Server.Services
+namespace Samples.Helpers
 {
     public abstract class ScopedDbContext : DbContext
     {

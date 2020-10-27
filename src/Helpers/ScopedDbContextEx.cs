@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Samples.Caching.Server.Services
+namespace Samples.Helpers
 {
     public static class ScopedDbContextEx
     {
