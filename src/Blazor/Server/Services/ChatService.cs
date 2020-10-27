@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Stl.Async;
@@ -115,7 +116,7 @@ namespace Samples.Blazor.Server.Services
 
         public virtual Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
         {
-            var userResolver = GetBatchEntityResolver<long, ChatUser>();
+            var userResolver = Services.GetRequiredService<ChatUserResolver>();
             return userResolver.GetAsync(id, cancellationToken);
         }
 
@@ -133,9 +134,8 @@ namespace Samples.Blazor.Server.Services
             messages.Reverse();
 
             // Fetching users via GetUserAsync
-            var userTasks = messages
-                .DistinctBy(m => m.UserId)
-                .Select(m => GetUserAsync(m.UserId, cancellationToken));
+            var userIds = messages.Select(m => m.UserId).Distinct().ToArray();
+            var userTasks = userIds.Select(id => GetUserAsync(id, cancellationToken));
             var users = await Task.WhenAll(userTasks).ConfigureAwait(false);
 
             // Composing the end result

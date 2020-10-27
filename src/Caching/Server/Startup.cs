@@ -33,6 +33,7 @@ namespace Samples.Caching.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Logging
             services.AddLogging(logging => {
                 logging.ClearProviders();
                 logging.AddConsole();

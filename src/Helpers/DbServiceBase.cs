@@ -12,10 +12,5 @@ namespace Samples.Helpers
 
         protected TDbContext RentDbContext()
             => Services.RentDbContext<TDbContext>();
-
-        protected IBatchEntityResolver<TKey, TEntity> GetBatchEntityResolver<TKey, TEntity>()
-            where TKey : notnull
-            where TEntity : class
-            => Services.GetRequiredService<BatchEntityResolver<TDbContext, TKey, TEntity>>();
     }
 }

@@ -18,8 +18,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Samples.Blazor.Common.Services;
 using Samples.Blazor.Server.Services;
-using Samples.Helpers;
-using Stl.Caching;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
@@ -45,14 +43,20 @@ namespace Samples.Blazor.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Logging
+            services.AddLogging(logging => {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Information);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+            });
+
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
             services.AddDbContextPool<AppDbContext>(builder => {
                 builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
             });
-            services.AddSingleton<BatchEntityResolver<AppDbContext, long, ChatMessage>>();
-            services.AddSingleton<BatchEntityResolver<AppDbContext, long, ChatUser>>();
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
