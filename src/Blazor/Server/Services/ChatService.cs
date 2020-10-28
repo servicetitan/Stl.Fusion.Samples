@@ -97,7 +97,7 @@ namespace Samples.Blazor.Server.Services
         public virtual async Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
         {
             await using var dbContext = RentDbContext();
-            return await dbContext.ChatUsers.LongCountAsync(cancellationToken).ConfigureAwait(false);
+            return await dbContext.ChatUsers.AsQueryable().LongCountAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
@@ -126,7 +126,7 @@ namespace Samples.Blazor.Server.Services
             await using var dbContext = RentDbContext();
 
             // Fetching messages from DB
-            var messages = await dbContext.ChatMessages
+            var messages = await dbContext.ChatMessages.AsQueryable()
                 .OrderByDescending(m => m.Id)
                 .Take(length)
                 .ToListAsync(cancellationToken)
