@@ -95,7 +95,7 @@ namespace Samples.Blazor.Server
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor(o => o.DetailedErrors = true);
-            fusionAuth.AddServerSideBlazor(); // Must follow services.AddServerSideBlazor()!
+            fusionAuth.AddBlazor(o => {}); // Must follow services.AddServerSideBlazor()!
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
@@ -130,7 +130,6 @@ namespace Samples.Blazor.Server
             }
 
             app.UseWebSockets(new WebSocketOptions() {
-                ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
             app.UseFusionSession();

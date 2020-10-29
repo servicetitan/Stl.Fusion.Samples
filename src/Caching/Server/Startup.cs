@@ -87,7 +87,6 @@ namespace Samples.Caching.Server
             }
 
             app.UseWebSockets(new WebSocketOptions() {
-                ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
 

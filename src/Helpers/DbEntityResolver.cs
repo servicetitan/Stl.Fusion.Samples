@@ -29,14 +29,14 @@ namespace Samples.Helpers
 
         public DbEntityResolver(IServiceProvider services) : base(services)
         {
-            _batchProcessorLazy = new Lazy<AsyncBatchProcessor<TKey, TEntity?>>(
-                () => BatchProcessorFactory.Invoke(this));
             BatchProcessorFactory = self => new AsyncBatchProcessor<TKey, TEntity?> {
                 MaxBatchSize = 16,
                 ConcurrencyLevel = Math.Min(HardwareInfo.ProcessorCount, 4),
                 BatchingDelayTaskFactory = cancellationToken => Task.Delay(1, cancellationToken),
                 BatchProcessor = self.ProcessBatchAsync,
             };
+            _batchProcessorLazy = new Lazy<AsyncBatchProcessor<TKey, TEntity?>>(
+                () => BatchProcessorFactory.Invoke(this));
 
             using var dbContext = services.RentDbContext<TDbContext>();
             var entityType = dbContext.Model.FindEntityType(typeof(TEntity));
