@@ -95,7 +95,7 @@ namespace Samples.Blazor.Server
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor(o => o.DetailedErrors = true);
-            fusionAuth.AddServerSideBlazor(); // Must follow services.AddServerSideBlazor()!
+            fusionAuth.AddBlazor();
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
