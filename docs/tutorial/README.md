@@ -4,7 +4,7 @@
 > [![Build](https://github.com/servicetitan/Stl.Fusion/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion/actions?query=workflow%3A%22Build%22)
 > [![codecov](https://codecov.io/gh/servicetitan/Stl.Fusion/branch/master/graph/badge.svg)](https://codecov.io/gh/servicetitan/Stl.Fusion)
 > [![NuGetVersion](https://img.shields.io/nuget/v/Stl.Fusion)](https://www.nuget.org/packages?q=Owner%3Aservicetitan+Tags%3Astl_fusion)
-> [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
+> [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)
 
 This is an *interactive* tutorial for [Fusion] - a .NET Core library
 trying to make real-time a new normal for any connected apps.
@@ -47,10 +47,10 @@ Without further ado:
 * [Part 2: Computed Values: IComputed&lt;T&gt;](./Part02.md)
 * [Part 3: State: IState&lt;T&gt; and its flavors](./Part03.md)
 * [Part 4: Replica Services](./Part04.md)
+* [Part 5: Use case: Transparent In-Process Caching + Swapping to External Caches](./Part05.md)
 
 To be added soon:
 
-* [Part 5: Use case: Transparent In-Process Caching + Swapping to External Caches](./Part05.md)
 * [Part 6: Use case: Real-time UI in Server-Side Blazor (SSB) Apps](./Part06.md)
 * [Part 7: Use case: Real-time UI in Blazor WebAssembly Apps](./Part07.md)
 * [Part 8: Use case: Real-time UI in Hybrid Blazor (SSB + WASM) Apps](./Part08.md)
