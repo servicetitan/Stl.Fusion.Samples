@@ -95,8 +95,8 @@ to ensure it won't recompute on the next call.
 > So to truly cache some `IComputed`, you need to store a strong
 > reference to it and hold it while you want it to be cached.
 
-Now, if you compute `f(x)`, does it enough to store
-a computed this output to ensure its dependencies
+Now, if you compute `f(x)`, is it enough to store
+a computed for its output to ensure its dependencies
 are cached too? Let's test this:
 
 ``` cs --editable false --region Part05_Service2 --source-file Part05.cs
