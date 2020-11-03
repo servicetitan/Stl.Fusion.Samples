@@ -80,25 +80,17 @@ It's a console app running the benchmark (`Client`) + ASP.NET Core API `Server`.
 Local services:
 Fusion's Compute Service [-> EF Core -> SQL Server]:
   Reads         : 24.14M operations/s
-  Writes        : 102.40 operations/s
 Regular Service [-> EF Core -> SQL Server]:
   Reads         : 24.99K operations/s
-  Writes        : 104.00 operations/s
 
 Remote services:
 Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
   Reads         : 21.87M operations/s
-  Writes        : 89.60 operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
   Reads         : 110.09K operations/s
-  Writes        : 62.40 operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
   Reads         : 20.51K operations/s
-  Writes        : 92.80 operations/s
 ```
-
-For the sake of clarity, the rate of writes (updates) isn't benchmarked here &ndash;
-Fusion can't speed up writes (at least, directly), so only one worker is busy with this.
 
 What's interesting in this output?
 - Fusion-backed API endpoint serving relatively small amount of cacheable data
