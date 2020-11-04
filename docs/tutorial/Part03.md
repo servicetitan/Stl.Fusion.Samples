@@ -1,4 +1,4 @@
-# Part 3: State: IState&lt;T&gt; and its flavors
+# Part 3: State: IState&lt;T&gt; and Its flavors
 
 Video covering this part:
 

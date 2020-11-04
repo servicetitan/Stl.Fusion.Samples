@@ -1,8 +1,8 @@
-# Part 5: Use case: Transparent In-Process Caching + Swapping to External Caches
+# Part 5: Caching and Fusion on Server-Side Only
 
 Even though Fusion supports RPC, you can use it on server-side only,
 and performance is the main benefit of this. Below is the output of
-[Caching Sample](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/Caching): 
+[Caching Sample](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/Caching):
 
 ```text
 Local services:
@@ -21,20 +21,21 @@ RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Se
 ```
 
 Last two results are the most interesting in the context of this part:
+
 - A tiny EF Core-based service exposed via ASP.NET Core controller
-  serves **20,500** requests per second. That's already a lot - 
+  serves **20,500** requests per second. That's already a lot -
   mostly, because its data set fully fits in RAM on SQL Server.
-- An identical service relying on Fusion (it's literally the same code 
+- An identical service relying on Fusion (it's literally the same code
   plus Fusion's `[ComputeMethod]` and `Computed.Invalidate` calls)
   boosts this number to **110,000** requests per second.
 
 And that's the main reason to use Fusion on server-side only:
 5-10x performance boost with a relatively tiny amount of changes.
 [Similarly to incremental builds](https://alexyakunin.medium.com/the-ungreen-web-why-our-web-apps-are-terribly-inefficient-28791ed48035?source=friends_link&sk=74fb46086ca13ff4fea387d6245cb52b),
-the more complex your logic is, the more you are expected to gain. 
+the more complex your logic is, the more you are expected to gain.
 
 ## The Fundamentals
-    
+
 You already know that `IComputed<T>` instances are reused, but so far
 we didn't talk much about the details. Let's learn some specific
 aspects of this behavior before jumping to caching.

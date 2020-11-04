@@ -45,16 +45,12 @@ Without further ado:
 * [Part 0: NuGet packages](./Part00.md)
 * [Part 1: Compute Services](./Part01.md)
 * [Part 2: Computed Values: IComputed&lt;T&gt;](./Part02.md)
-* [Part 3: State: IState&lt;T&gt; and its flavors](./Part03.md)
+* [Part 3: State: IState&lt;T&gt; and Its Flavors](./Part03.md)
 * [Part 4: Replica Services](./Part04.md)
-* [Part 5: Use case: Transparent In-Process Caching + Swapping to External Caches](./Part05.md)
-
-To be added soon:
-
-* [Part 6: Use case: Real-time UI in Server-Side Blazor (SSB) Apps](./Part06.md)
-* [Part 7: Use case: Real-time UI in Blazor WebAssembly Apps](./Part07.md)
-* [Part 8: Use case: Real-time UI in Hybrid Blazor (SSB + WASM) Apps](./Part08.md)
-* [Part 9: Use case: Real-time UI in JS / React Apps](./Part09.md)
+* [Part 5: Caching and Fusion on Server-Side Only](./Part05.md)
+* [Part 6: Real-time UI in Blazor Apps](./Part06.md)
+* [Part 7: Real-time UI in JS / React Apps](./Part07.md)
+* [Part 8: Scaling Out](./Part08.md)
 
 Check out the [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
 as well - it provides a high-level description of Fusion abstractions.
