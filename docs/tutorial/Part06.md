@@ -8,11 +8,10 @@ There are a few "flavors" of the `IState` - the most important ones are:
   and the update delay is controlled by `UpdateDelayer` provided to it.
 
 You can use these abstractions directly in your Blazor components, but
-it's normally more convenient to use `LiveComponentBase<T>` and
-`LiveCompontentBase<T, TLocals>` from `Stl.Fusion.Blazor` NuGet package
-to simplify this. I'll describe how they work, but since the classes
-are tiny, here is the link to their source code:
-
+usually it's more convenient to use `LiveComponentBase<T>` and
+`LiveCompontentBase<T, TLocals>` from `Stl.Fusion.Blazor` NuGet package. 
+I'll describe how they work further, but since the classes
+are tiny, the link to their source code might explain it even better:
 - [LiveComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/LiveComponentBase.cs)
 - Its base type - [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs)
 
