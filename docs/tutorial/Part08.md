@@ -1,4 +1,4 @@
-# Part 7: Scaling Fusion Services
+# Part 8: Scaling Fusion Services
 
 Scaling Fusion services is actually simpler than it may seem 
 at first - and mostly, you should take into account two 
@@ -96,5 +96,5 @@ too - in particular, you can use:
 ... To be continued.
 
 
-#### [Next: Part 8 &raquo;](./Part08.md) | [Tutorial Home](./README.md)
+#### [Tutorial Home](./README.md)
 
