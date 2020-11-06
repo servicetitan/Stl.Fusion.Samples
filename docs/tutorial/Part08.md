@@ -7,8 +7,8 @@ key factors:
 1.  You should treat any Fusion-based service host as one of your
     caching servers and scale it accordingly - but most importantly
     you should ensure these servers share a limited subset of data.
-    The more data they share, the less is the cache hit ratio on a given
-    server.
+    The more data they share, the lower is cache hit ratio (assuming
+    the amount of RAM is fixed).
 
 2.  You need to ensure that invalidations from any of such
     servers are "replicated" on any other server that may serve
