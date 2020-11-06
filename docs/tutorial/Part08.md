@@ -84,8 +84,8 @@ and you can use e.g. [AspNetCore.Proxy](https://github.com/twitchax/AspNetCore.P
 or [YARP](https://devblogs.microsoft.com/dotnet/introducing-yarp-preview-1/)
 to implement this.
 
-And if you prefer safer, but a bit less flexible options, almost any industry standard load balancer 
-supports consistent hash-based mapping too - in particular, you can use:
+And if you prefer safer, but maybe a bit less flexible option, almost any industry standard 
+load balancer supports consistent hash-based mapping too - in particular, you can use:
 * [`hash` directive](http://nginx.org/en/docs/stream/ngx_stream_upstream_module.html#hash)
    on NGINX (it supports only `K == 1` scenario)
 * [`hash-type consistent`](https://www.haproxy.com/blog/haproxys-load-balancing-algorithm-for-static-content-delivery-with-varnish/) 
