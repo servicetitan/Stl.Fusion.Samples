@@ -79,14 +79,13 @@ Host[] GetCandidateHosts(string tenantIp)
         .ToArray();
 ```
 
-In practice, such a load balancing can be implemented by either
-having this logic on your own proxy - and you can use e.g.
-[AspNetCore.Proxy](https://github.com/twitchax/AspNetCore.Proxy)
+In practice, such a load balancing can be implemented by having this logic on your own proxy - 
+and you can use e.g. [AspNetCore.Proxy](https://github.com/twitchax/AspNetCore.Proxy)
 or [YARP](https://devblogs.microsoft.com/dotnet/introducing-yarp-preview-1/)
-to implement it.
+to implement this.
 
-Almost any industry standard load balancer supports consistent hash-based mapping 
-too - in particular, you can use:
+And if you prefer safer, but a bit less flexible options, almost any industry standard load balancer 
+supports consistent hash-based mapping too - in particular, you can use:
 * [`hash` directive](http://nginx.org/en/docs/stream/ngx_stream_upstream_module.html#hash)
    on NGINX (it supports only `K == 1` scenario)
 * [`hash-type consistent`](https://www.haproxy.com/blog/haproxys-load-balancing-algorithm-for-static-content-delivery-with-varnish/) 
