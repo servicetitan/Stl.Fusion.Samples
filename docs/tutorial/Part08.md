@@ -127,7 +127,8 @@ to hacks like periodically scanning every `IComputed` in Fusion's `ComputedRegis
 and e.g. invalidating the "oldest" ones.
 
 For now Fusion doesn't offer abstractions helping to implement distributed 
-invalidation, but the problem to solve here is a typical application of
+invalidation (this is certianly temporary), but the problem to solve here 
+is a typical application of
 [publish-subscribe pattern](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern),
 so you can use a service like 
 [Azure Service Bus](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-how-to-use-topics-subscriptions) 
