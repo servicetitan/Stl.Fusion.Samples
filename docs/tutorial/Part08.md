@@ -27,7 +27,7 @@ multi-tenant service, and:
 
 The simplest way to achieve a desirable distribution of
 load in this case is to use [Rendezvous Hashing] or [Consistent Hashing].
-Almost any industry standard load balancer supports the last one - 
+Almost any industry standard load balancer supports the later one - 
 in particular, you can use:
 * [`hash` directive](http://nginx.org/en/docs/stream/ngx_stream_upstream_module.html#hash)
    on NGINX
