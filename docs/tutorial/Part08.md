@@ -302,9 +302,65 @@ Making pauses less visible:
   to remove the host that's expected to have a full GC pause 
   from the load balancer, trigger full GC manually, and add it back.
 
+## Wait, but what about invalidations and updates?
+
+Interestingly, one of the most frequent question about Fusion is:
+
+> Wait, but how can it scale if it recomputes every output
+> once any of its dependencies changes?
+
+And the answer is actually simpler than it seems:
+
+1. Fusion **doesn't** recompute anything once something changes.
+   It just invalidates every dependency of what's changed.
+   But could invalidation alone be costly enough? No:
+2. Using a dependency (calling a function + creating a single dependency link) 
+   requires `O(1)` time at best (i.e. if its output is already cached). 
+   And that's also a minimum amount of time you spend to call a function 
+   if there would be no Fusion at all, which means that
+   **dependency tracking is ~ free**.
+3. Processing a single invalidation link during the invalidation pass 
+   requires `O(1)` time too, and this happens just once for every link.
+   In other words, **invalidations are, basically, free as well!**
+
+This is why Fusion services should scale *at least* as well as similar
+services w/o Fusion. "At least" here means that Fusion certainly makes 
+you to pay a fixed, but much higher cost per every call
+to provide automatic dependency tracking, caching, etc.,
+plus you should take into account such factors as the amount of RAM 
+your new service will need with a given caching options, and so on.
+In other words, of course there are details you need to factor in
+to use it efficiently.
+
+And if you look at its [Replica Services], you'll quickly conclude
+all the same statements are equally applicable to them as well -
+the only difference is that this `O(1)` cost can have a much higher
+(but still fixed) absolute value there, because every computation and
+invalidation requires an extra network roundtrip there.
+
+Finally, notice that [ILiveState] &ndash; an abstraction that powers most 
+of UI updates &ndash; uses `IUpdateDelayer`, which, in fact, controls the 
+max. possible update rate, and you can change its settings at any time. 
+So:
+1. You have all the levers to control the frequency of such updates,
+   and in particular, you can throttle them down on any popular piece of
+   content or when your service experiences high load.
+2. "Update" rarely triggers actual recomputation - it triggers the
+   recomputation only when it's the first update request after some change, 
+   otherwise it just delivers the cached value.
+3. And finally, note that recomputations are incremental with Fusion - 
+   [as with incremental builds](https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38),
+   you rarely recompute anything from scratch with Fusion. 
+   You recompute just what's changed.
+
+Of course, this isn't a complete set of options you have - e.g. you can
+also trade consistency for performance by delaying invalidations. But
+the main point is: **yes, Fusion-based services scale**.
+
 #### [Tutorial Home](./README.md)
 
 [Consistent Hashing]: https://en.wikipedia.org/wiki/Consistent_hashing
 [Rendezvous Hashing]: https://medium.com/i0exception/rendezvous-hashing-8c00e2fb58b0
 [Replica Services]: ./Part04.md
 [Compute Services]: ./Part01.md
+[ILiveState]: ./Part03.md
