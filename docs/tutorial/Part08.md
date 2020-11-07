@@ -23,7 +23,7 @@ Let's look at a few specific cases to understand this better.
 This is the simplest case. Let's assume we're building a Fusion-based
 multi-tenant service, and:
 - There are `H` hosts (VMs, containers, etc.) running the service
-- We want to ensure each tenant can be served by at least `K` machines.
+- We want to ensure each tenant can be served by at least `K` of them.
 
 The simplest way to achieve a desirable distribution of
 load in this case is to use [Rendezvous Hashing] or [Consistent Hashing].
