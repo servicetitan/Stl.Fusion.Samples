@@ -1,17 +1,19 @@
 # Part 6: Real-time UI in Blazor Apps
 
 You already know about `IState<T>` - it was described in [Part 3](./Part03.md).
-It's an abstraction that "tracks" the most current version of some `IComputed<T>`. 
+It's an abstraction that "tracks" the most current version of some `IComputed<T>`.
 There are a few "flavors" of the `IState` - the most important ones are:
+
 * `IMutableState<T>` - in fact, a variable exposed as `IState<T>`
 * `ILiveState<T>` - a state that auto-updates once it becomes inconsistent,
   and the update delay is controlled by `UpdateDelayer` provided to it.
 
 You can use these abstractions directly in your Blazor components, but
 usually it's more convenient to use `LiveComponentBase<T>` and
-`LiveCompontentBase<T, TLocals>` from `Stl.Fusion.Blazor` NuGet package. 
+`LiveCompontentBase<T, TLocals>` from `Stl.Fusion.Blazor` NuGet package.
 I'll describe how they work further, but since the classes
 are tiny, the link to their source code might explain it even better:
+
 - [LiveComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/LiveComponentBase.cs)
 - Its base type - [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs)
 
