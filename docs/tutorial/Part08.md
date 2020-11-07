@@ -303,7 +303,7 @@ Making pauses less visible:
 
 #### [Tutorial Home](./README.md)
 
-[Consistent Hashing]: (https://en.wikipedia.org/wiki/Consistent_hashing)
-[Rendezvous Hashing]: (https://medium.com/i0exception/rendezvous-hashing-8c00e2fb58b0)
-[Replica Services]: (./Part04.md)
-[Compute Services]: (./Part01.md)
+[Consistent Hashing]: https://en.wikipedia.org/wiki/Consistent_hashing
+[Rendezvous Hashing]: https://medium.com/i0exception/rendezvous-hashing-8c00e2fb58b0
+[Replica Services]: ./Part04.md
+[Compute Services]: ./Part01.md
