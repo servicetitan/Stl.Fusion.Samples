@@ -76,9 +76,9 @@ Overall, its key properties include:
   `IsConsistent()` extension method is a shortcut checking whether the state
   is exactly `Consistent`.
   You may find more of such shortcuts by Ctrl-clicking on `IsConsistent()`.
-* `Version` property - a unique value for any `IComputed<T>` instance
-  in each process. `LTag` struct uses 64-bit integer under the hood,
-  so "unique" actually means "unique with very high probability".
+* `Version` property - a unique value for any `IComputed<T>` instance.
+  `LTag` struct uses 64-bit integer under the hood, so "unique" actually means 
+  "unique assuming you don't run a process for a few hundreed years".
 * `Output`, `Value` and `Error` - the properties describing the
   result of the computation.
 * `Invalidated` - an event raised on invalidation. Handlers of this event
