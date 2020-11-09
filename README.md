@@ -2,9 +2,9 @@
 
 Welcome to a collection of [Fusion] samples!
 
-> All project updates are published on [Gitter]; it's also the best place for Q/A.\
+> All project updates are published on its [Discord Server]; it's also the best place for Q/A.\
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
-> [![Gitter](https://badges.gitter.im/Stl-Fusion/community.svg)](https://gitter.im/Stl-Fusion/community)
+> [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
 ## What's Inside?
 
@@ -80,25 +80,17 @@ It's a console app running the benchmark (`Client`) + ASP.NET Core API `Server`.
 Local services:
 Fusion's Compute Service [-> EF Core -> SQL Server]:
   Reads         : 24.14M operations/s
-  Writes        : 102.40 operations/s
 Regular Service [-> EF Core -> SQL Server]:
   Reads         : 24.99K operations/s
-  Writes        : 104.00 operations/s
 
 Remote services:
 Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
   Reads         : 21.87M operations/s
-  Writes        : 89.60 operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
   Reads         : 110.09K operations/s
-  Writes        : 62.40 operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
   Reads         : 20.51K operations/s
-  Writes        : 92.80 operations/s
 ```
-
-For the sake of clarity, the rate of writes (updates) isn't benchmarked here &ndash;
-Fusion can't speed up writes (at least, directly), so only one worker is busy with this.
 
 What's interesting in this output?
 - Fusion-backed API endpoint serving relatively small amount of cacheable data
@@ -156,7 +148,7 @@ Build & run with [Docker](https://docs.docker.com/get-docker/) +
 
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
-* Join our [Gitter Chat Room] or [Discord Server] to ask questions and track project updates.
+* Join our [Discord Server] or [Gitter] to ask questions and track project updates.
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 
@@ -181,7 +173,6 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
 [Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
 
-[Gitter]: https://gitter.im/Stl-Fusion/community
-[Gitter Chat Room]: https://gitter.im/Stl-Fusion/community
 [Discord Server]: https://discord.gg/EKEwv6d
+[Gitter]: https://gitter.im/Stl-Fusion/community
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6

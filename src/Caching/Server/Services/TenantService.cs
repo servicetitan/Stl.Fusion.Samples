@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Samples.Caching.Common;
+using Samples.Helpers;
 using Stl.DependencyInjection;
 using Stl.Frozen;
 using Stl.Fusion;

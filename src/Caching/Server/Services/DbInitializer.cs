@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using Samples.Helpers;
 using Stl.DependencyInjection;
 
 namespace Samples.Caching.Server.Services

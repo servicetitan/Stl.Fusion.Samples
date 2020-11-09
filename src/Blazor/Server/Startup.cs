@@ -43,6 +43,14 @@ namespace Samples.Blazor.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Logging
+            services.AddLogging(logging => {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Information);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+            });
+
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
@@ -87,7 +95,7 @@ namespace Samples.Blazor.Server
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor(o => o.DetailedErrors = true);
-            fusionAuth.AddServerSideBlazor(); // Must follow services.AddServerSideBlazor()!
+            fusionAuth.AddBlazor();
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {

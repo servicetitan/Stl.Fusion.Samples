@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Samples.Caching.Common;
+using Samples.Helpers;
 
 namespace Samples.Caching.Server.Services
 {
@@ -8,13 +9,7 @@ namespace Samples.Caching.Server.Services
         public DbSet<Tenant> Tenants { get; protected set; } = null!;
 
         public AppDbContext(DbContextOptions options) : base(options)
-        {
-            // ReSharper disable once VirtualMemberCallInConstructor
-            var ct = ChangeTracker;
-            ct.AutoDetectChangesEnabled = false;
-            ct.LazyLoadingEnabled = false;
-            ct.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
+            => this.DisableChangeTracking();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
