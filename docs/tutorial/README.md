@@ -51,8 +51,10 @@ Without further ado:
 * [Part 6: Real-time UI in Blazor Apps](./Part06.md)
 * [Part 7: Real-time UI in JS / React Apps](./Part07.md)
 * [Part 8: Scaling Fusion Services](./Part08.md)
+* [Epilogue](./PartFF.md)
 
-Check out the [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
+Check out the 
+[Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
 as well - it provides a high-level description of Fusion abstractions.
 
 Join our [Discord Server] or [Gitter] to ask questions and track project updates.
