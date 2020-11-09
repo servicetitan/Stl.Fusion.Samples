@@ -38,9 +38,8 @@ public static IServiceProvider CreateServices()
 }
 ```
 
-`IServiceCollection.AddDiscoveredServices` is an extension method that
-finds every type decorated with
-`Stl.DependencyInjection.ServiceAttributeBase`
+`IServiceCollection.AttributeBased().AddServicesFrom(...)` finds every type 
+decorated with `Stl.DependencyInjection.ServiceAttributeBase`
 descendant and runs `[attribute].Register` method to ensure the type gets
 property registered as a service.
 
