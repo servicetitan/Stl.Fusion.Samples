@@ -158,7 +158,7 @@ on a Gantt chart:
 
 ![](./img/Computed-Gantt.jpg)
 
-And finally, an ugly visualization showing how multiple `IComputed<T>`
+An ugly visualization showing how multiple `IComputed<T>`
 instances get invalidated and eventually replaced with their consistent
 versions:
 
