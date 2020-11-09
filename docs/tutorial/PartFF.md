@@ -3,7 +3,8 @@
 You've reached the end of this tutorial, and we truly hope you 
 have enjoyed it and have had a good learning experience.
 If you already played with [Fusion Samples], please complete
-[Fusion Feedback Form] - knowing your opinion is absolutely crucial for us.
+[Fusion Feedback Form] (1…3 min) - knowing your opinion is 
+absolutely crucial for us to improve.
 
 If you're looking for more content to read, check out these posts:
 * [Fusion: Current State and Upcoming Features](https://alexyakunin.medium.com/fusion-current-state-and-upcoming-features-88bc4201594b?source=friends_link&sk=375290c4538167fe99419a744f3d42d5)
