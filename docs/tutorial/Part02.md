@@ -5,7 +5,8 @@ Video covering this part:
 [<img src="./img/Part2-Screenshot.jpg" width="200"/>](https://youtu.be/DogHOuyRX20)
 
 Fusion's `IComputed<T>` is a fairly unique abstraction describing
-the result of a computation:
+the result of a computation. Here is how it compares with computed
+observables from Knockout.js and MobX:
 
 ![](./img/IComputed-Features.jpg)
 
