@@ -4,7 +4,7 @@ using Samples.Helpers;
 
 namespace Samples.Blazor.Server.Services
 {
-    public class AppDbContext : ScopedDbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<ChatUser> ChatUsers { get; protected set; } = null!;
         public DbSet<ChatMessage> ChatMessages { get; protected set; } = null!;

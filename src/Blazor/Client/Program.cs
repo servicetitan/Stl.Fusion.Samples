@@ -34,7 +34,7 @@ namespace Samples.Blazor.Client
 
             var runTask = host.RunAsync();
             Task.Run(async () => {
-                var hostedServices = host.Services.GetService<IEnumerable<IHostedService>>();
+                var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
                 foreach (var hostedService in hostedServices)
                     await hostedService.StartAsync(default);
             });

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Samples.Blazor.Server.Services;
-using Samples.Helpers;
 
 namespace Samples.Blazor.Server
 {
@@ -31,10 +31,9 @@ namespace Samples.Blazor.Server
                 .Build();
 
             // Ensure the DB is created
-            using (var scope = host.Services.CreateScope()) {
-                await using var dbContext = scope.ServiceProvider.RentDbContext<AppDbContext>();
-                await dbContext.Database.EnsureCreatedAsync();
-            }
+            var dbContextFactory = host.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+            await using var dbContext = dbContextFactory.CreateDbContext();
+            await dbContext.Database.EnsureCreatedAsync();
 
             await host.RunAsync();
         }

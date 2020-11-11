@@ -42,7 +42,7 @@ namespace Samples.Caching.Server
             });
 
             // DbContext & related services
-            services.AddDbContextPool<AppDbContext>((c, builder) => {
+            services.AddPooledDbContextFactory<AppDbContext>((c, builder) => {
                 var dbSettings = c.GetRequiredService<DbSettings>();
                 var connectionString =
                     $"Server={dbSettings.ServerHost},{dbSettings.ServerPort}; " +
@@ -87,7 +87,6 @@ namespace Samples.Caching.Server
             }
 
             app.UseWebSockets(new WebSocketOptions() {
-                ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
 

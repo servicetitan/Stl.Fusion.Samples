@@ -54,7 +54,7 @@ namespace Samples.Blazor.Server
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
-            services.AddDbContextPool<AppDbContext>(builder => {
+            services.AddDbContextFactory<AppDbContext>(builder => {
                 builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
             });
 
@@ -95,7 +95,7 @@ namespace Samples.Blazor.Server
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor(o => o.DetailedErrors = true);
-            fusionAuth.AddBlazor();
+            fusionAuth.AddBlazor(o => {}); // Must follow services.AddServerSideBlazor()!
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
@@ -130,7 +130,6 @@ namespace Samples.Blazor.Server
             }
 
             app.UseWebSockets(new WebSocketOptions() {
-                ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
             app.UseFusionSession();
