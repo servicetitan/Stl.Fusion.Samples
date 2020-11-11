@@ -94,19 +94,17 @@ RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Se
 
 What's interesting in this output?
 - Fusion-backed API endpoint serving relatively small amount of cacheable data
-    scales to ~ **110,000 RPS** while running the test on the same machine 
+    scales to ~ **130,000 RPS** while running the test on the same machine 
     (that's a disadvantage).
 - Identical EF Core-based API endpoint scales to just 20K RPS.
 
-So there is a ~ 5.5x difference (~ 8x if we'd run the client on another machine),
-and that's even for ~ the simplest EF service hitting a tiny DB tuned 
-to work as in-memory cache (running in simple recovery mode, etc.).
+So there is a ~ 6.5x difference for an extremely simple EF Core service 
+hitting a tiny DB running in simple recovery mode.
+In other words, use of Fusion on server-side only brings ~ an order of 
+magnitude performance boost even when there is almost nothing to speed up! 
 
-In other words, use of Fusion on server-side only brings ~ an order of magnitude 
-performance boost even when there is almost nothing to speed up! 
-
-Besides that, the test shows [Replica Services] scale ~ as local [Compute Services],
-i.e. to ~ **22-24 million "RPS"**. 
+Besides that, the test shows [Replica Services] scale ~ almost as local 
+[Compute Services], i.e. to ~ **20 million "RPS"**. 
 These aren't true RPS, of course - Replica Service simply kills any RPC 
 for cached values that are known to be consistent. But nevertheless,
 it's still a pretty unique feature Fusion brings to the table &ndash; and that's
