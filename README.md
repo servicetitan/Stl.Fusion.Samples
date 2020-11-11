@@ -79,17 +79,17 @@ It's a console app running the benchmark (`Client`) + ASP.NET Core API `Server`.
 ```text
 Local services:
 Fusion's Compute Service [-> EF Core -> SQL Server]:
-  Reads         : 24.14M operations/s
+  Reads         : 27.55M operations/s
 Regular Service [-> EF Core -> SQL Server]:
-  Reads         : 24.99K operations/s
+  Reads         : 25.05K operations/s
 
 Remote services:
 Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 21.87M operations/s
+  Reads         : 20.29M operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 110.09K operations/s
+  Reads         : 127.96K operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
-  Reads         : 20.51K operations/s
+  Reads         : 20.46K operations/s
 ```
 
 What's interesting in this output?
