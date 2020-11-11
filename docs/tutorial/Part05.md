@@ -7,17 +7,17 @@ and performance is the main benefit of this. Below is the output of
 ```text
 Local services:
 Fusion's Compute Service [-> EF Core -> SQL Server]:
-  Reads         : 24.14M operations/s
+  Reads         : 27.55M operations/s
 Regular Service [-> EF Core -> SQL Server]:
-  Reads         : 24.99K operations/s
+  Reads         : 25.05K operations/s
 
 Remote services:
 Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 21.87M operations/s
+  Reads         : 20.29M operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 110.09K operations/s
+  Reads         : 127.96K operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
-  Reads         : 20.51K operations/s
+  Reads         : 20.46K operations/s
 ```
 
 Last two results are the most interesting in the context of this part:
@@ -27,7 +27,7 @@ Last two results are the most interesting in the context of this part:
   mostly, because its data set fully fits in RAM on SQL Server.
 - An identical service relying on Fusion (it's literally the same code
   plus Fusion's `[ComputeMethod]` and `Computed.Invalidate` calls)
-  boosts this number to **110,000** requests per second.
+  boosts this number to **128,000** requests per second.
 
 And that's the main reason to use Fusion on server-side only:
 5-10x performance boost with a relatively tiny amount of changes.
