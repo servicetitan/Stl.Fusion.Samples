@@ -209,7 +209,7 @@ Let's play with `ILiveState<T>` now:
 
 ``` cs --region Part03_LiveState --source-file Part03.cs
 var services = CreateServices();
-var counters = services.GetService<CounterService>();
+var counters = services.GetRequiredService<CounterService>();
 var stateFactory = services.GetStateFactory();
 WriteLine("Creating state.");
             using var state = stateFactory.NewLive<string>(

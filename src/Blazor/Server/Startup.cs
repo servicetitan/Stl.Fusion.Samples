@@ -116,7 +116,7 @@ namespace Samples.Blazor.Server
             var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
             var binCfgPart = Regex.Match(baseDir, @"[\\/]bin[\\/]\w+[\\/]").Value;
             Env.WebRootPath = Path.GetFullPath(Path.Combine(baseDir,
-                $"../../../../Client/{binCfgPart}/netstandard2.1/")) + "wwwroot";
+                $"../../../../Client/{binCfgPart}/net5.0/")) + "wwwroot";
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
             StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
 

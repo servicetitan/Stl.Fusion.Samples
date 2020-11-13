@@ -29,7 +29,7 @@ namespace Samples.Blazor.Client
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             ConfigureServices(builder.Services, builder);
-            builder.RootComponents.Add<App>("app");
+            builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
 
             var runTask = host.RunAsync();

@@ -47,7 +47,7 @@ First, let's try to "pull" `IComputed<T>` instance created behind the
 scenes for a given call:
 
 ``` cs --region Part02_CaptureComputed --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"Computed: {computed}");
 WriteLine($"- IsConsistent(): {computed.IsConsistent()}");
@@ -78,7 +78,7 @@ Overall, its key properties include:
   is exactly `Consistent`.
   You may find more of such shortcuts by Ctrl-clicking on `IsConsistent()`.
 * `Version` property - a unique value for any `IComputed<T>` instance.
-  `LTag` struct uses 64-bit integer under the hood, so "unique" actually means 
+  `LTag` struct uses 64-bit integer under the hood, so "unique" actually means
   "unique assuming you don't run a process for a few hundreed years".
 * `Output`, `Value` and `Error` - the properties describing the
   result of the computation.
@@ -171,7 +171,7 @@ versions:
 Ok, let's get back to code and see how invalidation *really* works:
 
 ``` cs --region Part02_InvalidateComputed1 --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"computed: {computed}");
 WriteLine("computed.Invalidate()");
@@ -195,7 +195,7 @@ newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaPR, Stat
 Compare the above code with this one:
 
 ``` cs --region Part02_InvalidateComputed2 --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"computed: {computed}");
 WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
@@ -227,7 +227,7 @@ And finally, let's see how you can "observe" the invalidation to
 trigger the update:
 
 ``` cs --region Part02_IncrementCounter --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 
 Task.Run(async () =>
 {

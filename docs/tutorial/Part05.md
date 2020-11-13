@@ -70,7 +70,7 @@ First, `IComputed` instances aren't "cached" by default - they're just
 reused while it's possible:
 
 ``` cs --region Part05_Caching1 --source-file Part05.cs
-var service = CreateServices().GetService<Service1>();
+var service = CreateServices().GetRequiredService<Service1>();
 // var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine(await service.GetAsync("a"));
 WriteLine(await service.GetAsync("a"));
@@ -104,7 +104,7 @@ technically they do the same).
 Let's prove this by uncomment the commented line:
 
 ``` cs --region Part05_Caching2 --source-file Part05.cs
-var service = CreateServices().GetService<Service1>();
+var service = CreateServices().GetRequiredService<Service1>();
 var computed = await Computed.CaptureAsync(_ => service.GetAsync("a"));
 WriteLine(await service.GetAsync("a"));
 WriteLine(await service.GetAsync("a"));
@@ -156,7 +156,7 @@ public class Service2
 ```
 
 ``` cs --region Part05_Caching3 --source-file Part05.cs
-var service = CreateServices().GetService<Service2>();
+var service = CreateServices().GetRequiredService<Service2>();
 var computed = await Computed.CaptureAsync(_ => service.CombineAsync("a", "b"));
 WriteLine("computed = CombineAsync(a, b) completed");
 WriteLine(await service.CombineAsync("a", "b"));
@@ -199,7 +199,7 @@ As you see, yes,
 Let's check if the opposite is true as well:
 
 ``` cs --region Part05_Caching4 --source-file Part05.cs
-var service = CreateServices().GetService<Service2>();
+var service = CreateServices().GetRequiredService<Service2>();
 var computed = await Computed.CaptureAsync(_ => service.GetAsync("a"));
 WriteLine("computed = GetAsync(a) completed");
 WriteLine(await service.CombineAsync("a", "b"));
@@ -309,7 +309,7 @@ public class Service3
 And run this code:
 
 ``` cs --region Part05_Caching5 --source-file Part05.cs
-var service = CreateServices().GetService<Service3>();
+var service = CreateServices().GetRequiredService<Service3>();
 WriteLine(await service.CombineAsync("a", "b"));
 WriteLine(await service.GetAsync("a"));
 WriteLine(await service.GetAsync("x"));
@@ -424,7 +424,7 @@ public class DemoSwapService : SimpleSwapService
 ```
 
 ``` cs --region Part05_Caching6 --source-file Part05.cs
-var service = CreateServices().GetService<Service4>();
+var service = CreateServices().GetRequiredService<Service4>();
 WriteLine(await service.GetAsync("a"));
 await Task.Delay(500);
 GC.Collect();

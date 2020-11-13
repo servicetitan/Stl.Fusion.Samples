@@ -190,7 +190,7 @@ service runs on every host, they don't race with each other
 and don't overload the DB with identical "delete operation"
 requests (+ batching these requests is a good idea anyway).
 
-P.S. If you know about 
+P.S. If you know about
 [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html),
 you could instantly spot this pattern perfectly fits to implement
 all of this.

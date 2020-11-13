@@ -9,11 +9,13 @@
 This is an *interactive* tutorial for [Fusion] - a .NET Core library
 trying to make real-time a new normal for any connected apps.
 And although you can simply browse it, you can also run and modify any
-C# code featured here. All you need is
-[Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md)
-or [Docker](https://www.docker.com/).
+C# code featured here. All you need is [Try .NET] or [Docker].
 
 The simplest way to run this tutorial:
+
+> NOTE: Sorry, Docker-based way to run Tutorial temporary
+> doesn't work: [Try .NET] currently runs only on .NET Core 3.1,
+> but we use .NET 5.0 Docker images.
 
 - Install [Docker](https://docs.docker.com/get-docker/) and
   [Docker Compose](https://docs.docker.com/compose/install/)
@@ -22,10 +24,11 @@ The simplest way to run this tutorial:
 
 Alternatively, you can run it with `dotnet try` CLI tool:
 
-- Install the latest [.NET Core SDK 3.1](https://dotnet.microsoft.com/download)
+- Install **both**
+  [.NET 5.0 SDK](https://dotnet.microsoft.com/download) and
+  [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core)
 - Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md).
-  Its release version may fail to run the code, so we recommend to install
-  the preview version of this tool.
+  If its release version fails to run the code, install its preview version.
 - Run `dotnet try --port 50005 docs/tutorial` in the root folder of this repository
 - Open https://localhost:50005/README.md.
 
@@ -53,7 +56,7 @@ Without further ado:
 * [Part 8: Scaling Fusion Services](./Part08.md)
 * [Epilogue](./PartFF.md)
 
-Check out the 
+Check out the
 [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
 as well - it provides a high-level description of Fusion abstractions.
 
@@ -62,3 +65,5 @@ Join our [Discord Server] or [Gitter] to ask questions and track project updates
 [Discord Server]: https://discord.gg/EKEwv6d
 [Gitter]: https://gitter.im/Stl-Fusion/community
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
+[Try .NET]: https://github.com/dotnet/try/blob/master/DotNetTryLocal.md
+[Docker]: https://www.docker.com/

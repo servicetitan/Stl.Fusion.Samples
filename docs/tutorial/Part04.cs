@@ -197,7 +197,7 @@ namespace Tutorial
             }
 
             var services = CreateClientServices();
-            var counters = services.GetService<ICounterService>();
+            var counters = services.GetRequiredService<ICounterService>();
             var aComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             Task.Run(() => WatchAsync(nameof(aComputed), aComputed)).Ignore();
             var bComputed = await Computed.CaptureAsync(_ => counters.GetAsync("b"));
@@ -222,7 +222,7 @@ namespace Tutorial
             WriteLine("Host started.");
 
             var services = CreateClientServices();
-            var counters = services.GetService<ICounterService>();
+            var counters = services.GetRequiredService<ICounterService>();
             var stateFactory = services.GetStateFactory();
             using var state = stateFactory.NewLive<string>(
                 options => {

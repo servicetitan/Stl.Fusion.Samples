@@ -37,7 +37,7 @@ namespace Tutorial
         public static async Task Caching1()
         {
             #region Part05_Caching1
-            var service = CreateServices().GetService<Service1>();
+            var service = CreateServices().GetRequiredService<Service1>();
             // var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine(await service.GetAsync("a"));
             WriteLine(await service.GetAsync("a"));
@@ -51,7 +51,7 @@ namespace Tutorial
         public static async Task Caching2()
         {
             #region Part05_Caching2
-            var service = CreateServices().GetService<Service1>();
+            var service = CreateServices().GetRequiredService<Service1>();
             var computed = await Computed.CaptureAsync(_ => service.GetAsync("a"));
             WriteLine(await service.GetAsync("a"));
             WriteLine(await service.GetAsync("a"));
@@ -85,7 +85,7 @@ namespace Tutorial
         public static async Task Caching3()
         {
             #region Part05_Caching3
-            var service = CreateServices().GetService<Service2>();
+            var service = CreateServices().GetRequiredService<Service2>();
             var computed = await Computed.CaptureAsync(_ => service.CombineAsync("a", "b"));
             WriteLine("computed = CombineAsync(a, b) completed");
             WriteLine(await service.CombineAsync("a", "b"));
@@ -103,7 +103,7 @@ namespace Tutorial
         public static async Task Caching4()
         {
             #region Part05_Caching4
-            var service = CreateServices().GetService<Service2>();
+            var service = CreateServices().GetRequiredService<Service2>();
             var computed = await Computed.CaptureAsync(_ => service.GetAsync("a"));
             WriteLine("computed = GetAsync(a) completed");
             WriteLine(await service.CombineAsync("a", "b"));
@@ -136,7 +136,7 @@ namespace Tutorial
         public static async Task Caching5()
         {
             #region Part05_Caching5
-            var service = CreateServices().GetService<Service3>();
+            var service = CreateServices().GetRequiredService<Service3>();
             WriteLine(await service.CombineAsync("a", "b"));
             WriteLine(await service.GetAsync("a"));
             WriteLine(await service.GetAsync("x"));
@@ -193,7 +193,7 @@ namespace Tutorial
         public static async Task Caching6()
         {
             #region Part05_Caching6
-            var service = CreateServices().GetService<Service4>();
+            var service = CreateServices().GetRequiredService<Service4>();
             WriteLine(await service.GetAsync("a"));
             await Task.Delay(500);
             GC.Collect();
