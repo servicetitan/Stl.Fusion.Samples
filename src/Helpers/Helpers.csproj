@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
-    <PackageReference Include="Stl.Fusion" Version="0.7.16" />
+    <PackageReference Include="Stl.Fusion" Version="0.7.18" />
   </ItemGroup>
 
 </Project>
