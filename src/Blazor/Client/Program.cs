@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -14,7 +12,6 @@ using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
-using UAParser;
 
 namespace Samples.Blazor.Client
 {
@@ -34,6 +31,7 @@ namespace Samples.Blazor.Client
 
             var runTask = host.RunAsync();
             Task.Run(async () => {
+                // We "manually" start IHostedServices here, because Blazor host doesn't do this.
                 var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
                 foreach (var hostedService in hostedServices)
                     await hostedService.StartAsync(default);
