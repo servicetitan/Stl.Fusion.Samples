@@ -130,7 +130,6 @@ Build & run locally with [.NET 5.0 SDK](https://dotnet.microsoft.com/download):
 | [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
 | [Caching] | `Run-Sample-Caching.cmd`. See [Run-Sample-Caching.cmd](Run-Sample-Caching.cmd) to run this sample on Unix. |
 | [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
----
 
 Build & run with [Docker](https://docs.docker.com/get-docker/) + 
 [Docker Compose](https://docs.docker.com/compose/install/):
@@ -147,7 +146,6 @@ docker-compose build
 | [Blazor Samples] | `docker-compose run sample_blazor` + open http://localhost:5005/ |
 | [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
 | [Tutorial] | `docker-compose run tutorial` + open https://localhost:50005/README.md |
----
 
 ## Useful Links
 
