@@ -126,21 +126,28 @@ Build & run locally with [.NET 5.0 SDK](https://dotnet.microsoft.com/download):
 | Sample | Command |
 |-|-|
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
-| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + http://localhost:5000/ |
-| [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + http://localhost:5005/ |
+| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5000/ |
+| [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
 | [Caching] | `Run-Sample-Caching.cmd`. See [Run-Sample-Caching.cmd](Run-Sample-Caching.cmd) to run this sample on Unix. |
 | [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
+---
 
 Build & run with [Docker](https://docs.docker.com/get-docker/) + 
 [Docker Compose](https://docs.docker.com/compose/install/):
 
+```bash
+# Run this command first
+docker-compose build
+```
+
 | Sample | Command |
 |-|-|
 | [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
-| [HelloBlazorServer] | `docker-compose up --build sample_hello_blazor_server` + http://localhost:5000/ |
-| [Blazor Samples] | `docker-compose up --build sample_blazor` + http://localhost:5005/ |
+| [HelloBlazorServer] | `docker-compose run sample_hello_blazor_server` + open http://localhost:5000/ |
+| [Blazor Samples] | `docker-compose run sample_blazor` + open http://localhost:5005/ |
 | [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
-| [Tutorial] | `docker-compose up --build tutorial` + https://localhost:50005/README.md |
+| [Tutorial] | `docker-compose run tutorial` + open https://localhost:50005/README.md |
+---
 
 ## Useful Links
 
