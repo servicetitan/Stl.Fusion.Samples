@@ -1,6 +1,7 @@
 # IDE folders & files
 .vs/
 .vscode/
+.ionide/
 .idea/
 .history
 .DS_Store
