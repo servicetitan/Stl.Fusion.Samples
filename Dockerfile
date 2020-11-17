@@ -7,8 +7,15 @@ COPY Samples.sln .
 RUN dotnet build -c Debug
 RUN dotnet build -c Release
 
+FROM mcr.microsoft.com/dotnet/sdk:3.1 as build_tutorial
+WORKDIR /samples
+COPY ["docs/", "docs/"]
+WORKDIR /samples/docs/tutorial
+RUN dotnet build -c Debug
+RUN dotnet build -c Release
+
 # Create Tutorial image
-FROM build as tutorial
+FROM build_tutorial as tutorial
 WORKDIR /samples/docs/tutorial
 RUN dotnet tool update -g Microsoft.dotnet-try
 ENV PATH="$PATH:/root/.dotnet/tools"

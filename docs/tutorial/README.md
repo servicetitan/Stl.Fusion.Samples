@@ -13,10 +13,6 @@ C# code featured here. All you need is [Try .NET] or [Docker].
 
 The simplest way to run this tutorial:
 
-> NOTE: Sorry, Docker-based way to run Tutorial temporary
-> doesn't work: [Try .NET] currently runs only on .NET Core 3.1,
-> but we use .NET 5.0 Docker images.
-
 - Install [Docker](https://docs.docker.com/get-docker/) and
   [Docker Compose](https://docs.docker.com/compose/install/)
 - Run `docker-compose up --build tutorial` in the root folder of this repository
