@@ -22,15 +22,15 @@ namespace Samples.Blazor.Server.Services
             CancellationToken cancellationToken = default)
         {
             var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
-            if (user.Identity.Name == principal.Identity.Name)
+            if (user.Identity.Name == principal.Identity?.Name)
                 return;
 
-            var authenticationType = principal.Identity.AuthenticationType ?? "";
+            var authenticationType = principal.Identity?.AuthenticationType ?? "";
             if (authenticationType == "") {
                 await AuthService.SignOutAsync(false, session, cancellationToken).ConfigureAwait(false);
             }
             else {
-                var id = principal.Identity.Name ?? "";
+                var id = principal.Identity?.Name ?? "";
                 var claims = principal.Claims.ToDictionary(c => c.Type, c => c.Value);
                 var name = claims.GetValueOrDefault(GitHubAuthenticationConstants.Claims.Name) ?? "";
                 user = new User(authenticationType, id, name, claims);

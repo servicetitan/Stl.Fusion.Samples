@@ -8,9 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
@@ -42,7 +39,7 @@ namespace Samples.Caching.Server
             });
 
             // DbContext & related services
-            services.AddDbContextPool<AppDbContext>((c, builder) => {
+            services.AddPooledDbContextFactory<AppDbContext>((c, builder) => {
                 var dbSettings = c.GetRequiredService<DbSettings>();
                 var connectionString =
                     $"Server={dbSettings.ServerHost},{dbSettings.ServerPort}; " +
@@ -65,13 +62,6 @@ namespace Samples.Caching.Server
 
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
-
-            // Swagger & debug tools
-            services.AddSwaggerGen(c => {
-                c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "Samples.Caching.Server API", Version = "v1"
-                });
-            });
         }
 
         public void Configure(IApplicationBuilder app, ILogger<Startup> log)
@@ -87,16 +77,11 @@ namespace Samples.Caching.Server
             }
 
             app.UseWebSockets(new WebSocketOptions() {
-                ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
 
             // Static + Swagger
             app.UseStaticFiles();
-            app.UseSwagger();
-            app.UseSwaggerUI(c => {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
-            });
 
             // API controllers
             app.UseRouting();

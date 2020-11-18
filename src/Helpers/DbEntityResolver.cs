@@ -15,30 +15,30 @@ namespace Samples.Helpers
     // This type queues (when needed) & batches calls to TryGetAsync with AsyncBatchProcessor
     // to reduce the rate of underlying DB queries.
     public class DbEntityResolver<TDbContext, TKey, TEntity> : DbServiceBase<TDbContext>, IDisposable
-        where TDbContext : ScopedDbContext
+        where TDbContext : DbContext
         where TKey : notnull
         where TEntity : class
     {
         protected static MethodInfo ContainsMethod { get; } = typeof(HashSet<TKey>).GetMethod(nameof(HashSet<TKey>.Contains))!;
 
-        private readonly Lazy<AsyncBatchProcessor<TKey, TEntity?>> _batchProcessorLazy;
-        protected Func<DbEntityResolver<TDbContext, TKey, TEntity>, AsyncBatchProcessor<TKey, TEntity?>> BatchProcessorFactory { get; set; }
-        protected AsyncBatchProcessor<TKey, TEntity?> BatchProcessor => _batchProcessorLazy.Value;
+        private readonly Lazy<AsyncBatchProcessor<TKey, TEntity>> _batchProcessorLazy;
+        protected Func<DbEntityResolver<TDbContext, TKey, TEntity>, AsyncBatchProcessor<TKey, TEntity>> BatchProcessorFactory { get; set; }
+        protected AsyncBatchProcessor<TKey, TEntity> BatchProcessor => _batchProcessorLazy.Value;
         protected Func<Expression, Expression> KeyExtractorExpressionBuilder { get; set; }
         protected Func<TEntity, TKey> KeyExtractor { get; set; }
 
         public DbEntityResolver(IServiceProvider services) : base(services)
         {
-            BatchProcessorFactory = self => new AsyncBatchProcessor<TKey, TEntity?> {
+            BatchProcessorFactory = self => new AsyncBatchProcessor<TKey, TEntity> {
                 MaxBatchSize = 16,
                 ConcurrencyLevel = Math.Min(HardwareInfo.ProcessorCount, 4),
                 BatchingDelayTaskFactory = cancellationToken => Task.Delay(1, cancellationToken),
                 BatchProcessor = self.ProcessBatchAsync,
             };
-            _batchProcessorLazy = new Lazy<AsyncBatchProcessor<TKey, TEntity?>>(
+            _batchProcessorLazy = new Lazy<AsyncBatchProcessor<TKey, TEntity>>(
                 () => BatchProcessorFactory.Invoke(this));
 
-            using var dbContext = services.RentDbContext<TDbContext>();
+            using var dbContext = CreateDbContext();
             var entityType = dbContext.Model.FindEntityType(typeof(TEntity));
             var key = entityType.FindPrimaryKey();
             KeyExtractorExpressionBuilder = eEntity => Expression.PropertyOrField(eEntity, key.Properties.Single().Name);
@@ -60,7 +60,7 @@ namespace Samples.Helpers
             return entity ?? throw new KeyNotFoundException();
         }
 
-        public async Task<TEntity?> TryGetAsync(TKey key, CancellationToken cancellationToken = default)
+        public async Task<TEntity> TryGetAsync(TKey key, CancellationToken cancellationToken = default)
             => await BatchProcessor.ProcessAsync(key, cancellationToken).ConfigureAwait(false);
 
         public async Task<Dictionary<TKey, TEntity>> GetManyAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken)
@@ -76,9 +76,9 @@ namespace Samples.Helpers
 
         // Protected methods
 
-        protected virtual async Task ProcessBatchAsync(List<BatchItem<TKey, TEntity?>> batch, CancellationToken cancellationToken)
+        protected virtual async Task ProcessBatchAsync(List<BatchItem<TKey, TEntity>> batch, CancellationToken cancellationToken)
         {
-            await using var dbContext = RentDbContext();
+            await using var dbContext = CreateDbContext();
             var keys = new HashSet<TKey>();
             foreach (var item in batch) {
                 if (!item.TryCancel(cancellationToken))

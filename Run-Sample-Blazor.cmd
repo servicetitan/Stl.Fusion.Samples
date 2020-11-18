@@ -1,7 +1,7 @@
 @echo off
-
 dotnet build
-# The next line is optional - you need it if you want to debug Blazor client
+
+rem The next line is optional - you need it if you want to debug Blazor client
 set ASPNETCORE_ENVIRONMENT=Development
-start "Blazor Sample" dotnet src/Blazor/Server/bin/Debug/netcoreapp3.1/Samples.Blazor.Server.dll
-start http://localhost:5005/
+start cmd /C timeout 3 ^& start http://localhost:5005/"
+dotnet run -f net5.0 -p src/Blazor/Server/Server.csproj

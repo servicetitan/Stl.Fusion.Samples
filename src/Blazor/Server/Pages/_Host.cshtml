@@ -16,7 +16,7 @@
     var sessionInfo = new SessionInfo(session.Id) {
         CreatedAt = now,
         LastSeenAt = now,
-        IPAddress = HttpContext.Connection.RemoteIpAddress.ToString() ?? "",
+        IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "",
         UserAgent = Request.Headers["User-Agent"].ToString() ?? "",
     };
     Task.Run(() => authSyncService.SyncAsync(principal, sessionInfo, session)).Ignore();
@@ -52,7 +52,7 @@
         @(flowName) completed, you can close this window.
     </div>
 } else if (!isServerSideBlazor) {
-    <app>Loading...</app>
+    <app id="app">Loading...</app>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.

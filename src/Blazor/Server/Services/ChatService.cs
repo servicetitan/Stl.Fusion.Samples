@@ -44,7 +44,7 @@ namespace Samples.Blazor.Server.Services
         public async Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default)
         {
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
-            await using var dbContext = RentDbContext();
+            await using var dbContext = CreateDbContext();
 
             var userEntry = dbContext.ChatUsers.Add(new ChatUser() {
                 Name = name
@@ -61,7 +61,7 @@ namespace Samples.Blazor.Server.Services
         public async Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default)
         {
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
-            await using var dbContext = RentDbContext();
+            await using var dbContext = CreateDbContext();
 
             var user = await GetUserAsync(id, cancellationToken).ConfigureAwait(false);
             user.Name = name;
@@ -76,7 +76,7 @@ namespace Samples.Blazor.Server.Services
         public async Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default)
         {
             text = await NormalizeTextAsync(text, cancellationToken).ConfigureAwait(false);
-            await using var dbContext = RentDbContext();
+            await using var dbContext = CreateDbContext();
 
             await GetUserAsync(userId, cancellationToken).ConfigureAwait(false); // Check to ensure the user exists
             var messageEntry = dbContext.ChatMessages.Add(new ChatMessage() {
@@ -96,7 +96,7 @@ namespace Samples.Blazor.Server.Services
 
         public virtual async Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
         {
-            await using var dbContext = RentDbContext();
+            await using var dbContext = CreateDbContext();
             return await dbContext.ChatUsers.AsQueryable().LongCountAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -123,7 +123,7 @@ namespace Samples.Blazor.Server.Services
         public virtual async Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
         {
             await EveryChatTail().ConfigureAwait(false);
-            await using var dbContext = RentDbContext();
+            await using var dbContext = CreateDbContext();
 
             // Fetching messages from DB
             var messages = await dbContext.ChatMessages.AsQueryable()

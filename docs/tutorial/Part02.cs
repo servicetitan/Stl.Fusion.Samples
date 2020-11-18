@@ -45,7 +45,7 @@ namespace Tutorial
         public static async Task CaptureComputed()
         {
             #region Part02_CaptureComputed
-            var counters = CreateServices().GetService<CounterService>();
+            var counters = CreateServices().GetRequiredService<CounterService>();
             var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine($"Computed: {computed}");
             WriteLine($"- IsConsistent(): {computed.IsConsistent()}");
@@ -56,7 +56,7 @@ namespace Tutorial
         public static async Task InvalidateComputed1()
         {
             #region Part02_InvalidateComputed1
-            var counters = CreateServices().GetService<CounterService>();
+            var counters = CreateServices().GetRequiredService<CounterService>();
             var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine($"computed: {computed}");
             WriteLine("computed.Invalidate()");
@@ -70,7 +70,7 @@ namespace Tutorial
         public static async Task InvalidateComputed2()
         {
             #region Part02_InvalidateComputed2
-            var counters = CreateServices().GetService<CounterService>();
+            var counters = CreateServices().GetRequiredService<CounterService>();
             var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine($"computed: {computed}");
             WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
@@ -84,7 +84,7 @@ namespace Tutorial
         public static async Task IncrementCounter()
         {
             #region Part02_IncrementCounter
-            var counters = CreateServices().GetService<CounterService>();
+            var counters = CreateServices().GetRequiredService<CounterService>();
 
             Task.Run(async () => {
                 for (var i = 0; i <= 5; i++) {

@@ -4,7 +4,7 @@ using Samples.Helpers;
 
 namespace Samples.Caching.Server.Services
 {
-    public class AppDbContext : ScopedDbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<Tenant> Tenants { get; protected set; } = null!;
 

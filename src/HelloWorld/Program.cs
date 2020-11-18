@@ -40,7 +40,7 @@ namespace Samples.HelloWorld
             // Notice the code below doesn't even know there are some IComputed, etc.
             while (true) {
                 Console.WriteLine("What's your name?");
-                var name = Console.ReadLine();
+                var name = Console.ReadLine() ?? "";
                 await users.AddOrUpdateUserAsync(new User(userId, name));
                 var greeting = await greetings.GreetUserAsync(userId);
                 Console.WriteLine(greeting);

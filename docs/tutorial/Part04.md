@@ -249,7 +249,7 @@ async Task WatchAsync<T>(string name, IComputed<T> computed)
 }
 
 var services = CreateClientServices();
-var counters = services.GetService<ICounterService>();
+var counters = services.GetRequiredService<ICounterService>();
 var aComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 Task.Run(() => WatchAsync(nameof(aComputed), aComputed)).Ignore();
 var bComputed = await Computed.CaptureAsync(_ => counters.GetAsync("b"));
@@ -313,7 +313,7 @@ await host.StartAsync();
 WriteLine("Host started.");
 
 var services = CreateClientServices();
-var counters = services.GetService<ICounterService>();
+var counters = services.GetRequiredService<ICounterService>();
 var stateFactory = services.GetStateFactory();
             using var state = stateFactory.NewLive<string>(
                 options =>

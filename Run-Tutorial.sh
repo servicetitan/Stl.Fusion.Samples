@@ -1,6 +1,6 @@
-@echo off
+#!/bin/bash
 dotnet build
 
-pushd "docs\tutorial"
+pushd docs/tutorial
 dotnet try --port 50005
 popd

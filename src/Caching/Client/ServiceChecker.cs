@@ -28,7 +28,7 @@ namespace Samples.Caching.Client
             var binCfgPart = Regex.Match(baseDir, @"[\\/]bin[\\/]\w+[\\/]").Value;
             var cachingSampleDir = Path.GetFullPath(Path.Combine(baseDir, "../../../.."));
             SamplesDir = Path.GetFullPath(Path.Combine(cachingSampleDir, "../.."));
-            ServerBinDir = Path.GetFullPath(Path.Combine(cachingSampleDir, $"Server/{binCfgPart}/netcoreapp3.1/"));
+            ServerBinDir = Path.GetFullPath(Path.Combine(cachingSampleDir, $"Server/{binCfgPart}/net5.0/"));
         }
 
         public async Task WaitForServicesAsync(CancellationToken cancellationToken)

@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -14,7 +12,6 @@ using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
-using UAParser;
 
 namespace Samples.Blazor.Client
 {
@@ -29,12 +26,13 @@ namespace Samples.Blazor.Client
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             ConfigureServices(builder.Services, builder);
-            builder.RootComponents.Add<App>("app");
+            builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
 
             var runTask = host.RunAsync();
             Task.Run(async () => {
-                var hostedServices = host.Services.GetService<IEnumerable<IHostedService>>();
+                // We "manually" start IHostedServices here, because Blazor host doesn't do this.
+                var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
                 foreach (var hostedService in hostedServices)
                     await hostedService.StartAsync(default);
             });
@@ -43,11 +41,7 @@ namespace Samples.Blazor.Client
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
         {
-            services.AddLogging(logging => {
-                logging.ClearProviders();
-                logging.SetMinimumLevel(LogLevel.Debug);
-                logging.AddDebug();
-            });
+            builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");

@@ -80,7 +80,7 @@ namespace Tutorial
         {
             #region Part03_LiveState
             var services = CreateServices();
-            var counters = services.GetService<CounterService>();
+            var counters = services.GetRequiredService<CounterService>();
             var stateFactory = services.GetStateFactory();
             WriteLine("Creating state.");
             using var state = stateFactory.NewLive<string>(

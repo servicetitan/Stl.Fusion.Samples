@@ -38,7 +38,7 @@ public static IServiceProvider CreateServices()
 }
 ```
 
-`IServiceCollection.AttributeBased().AddServicesFrom(...)` finds every type 
+`IServiceCollection.AttributeBased().AddServicesFrom(...)` finds every type
 decorated with `Stl.DependencyInjection.ServiceAttributeBase`
 descendant and runs `[attribute].Register(type)` method on it to
 register a service based on the current type.
@@ -78,7 +78,7 @@ even though it isn't truly asynchronous - later I'll explain why it's reasonable
 Let's use `CounterService`:
 
 ``` cs --region Part01_UseCounterService1 --source-file Part01.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 WriteLine(await counters.GetAsync("a"));
 WriteLine(await counters.GetAsync("b"));
 ```
@@ -95,7 +95,7 @@ GetAsync(b)
 It looks normal, right? But how about this:
 
 ``` cs --region Part01_UseCounterService2 --source-file Part01.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 WriteLine(await counters.GetAsync("a"));
 WriteLine(await counters.GetAsync("a"));
 ```
@@ -119,7 +119,7 @@ So why "GetAsync(a)" wasn't printed twice here? The answer is:
 Let's see how it works:
 
 ``` cs --region Part01_UseCounterService3 --source-file Part01.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 WriteLine(await counters.GetAsync("a"));
 counters.Increment("a");
 WriteLine(await counters.GetAsync("a"));
@@ -165,7 +165,7 @@ And use it:
 
 ``` cs --region Part01_UseCounterSumService1 --source-file Part01.cs
 var services = CreateServices();
-var counterSum = services.GetService<CounterSumService>();
+var counterSum = services.GetRequiredService<CounterSumService>();
 WriteLine(await counterSum.SumAsync("a", "b"));
 WriteLine(await counterSum.SumAsync("a", "b"));
 ```
@@ -185,7 +185,7 @@ Another example:
 
 ``` cs --region Part01_UseCounterSumService2 --source-file Part01.cs
 var services = CreateServices();
-var counterSum = services.GetService<CounterSumService>();
+var counterSum = services.GetRequiredService<CounterSumService>();
 WriteLine("Nothing is cached (yet):");
 WriteLine(await counterSum.SumAsync("a", "b"));
 WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
@@ -217,8 +217,8 @@ But what about this?
 
 ``` cs --region Part01_UseCounterSumService3 --source-file Part01.cs
 var services = CreateServices();
-var counters = services.GetService<CounterService>();
-var counterSum = services.GetService<CounterSumService>();
+var counters = services.GetRequiredService<CounterService>();
+var counterSum = services.GetRequiredService<CounterSumService>();
 WriteLine(await counterSum.SumAsync("a", "b"));
 counters.Increment("a");
 WriteLine(await counterSum.SumAsync("a", "b"));
@@ -281,7 +281,7 @@ As you see, `HelloAsync` method simply returns a formatted "Hello, X!" message,
 but with a 1-second delay. Let's try to run it concurrently:
 
 ``` cs --region Part01_UseHelloService1 --source-file Part01.cs
-var hello = CreateServices().GetService<HelloService>();
+var hello = CreateServices().GetRequiredService<HelloService>();
 var t1 = Task.Run(() => hello.HelloAsync("Alice"));
 var t2 = Task.Run(() => hello.HelloAsync("Bob"));
 var t3 = Task.Run(() => hello.HelloAsync("Bob"));

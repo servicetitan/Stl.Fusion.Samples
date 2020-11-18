@@ -17,14 +17,15 @@ namespace Samples.Caching.Server.Services
         {
             // Ensure the DB is re-created
             var dbSettings = Services.GetRequiredService<DbSettings>();
-            await using var dbContext = Services.RentDbContext<AppDbContext>();
+            var dbContextFactory = Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+            await using var dbContext = dbContextFactory.CreateDbContext();
             if (recreate)
-                await dbContext.Database.EnsureDeletedAsync();
-            await dbContext.Database.EnsureCreatedAsync();
+                await dbContext.Database.EnsureDeletedAsync(cancellationToken);
+            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
             await dbContext.Database.ExecuteSqlRawAsync(
-                $"ALTER DATABASE {dbSettings.DatabaseName} SET ALLOW_SNAPSHOT_ISOLATION ON");
+                $"ALTER DATABASE {dbSettings.DatabaseName} SET ALLOW_SNAPSHOT_ISOLATION ON", cancellationToken);
             await dbContext.Database.ExecuteSqlRawAsync(
-                $"ALTER DATABASE {dbSettings.DatabaseName} SET RECOVERY SIMPLE WITH NO_WAIT");
+                $"ALTER DATABASE {dbSettings.DatabaseName} SET RECOVERY SIMPLE WITH NO_WAIT", cancellationToken);
         }
     }
 }
