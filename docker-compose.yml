@@ -76,6 +76,6 @@ services:
       context: .
       target: sample_blazor_ws
     ports:
-     - "80:5005"
+     - "80:80"
     environment:
-      ASPNETCORE_URLS: "http://0.0.0.0:5005"
+      ASPNETCORE_URLS: "http://0.0.0.0:80"
