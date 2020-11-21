@@ -115,8 +115,12 @@ namespace Samples.Blazor.Server
             // and set it as this server's content root.
             var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
             var binCfgPart = Regex.Match(baseDir, @"[\\/]bin[\\/]\w+[\\/]").Value;
-            Env.WebRootPath = Path.GetFullPath(Path.Combine(baseDir,
-                $"../../../../Client/{binCfgPart}/net5.0/")) + "wwwroot";
+            var wwwRootPath = Path.Combine(baseDir, "wwwroot");
+            if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
+                // This is a regular build, not a build produced w/ "publish",
+                // so we remap wwwroot to the client's wwwroot folder
+                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../Client/{binCfgPart}/net5.0/wwwroot"));
+            Env.WebRootPath = wwwRootPath;
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
             StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
 

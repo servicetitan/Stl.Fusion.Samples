@@ -142,10 +142,10 @@ docker-compose build
 | Sample | Command |
 |-|-|
 | [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
-| [HelloBlazorServer] | `docker-compose run sample_hello_blazor_server` + open http://localhost:5000/ |
-| [Blazor Samples] | `docker-compose run sample_blazor` + open http://localhost:5005/ |
+| [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5000/ |
+| [Blazor Samples] | `docker-compose run --service-ports sample_blazor` + open http://localhost:5005/ |
 | [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
-| [Tutorial] | `docker-compose run tutorial` + open https://localhost:50005/README.md |
+| [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
 ## Useful Links
 
