@@ -79,5 +79,3 @@ services:
      - "80:80"
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:80"
-      Server__GitHubClientId: "7d519556dd8207a36355"
-      Server__GitHubClientSecret: "8e161ca4799b7e76e1c25429728db6b2430f2057"

@@ -63,5 +63,6 @@ COPY --from=publish /samples .
 # Create Blazor sample image for website
 FROM runtime as sample_blazor_ws
 WORKDIR /samples/src/Blazor/Server
+ENV Server__GitHubClientId=7d519556dd8207a36355
+ENV Server__GitHubClientSecret=8e161ca4799b7e76e1c25429728db6b2430f2057
 ENTRYPOINT ["dotnet", "bin/Release/net5.0/publish/Samples.Blazor.Server.dll"]
-
