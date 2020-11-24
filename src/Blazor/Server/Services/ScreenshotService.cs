@@ -96,8 +96,11 @@ namespace Samples.Blazor.Server.Services
 
         private DirectBitmap TakeScreenshot()
         {
-            var dd = DisplayInfo.PrimaryDisplayDimensions;
-            var (w, h) = (dd?.Width ?? 1280, dd?.Height ?? 720);
+            var (w, h) = (1280, 720);
+            if (OSInfo.Kind == OSKind.Windows) {
+                var dd = DisplayInfo.PrimaryDisplayDimensions;
+                (w, h) = (dd?.Width ?? 1280, dd?.Height ?? 720);
+            }
             var screen = new DirectBitmap(w, h);
             if (OSInfo.Kind == OSKind.Windows) {
                 using var gScreen = Graphics.FromImage(screen.Bitmap);
