@@ -53,7 +53,7 @@ namespace Samples.Blazor.Server.Services
             _fontCollection = new FontCollection();
             _fontCollection.Install($"{resourcesDir}/OpenSans-Bold.ttf");
             _fontCollection.Install($"{resourcesDir}/OpenSans-Regular.ttf");
-            _sun = Image.Load<Bgra32>($"{resourcesDir}/Sun8k.jpg");
+            _sun = Image.Load<Bgra32>($"{resourcesDir}/Sun.jpg");
 
             if (OSInfo.Kind == OSKind.Windows) {
                 windowsJpegEncoder = ImageCodecInfo
@@ -125,7 +125,7 @@ namespace Samples.Blazor.Server.Services
             }
 
             var image = screen.Image;
-            var font = _fontCollection.Find("Open Sans").CreateFont(200);
+            var font = _fontCollection.Find("Open Sans").CreateFont(48);
             var options = new TextGraphicsOptions() {
                 GraphicsOptions = { Antialias = true },
                 TextOptions = {
