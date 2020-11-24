@@ -90,6 +90,8 @@ namespace Samples.Blazor.Server
                 var serverSettings = c.GetRequiredService<ServerSettings>();
                 options.ClientId = serverSettings.GitHubClientId;
                 options.ClientSecret = serverSettings.GitHubClientSecret;
+                Log.LogInformation($"GitHub ClientId: {options.ClientId}");
+                Log.LogInformation($"GitHub ClientSecret: {options.ClientSecret}");
             });
 
             // Web
