@@ -41,7 +41,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(ProjectDir)\Resources\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Resources\" />
+    <None Include="$(ProjectDir)\Resources\**" 
+          CopyToOutputDirectory="PreserveNewest" 
+          CopyToPublishDirectory="PreserveNewest" 
+          LinkBase="Resources\" />
   </ItemGroup>
 
 </Project>

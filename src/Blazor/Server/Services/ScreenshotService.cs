@@ -53,7 +53,7 @@ namespace Samples.Blazor.Server.Services
             _fontCollection = new FontCollection();
             _fontCollection.Install($"{resourcesDir}/OpenSans-Bold.ttf");
             _fontCollection.Install($"{resourcesDir}/OpenSans-Regular.ttf");
-            _sun = Image.Load<Bgra32>($"{resourcesDir}/sun8k.jpg");
+            _sun = Image.Load<Bgra32>($"{resourcesDir}/Sun8k.jpg");
 
             if (OSInfo.Kind == OSKind.Windows) {
                 windowsJpegEncoder = ImageCodecInfo
