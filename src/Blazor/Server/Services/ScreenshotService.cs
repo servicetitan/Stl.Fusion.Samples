@@ -85,8 +85,8 @@ namespace Samples.Blazor.Server.Services
             // to produce the next screenshot in advance & instantly return the prev. one.
             var currentProducer = Task.Run(TakeScreenshot, default);
             var prevProducer = Interlocked.Exchange(ref _currentProducer, currentProducer) ?? currentProducer;
-            Computed.GetCurrent()!.Invalidated += c => Task.Delay(2000).ContinueWith(_ => {
-                // Let's dispose the bitmap in 2 seconds after invalidation
+            Computed.GetCurrent()!.Invalidated += c => Task.Delay(1000).ContinueWith(_ => {
+                // Let's dispose the bitmap in 1 second after invalidation
                 var computed = (IComputed<DirectBitmap>) c;
                 if (computed.HasValue)
                     computed.Value.Dispose();
