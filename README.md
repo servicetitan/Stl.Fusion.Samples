@@ -34,6 +34,10 @@ features,
 
 ### 3. Blazor Samples
 
+<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Play 
+with these samples hosted in a small 1-core K8s cluster
+[right now](https://fusion-samples.servicetitan.com)!
+
 It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
 [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet) website,
 which also serves its API. The application includes:
