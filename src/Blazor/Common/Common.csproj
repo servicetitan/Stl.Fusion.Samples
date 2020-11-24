@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>Samples.Blazor.Common</RootNamespace>
     <AssemblyName>Samples.Blazor.Common</AssemblyName>
