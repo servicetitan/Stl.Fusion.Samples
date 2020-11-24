@@ -1,98 +1,161 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
 using Stl.OS;
 using Samples.Blazor.Common.Services;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using Color = SixLabors.ImageSharp.Color;
+using Image = SixLabors.ImageSharp.Image;
+using PointF = SixLabors.ImageSharp.PointF;
+using Point = SixLabors.ImageSharp.Point;
 
 namespace Samples.Blazor.Server.Services
 {
     [ComputeService(typeof(IScreenshotService))]
     public class ScreenshotService : IScreenshotService
     {
-        public const int MinWidth = 8;
-        public const int MaxWidth = 1280;
-
-        private readonly ImageCodecInfo _jpegEncoder;
-        private readonly EncoderParameters _jpegEncoderParameters;
-        private readonly Rectangle _displayDimensions;
-        private Task<(Screenshot, Bitmap)> _next = null!;
+        private const int MinWidth = 8;
+        private const int MaxWidth = 1280;
+        private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
+        private readonly Action<DirectBitmap, Stream> _jpegEncoder;
+        private readonly FontCollection _fontCollection;
+        private readonly Image<Bgra32> _sun;
+        private Task<DirectBitmap>? _currentProducer;
 
         public ScreenshotService()
         {
-            _jpegEncoder = ImageCodecInfo
-                .GetImageDecoders()
-                .Single(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
-            _jpegEncoderParameters = new EncoderParameters(1) {
-                Param = new [] {new EncoderParameter(Encoder.Quality, 50L)}
-            };
-            _displayDimensions = DisplayInfo.PrimaryDisplayDimensions
-                ?? new Rectangle(0, 0, 1920, 1080);
+            var unixJpegEncoder = new JpegEncoder();
+            ImageCodecInfo? windowsJpegEncoder;
+            EncoderParameters? windowsJpegEncoderParameters;
+
+            void WindowsEncoder(DirectBitmap source, Stream stream)
+                => source.Bitmap.Save(stream, windowsJpegEncoder, windowsJpegEncoderParameters);
+
+            void UnixEncoder(DirectBitmap source, Stream stream)
+                => source.Image.Save(stream, unixJpegEncoder);
+
+            var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
+            var resourcesDir = Path.Combine(baseDir, "Resources");
+            _jpegEncoder = UnixEncoder;
+            _fontCollection = new FontCollection();
+            _fontCollection.Install($"{resourcesDir}/OpenSans-Bold.ttf");
+            _fontCollection.Install($"{resourcesDir}/OpenSans-Regular.ttf");
+            _sun = Image.Load<Bgra32>($"{resourcesDir}/sun8k.jpg");
+
+            if (OSInfo.Kind == OSKind.Windows) {
+                windowsJpegEncoder = ImageCodecInfo
+                    .GetImageDecoders()
+                    .Single(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+                windowsJpegEncoderParameters = new EncoderParameters(1) {
+                    Param = new [] {new EncoderParameter(Encoder.Quality, 50L)}
+                };
+                _jpegEncoder = WindowsEncoder;
+            }
         }
 
         public virtual async Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default)
         {
-            var (screenshot, bitmap) = await GetScreenshotAsync(cancellationToken).ConfigureAwait(false);
-            var w = Math.Min(MaxWidth, Math.Max(MinWidth, width));
-            var h = w * screenshot.Height / screenshot.Width;
-            if (screenshot.Width == w)
-                return screenshot;
-
-            // The code below scales a full-resolution screenshot to a desirable resolution
-            using var bOut = new Bitmap(w, h);
-            Scale(bitmap, bOut);
-            return Encode(bOut);
+            width = Math.Min(MaxWidth, Math.Max(MinWidth, width));
+            var bitmap = await GetScreenshotAsync(cancellationToken).ConfigureAwait(false);
+            if (bitmap.Width == width)
+                return CreateScreenshot(bitmap);
+            var height = width * bitmap.Height / bitmap.Width;
+            using var output = new DirectBitmap(width, height);
+            Scale(bitmap, output);
+            return CreateScreenshot(output);
         }
 
         [ComputeMethod(KeepAliveTime = 0.1, AutoInvalidateTime = 0.05)]
-        protected virtual Task<(Screenshot, Bitmap)> GetScreenshotAsync(CancellationToken cancellationToken = default)
+        protected virtual Task<DirectBitmap> GetScreenshotAsync(CancellationToken cancellationToken = default)
         {
             // Captures a full-resolution screenshot; the code here is optimized
-            // to produce the next screeenshot in advance.
-            Task<(Screenshot, Bitmap)> Capture() => Task.Run(() => {
-                var (w, h) = (_displayDimensions.Width, _displayDimensions.Height);
-                using var bScreen = new Bitmap(w, h);
-                using var gScreen = Graphics.FromImage(bScreen);
-                gScreen.CopyFromScreen(0, 0, 0, 0, bScreen.Size);
-                if (w > MaxWidth)
-                    (h, w) = (MaxWidth * h / w, MaxWidth);
-                var bOut = new Bitmap(w, h);
-                Scale(bScreen, bOut);
-                return (Encode(bOut), bOut);
-            }, default);
-
-            var current = Capture();
-            var prev = Interlocked.Exchange(ref _next, current) ?? current;
+            // to produce the next screenshot in advance & instantly return the prev. one.
+            var currentProducer = Task.Run(TakeScreenshot, default);
+            var prevProducer = Interlocked.Exchange(ref _currentProducer, currentProducer) ?? currentProducer;
             Computed.GetCurrent()!.Invalidated += c => Task.Delay(2000).ContinueWith(_ => {
-                // Let's dispose these values in 2 seconds
-                var computed = (IComputed<(Screenshot, Bitmap)>) c;
+                // Let's dispose the bitmap in 2 seconds after invalidation
+                var computed = (IComputed<DirectBitmap>) c;
                 if (computed.HasValue)
-                    computed.Value.Item2.Dispose();
+                    computed.Value.Dispose();
             });
-            return prev;
+            return prevProducer;
         }
 
-        private static void Scale(Bitmap source, Bitmap target)
+        private DirectBitmap TakeScreenshot()
         {
-            using var g = Graphics.FromImage(target);
-            g.CompositingQuality = CompositingQuality.HighSpeed;
-            g.InterpolationMode = InterpolationMode.Bilinear;
-            g.CompositingMode = CompositingMode.SourceCopy;
-            g.DrawImage(source, 0, 0, target.Width, target.Height);
+            var dd = DisplayInfo.PrimaryDisplayDimensions;
+            var (w, h) = (dd?.Width ?? 1280, dd?.Height ?? 720);
+            var screen = new DirectBitmap(w, h);
+            if (OSInfo.Kind == OSKind.Windows) {
+                using var gScreen = Graphics.FromImage(screen.Bitmap);
+                gScreen.CopyFromScreen(0, 0, 0, 0, screen.Bitmap.Size);
+                return screen;
+            }
+
+            // Unix & Docker version renders the Sun, since screen capture doesn't work there
+            var now = _stopwatch.Elapsed.TotalSeconds;
+
+            PointF Wave(double xRate, double yRate, double offset = 0)
+            {
+                var (hw, hh) = (w / 2f, h / 2f);
+                var x = hw + hw * (float) Math.Sin(now * xRate + offset);
+                var y = hh + hh * (float) Math.Cos(now * yRate + offset);
+                return new PointF(x, y);
+            }
+
+            Point SunWave(double xRate, double yRate, double offset = 0)
+            {
+                var (hw, hh) = ((_sun.Width - w - 1) / 2f, (_sun.Height - h - 1) / 2f);
+                var x = hw + hw * (float) Math.Sin(now * xRate + offset);
+                var y = hh + hh * (float) Math.Cos(now * yRate + offset);
+                return new Point((int) -x, (int) -y);
+            }
+
+            var image = screen.Image;
+            var font = _fontCollection.Find("Open Sans").CreateFont(200);
+            var options = new TextGraphicsOptions() {
+                GraphicsOptions = { Antialias = true },
+                TextOptions = {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                }
+            };
+            var time = DateTime.Now.ToString("HH:mm:ss.fff");
+            image.Mutate(x => x
+                .DrawImage(_sun, SunWave(0.01, 0.01), 1f)
+                .DrawText(options, $"Time: {time}", font, Color.White, Wave(0.13, 0.17, -1)));
+            return screen;
         }
 
-        private Screenshot Encode(Bitmap bitmap)
+        private static void Scale(DirectBitmap source, DirectBitmap target)
+        {
+            using var gTarget = Graphics.FromImage(target.Bitmap);
+            gTarget.CompositingQuality = CompositingQuality.HighSpeed;
+            gTarget.InterpolationMode = InterpolationMode.Bilinear;
+            gTarget.CompositingMode = CompositingMode.SourceCopy;
+            gTarget.DrawImage(source.Bitmap, 0, 0, target.Width, target.Height);
+        }
+
+        private Screenshot CreateScreenshot(DirectBitmap source)
         {
             using var stream = new MemoryStream();
-            bitmap.Save(stream, _jpegEncoder, _jpegEncoderParameters);
+            _jpegEncoder.Invoke(source, stream);
             var bytes = stream.ToArray();
             var base64Content = Convert.ToBase64String(bytes);
-            return new Screenshot(bitmap.Width, bitmap.Height, base64Content);
+            return new Screenshot(source.Width, source.Height, base64Content);
         }
     }
 }
