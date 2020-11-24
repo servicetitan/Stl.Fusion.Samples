@@ -31,38 +31,31 @@ namespace Samples.Blazor.Server.Services
         private const int MaxWidth = 1280;
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private readonly Action<DirectBitmap, Stream> _jpegEncoder;
+        private readonly JpegEncoder _unixJpegEncoder;
         private readonly FontCollection _fontCollection;
         private readonly Image<Bgra32> _sun;
         private Task<DirectBitmap>? _currentProducer;
 
         public ScreenshotService()
         {
-            var unixJpegEncoder = new JpegEncoder();
-            ImageCodecInfo? windowsJpegEncoder;
-            EncoderParameters? windowsJpegEncoderParameters;
-
-            void WindowsEncoder(DirectBitmap source, Stream stream)
-                => source.Bitmap.Save(stream, windowsJpegEncoder, windowsJpegEncoderParameters);
-
-            void UnixEncoder(DirectBitmap source, Stream stream)
-                => source.Image.Save(stream, unixJpegEncoder);
-
             var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
             var resourcesDir = Path.Combine(baseDir, "Resources");
-            _jpegEncoder = UnixEncoder;
             _fontCollection = new FontCollection();
             _fontCollection.Install($"{resourcesDir}/OpenSans-Bold.ttf");
             _fontCollection.Install($"{resourcesDir}/OpenSans-Regular.ttf");
             _sun = Image.Load<Bgra32>($"{resourcesDir}/Sun.jpg");
 
+            _unixJpegEncoder = _unixJpegEncoder = new JpegEncoder() { Quality = 50 };
+            _jpegEncoder = (source, stream) =>source.Image.Save(stream, _unixJpegEncoder);
             if (OSInfo.Kind == OSKind.Windows) {
-                windowsJpegEncoder = ImageCodecInfo
+                var winJpegEncoder = ImageCodecInfo
                     .GetImageDecoders()
                     .Single(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
-                windowsJpegEncoderParameters = new EncoderParameters(1) {
+                var winJpegEncoderParameters = new EncoderParameters(1) {
                     Param = new [] {new EncoderParameter(Encoder.Quality, 50L)}
                 };
-                _jpegEncoder = WindowsEncoder;
+                _jpegEncoder = (source, stream) =>
+                    source.Bitmap.Save(stream, winJpegEncoder, winJpegEncoderParameters);
             }
         }
 
@@ -70,12 +63,7 @@ namespace Samples.Blazor.Server.Services
         {
             width = Math.Min(MaxWidth, Math.Max(MinWidth, width));
             var bitmap = await GetScreenshotAsync(cancellationToken).ConfigureAwait(false);
-            if (bitmap.Width == width)
-                return CreateScreenshot(bitmap);
-            var height = width * bitmap.Height / bitmap.Width;
-            using var output = new DirectBitmap(width, height);
-            Scale(bitmap, output);
-            return CreateScreenshot(output);
+            return CreateScreenshot(bitmap, width);
         }
 
         [ComputeMethod(KeepAliveTime = 0.1, AutoInvalidateTime = 0.05)]
@@ -143,19 +131,26 @@ namespace Samples.Blazor.Server.Services
             return screen;
         }
 
-        private static void Scale(DirectBitmap source, DirectBitmap target)
+        private Screenshot CreateScreenshot(DirectBitmap source, int width)
         {
-            using var gTarget = Graphics.FromImage(target.Bitmap);
-            gTarget.CompositingQuality = CompositingQuality.HighSpeed;
-            gTarget.InterpolationMode = InterpolationMode.Bilinear;
-            gTarget.CompositingMode = CompositingMode.SourceCopy;
-            gTarget.DrawImage(source.Bitmap, 0, 0, target.Width, target.Height);
-        }
-
-        private Screenshot CreateScreenshot(DirectBitmap source)
-        {
-            using var stream = new MemoryStream();
-            _jpegEncoder.Invoke(source, stream);
+            var height = width * source.Height / source.Width;
+            using var stream = new MemoryStream(100000);
+            if (source.Width == width)
+                _jpegEncoder.Invoke(source, stream);
+            else if (OSInfo.Kind == OSKind.Windows) {
+                var target = new DirectBitmap(width, height);
+                using var gTarget = Graphics.FromImage(target.Bitmap);
+                gTarget.CompositingQuality = CompositingQuality.HighSpeed;
+                gTarget.InterpolationMode = InterpolationMode.Bilinear;
+                gTarget.CompositingMode = CompositingMode.SourceCopy;
+                gTarget.DrawImage(source.Bitmap, 0, 0, target.Width, target.Height);
+                _jpegEncoder.Invoke(target, stream);
+            }
+            else {
+                using var iTarget = source.Image.Clone();
+                iTarget.Mutate(x => x.Resize(width, height));
+                iTarget.Save(stream, _unixJpegEncoder);
+            }
             var bytes = stream.ToArray();
             var base64Content = Convert.ToBase64String(bytes);
             return new Screenshot(source.Width, source.Height, base64Content);
