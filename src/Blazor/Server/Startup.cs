@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
+using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -71,11 +71,6 @@ namespace Samples.Blazor.Server
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 
-            // Note that you should never store these secrets in your code.
-            // We put them here solely to simplify running this sample.
-            var gitHubClientId = "7a38bc415f7e1200fee2";
-            var gitHubClientSecret = Encoding.UTF8.GetString(
-                Convert.FromBase64String("OGNkMTAzM2JmZjljOTk3ODc5MjhjNTNmMmE3Y2Q1NWU0ZmNlNjU0OA=="));
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 })
@@ -84,12 +79,18 @@ namespace Samples.Blazor.Server
                     options.LogoutPath = "/signout";
                 })
                 .AddGitHub(options => {
-                    options.ClientId = gitHubClientId;
-                    options.ClientSecret = gitHubClientSecret;
                     options.Scope.Add("read:user");
                     // options.Scope.Add("user:email");
                     options.CorrelationCookie.SameSite = SameSiteMode.Lax;
                 });
+            // We want to get ClientId and ClientSecret from ServerSettings,
+            // and they're available only when IServiceProvider is already created,
+            // that's why this overload of Configure<TOptions> is used here.
+            services.Configure<GitHubAuthenticationOptions>((c, name, options) => {
+                var serverSettings = c.GetRequiredService<ServerSettings>();
+                options.ClientId = serverSettings.GitHubClientId;
+                options.ClientSecret = serverSettings.GitHubClientSecret;
+            });
 
             // Web
             services.AddRouting();
