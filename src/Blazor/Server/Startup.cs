@@ -133,7 +133,7 @@ namespace Samples.Blazor.Server
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-            // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseWebSockets(new WebSocketOptions() {
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
