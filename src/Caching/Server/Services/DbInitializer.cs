@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Samples.Helpers;
 using Stl.DependencyInjection;
 
 namespace Samples.Caching.Server.Services
@@ -14,14 +16,16 @@ namespace Samples.Caching.Server.Services
         public async Task InitializeAsync(bool recreate, CancellationToken cancellationToken = default)
         {
             // Ensure the DB is re-created
-            await using var dbContext = Services.RentDbContext<AppDbContext>();
+            var dbSettings = Services.GetRequiredService<DbSettings>();
+            var dbContextFactory = Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+            await using var dbContext = dbContextFactory.CreateDbContext();
             if (recreate)
-                await dbContext.Database.EnsureDeletedAsync();
-            await dbContext.Database.EnsureCreatedAsync();
+                await dbContext.Database.EnsureDeletedAsync(cancellationToken);
+            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
             await dbContext.Database.ExecuteSqlRawAsync(
-                $"ALTER DATABASE {ServerSettings.DatabaseName} SET ALLOW_SNAPSHOT_ISOLATION ON");
+                $"ALTER DATABASE {dbSettings.DatabaseName} SET ALLOW_SNAPSHOT_ISOLATION ON", cancellationToken);
             await dbContext.Database.ExecuteSqlRawAsync(
-                $"ALTER DATABASE {ServerSettings.DatabaseName} SET RECOVERY SIMPLE WITH NO_WAIT");
+                $"ALTER DATABASE {dbSettings.DatabaseName} SET RECOVERY SIMPLE WITH NO_WAIT", cancellationToken);
         }
     }
 }

@@ -1,16 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AssemblyName>Samples.HelloWorld</AssemblyName>
     <RootNamespace>Samples.HelloWorld</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion" Version="0.5.98" />
+    <PackageReference Include="Stl.Fusion" Version="0.7.52" />
   </ItemGroup>
-
 </Project>

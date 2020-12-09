@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Samples.HelloBlazorServer</AssemblyName>
     <RootNamespace>Samples.HelloBlazorServer</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -9,13 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.5.98" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.5.98" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.52" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.7.52" />
   </ItemGroup>
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css" />
     <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css.map" />
   </ItemGroup>
-
 </Project>

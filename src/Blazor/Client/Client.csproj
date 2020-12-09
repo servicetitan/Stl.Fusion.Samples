@@ -1,27 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <RazorLangVersion>3.0</RazorLangVersion>
-    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <RootNamespace>Samples.Blazor.Client</RootNamespace>
     <AssemblyName>Samples.Blazor.Client</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="3.2.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Build" Version="3.2.1" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.5.98" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.52" />
     <PackageReference Include="UAParser" Version="3.1.44" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="$(ProjectDir)\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>

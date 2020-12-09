@@ -5,7 +5,8 @@ Video covering this part:
 [<img src="./img/Part2-Screenshot.jpg" width="200"/>](https://youtu.be/DogHOuyRX20)
 
 Fusion's `IComputed<T>` is a fairly unique abstraction describing
-the result of a computation:
+the result of a computation. Here is how it compares with computed
+observables from Knockout.js and MobX:
 
 ![](./img/IComputed-Features.jpg)
 
@@ -46,7 +47,7 @@ First, let's try to "pull" `IComputed<T>` instance created behind the
 scenes for a given call:
 
 ``` cs --region Part02_CaptureComputed --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"Computed: {computed}");
 WriteLine($"- IsConsistent(): {computed.IsConsistent()}");
@@ -76,9 +77,9 @@ Overall, its key properties include:
   `IsConsistent()` extension method is a shortcut checking whether the state
   is exactly `Consistent`.
   You may find more of such shortcuts by Ctrl-clicking on `IsConsistent()`.
-* `Version` property - a unique value for any `IComputed<T>` instance
-  in each process. `LTag` struct uses 64-bit integer under the hood,
-  so "unique" actually means "unique with very high probability".
+* `Version` property - a unique value for any `IComputed<T>` instance.
+  `LTag` struct uses 64-bit integer under the hood, so "unique" actually means
+  "unique assuming you don't run a process for a few hundreed years".
 * `Output`, `Value` and `Error` - the properties describing the
   result of the computation.
 * `Invalidated` - an event raised on invalidation. Handlers of this event
@@ -158,7 +159,7 @@ on a Gantt chart:
 
 ![](./img/Computed-Gantt.jpg)
 
-And finally, an ugly visualization showing how multiple `IComputed<T>`
+An ugly visualization showing how multiple `IComputed<T>`
 instances get invalidated and eventually replaced with their consistent
 versions:
 
@@ -170,7 +171,7 @@ versions:
 Ok, let's get back to code and see how invalidation *really* works:
 
 ``` cs --region Part02_InvalidateComputed1 --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"computed: {computed}");
 WriteLine("computed.Invalidate()");
@@ -194,7 +195,7 @@ newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaPR, Stat
 Compare the above code with this one:
 
 ``` cs --region Part02_InvalidateComputed2 --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 WriteLine($"computed: {computed}");
 WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
@@ -226,7 +227,7 @@ And finally, let's see how you can "observe" the invalidation to
 trigger the update:
 
 ``` cs --region Part02_IncrementCounter --source-file Part02.cs
-var counters = CreateServices().GetService<CounterService>();
+var counters = CreateServices().GetRequiredService<CounterService>();
 
 Task.Run(async () =>
 {

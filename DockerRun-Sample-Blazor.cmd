@@ -1,6 +1,3 @@
 @echo off
-
-docker-compose build sample_blazor
-start "Blazor Sample (Docker)" docker-compose up sample_blazor
-timeout 3
-start http://localhost:5005/
+start cmd /C timeout 3 ^& start http://localhost:5005/"
+docker-compose run --service-ports sample_blazor

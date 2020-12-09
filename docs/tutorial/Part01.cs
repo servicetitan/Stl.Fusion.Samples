@@ -46,7 +46,7 @@ namespace Tutorial
         public static async Task UseCounterService1()
         {
             #region Part01_UseCounterService1
-            var counters = CreateServices().GetService<CounterService>();
+            var counters = CreateServices().GetRequiredService<CounterService>();
             WriteLine(await counters.GetAsync("a"));
             WriteLine(await counters.GetAsync("b"));
             #endregion
@@ -55,7 +55,7 @@ namespace Tutorial
         public static async Task UseCounterService2()
         {
             #region Part01_UseCounterService2
-            var counters = CreateServices().GetService<CounterService>();
+            var counters = CreateServices().GetRequiredService<CounterService>();
             WriteLine(await counters.GetAsync("a"));
             WriteLine(await counters.GetAsync("a"));
             #endregion
@@ -64,7 +64,7 @@ namespace Tutorial
         public static async Task UseCounterService3()
         {
             #region Part01_UseCounterService3
-            var counters = CreateServices().GetService<CounterService>();
+            var counters = CreateServices().GetRequiredService<CounterService>();
             WriteLine(await counters.GetAsync("a"));
             counters.Increment("a");
             WriteLine(await counters.GetAsync("a"));
@@ -92,7 +92,7 @@ namespace Tutorial
         {
             #region Part01_UseCounterSumService1
             var services = CreateServices();
-            var counterSum = services.GetService<CounterSumService>();
+            var counterSum = services.GetRequiredService<CounterSumService>();
             WriteLine(await counterSum.SumAsync("a", "b"));
             WriteLine(await counterSum.SumAsync("a", "b"));
             #endregion
@@ -102,7 +102,7 @@ namespace Tutorial
         {
             #region Part01_UseCounterSumService2
             var services = CreateServices();
-            var counterSum = services.GetService<CounterSumService>();
+            var counterSum = services.GetRequiredService<CounterSumService>();
             WriteLine("Nothing is cached (yet):");
             WriteLine(await counterSum.SumAsync("a", "b"));
             WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
@@ -116,8 +116,8 @@ namespace Tutorial
         {
             #region Part01_UseCounterSumService3
             var services = CreateServices();
-            var counters = services.GetService<CounterService>();
-            var counterSum = services.GetService<CounterSumService>();
+            var counters = services.GetRequiredService<CounterService>();
+            var counterSum = services.GetRequiredService<CounterSumService>();
             WriteLine(await counterSum.SumAsync("a", "b"));
             counters.Increment("a");
             WriteLine(await counterSum.SumAsync("a", "b"));
@@ -142,7 +142,7 @@ namespace Tutorial
         public static async Task UseHelloService1()
         {
             #region Part01_UseHelloService1
-            var hello = CreateServices().GetService<HelloService>();
+            var hello = CreateServices().GetRequiredService<HelloService>();
             var t1 = Task.Run(() => hello.HelloAsync("Alice"));
             var t2 = Task.Run(() => hello.HelloAsync("Bob"));
             var t3 = Task.Run(() => hello.HelloAsync("Bob"));

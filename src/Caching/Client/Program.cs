@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,15 +22,18 @@ namespace Samples.Caching.Client
 {
     class Program
     {
+        public const string ClientSideScope = nameof(ClientSideScope);
+
         static async Task Main(string[] args)
         {
             using var cts = new CancellationTokenSource();
             CancelKeyPress += (s, ea) => cts.Cancel();
             var cancellationToken = cts.Token;
-            var serviceChecker = new ServiceChecker();
-            await serviceChecker.WaitForServicesAsync(cancellationToken);
 
             var localServices = await CreateLocalServiceProviderAsync(cancellationToken);
+            await localServices.GetRequiredService<ServiceChecker>().WaitForServicesAsync(cancellationToken);
+            await localServices.GetRequiredService<DbInitializer>().InitializeAsync(true, cancellationToken);
+
             var benchmark = new TenantBenchmark(localServices) {
                 TimeCheckOperationIndexMask = 7
             };
@@ -60,21 +64,26 @@ namespace Samples.Caching.Client
         public static Task<IServiceProvider> CreateRemoteServiceProviderAsync(CancellationToken cancellationToken)
         {
             var services = new ServiceCollection();
-            var baseUri = new Uri($"http://localhost:5010/");
-            var apiBaseUri = new Uri($"{baseUri}api/");
+            var cfg = Host.CreateDefaultBuilder().Build().Services.GetRequiredService<IConfiguration>();
+            services.AddSingleton(cfg);
 
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient((c, options) => {
-                options.BaseUri = baseUri;
-                options.MessageLogLevel = LogLevel.Information;
+                var clientSettings = c.GetRequiredService<ClientSettings>();
+                options.BaseUri = clientSettings.BaseUri;
+                options.MessageLogLevel = null;
             }).ConfigureHttpClientFactory((c, name, options) => {
-                options.HttpClientActions.Add(c => c.BaseAddress = apiBaseUri);
+                var clientSettings = c.GetRequiredService<ClientSettings>();
+                options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
             });
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeBased()
+                .AddServicesFrom(Assembly.GetExecutingAssembly())
+                .SetScope(ClientSideScope)
+                .AddServicesFrom(Assembly.GetExecutingAssembly());
             return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
         }
 
-        public static async Task<IServiceProvider> CreateLocalServiceProviderAsync(CancellationToken cancellationToken)
+        public static Task<IServiceProvider> CreateLocalServiceProviderAsync(CancellationToken cancellationToken)
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration((ctx, builder) => {
@@ -91,13 +100,12 @@ namespace Samples.Caching.Client
                         options.ValidateScopes = ctx.HostingEnvironment.IsDevelopment();
                         options.ValidateOnBuild = true;
                     })
+                    .ConfigureServices((ctx, services) => {
+                        services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+                    })
                     .UseStartup<Startup>())
                 .Build();
-
-            var services = host.Services;
-            var dbInitializer = services.GetRequiredService<DbInitializer>();
-            await dbInitializer.InitializeAsync(true, cancellationToken);
-            return services;
+            return Task.FromResult(host.Services);
         }
     }
 }

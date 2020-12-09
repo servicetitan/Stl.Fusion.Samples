@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Samples.Helpers</AssemblyName>
+    <RootNamespace>Samples.Helpers</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
+    <PackageReference Include="Stl.Fusion" Version="0.7.52" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Samples.Blazor.Common.Services;
+using Samples.Helpers;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -9,13 +10,7 @@ namespace Samples.Blazor.Server.Services
         public DbSet<ChatMessage> ChatMessages { get; protected set; } = null!;
 
         public AppDbContext(DbContextOptions options) : base(options)
-        {
-            // ReSharper disable once VirtualMemberCallInConstructor
-            var ct = ChangeTracker;
-            ct.AutoDetectChangesEnabled = false;
-            ct.LazyLoadingEnabled = false;
-            ct.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
+            => this.DisableChangeTracking();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

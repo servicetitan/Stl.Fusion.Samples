@@ -1,0 +1,10 @@
+.dockerignore
+.git
+.gitignore
+.vs
+.vscode
+.idea
+Dockerfile
+*.yml
+**/bin/
+**/obj/

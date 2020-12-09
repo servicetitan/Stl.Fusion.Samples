@@ -120,22 +120,23 @@ public class CounterService : ICounterService
 
 // We need Web API controller to publish the service
 [Route("api/[controller]")]
-[ApiController]
-public class CounterController : FusionController
+[ApiController, JsonifyErrors]
+public class CounterController : ControllerBase
 {
     private ICounterService Counters { get; }
 
-    public CounterController(IPublisher publisher, ICounterService counterService)
-        : base(publisher)
+    public CounterController(ICounterService counterService)
         => Counters = counterService;
 
-    [HttpGet("get")]
-    public async Task<int> GetAsync(string key)
+    // Publish ensures GetAsync output is published if publication was requested by the client:
+    // - Publication is created
+    // - Its Id is shared in response header.
+    [HttpGet("get"), Publish]
+    public Task<int> GetAsync(string key)
     {
         key ??= ""; // Empty value is bound to null value by default
         WriteLine($"{GetType().Name}.{nameof(GetAsync)}({key})");
-        // PublishAsync adds Fusion headers enabling the client to create Replica for this response
-        return await PublishAsync(ct => Counters.GetAsync(key, ct));
+        return Counters.GetAsync(key, HttpContext.RequestAborted);
     }
 
     [HttpPost("inc")]
@@ -161,7 +162,7 @@ public class CounterController : FusionController
 // ICounterServiceClient tells how ICounterService methods map to HTTP methods.
 // As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
 [BasePath("counter")]
-public interface ICounterServiceClient : IRestEaseReplicaClient
+public interface ICounterServiceClient
 {
     [Get("get")]
     Task<int> GetAsync(string key, CancellationToken cancellationToken = default);
@@ -248,7 +249,7 @@ async Task WatchAsync<T>(string name, IComputed<T> computed)
 }
 
 var services = CreateClientServices();
-var counters = services.GetService<ICounterService>();
+var counters = services.GetRequiredService<ICounterService>();
 var aComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
 Task.Run(() => WatchAsync(nameof(aComputed), aComputed)).Ignore();
 var bComputed = await Computed.CaptureAsync(_ => counters.GetAsync("b"));
@@ -312,7 +313,7 @@ await host.StartAsync();
 WriteLine("Host started.");
 
 var services = CreateClientServices();
-var counters = services.GetService<ICounterService>();
+var counters = services.GetRequiredService<ICounterService>();
 var stateFactory = services.GetStateFactory();
             using var state = stateFactory.NewLive<string>(
                 options =>

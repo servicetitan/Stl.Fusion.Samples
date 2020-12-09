@@ -5,13 +5,12 @@ using RestEase;
 using Samples.Blazor.Common.Services;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Client;
-using Stl.Fusion.Client.RestEase;
 
 namespace Samples.Blazor.Client.Services
 {
     [RestEaseReplicaService(typeof(ITimeService), Scope = Program.ClientSideScope)]
     [BasePath("time")]
-    public interface ITimeClient : IRestEaseReplicaClient
+    public interface ITimeClient
     {
         [Get("get")]
         Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default);
@@ -21,7 +20,7 @@ namespace Samples.Blazor.Client.Services
 
     [RestEaseReplicaService(typeof(IScreenshotService), Scope = Program.ClientSideScope)]
     [BasePath("screenshot")]
-    public interface IScreenshotClient : IRestEaseReplicaClient
+    public interface IScreenshotClient
     {
         [Get("get")]
         Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default);
@@ -29,7 +28,7 @@ namespace Samples.Blazor.Client.Services
 
     [RestEaseReplicaService(typeof(IChatService), Scope = Program.ClientSideScope)]
     [BasePath("chat")]
-    public interface IChatClient : IRestEaseReplicaClient
+    public interface IChatClient
     {
         // Writers
         [Post("createUser")]
@@ -54,7 +53,7 @@ namespace Samples.Blazor.Client.Services
 
     [RestEaseReplicaService(typeof(IComposerService), Scope = Program.ClientSideScope)]
     [BasePath("composer")]
-    public interface IComposerClient : IRestEaseReplicaClient
+    public interface IComposerClient
     {
         [Get("get")]
         Task<ComposedValue> GetComposedValueAsync(string? parameter,
@@ -63,7 +62,7 @@ namespace Samples.Blazor.Client.Services
 
     [RestEaseReplicaService(typeof(ISumService), Scope = Program.ClientSideScope)]
     [BasePath("sum")]
-    public interface ISumClient : IRestEaseReplicaClient
+    public interface ISumClient
     {
         [Post("reset")]
         Task ResetAsync(CancellationToken cancellationToken);

@@ -2,16 +2,16 @@
 
 Welcome to a collection of [Fusion] samples!
 
-> All project updates are published on [Gitter]; it's also the best place for Q/A.\
+> All project updates are published on its [Discord Server]; it's also the best place for Q/A.\
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
-> [![Gitter](https://badges.gitter.im/Stl-Fusion/community.svg)](https://gitter.im/Stl-Fusion/community)
+> [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
 ## What's Inside?
 
 ### 1. HelloWorld Sample
 
 Fusion-style [HelloWorld](src/HelloWorld) shows how to create
-simple dependency chains and and react to invalidation events. 
+simple dependency chains and react to invalidation events. 
 [Its Program.cs](src/HelloWorld/Program.cs) is just about 40 lines long.
 
 ![](docs/img/Samples-HelloWorld.gif)
@@ -33,6 +33,10 @@ features,
 [check out this part of Fusion README.md](https://github.com/servicetitan/Stl.Fusion#enough-talk---lets-fight-show-me-the-code).
 
 ### 3. Blazor Samples
+
+<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Play 
+with these samples hosted in a small 1-core K8s cluster
+[right now](https://fusion-samples.servicetitan.com)!
 
 It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
 [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet) website,
@@ -79,42 +83,32 @@ It's a console app running the benchmark (`Client`) + ASP.NET Core API `Server`.
 ```text
 Local services:
 Fusion's Compute Service [-> EF Core -> SQL Server]:
-  Reads         : 24.14M operations/s
-  Writes        : 102.40 operations/s
+  Reads         : 27.55M operations/s
 Regular Service [-> EF Core -> SQL Server]:
-  Reads         : 24.99K operations/s
-  Writes        : 104.00 operations/s
+  Reads         : 25.05K operations/s
 
 Remote services:
 Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 21.87M operations/s
-  Writes        : 89.60 operations/s
+  Reads         : 20.29M operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 110.09K operations/s
-  Writes        : 62.40 operations/s
+  Reads         : 127.96K operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
-  Reads         : 20.51K operations/s
-  Writes        : 92.80 operations/s
+  Reads         : 20.46K operations/s
 ```
-
-For the sake of clarity, the rate of writes (updates) isn't benchmarked here &ndash;
-Fusion can't speed up writes (at least, directly), so only one worker is busy with this.
 
 What's interesting in this output?
 - Fusion-backed API endpoint serving relatively small amount of cacheable data
-    scales to ~ **110,000 RPS** while running the test on the same machine 
+    scales to ~ **130,000 RPS** while running the test on the same machine 
     (that's a disadvantage).
 - Identical EF Core-based API endpoint scales to just 20K RPS.
 
-So there is a ~ 5.5x difference (~ 8x if we'd run the client on another machine),
-and that's even for ~ the simplest EF service hitting a tiny DB tuned 
-to work as in-memory cache (running in simple recovery mode, etc.).
+So there is a ~ 6.5x difference for an extremely simple EF Core service 
+hitting a tiny DB running in simple recovery mode.
+In other words, use of Fusion on server-side only brings ~ an order of 
+magnitude performance boost even when there is almost nothing to speed up! 
 
-In other words, use of Fusion on server-side only brings ~ an order of magnitude 
-performance boost even when there is almost nothing to speed up! 
-
-Besides that, the test shows [Replica Services] scale ~ as local [Compute Services],
-i.e. to ~ **22-24 million "RPS"**. 
+Besides that, the test shows [Replica Services] scale ~ almost as local 
+[Compute Services], i.e. to ~ **20 million "RPS"**. 
 These aren't true RPS, of course - Replica Service simply kills any RPC 
 for cached values that are known to be consistent. But nevertheless,
 it's still a pretty unique feature Fusion brings to the table &ndash; and that's
@@ -131,30 +125,37 @@ or [Docker](https://www.docker.com/).
 
 ## Running Samples
 
-Build & run locally with [.NET Core SDK 3.1](https://dotnet.microsoft.com/download):
+Build & run locally with [.NET 5.0 SDK](https://dotnet.microsoft.com/download):
 
 | Sample | Command |
 |-|-|
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
-| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + http://localhost:5000/ |
-| [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + http://localhost:5005/ |
-| [Tutorial] | [Install Try .NET (preview version)](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
+| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5000/ |
+| [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
+| [Caching] | `Run-Sample-Caching.cmd`. See [Run-Sample-Caching.cmd](Run-Sample-Caching.cmd) to run this sample on Unix. |
+| [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
 
 Build & run with [Docker](https://docs.docker.com/get-docker/) + 
 [Docker Compose](https://docs.docker.com/compose/install/):
 
+```bash
+# Run this command first
+docker-compose build
+```
+
 | Sample | Command |
 |-|-|
 | [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
-| [HelloBlazorServer] | `docker-compose up --build sample_hello_blazor_server` + http://localhost:5000/ |
-| [Blazor Samples] | `docker-compose up --build sample_blazor` + http://localhost:5005/ |
-| [Tutorial] | `docker-compose up --build tutorial` + https://localhost:50005/README.md |
+| [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5000/ |
+| [Blazor Samples] | `docker-compose run --service-ports sample_blazor` + open http://localhost:5005/ |
+| [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
+| [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
 ## Useful Links
 
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
-* Join our [Gitter Chat Room] or [Discord Server] to ask questions and track project updates.
+* Join our [Discord Server] or [Gitter] to ask questions and track project updates.
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 
@@ -167,6 +168,7 @@ please help us to make it better by completing [Fusion Feedback Form]
 [HelloWorld]: src/HelloWorld
 [HelloBlazorServer]: src/HelloBlazorServer
 [Blazor Samples]: src/Blazor
+[Caching]: src/Caching
 [Tutorial]: docs/tutorial/README.md
 [Documentation Home]: https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md
 
@@ -178,7 +180,6 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
 [Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
 
-[Gitter]: https://gitter.im/Stl-Fusion/community
-[Gitter Chat Room]: https://gitter.im/Stl-Fusion/community
 [Discord Server]: https://discord.gg/EKEwv6d
+[Gitter]: https://gitter.im/Stl-Fusion/community
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6

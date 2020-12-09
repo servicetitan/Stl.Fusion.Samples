@@ -1,12 +1,13 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
+using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,10 +43,18 @@ namespace Samples.Blazor.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Logging
+            services.AddLogging(logging => {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Information);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+            });
+
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
-            services.AddDbContextPool<AppDbContext>(builder => {
+            services.AddDbContextFactory<AppDbContext>(builder => {
                 builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
             });
 
@@ -62,16 +71,6 @@ namespace Samples.Blazor.Server
             // Registering shared services from the client
             Client.Program.ConfigureSharedServices(services);
 
-            // Authentication - unused for now, this is a work-in-progress
-            var gitHubClientId = Cfg["Authentication:GitHub:ClientId"];
-            var gitHubClientSecret = Cfg["Authentication:GitHub:ClientSecret"];
-            if (gitHubClientId == null || gitHubClientSecret == null) {
-                // Note that you should never store these secrets in your code.
-                // We put them here solely to simplify running this sample.
-                gitHubClientId = "7a38bc415f7e1200fee2";
-                gitHubClientSecret = Encoding.UTF8.GetString(
-                    Convert.FromBase64String("MGZjOWI2OTEzMzhhM2UzYzc5OTgzZGNmOGYyMjNmZjFmYzQ3MmMzNQ=="));
-            }
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 })
@@ -80,17 +79,24 @@ namespace Samples.Blazor.Server
                     options.LogoutPath = "/signout";
                 })
                 .AddGitHub(options => {
-                    options.ClientId = gitHubClientId;
-                    options.ClientSecret = gitHubClientSecret;
                     options.Scope.Add("read:user");
-                    options.Scope.Add("user:email");
+                    // options.Scope.Add("user:email");
+                    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
                 });
+            // We want to get ClientId and ClientSecret from ServerSettings,
+            // and they're available only when IServiceProvider is already created,
+            // that's why this overload of Configure<TOptions> is used here.
+            services.Configure<GitHubAuthenticationOptions>((c, name, options) => {
+                var serverSettings = c.GetRequiredService<ServerSettings>();
+                options.ClientId = serverSettings.GitHubClientId;
+                options.ClientSecret = serverSettings.GitHubClientSecret;
+            });
 
             // Web
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor(o => o.DetailedErrors = true);
-            fusionAuth.AddServerSideBlazor(); // Must follow services.AddServerSideBlazor()!
+            fusionAuth.AddBlazor(o => {}); // Must follow services.AddServerSideBlazor()!
 
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
@@ -110,8 +116,12 @@ namespace Samples.Blazor.Server
             // and set it as this server's content root.
             var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
             var binCfgPart = Regex.Match(baseDir, @"[\\/]bin[\\/]\w+[\\/]").Value;
-            Env.WebRootPath = Path.GetFullPath(Path.Combine(baseDir,
-                $"../../../../Client/{binCfgPart}/netstandard2.1/")) + "wwwroot";
+            var wwwRootPath = Path.Combine(baseDir, "wwwroot");
+            if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
+                // This is a regular build, not a build produced w/ "publish",
+                // so we remap wwwroot to the client's wwwroot folder
+                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../Client/{binCfgPart}/net5.0/wwwroot"));
+            Env.WebRootPath = wwwRootPath;
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
             StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
 
@@ -123,9 +133,9 @@ namespace Samples.Blazor.Server
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
+            app.UseHttpsRedirection();
 
             app.UseWebSockets(new WebSocketOptions() {
-                ReceiveBufferSize = 16_384,
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
             });
             app.UseFusionSession();
