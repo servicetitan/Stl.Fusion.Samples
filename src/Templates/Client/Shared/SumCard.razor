@@ -1,0 +1,84 @@
+@using System.Threading
+@using Templates.Blazor.Common.Services
+@inherits LiveComponentBase<double, SumCard.LocalsModel>
+@inject ISumService SumService
+
+@{
+    var sum = State.LastValue;
+    var locals = Locals.Value;
+    var error = State.Error;
+}
+
+<div class="@CssClass">
+    <div class="card-header">@Title</div>
+
+    <div class="card-body">
+        <StatefulComponentState Component="@this" />
+
+        @if (error != null) {
+            <div class="alert alert-warning" role="alert">
+                Update error: @error.Message
+            </div>
+        }
+
+        <div class="input-group mb-1">
+            <div class="input-group-prepend">
+                <span class="input-group-text">A:</span>
+            </div>
+            <input class="form-control" @bind-value="locals.ValueA" @bind-value:event="oninput" @onkeyup="Apply"/>
+        </div>
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">B:</span>
+            </div>
+            <input class="form-control" @bind-value="locals.ValueB" @bind-value:event="oninput" @onkeyup="Apply"/>
+        </div>
+
+    </div>
+
+    <div class="card-footer">
+        @locals.ValueA + @locals.ValueB + Accumulator = <b>@sum</b>
+    </div>
+</div>
+
+@code {
+    public class LocalsModel
+    {
+        public double ValueA { get; set; } = 0;
+        public double ValueB { get; set; } = 0;
+    }
+
+    [Parameter]
+    public string CssClass { get; set; } = "card";
+    [Parameter]
+    public string Title { get; set; } = "Sum";
+    [Parameter]
+    public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    protected override void OnInitialized()
+    {
+        StateHasChangedTriggers = StateEventKind.All;
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
+            updateDelayer.Delay = UpdateDelay;
+    }
+
+    protected override void ConfigureState(LiveState<double>.Options options)
+        => options.WithUpdateDelayer(UpdateDelay);
+
+    protected override async Task<double> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        var locals = Locals.Value;
+        var values = new[] { locals.ValueA, locals.ValueB };
+        return await SumService.SumAsync(values, true, cancellationToken).ConfigureAwait(false);
+    }
+
+    // Action handlers
+
+    private void Apply() => Locals.Invalidate();
+}
