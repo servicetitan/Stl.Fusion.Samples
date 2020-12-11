@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl;
+using Stl.Async;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using static System.Console;

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using RestEase;
 using Stl;
+using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
