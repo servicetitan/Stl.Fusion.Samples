@@ -1,9 +1,5 @@
 (function() {
 
-window.App = {
-    setFocus: function (element) {
-        element.focus();
-    }
-};
+window.App = {};
 
 })();

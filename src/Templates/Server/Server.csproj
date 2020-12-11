@@ -15,9 +15,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0" />
     <PackageReference Include="Stl.Fusion.Server" Version="0.7.52" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
+<!--    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />-->
+<!--    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />-->
+<!--    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />-->
   </ItemGroup>
 
   <ItemGroup>
@@ -41,10 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(ProjectDir)\Resources\**"
-          CopyToOutputDirectory="PreserveNewest"
-          CopyToPublishDirectory="PreserveNewest"
-          LinkBase="Resources\" />
+    <None Include="$(ProjectDir)\Resources\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Resources\" />
   </ItemGroup>
 
 </Project>

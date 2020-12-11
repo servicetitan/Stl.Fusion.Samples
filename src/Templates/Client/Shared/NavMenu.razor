@@ -8,11 +8,6 @@
 <div class="@(IsExpanded ? "" : "collapse")" @onclick="ToggleExpanded">
     <ul class="nav flex-column p-3">
         @MenuItem("home", "Home", "", NavLinkMatch.All)
-        @* @MenuItem("clock", "Server Time", "serverTime") *@
-        @* @MenuItem("monitor", "Server Screen", "serverScreen") *@
-        @* @MenuItem("chat", "Chat", "chat") *@
-        @* @MenuItem("calculator", "Consistency", "consistency") *@
-        @* @MenuItem("fork", "Composition", "composition") *@
         @MenuItem("person", "Authentication", "authentication")
         <li class="p0 mb-1 mx-auto text-white">&#8943;</li>
         @MenuItem("code", "Source @ GitHub", "https://github.com/servicetitan/Stl.Fusion.Samples")

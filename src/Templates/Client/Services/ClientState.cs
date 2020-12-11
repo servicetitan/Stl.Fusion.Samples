@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Templates.Blazor.Common.Services;
@@ -8,7 +8,7 @@ using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
 
-namespace Samples.Blazor.Client.Services
+namespace Templates.Blazor.Client.Services
 {
     [Service(Lifetime = ServiceLifetime.Scoped)]
     public class ClientState : IDisposable
@@ -21,7 +21,6 @@ namespace Samples.Blazor.Client.Services
         public ILiveState<AuthState> AuthState => AuthStateProvider.State;
         // Own properties
         public ILiveState<User> User { get; }
-        public IMutableState<ChatUser?> ChatUser { get; }
 
         public ClientState(AuthStateProvider authStateProvider, IStateFactory stateFactory)
         {
@@ -34,7 +33,6 @@ namespace Samples.Blazor.Client.Services
                     var authState = await AuthState.UseAsync(cancellationToken).ConfigureAwait(false);
                     return authState.User;
                 });
-            ChatUser = stateFactory.NewMutable(Result.Value<ChatUser?>(null));
         }
 
         void IDisposable.Dispose() => User.Dispose();

@@ -28,7 +28,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "src\Caching\Clien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helpers", "src\Helpers\Helpers.csproj", "{09E71BCD-96EC-4550-9F1A-A84D3F5AEB16}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{36987C9F-CCBE-42B4-8E6B-07DC907918EB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates.Blazor", "Templates.Blazor", "{36987C9F-CCBE-42B4-8E6B-07DC907918EB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{18C9083F-FB8A-43E9-B2FA-7A54D0AE708A}"
 EndProject
