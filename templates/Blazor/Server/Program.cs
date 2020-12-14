@@ -1,12 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-// using Samples.Blazor.Server.Services;
-using Templates.Blazor.Server.Services;
 
 namespace Templates.Blazor.Server
 {
@@ -30,11 +26,6 @@ namespace Templates.Blazor.Server
                     })
                     .UseStartup<Startup>())
                 .Build();
-
-            // Ensure the DB is created
-            var dbContextFactory = host.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
-            await using var dbContext = dbContextFactory.CreateDbContext();
-            await dbContext.Database.EnsureCreatedAsync();
 
             await host.RunAsync();
         }

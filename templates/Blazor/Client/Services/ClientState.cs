@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Templates.Blazor.Common.Services;
-using Stl;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
