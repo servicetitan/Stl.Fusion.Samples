@@ -12,16 +12,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0" />
     <PackageReference Include="Stl.Fusion.Server" Version="0.7.52" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
-<!--    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />-->
-<!--    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />-->
-<!--    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />-->
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Helpers\Helpers.csproj" />
     <ProjectReference Include="..\Client\Client.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -16,11 +15,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Samples.Blazor.Server;
-// using Samples.Blazor.Common.Services;
-using Templates.Blazor.Common.Services;
-// using Samples.Blazor.Server.Services;
-using Templates.Blazor.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
@@ -28,7 +22,6 @@ using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
-using Stl.IO;
 
 namespace Templates.Blazor.Server
 {
@@ -54,15 +47,11 @@ namespace Templates.Blazor.Server
                 logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
             });
 
-            // DbContext & related services
-            var appTempDir = PathEx.GetApplicationTempDirectory("", true);
-            var dbPath = appTempDir & "App.db";
-            services.AddDbContextFactory<AppDbContext>(builder => {
-                builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
-            });
-
             // Fusion services
-            services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
+            services.AddSingleton(c => {
+                var serverSettings = c.GetRequiredService<ServerSettings>();
+                return new Publisher.Options() { Id = serverSettings.PublishedId };
+            });
             services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebSocketServer();
@@ -104,7 +93,7 @@ namespace Templates.Blazor.Server
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "Samples.Blazor.Server API", Version = "v1"
+                    Title = "Templates.Blazor.Server API", Version = "v1"
                 });
             });
         }

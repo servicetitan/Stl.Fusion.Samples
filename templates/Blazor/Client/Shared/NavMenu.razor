@@ -1,5 +1,5 @@
 ﻿<div class="top-row navbar navbar-dark">
-    <a class="navbar-brand" href="">Fusion+Blazor Sample</a>
+    <a class="navbar-brand" href="">Fusion+Blazor Template</a>
     <button class="navbar-toggler" @onclick="ToggleExpanded">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -8,6 +8,7 @@
 <div class="@(IsExpanded ? "" : "collapse")" @onclick="ToggleExpanded">
     <ul class="nav flex-column p-3">
         @MenuItem("home", "Home", "", NavLinkMatch.All)
+        @MenuItem("clock", "Server Time", "serverTime")
         @MenuItem("person", "Authentication", "authentication")
         <li class="p0 mb-1 mx-auto text-white">&#8943;</li>
         @MenuItem("code", "Source @ GitHub", "https://github.com/servicetitan/Stl.Fusion.Samples")
