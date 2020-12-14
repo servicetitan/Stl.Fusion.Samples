@@ -23,7 +23,7 @@ simple dependency chains and react to invalidation events.
 
 ### 2. HelloBlazorServer Sample
 
-[HelloBlazorServer](src/HelloBlazorServer) is a default Blazor Server App 
+[HelloBlazorServer](src/HelloBlazorServer) is the default Blazor Server App 
 modified to reveal some Fusion powers. Contrary to the original app:
 * It displays changes made to a *global* counter in real-time
 * Similarly, it updates weather forecasts in real-time
