@@ -8,6 +8,11 @@ Welcome to a collection of [Fusion] samples!
 
 ## What's Inside?
 
+### 0. Project Templates <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle">
+
+Sorry, we don't provide `dotnet new`-based templates yet, but the ones
+you can copy & modify can be found in the [`templates` folder](./templates).
+
 ### 1. HelloWorld Sample
 
 Fusion-style [HelloWorld](src/HelloWorld) shows how to create
@@ -34,8 +39,8 @@ features,
 
 ### 3. Blazor Samples
 
-<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Play 
-with these samples hosted in a small 1-core K8s cluster
+<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Play
+with live instance of this app hosted on a small 1-core K8s cluster
 [right now](https://fusion-samples.servicetitan.com)!
 
 It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
