@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Blazor\Common\Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Blazor\Client\Client.csproj", "{3A036A89-6309-4D5E-BA37-A51CB4F29409}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{2C83F338-3CA5-4401-B7DF-25C853C6D92B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,10 @@ Global
 		{3A036A89-6309-4D5E-BA37-A51CB4F29409}.Release|x64.Build.0 = Release|Any CPU
 		{3A036A89-6309-4D5E-BA37-A51CB4F29409}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A036A89-6309-4D5E-BA37-A51CB4F29409}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3A036A89-6309-4D5E-BA37-A51CB4F29409} = {2C83F338-3CA5-4401-B7DF-25C853C6D92B}
+		{67529070-4C77-4395-B626-1E09503DD7C7} = {2C83F338-3CA5-4401-B7DF-25C853C6D92B}
+		{56D575A0-790F-43FF-ADFE-8E6A962F3DEA} = {2C83F338-3CA5-4401-B7DF-25C853C6D92B}
 	EndGlobalSection
 EndGlobal
