@@ -1,6 +1,6 @@
 import React from "react";
 import Section from "./Section";
-import useFusionSubscription from "./lib/useFusionSubscription";
+import { useFusionSubscription } from "@rgdelato/js-fusion";
 
 export default function AuthSection() {
   return (
@@ -15,12 +15,12 @@ function Auth() {
     data: sessionData,
     loading: sessionLoading,
     error: sessionError,
-  } = useFusionSubscription("/fusion/auth/getSessionInfo");
+  } = useFusionSubscription(null, "/fusion/auth/getSessionInfo");
   const {
     data: userData,
     loading: userLoading,
     error: userError,
-  } = useFusionSubscription("/fusion/auth/getUser");
+  } = useFusionSubscription(null, "/fusion/auth/getUser");
 
   return (
     <div className="mt-2">
@@ -36,7 +36,7 @@ function Auth() {
             "There was an error!"
           ) : (
             <div>
-              <xmp>{JSON.stringify(sessionData, null, 2)}</xmp>
+              <pre>{JSON.stringify(sessionData, null, 2)}</pre>
             </div>
           )}
         </div>
@@ -52,7 +52,7 @@ function Auth() {
             "There was an error!"
           ) : (
             <div>
-              <xmp>{JSON.stringify(userData, null, 2)}</xmp>
+              <pre>{JSON.stringify(userData, null, 2)}</pre>
             </div>
           )}
         </div>

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import Section from "./Section";
-import useFusionSubscription from "./lib/useFusionSubscription";
+import { useFusionSubscription } from "@rgdelato/js-fusion";
 import LoadingSVG from "./LoadingSVG";
 
 export default function SumSection() {
   const { data, loading, error } = useFusionSubscription(
+    null,
     "/api/sum/getAccumulator"
   );
 
@@ -18,7 +19,15 @@ export default function SumSection() {
   );
 }
 
-function Accumulator({ data, loading, error }) {
+function Accumulator({
+  data,
+  loading,
+  error,
+}: {
+  data: any;
+  loading: boolean;
+  error?: Error | null;
+}) {
   const [fetching, setFetching] = useState(false);
 
   const handleIncrement = () => {
@@ -73,13 +82,13 @@ function Accumulator({ data, loading, error }) {
   );
 }
 
-function Sum({ accumulator }) {
+function Sum({ accumulator }: { accumulator: number | null }) {
   const [wait, setWait] = useState(3000);
   const [a, setA] = useState(5);
   const [b, setB] = useState(8);
 
-  const handleChange = (setNum) => {
-    return ({ target: { value } }) => {
+  const handleChange = (setNum: (state: number) => void) => {
+    return ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
       const num = Number(value);
       if (!isNaN(num)) {
         setNum(num);
@@ -87,20 +96,17 @@ function Sum({ accumulator }) {
     };
   };
 
-  const {
-    data,
-    loading,
-    error,
-  } = useFusionSubscription(
+  const { data, loading, error } = useFusionSubscription(
+    null,
     `/api/sum/sum?values=${a}&values=${b}&addAccumulator=True`,
     null,
     { options: { wait: wait } }
   );
 
   return loading ? (
-    "Loading..."
+    <>"Loading..."</>
   ) : error ? (
-    "There was an error!"
+    <>"There was an error!"</>
   ) : (
     <div className="mt-2">
       <div>

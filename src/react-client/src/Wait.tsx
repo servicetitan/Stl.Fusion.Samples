@@ -1,7 +1,13 @@
 import React from "react";
 import Section from "./Section";
 
-export default function Wait({ wait, onWaitChange }) {
+export default function Wait({
+  wait,
+  onWaitChange,
+}: {
+  wait: number;
+  onWaitChange: React.Dispatch<React.SetStateAction<number>>;
+}) {
   return (
     <Section
       title="Wait"

@@ -1,6 +1,9 @@
 import React from "react";
 
-export default function LoadingSVG({ className, ...props }) {
+export default function LoadingSVG({
+  className,
+  ...props
+}: React.HTMLAttributes<SVGElement>) {
   return (
     <svg
       {...props}

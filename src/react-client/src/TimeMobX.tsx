@@ -1,25 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 import formatDate from "date-fns/format";
+import { makeAutoObservable } from "mobx";
+import { observer } from "mobx-react-lite";
+import { fusion, makeFusionObservable } from "@rgdelato/js-fusion";
 import Section from "./Section";
-import useFusionSubscription from "./lib/useFusionSubscription";
+
+class TimeStoreWithDecorators {
+  @fusion("/api/Time/get")
+  time = "";
+
+  constructor() {
+    makeAutoObservable(this);
+    makeFusionObservable(this);
+  }
+}
 
 export default function TimeSection() {
   return (
-    <Section title="Time (React)">
+    <Section title="Time (MobX)">
       <Time />
     </Section>
   );
 }
 
-function Time() {
-  const { data, loading, error, cancel } = useFusionSubscription(
-    "/api/Time/get"
-  );
+const Time = observer(() => {
+  // const [{ time }] = useState(() => new TimeStore());
+  const [{ time }] = useState(() => new TimeStoreWithDecorators());
+
+  const loading = !time;
+  const data = time;
+  const error = false;
+  const cancel = () => {};
 
   return loading ? (
-    "Loading..."
+    <>Loading...</>
   ) : error ? (
-    "There was an error!"
+    <>There was an error!</>
   ) : (
     <div>
       {formatDate(new Date(data), "yyyy-MM-dd HH:mm:ss.SSS xxx")}
@@ -34,4 +50,4 @@ function Time() {
       </span>
     </div>
   );
-}
+});

@@ -2,8 +2,37 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import debounce from "lodash/debounce";
 import formatDate from "date-fns/format";
 import Section from "./Section";
-import useFusionSubscription from "./lib/useFusionSubscription";
+import { useFusionSubscription } from "@rgdelato/js-fusion";
 import LoadingSVG from "./LoadingSVG";
+
+type MessageType = {
+  id?: number;
+  Id?: number;
+  userId?: number;
+  UserId?: number;
+  text?: string;
+  Text?: string;
+  createdAt?: string;
+  CreatedAt?: string;
+};
+
+type UserType = {
+  id?: number;
+  Id?: number;
+  name?: string;
+  Name?: string;
+};
+
+type ChatTailType = {
+  messages?: MessageType[];
+  Messages?: MessageType[];
+  users?: {
+    [id: number]: UserType;
+  };
+  Users?: {
+    [id: number]: UserType;
+  };
+};
 
 export default function Chat() {
   const [user, setUser] = useState(null);
@@ -20,17 +49,25 @@ export default function Chat() {
   );
 }
 
-function ChatMessages({ onCancelChange }) {
+function ChatMessages({
+  onCancelChange,
+}: {
+  onCancelChange: React.Dispatch<React.SetStateAction<any>>;
+}) {
   const {
     data: activeUserData,
     loading: activeUserLoading,
     error: activeUserError,
-  } = useFusionSubscription("/api/Chat/getActiveUserCount");
+  } = useFusionSubscription(
+    null as number | null,
+    "/api/Chat/getActiveUserCount"
+  );
 
   const activeUserCount =
     !activeUserLoading && !activeUserError ? activeUserData : 0;
 
   const { data, loading, error, cancel } = useFusionSubscription(
+    null as ChatTailType | null,
     "/api/Chat/getChatTail?length=5"
   );
 
@@ -42,9 +79,9 @@ function ChatMessages({ onCancelChange }) {
   const users = data?.users ?? data?.Users ?? {};
 
   return loading ? (
-    "Loading..."
+    <>"Loading..."</>
   ) : error ? (
-    "There was an error!"
+    <>"There was an error!"</>
   ) : (
     <div className="relative py-2 space-y-2">
       <div className="absolute top-0 right-0 text-xs font-semibold leading-5 text-gray-600">
@@ -54,17 +91,14 @@ function ChatMessages({ onCancelChange }) {
       {messages.length ? (
         messages.map((message) => {
           const messageId = message.id ?? message.Id;
-          const userId = message.userId ?? message.UserId;
-          const name = users[userId].name ?? users[userId].Name;
-          const createdAt = message.createdAt ?? message.CreatedAt;
+          const userId = message.userId ?? message.UserId ?? 1;
+          const name = users[userId].name ?? users[userId].Name ?? "";
+          const createdAt = message.createdAt ?? message.CreatedAt ?? "";
 
           return (
             <div key={messageId} className="flex items-center">
               <div className="flex-shrink-0">
-                <div
-                  className="inline-block w-10 h-10 font-extrabold leading-10 text-center text-gray-600 bg-gray-200 rounded-md shadow-inner"
-                  alt=""
-                >
+                <div className="inline-block w-10 h-10 font-extrabold leading-10 text-center text-gray-600 bg-gray-200 rounded-md shadow-inner">
                   {name[0].toUpperCase()}
                 </div>
               </div>
@@ -84,9 +118,15 @@ function ChatMessages({ onCancelChange }) {
   );
 }
 
-function ChatUser({ user, onUserChange }) {
+function ChatUser({
+  user,
+  onUserChange,
+}: {
+  user: UserType | null;
+  onUserChange: React.Dispatch<React.SetStateAction<any>>;
+}) {
   const [loading, setLoading] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef(null as HTMLInputElement | null);
 
   const newUser = useCallback(() => {
     setLoading(true);
@@ -97,7 +137,9 @@ function ChatUser({ user, onUserChange }) {
       .then((res) => res.json())
       .then((data) => {
         onUserChange(data);
-        inputRef.current.value = data ? data.name ?? data.Name : "";
+        if (inputRef.current != null) {
+          inputRef.current.value = data ? data.name ?? data.Name : "";
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -121,6 +163,10 @@ function ChatUser({ user, onUserChange }) {
   }, [onUserChange, newUser]);
 
   const debouncedSetUserName = debounce((name) => {
+    if (user == null) {
+      return;
+    }
+
     setLoading(true);
 
     fetch(`/api/Chat/setUserName?id=${user.id ?? user.Id}&name=${name}`, {
@@ -167,12 +213,22 @@ function ChatUser({ user, onUserChange }) {
   );
 }
 
-function AddChatMessage({ user, cancel }) {
+function AddChatMessage({
+  user,
+  cancel,
+}: {
+  user: UserType | null;
+  cancel: (() => void) | null;
+}) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [shouldCancel, setShouldCancel] = useState(true);
 
   function addMessage() {
+    if (user == null) {
+      return;
+    }
+
     setLoading(true);
     fetch(`/api/Chat/addMessage?userId=${user.id}&text=${text}`, {
       method: "POST",
@@ -193,7 +249,7 @@ function AddChatMessage({ user, cancel }) {
   return (
     <div>
       <form
-        onSubmit={(e) => {
+        onSubmit={(e: React.ChangeEvent<HTMLFormElement>) => {
           e.preventDefault();
           addMessage();
           e.target.reset();

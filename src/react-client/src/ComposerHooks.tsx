@@ -1,13 +1,60 @@
 import React, { useState } from "react";
 import Section from "./Section";
-import useFusionSubscription from "./lib/useFusionSubscription";
+import { useFusionSubscription } from "@rgdelato/js-fusion";
+
+type MessageType = {
+  id?: number;
+  Id?: number;
+  userId?: number;
+  UserId?: number;
+  text?: string;
+  Text?: string;
+  createdAt?: string;
+  CreatedAt?: string;
+};
+
+type UserType = {
+  id?: number;
+  Id?: number;
+  name?: string;
+  Name?: string;
+};
+
+type ChatTailType = {
+  messages?: MessageType[];
+  Messages?: MessageType[];
+  users?: {
+    [id: number]: UserType;
+  };
+  Users?: {
+    [id: number]: UserType;
+  };
+};
+
+type SessionType = {
+  id?: string;
+  Id?: string;
+};
+
+type ComposerType = {
+  parameter?: string;
+  Parameter?: string;
+  uptime?: string;
+  Uptime?: string;
+  lastChatMessage?: string;
+  LastChatMessage?: string;
+  user?: UserType;
+  User?: UserType;
+  activeUserCount?: number;
+  ActiveUserCount?: number;
+};
 
 export default function ComposerSection() {
   const [parameter, setParameter] = useState("Parameter");
 
   return (
     <Section
-      title="Composer"
+      title="Composer (React Hooks)"
       header={
         <>
           <span className="inline-block ml-3 text-sm font-normal align-text-bottom">
@@ -26,7 +73,7 @@ export default function ComposerSection() {
   );
 }
 
-function Composer({ parameter }) {
+function Composer({ parameter }: { parameter: string }) {
   const [showLocal, setShowLocal] = useState(true);
   const [showRemote, setShowRemote] = useState(true);
 
@@ -69,27 +116,36 @@ function Composer({ parameter }) {
   );
 }
 
-function ComposerLocal({ parameter, onToggle }) {
+function ComposerLocal({
+  parameter,
+  onToggle,
+}: {
+  parameter: string;
+  onToggle: () => void;
+}) {
   const {
     data: timeData,
     loading: timeLoading,
     error: timeError,
-  } = useFusionSubscription("/api/Time/getUptime");
+  } = useFusionSubscription(null, "/api/Time/getUptime");
   const {
     data: chatData,
     loading: chatLoading,
     error: chatError,
-  } = useFusionSubscription("/api/Chat/getChatTail?length=1");
+  } = useFusionSubscription(
+    null as ChatTailType | null,
+    "/api/Chat/getChatTail?length=1"
+  );
   const {
     data: userData,
     loading: userLoading,
     error: userError,
-  } = useFusionSubscription("/fusion/auth/getUser");
+  } = useFusionSubscription(null as UserType | null, "/fusion/auth/getUser");
   const {
     data: userCountData,
     loading: userCountLoading,
     error: userCountError,
-  } = useFusionSubscription("/api/Chat/getActiveUserCount");
+  } = useFusionSubscription(null, "/api/Chat/getActiveUserCount");
 
   return (
     <div>
@@ -111,8 +167,8 @@ function ComposerLocal({ parameter, onToggle }) {
             ? "Loading..."
             : chatError
             ? "There was an error!"
-            : chatData.messages?.[0]?.text ??
-              chatData.Messages?.[0]?.Text ??
+            : chatData?.messages?.[0]?.text ??
+              chatData?.Messages?.[0]?.Text ??
               "(no messages)"}
         </div>
         <div>
@@ -120,14 +176,14 @@ function ComposerLocal({ parameter, onToggle }) {
             ? "Loading..."
             : userError
             ? "There was an error!"
-            : userData.id ?? userData.Id}
+            : userData?.id ?? userData?.Id}
         </div>
         <div>
           {userLoading
             ? "Loading..."
             : userError
             ? "There was an error!"
-            : userData.name ?? userData.Name}
+            : userData?.name ?? userData?.Name}
         </div>
         <div>
           {userCountLoading
@@ -142,17 +198,29 @@ function ComposerLocal({ parameter, onToggle }) {
   );
 }
 
-function ComposerRemote({ parameter, onToggle }) {
+function ComposerRemote({
+  parameter,
+  onToggle,
+}: {
+  parameter: string;
+  onToggle: () => void;
+}) {
   const {
     data: sessionData,
     loading: sessionLoading,
     error: sessionError,
-  } = useFusionSubscription("/fusion/auth/getSessionInfo");
+  } = useFusionSubscription(
+    null as SessionType | null,
+    "/fusion/auth/getSessionInfo"
+  );
 
   const sessionId =
-    !sessionLoading && !sessionError ? sessionData.id ?? sessionData.Id : null;
+    !sessionLoading && !sessionError
+      ? sessionData?.id ?? sessionData?.Id
+      : null;
 
   const { data, loading, error } = useFusionSubscription(
+    null as ComposerType | null,
     sessionId
       ? `/api/composer/get?parameter=${parameter ?? ""}&session=${sessionId}`
       : null
@@ -170,14 +238,14 @@ function ComposerRemote({ parameter, onToggle }) {
         "Loading..."
       ) : (
         <div className="space-y-1 divide-y">
-          <div>{data.parameter ?? data.Parameter}</div>
-          <div>{data.uptime ?? data.Uptime}</div>
-          <div>{data.lastChatMessage ?? data.LastChatMessage}</div>
+          <div>{data?.parameter ?? data?.Parameter}</div>
+          <div>{data?.uptime ?? data?.Uptime}</div>
+          <div>{data?.lastChatMessage ?? data?.LastChatMessage}</div>
           <div>{data?.user?.id ?? data?.User?.Id}</div>
           <div>{data?.user?.name ?? data?.User?.Name}</div>
           <div>
-            {data.activeUserCount ?? data.ActiveUserCount} active user
-            {data.activeUserCount ?? data.ActiveUserCount === 1 ? "" : "s"}
+            {data?.activeUserCount ?? data?.ActiveUserCount} active user
+            {data?.activeUserCount ?? data?.ActiveUserCount === 1 ? "" : "s"}
           </div>
         </div>
       )}

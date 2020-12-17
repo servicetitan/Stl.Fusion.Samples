@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 import range from "lodash/range";
 
-export default function Section({ title, header, children, footer }) {
+export default function Section({
+  title,
+  header,
+  children,
+  footer,
+}: {
+  title: string;
+  header?: React.ReactNode;
+  children?: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
   const [count, setCount] = useState(1);
 
   return (
