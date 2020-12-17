@@ -9,12 +9,14 @@ services:
      - "1433"
     ports:
      - "5020:1433"
+  
   tutorial:
     build: 
       context: .
       target: tutorial
     ports:
      - "50005:50005"
+
   sample_hello_world:
     build: 
       context: .
@@ -68,3 +70,12 @@ services:
       DB__ServerPort: "1433"
       Client__ServerHost: "sample_caching_server"
       Client__ServerPort: "5010"
+  
+  sample_blazor_ws:
+    build: 
+      context: .
+      target: sample_blazor_ws
+    ports:
+     - "80:80"
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:80"

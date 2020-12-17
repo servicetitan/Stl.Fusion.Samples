@@ -8,6 +8,11 @@ Welcome to a collection of [Fusion] samples!
 
 ## What's Inside?
 
+### 0. Project Templates <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle">
+
+Sorry, we don't provide `dotnet new`-based templates yet, but the ones
+you can copy & modify can be found in the [`templates` folder](./templates).
+
 ### 1. HelloWorld Sample
 
 Fusion-style [HelloWorld](src/HelloWorld) shows how to create
@@ -18,7 +23,7 @@ simple dependency chains and react to invalidation events.
 
 ### 2. HelloBlazorServer Sample
 
-[HelloBlazorServer](src/HelloBlazorServer) is a default Blazor Server App 
+[HelloBlazorServer](src/HelloBlazorServer) is the default Blazor Server App 
 modified to reveal some Fusion powers. Contrary to the original app:
 * It displays changes made to a *global* counter in real-time
 * Similarly, it updates weather forecasts in real-time
@@ -33,6 +38,10 @@ features,
 [check out this part of Fusion README.md](https://github.com/servicetitan/Stl.Fusion#enough-talk---lets-fight-show-me-the-code).
 
 ### 3. Blazor Samples
+
+<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Play
+with live instance of this app hosted on a small 1-core K8s cluster
+[right now](https://fusion-samples.servicetitan.com)!
 
 It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
 [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet) website,
@@ -142,10 +151,10 @@ docker-compose build
 | Sample | Command |
 |-|-|
 | [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
-| [HelloBlazorServer] | `docker-compose run sample_hello_blazor_server` + open http://localhost:5000/ |
-| [Blazor Samples] | `docker-compose run sample_blazor` + open http://localhost:5005/ |
+| [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5000/ |
+| [Blazor Samples] | `docker-compose run --service-ports sample_blazor` + open http://localhost:5005/ |
 | [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
-| [Tutorial] | `docker-compose run tutorial` + open https://localhost:50005/README.md |
+| [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
 ## Useful Links
 

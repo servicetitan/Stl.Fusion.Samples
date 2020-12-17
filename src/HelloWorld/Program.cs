@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Stl;
+using Stl.Async;
 using Stl.Fusion;
 
 namespace Samples.HelloWorld

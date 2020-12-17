@@ -151,8 +151,7 @@ Now, some tricky aspects:
   the change is committed.
 
 All of this means that if your system is distributed and transactional, you
-need to use a bit more complex protocol with "recovery pump" service
-to replicate invalidations reliably:
+need to use a bit more complex protocol to replicate invalidations reliably:
 
 **Inside transaction**:
 
@@ -164,7 +163,7 @@ to replicate invalidations reliably:
 * Publish the *operation* to the tenant's pub/sub topic
 * Run invalidations locally.
 
-Besides that, we'll need two extra services:
+And we need two extra services:
 
 1. **Invalidation service** listens for new *operation*
    messages in topics matching every tenant it serves and runs

@@ -25,7 +25,8 @@ namespace Samples.Blazor.Server.Services
         public virtual Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
         {
             var computed = Computed.GetCurrent();
-            Task.Delay(updatePeriod, cancellationToken).ContinueWith(_ => computed!.Invalidate(), cancellationToken);
+            Task.Delay(updatePeriod, default)
+                .ContinueWith(_ => computed!.Invalidate(), CancellationToken.None);
             return Task.FromResult(DateTime.UtcNow - _startTime);
         }
     }

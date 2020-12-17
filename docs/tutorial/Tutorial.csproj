@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <!-- 1591: Missing XML comment for publicly visible type or member '*' -->
     <!-- 1998: [CS1998] This async method lacks 'await' operators and will run synchronously. -->
@@ -22,10 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.6.44" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.6.44" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.6.44" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.10" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.7.65" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.7.65" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.65" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.3.0-alpha.20303.1" />
   </ItemGroup>
