@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.7.66" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.7.67" />
   </ItemGroup>
 
   <ItemGroup>

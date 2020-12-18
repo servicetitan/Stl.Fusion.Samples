@@ -22,9 +22,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.10" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.7.66" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.7.66" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.66" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.7.67" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.7.67" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.67" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20303.1" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.3.0-alpha.20303.1" />
   </ItemGroup>
