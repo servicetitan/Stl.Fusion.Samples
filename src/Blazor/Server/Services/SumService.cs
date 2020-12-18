@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Stl.Fusion;
 
 namespace Samples.Blazor.Server.Services

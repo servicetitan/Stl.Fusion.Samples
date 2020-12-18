@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Samples.Helpers;
 
 namespace Samples.Blazor.Server.Services

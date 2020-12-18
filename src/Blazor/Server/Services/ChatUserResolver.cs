@@ -1,5 +1,5 @@
 using System;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Samples.Helpers;
 using Stl.DependencyInjection;
 

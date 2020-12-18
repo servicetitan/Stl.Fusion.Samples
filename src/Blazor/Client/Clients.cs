@@ -2,13 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Client;
 
-namespace Samples.Blazor.Client.Services
+namespace Samples.Blazor.Client
 {
-    [RestEaseReplicaService(typeof(ITimeService), Scope = Program.ClientSideScope)]
+    [RestEaseReplicaService(typeof(ITimeService), Scope = Scopes.ClientSideOnly)]
     [BasePath("time")]
     public interface ITimeClient
     {
@@ -18,7 +18,7 @@ namespace Samples.Blazor.Client.Services
         Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
     }
 
-    [RestEaseReplicaService(typeof(IScreenshotService), Scope = Program.ClientSideScope)]
+    [RestEaseReplicaService(typeof(IScreenshotService), Scope = Scopes.ClientSideOnly)]
     [BasePath("screenshot")]
     public interface IScreenshotClient
     {
@@ -26,7 +26,7 @@ namespace Samples.Blazor.Client.Services
         Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default);
     }
 
-    [RestEaseReplicaService(typeof(IChatService), Scope = Program.ClientSideScope)]
+    [RestEaseReplicaService(typeof(IChatService), Scope = Scopes.ClientSideOnly)]
     [BasePath("chat")]
     public interface IChatClient
     {
@@ -51,7 +51,7 @@ namespace Samples.Blazor.Client.Services
         Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
     }
 
-    [RestEaseReplicaService(typeof(IComposerService), Scope = Program.ClientSideScope)]
+    [RestEaseReplicaService(typeof(IComposerService), Scope = Scopes.ClientSideOnly)]
     [BasePath("composer")]
     public interface IComposerClient
     {
@@ -60,7 +60,7 @@ namespace Samples.Blazor.Client.Services
             Session session, CancellationToken cancellationToken = default);
     }
 
-    [RestEaseReplicaService(typeof(ISumService), Scope = Program.ClientSideScope)]
+    [RestEaseReplicaService(typeof(ISumService), Scope = Scopes.ClientSideOnly)]
     [BasePath("sum")]
     public interface ISumClient
     {

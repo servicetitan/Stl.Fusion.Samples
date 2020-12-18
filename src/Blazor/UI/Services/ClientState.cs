@@ -1,14 +1,14 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Stl;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
 
-namespace Samples.Blazor.Client.Services
+namespace Samples.Blazor.UI.Services
 {
     [Service(Lifetime = ServiceLifetime.Scoped)]
     public class ClientState : IDisposable

@@ -7,21 +7,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Pluralize.NET;
+using Samples.Blazor.Abstractions;
+using Samples.Blazor.Client;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 
-namespace Samples.Blazor.Client
+namespace Samples.Blazor.UI
 {
     public class Program
     {
-        public const string ClientSideScope = nameof(ClientSideScope);
-
         public static Task Main(string[] args)
         {
-            if (OSInfo.Kind != OSKind.WebAssembly)
+            if (!OSInfo.IsWebAssembly)
                 throw new ApplicationException("This app runs only in browser.");
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -61,7 +61,7 @@ namespace Samples.Blazor.Client
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeBased(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
             ConfigureSharedServices(services);
         }
 

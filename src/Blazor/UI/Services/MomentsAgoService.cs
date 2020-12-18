@@ -4,7 +4,7 @@ using Pluralize.NET;
 using Stl.Async;
 using Stl.Fusion;
 
-namespace Samples.Blazor.Client.Services
+namespace Samples.Blazor.UI.Services
 {
     // This service is local both on the server and on the client
     [ComputeService]

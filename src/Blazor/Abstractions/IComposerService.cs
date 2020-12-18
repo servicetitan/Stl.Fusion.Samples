@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 
-namespace Samples.Blazor.Common.Services
+namespace Samples.Blazor.Abstractions
 {
     public class ComposedValue
     {

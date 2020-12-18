@@ -1,6 +1,6 @@
 using System;
 
-namespace Samples.Blazor.Client.Shared
+namespace Samples.Blazor.UI.Shared
 {
     public static class FormatEx
     {

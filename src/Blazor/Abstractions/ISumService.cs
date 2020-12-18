@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
 
-namespace Samples.Blazor.Common.Services
+namespace Samples.Blazor.Abstractions
 {
     public interface ISumService
     {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Stl.Fusion;
 
-namespace Samples.Blazor.Common.Services
+namespace Samples.Blazor.Abstractions
 {
     public class Screenshot
     {

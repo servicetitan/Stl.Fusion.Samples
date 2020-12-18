@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using Stl;
 using Stl.Fusion;
 
-namespace Samples.Blazor.Common.Services
+namespace Samples.Blazor.Abstractions
 {
     public class LongKeyedEntity : IHasId<long>
     {

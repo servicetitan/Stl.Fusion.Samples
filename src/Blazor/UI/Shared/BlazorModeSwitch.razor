@@ -19,7 +19,7 @@
 @code {
     [Parameter]
     public string CssClass { get; set; } = "form-check";
-    public bool IsServerSideBlazor { get; } = OSInfo.Kind != OSKind.WebAssembly;
+    public bool IsServerSideBlazor { get; } = !OSInfo.IsWebAssembly;
 
     private void Changed(ChangeEventArgs eventArgs)
         => Navigation.NavigateTo(GetBlazorModeSwitchUrl(!IsServerSideBlazor), true);

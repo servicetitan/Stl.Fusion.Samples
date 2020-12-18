@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 
 namespace Samples.Blazor.Server.Services
 {
