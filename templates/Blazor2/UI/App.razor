@@ -1,4 +1,5 @@
 <CascadingAuthState SessionId="@SessionId">
+<ThemeProvider Theme="@Theme">
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
@@ -9,9 +10,12 @@
             </LayoutView>
         </NotFound>
     </Router>
+</ThemeProvider>
 </CascadingAuthState>
 
 @code {
+    private Theme Theme { get; } = new Theme() { IsGradient = true, IsRounded = false };
+
     [Parameter]
     public string SessionId { get; set; } = "";
 }
