@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Blazor\Client\Cli
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{2C83F338-3CA5-4401-B7DF-25C853C6D92B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazorize", "Blazorize", "{187E917C-9456-4B4E-A3F0-D22635578994}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor2", "Blazor2", "{187E917C-9456-4B4E-A3F0-D22635578994}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "..\..\Blazorize\src\Abstractions\Abstractions.csproj", "{E1E96CD0-F148-4E64-B186-B50BDBF66FF1}"
 EndProject
