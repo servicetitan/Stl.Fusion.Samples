@@ -1,0 +1,34 @@
+@using Stl.OS
+@using System.Web
+@inject NavigationManager Navigation
+<BarDropdown Class="@CssClass">
+    <BarDropdownToggle Color="Color.Primary">
+        Blazor Mode
+    </BarDropdownToggle>
+    <BarDropdownMenu>
+        <BarDropdownItem Active="IsServerSideBlazor" Clicked="@(() => ChangeMode(true))" >Server</BarDropdownItem>
+        <BarDropdownItem Active="!IsServerSideBlazor" Clicked="@(() => ChangeMode(false))">WebAssembly</BarDropdownItem>
+    </BarDropdownMenu>
+</BarDropdown>
+
+@code {
+    [Parameter]
+    public string CssClass { get; set; } = "";
+    public bool IsServerSideBlazor { get; } = OSInfo.Kind != OSKind.WebAssembly;
+
+    private void ChangeMode(bool isServerSideBlazor)
+    {
+        if (isServerSideBlazor != IsServerSideBlazor)
+            Navigation.NavigateTo(GetBlazorModeSwitchUrl(isServerSideBlazor), true);
+    }
+
+    protected virtual string GetBlazorModeSwitchUrl(bool isServerSideBlazor, Uri? redirectTo = null)
+    {
+        redirectTo ??= new Uri(Navigation.Uri);
+        if (!redirectTo.IsAbsoluteUri)
+            redirectTo = Navigation.ToAbsoluteUri(redirectTo.ToString());
+        return $"_blazorMode/" +
+            $"{(isServerSideBlazor.ToString().ToLowerInvariant())}" +
+            $"?redirectTo={HttpUtility.UrlEncode(redirectTo.ToString())}";
+    }
+}

@@ -93,7 +93,7 @@ namespace Templates.Blazor.Server
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "Templates.Blazor.Server API", Version = "v1"
+                    Title = "Templates.Blazor API", Version = "v1"
                 });
             });
         }

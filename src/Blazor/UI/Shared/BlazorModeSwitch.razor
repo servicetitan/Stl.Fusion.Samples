@@ -1,0 +1,36 @@
+@using Stl.OS
+@using System.Web
+@inject NavigationManager Navigation
+<div class="@CssClass">
+    <label class="form-check-label">
+        <input class="form-check-input" type="radio" name="blazorModeSwitch"
+               checked="@IsServerSideBlazor" @onchange="Changed">
+        Server-Side Blazor
+    </label>
+</div>
+<div class="@CssClass">
+    <label class="form-check-label">
+        <input class="form-check-input" type="radio" name="blazorModeSwitch"
+               checked="@(!IsServerSideBlazor)" @onchange="Changed" />
+        Blazor WebAssembly
+    </label>
+</div>
+
+@code {
+    [Parameter]
+    public string CssClass { get; set; } = "form-check";
+    public bool IsServerSideBlazor { get; } = !OSInfo.IsWebAssembly;
+
+    private void Changed(ChangeEventArgs eventArgs)
+        => Navigation.NavigateTo(GetBlazorModeSwitchUrl(!IsServerSideBlazor), true);
+
+    protected virtual string GetBlazorModeSwitchUrl(bool isServerSideBlazor, Uri? redirectTo = null)
+    {
+        redirectTo ??= new Uri(Navigation.Uri);
+        if (!redirectTo.IsAbsoluteUri)
+            redirectTo = Navigation.ToAbsoluteUri(redirectTo.ToString());
+        return $"_blazorMode/" +
+            $"{(isServerSideBlazor.ToString().ToLowerInvariant())}" +
+            $"?redirectTo={HttpUtility.UrlEncode(redirectTo.ToString())}";
+    }
+}

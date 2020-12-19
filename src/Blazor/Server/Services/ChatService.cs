@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Samples.Helpers;
 using Stl;
 using Stl.Collections;

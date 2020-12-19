@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.7.52" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.7.67" />
   </ItemGroup>
 
   <ItemGroup>

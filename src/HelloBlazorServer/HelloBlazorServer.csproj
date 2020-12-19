@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.65" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.7.65" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.67" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.7.67" />
   </ItemGroup>
 
   <ItemGroup>

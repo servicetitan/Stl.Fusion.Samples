@@ -16,7 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Samples.Blazor.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
@@ -59,7 +59,10 @@ namespace Samples.Blazor.Server
             });
 
             // Fusion services
-            services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
+            services.AddSingleton(c => {
+                var serverSettings = c.GetRequiredService<ServerSettings>();
+                return new Publisher.Options() { Id = serverSettings.PublisherId };
+            });
             services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebSocketServer();
@@ -69,7 +72,7 @@ namespace Samples.Blazor.Server
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
-            Client.Program.ConfigureSharedServices(services);
+            UI.Program.ConfigureSharedServices(services);
 
             services.AddAuthentication(options => {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -120,7 +123,7 @@ namespace Samples.Blazor.Server
             if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
                 // This is a regular build, not a build produced w/ "publish",
                 // so we remap wwwroot to the client's wwwroot folder
-                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../Client/{binCfgPart}/net5.0/wwwroot"));
+                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net5.0/wwwroot"));
             Env.WebRootPath = wwwRootPath;
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
             StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);

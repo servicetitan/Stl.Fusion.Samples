@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Stl.Fusion;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Services

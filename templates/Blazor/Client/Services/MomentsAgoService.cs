@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Pluralize.NET;
-using Stl;
+using Stl.Async;
 using Stl.Fusion;
 
 namespace Templates.Blazor.Client.Services

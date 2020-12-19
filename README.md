@@ -67,7 +67,7 @@ that properly tracks all these dependencies and updates accordingly:
   [composed on the server-side](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Server/Services/ComposerService.cs);
   its client-side replica is bound to the component displaying the panel
 * And the second panel uses an UI model
-  [composed completely on the client](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Client/Services/LocalComposerService.cs) 
+  [composed completely on the client](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/UI/Services/LocalComposerService.cs) 
   by combining server-side replicas of all the values used there.
 * **The surprising part:** two above files are almost identical!
 
