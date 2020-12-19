@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Template.Blazorize.Host.Controllers
+namespace Templates.Blazor2.Host.Controllers
 {
     public class AuthController : Controller
     {

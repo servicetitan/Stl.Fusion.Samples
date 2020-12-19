@@ -1,17 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <RootNamespace>Template.Blazorize.Services</RootNamespace>
-    <AssemblyName>Template.Blazorize.Services</AssemblyName>
+    <RootNamespace>Templates.Blazor2.Services</RootNamespace>
+    <AssemblyName>Templates.Blazor2.Services</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-    <PackageReference Include="Stl.Fusion.Client" />
-    <PackageReference Include="DeepSpeech" />
-    <PackageReference Include="NAudio" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Abstractions.csproj" />

@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using Pluralize.NET;
-using Stl;
+using Stl.Async;
 using Stl.Fusion;
 
-namespace Template.Blazorize.UI.Services
+namespace Templates.Blazor2.UI.Services
 {
     // This service is local both on the server and on the client
     [ComputeService]

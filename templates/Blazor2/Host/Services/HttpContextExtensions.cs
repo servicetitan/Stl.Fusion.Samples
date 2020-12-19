@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Template.Blazorize.Host.Services
+namespace Templates.Blazor2.Host.Services
 {
     public static class HttpContextExtensions
     {

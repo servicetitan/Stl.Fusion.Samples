@@ -9,14 +9,12 @@
     </BarBrand>
     <BarMenu>
         <BarStart>
-            @*
             <BarItem>
-                @Link(IconName.Microphone, "Transcribe", "/", Match.All)
+                @Link(IconName.Home, "Home", "/", Match.All)
             </BarItem>
             <BarItem>
-                @Link(IconName.List, "Active Transcriptions", "/active", Match.All)
+                @Link(IconName.Clock, "Server Time", "/serverTime", Match.All)
             </BarItem>
-            *@
         </BarStart>
         <BarEnd>
             <BarItem>
@@ -29,9 +27,9 @@
 @code {
     private RenderFragment Link(object icon, string title, string href, Match match = Match.Prefix)
     {
-        var target = href.StartsWith("http://") || href.StartsWith("https://") ? "_blank" : "";
+        var target = href.StartsWith("http://") || href.StartsWith("https://") ? Target.Blank : Target.None;
         return @<BarItem>
-                   <BarLink Title="@title" To="@href" Match="@match"><BarIcon IconName="icon"></BarIcon> @title</BarLink>
+                   <BarLink Title="@title" To="@href" Target="@target" Match="@match"><BarIcon IconName="@icon"></BarIcon> @title</BarLink>
                </BarItem>;
     }
 }

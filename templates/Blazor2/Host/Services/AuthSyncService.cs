@@ -8,7 +8,7 @@ using AspNet.Security.OAuth.GitHub;
 using Stl.DependencyInjection;
 using Stl.Fusion.Authentication;
 
-namespace Template.Blazorize.Host.Services
+namespace Templates.Blazor2.Host.Services
 {
     [Service]
     public class AuthSyncService

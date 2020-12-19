@@ -1,9 +1,9 @@
 ﻿@page "/"
-@namespace Template.Blazorize.Host.Pages
-@using Template.Blazorize.UI
-@using Template.Blazorize.Host.Controllers
-@using Template.Blazorize.Host.Services
-@using Stl
+@namespace Templates.Blazor2.Host.Pages
+@using Templates.Blazor2.UI
+@using Templates.Blazor2.Host.Controllers
+@using Templates.Blazor2.Host.Services
+@using Stl.Async
 @using Stl.Fusion.Authentication
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @inject AuthSyncService AuthSyncService
@@ -33,9 +33,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Blasorise Template</title>
+    <title>Fusion+Blazorise Template</title>
     <base href="~/" />
-    
     <link href="css/app.css" rel="stylesheet" />
 
     <partial name="Blazorise.Head" />

@@ -1,32 +1,17 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
-using Template.Blazorize.Abstractions;
 using Stl.Fusion.Client;
-using Stl.Serialization;
+using Templates.Blazor2.Abstractions;
 
-namespace Template.Blazorize.UI.Services
+namespace Templates.Blazor2.UI.Services
 {
-    [RestEaseReplicaService(typeof(ITranscriber), Scope = Program.ClientSideScope)]
-    [BasePath("transcriber")]
-    public interface ITranscriberClient
+    [RestEaseReplicaService(typeof(ITimeService), Scope = Program.ClientSideScope)]
+    [BasePath("time")]
+    public interface ITimeClient
     {
-        // Write API
-
-        [Post("begin")]
-        Task<string> BeginAsync([Body] Base64Data data, CancellationToken cancellationToken = default);
-        [Post("append")]
-        Task AppendAsync(string transcriptId, [Body] Base64Data data, CancellationToken cancellationToken = default);
-        [Post("end")]
-        Task EndAsync(string transcriptId, CancellationToken cancellationToken = default);
-
-        // Read API
-
         [Get("get")]
-        Task<Transcript> GetAsync(string transcriptId, CancellationToken cancellationToken = default);
-        [Get("getSegmentCount")]
-        Task<int?> GetSegmentCountAsync(string transcriptId, CancellationToken cancellationToken = default);
-        [Get("getActiveTranscriptionIds")]
-        Task<string[]> GetActiveTranscriptionIdsAsync(CancellationToken cancellationToken = default);
+        Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default);
     }
 }

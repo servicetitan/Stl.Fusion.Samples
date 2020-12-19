@@ -2,7 +2,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Template.Blazorize.Host.Controllers
+namespace Templates.Blazor2.Host.Controllers
 {
     [Route("_blazorMode")]
     public class BlazorModeController : ControllerBase

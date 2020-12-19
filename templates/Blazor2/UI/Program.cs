@@ -16,7 +16,7 @@ using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 
-namespace Template.Blazorize.UI
+namespace Templates.Blazor2.UI
 {
     public class Program
     {

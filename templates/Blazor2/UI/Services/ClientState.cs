@@ -5,7 +5,7 @@ using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
 
-namespace Template.Blazorize.UI.Services
+namespace Templates.Blazor2.UI.Services
 {
     [Service(Lifetime = ServiceLifetime.Scoped)]
     public class ClientState : IDisposable

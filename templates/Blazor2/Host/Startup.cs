@@ -17,8 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Template.Blazorize.Abstractions;
-using Template.Blazorize.Services;
+using Templates.Blazor2.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
@@ -26,13 +25,12 @@ using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
-using Stl.IO;
 using PathString = Stl.IO.PathString;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 
-namespace Template.Blazorize.Host
+namespace Templates.Blazor2.Host
 {
     public class Startup
     {
@@ -83,28 +81,8 @@ namespace Template.Blazorize.Host
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.AttributeBased()
-                .AddServicesFrom(typeof(TranscriberBase).Assembly)
+                .AddServicesFrom(typeof(TimeService).Assembly)
                 .AddServicesFrom(Assembly.GetExecutingAssembly());
-
-            // Registering DeepSpeechTranscriber
-            var basePath = PathString.New(typeof(Startup).Assembly.Location).DirectoryPath;
-            var deepSpeechPath = basePath & "../../files/deepspeech";
-            if (!Directory.Exists(deepSpeechPath))
-                deepSpeechPath = PathString.New(Env.ContentRootPath) & "files/deepspeech";
-
-            PathString FindModelFile(string pattern)
-                => Directory.EnumerateFiles(deepSpeechPath, pattern, SearchOption.TopDirectoryOnly).FirstOrDefault()
-                    ?? throw new FileNotFoundException(
-                        $"One of model files not found: {deepSpeechPath & pattern}\r\n" +
-                        $"Please download it from https://github.com/mozilla/DeepSpeech/releases/",
-                        deepSpeechPath & pattern);
-            services.AddSingleton(new DeepSpeechTranscriber.Options {
-                ModelPath = FindModelFile("*.pbmm"),
-                ScorerPath = FindModelFile("*.scorer"),
-                TranscodeFrequencyDivider = 1,
-            });
-            services.AddSingleton<ITranscriber>(c => c.GetRequiredService<DeepSpeechTranscriber>());
-
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 
@@ -136,7 +114,7 @@ namespace Template.Blazorize.Host
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "ServiceTitan.Speech.Host API", Version = "v1"
+                    Title = "Templates.Blazor2 API", Version = "v1"
                 });
             });
         }
@@ -155,7 +133,7 @@ namespace Template.Blazorize.Host
             if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
                 // This is a regular build, not a build produced w/ "publish",
                 // so we remap wwwroot to the client's wwwroot folder
-                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../Client/{binCfgPart}/net5.0/wwwroot"));
+                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net5.0/wwwroot"));
             Env.WebRootPath = wwwRootPath;
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
             StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
