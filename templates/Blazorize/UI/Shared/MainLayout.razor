@@ -1,0 +1,23 @@
+﻿@inherits LayoutComponentBase
+
+@* <Layout Sider="false" Class="main"> *@
+@*     <Layout> *@
+@*         <LayoutHeader Fixed="true"> *@
+@*             <MainBar/> *@
+@*         </LayoutHeader> *@
+@*          *@
+@*         <LayoutContent Padding="Padding.Is4"> *@
+@*             @Body *@
+@*         </LayoutContent> *@
+@*     </Layout> *@
+@* </Layout> *@
+
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+<div class="main">
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
