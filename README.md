@@ -8,10 +8,18 @@ Welcome to a collection of [Fusion] samples!
 
 ## What's Inside?
 
-### 0. Project Templates <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle">
+### 0. Solution Templates <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle">
 
 Sorry, we don't provide `dotnet new`-based templates yet, but the ones
 you can copy & modify can be found in the [`templates` folder](./templates).
+
+Currently there are 3 app templates:
+- Plain Blazor app template
+- [Blazorise](https://blazorise.com/)-based app template
+- [MudBlazor](https://mudblazor.com/)-based app template.
+
+Open `Templates.sln`, run any of `*.Host` or `*.Server` projects,
+and go to http://localhost:5005 to them in action.
 
 ### 1. HelloWorld Sample
 
