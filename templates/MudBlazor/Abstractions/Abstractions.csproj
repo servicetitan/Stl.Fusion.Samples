@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Templates.Blazor3.Abstractions</RootNamespace>
+    <AssemblyName>Templates.Blazor3.Abstractions</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.7.67" />
+  </ItemGroup>
+
+</Project>
