@@ -1,0 +1,40 @@
+﻿@inherits LayoutComponentBase
+@inject IDialogService Dialog
+@inject NavigationManager Navigation
+
+<MudThemeProvider Theme="@CurrentTheme"/>
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall" />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="25">
+        <MudIconButton Icon="@Icons.Material.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
+        <MudText Typo="Typo.h5" Class="ml-3">Fusion+MudBlazor Template</MudText>
+        <MudAppBarSpacer/>
+        <MudTooltip Text="Toggle light/dark theme">
+            <MudIconButton Icon="@Icons.Material.Brightness4" Color="Color.Inherit" OnClick="@ThemeToggle" />
+        </MudTooltip>
+        <MudTooltip Text="Change Blazor mode">
+            <MudIconButton Icon="@Icons.Material.Settings" Color="Color.Inherit" OnClick="@ChangeBlazorMode" />
+        </MudTooltip>
+    </MudAppBar>
+    <MudDrawer @bind-Open="@IsDrawerOpen" Elevation="25" Clipped="true">
+        <MudDrawerHeader LinkToIndex="true">
+            <MudText Typo="Typo.h6">Menu</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool IsDrawerOpen { get; set; } = true;
+    private bool IsDarkTheme { get; set; }
+    private MudTheme CurrentTheme => IsDarkTheme ? Themes.Dark : Themes.Default;
+
+    private void DrawerToggle() => IsDrawerOpen = !IsDrawerOpen;
+    private void ThemeToggle() => IsDarkTheme = !IsDarkTheme;
+    private void ChangeBlazorMode() => Dialog.Show<BlazorModeDialog>("Change Blazor Mode");
+}

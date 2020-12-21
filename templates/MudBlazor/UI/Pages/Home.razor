@@ -1,0 +1,26 @@
+﻿@page "/"
+@inject NavigationManager Navigator
+
+<MudText Typo="Typo.h4" Class="pb-3">Fusion+MudBlazor Template</MudText>
+
+<MudText>To create your own app based on it:</MudText>
+<MudList>
+    <MudListItem Icon="@Icons.Material.Remove">Copy it to a new folder</MudListItem>
+    <MudListItem Icon="@Icons.Material.Remove">Search for "Templates.Blazor3" everywhere in the new solution and replace it to your own project name</MudListItem>
+    <MudListItem Icon="@Icons.Material.Remove">Modify whatever you like!</MudListItem>
+</MudList>
+
+<MudText>
+    <MudChip Color="Color.Success">Note</MudChip>
+    <MudLink Href="/swagger" Target="_blank">Swagger API browser</MudLink> is already bundled.
+</MudText>
+
+<MudPaper Class="pa-3 ma-3" Elevation="16">
+    <MudText Typo="Typo.subtitle1">Please share your feedback once you're done playing with it!</MudText>
+    <MudButton
+        Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large"
+        Link="https://forms.gle/TpGkmTZttukhDMRB6" Target="_blank" >
+        Share your feedback
+    </MudButton>
+</MudPaper>
+

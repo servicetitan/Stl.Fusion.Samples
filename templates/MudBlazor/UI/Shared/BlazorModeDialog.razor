@@ -1,0 +1,42 @@
+@using Stl.OS
+@using System.Web
+@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+        <MudRadioGroup @bind-SelectedOption="@IsBlazorServerSelected">
+            <MudRadio Option="True">Blazor Server</MudRadio><br/>
+            <MudRadio Option="False">Blazor WebAssembly</MudRadio>
+        </MudRadioGroup>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static bool IsBlazorServer => OSInfo.Kind != OSKind.WebAssembly;
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private string IsBlazorServerSelected { get; set; } = IsBlazorServer.ToString();
+
+    void Cancel() => MudDialog.Cancel();
+    void Submit()
+    {
+        var isBlazorServerSelected = bool.Parse(IsBlazorServerSelected);
+        if (isBlazorServerSelected != IsBlazorServer)
+            Navigation.NavigateTo(GetBlazorModeSwitchUrl(isBlazorServerSelected), true);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    protected virtual string GetBlazorModeSwitchUrl(bool isBlazorServer, Uri? redirectTo = null)
+    {
+        redirectTo ??= new Uri(Navigation.Uri);
+        if (!redirectTo.IsAbsoluteUri)
+            redirectTo = Navigation.ToAbsoluteUri(redirectTo.ToString());
+        return $"_blazorMode/" +
+            $"{(isBlazorServer.ToString().ToLowerInvariant())}" +
+            $"?redirectTo={HttpUtility.UrlEncode(redirectTo.ToString())}";
+    }
+}
