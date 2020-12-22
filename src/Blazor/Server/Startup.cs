@@ -70,7 +70,7 @@ namespace Samples.Blazor.Server
             var fusionAuth = fusion.AddAuthentication().AddServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 

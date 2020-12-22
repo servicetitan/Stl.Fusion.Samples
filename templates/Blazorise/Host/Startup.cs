@@ -80,7 +80,7 @@ namespace Templates.Blazor2.Host
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased()
+            services.AttributeScanner()
                 .AddServicesFrom(typeof(TimeService).Assembly)
                 .AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client

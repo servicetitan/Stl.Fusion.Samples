@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Samples.Caching.Common;
 using Samples.Helpers;
 using Stl.DependencyInjection;
-using Stl.Frozen;
 using Stl.Fusion;
 
 namespace Samples.Caching.Server.Services

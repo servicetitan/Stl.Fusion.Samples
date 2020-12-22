@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <RootNamespace>Templates.Blazor.Client</RootNamespace>
     <AssemblyName>Templates.Blazor.Client</AssemblyName>
@@ -12,7 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.67" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.8.3" />
     <PackageReference Include="UAParser" Version="3.1.44" />
   </ItemGroup>
 

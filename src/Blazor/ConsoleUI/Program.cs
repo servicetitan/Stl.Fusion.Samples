@@ -45,7 +45,7 @@ static IServiceProvider CreateServiceProvider()
             var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
             o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
         });
-    var fusionAuth = fusion.AddAuthentication().AddClient();
+    var fusionAuth = fusion.AddAuthentication().AddRestEaseClient();
 
     // Default delay for update delayers
     services.AddSingleton(c => new UpdateDelayer.Options() {
@@ -56,8 +56,9 @@ static IServiceProvider CreateServiceProvider()
 
     // This method registers services marked with any of ServiceAttributeBase descendants, including:
     // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-    services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
-    services.AttributeBased(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+    services.AttributeScanner()
+        .AddServicesFrom(Assembly.GetExecutingAssembly())
+        .WithScope(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
 
     return services.BuildServiceProvider();
 }

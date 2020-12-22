@@ -16,7 +16,6 @@ namespace Samples.Caching.Server.Services
             base.OnModelCreating(modelBuilder);
 
             var user = modelBuilder.Entity<Tenant>();
-            user.Ignore(u => u.IsFrozen);
             user.HasKey(u => u.Id);
             user.HasIndex(u => u.Name);
             user.Property(u => u.Version).IsConcurrencyToken();

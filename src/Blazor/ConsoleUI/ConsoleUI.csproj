@@ -4,13 +4,14 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <RootNamespace>Samples.Blazor.ConsoleUI</RootNamespace>
     <AssemblyName>Samples.Blazor.ConsoleUI</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.7.67" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.8.3" />
   </ItemGroup>
 
   <ItemGroup>

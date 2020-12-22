@@ -147,7 +147,7 @@
 
     protected override async Task<List<SessionModel>> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        var sessions = await AuthService.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
+        var sessions = await AuthService.GetUserSessionsAsync(Session, cancellationToken).ConfigureAwait(false);
         var result = new List<SessionModel>();
 
         Task<string> GetMomentsAgo(DateTime dateTime) => MomentsAgoService.GetMomentsAgoAsync(dateTime);

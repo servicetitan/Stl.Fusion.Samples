@@ -57,11 +57,11 @@ namespace Samples.Blazor.UI
                     var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
                     o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
                 });
-            var fusionAuth = fusion.AddAuthentication().AddClient().AddBlazor();
+            var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+            services.AttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
             ConfigureSharedServices(services);
         }
 
@@ -76,7 +76,7 @@ namespace Samples.Blazor.UI
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }
 }
