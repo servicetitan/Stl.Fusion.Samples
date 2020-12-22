@@ -185,9 +185,11 @@ public static IHost CreateHost()
         logging.ClearProviders().SetMinimumLevel(LogLevel.Information).AddDebug());
     builder.ConfigureServices((b, services) =>
     {
-        services.AddFusion()
-            .AddWebSocketServer().BackToFusion()
-            .AddComputeService<ICounterService, CounterService>();
+        services.AddFusion(f =>
+        {
+            f.AddWebSocketServer();
+            f.AddComputeService<ICounterService, CounterService>();
+        });
         services.AddRouting();
         services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
     });
