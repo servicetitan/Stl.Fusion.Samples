@@ -5,6 +5,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>Samples.Caching.Server</AssemblyName>
     <RootNamespace>Samples.Caching.Server</RootNamespace>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 
