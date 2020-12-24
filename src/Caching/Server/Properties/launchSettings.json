@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Samples.Caching.Server": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "applicationUrl": "http://localhost:5010"
+    }
+  }
+}
