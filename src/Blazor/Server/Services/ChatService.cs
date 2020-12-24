@@ -46,11 +46,9 @@ namespace Samples.Blazor.Server.Services
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
             await using var dbContext = CreateDbContext();
 
-            var userEntry = dbContext.ChatUsers.Add(new ChatUser() {
-                Name = name
-            });
+            var user = new ChatUser() { Name = name };
+            await dbContext.ChatUsers.AddAsync(user, cancellationToken).ConfigureAwait(false);
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            var user = userEntry.Entity;
 
             // Invalidation
             Computed.Invalidate(() => GetUserAsync(user.Id, CancellationToken.None));
@@ -63,9 +61,9 @@ namespace Samples.Blazor.Server.Services
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
             await using var dbContext = CreateDbContext();
 
-            var user = await GetUserAsync(id, cancellationToken).ConfigureAwait(false);
+            var user = await dbContext.ChatUsers.AsQueryable()
+                .SingleAsync(u => u.Id == id, cancellationToken).ConfigureAwait(false);
             user.Name = name;
-            dbContext.ChatUsers.Update(user);
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             // Invalidation
@@ -79,13 +77,13 @@ namespace Samples.Blazor.Server.Services
             await using var dbContext = CreateDbContext();
 
             await GetUserAsync(userId, cancellationToken).ConfigureAwait(false); // Check to ensure the user exists
-            var messageEntry = dbContext.ChatMessages.Add(new ChatMessage() {
+            var message = new ChatMessage() {
                 CreatedAt = DateTime.UtcNow,
                 UserId = userId,
                 Text = text,
-            });
+            };
+            await dbContext.ChatMessages.AddAsync(message, cancellationToken).ConfigureAwait(false);
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            var message = messageEntry.Entity;
 
             // Invalidation
             Computed.Invalidate(EveryChatTail);

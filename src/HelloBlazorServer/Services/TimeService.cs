@@ -31,7 +31,7 @@ namespace Samples.HelloBlazorServer.Services
             // Invalidate the result when it's supposed to change
             var delay = (unitCount + 1) * unit - delta;
             var computed = Computed.GetCurrent();
-            Task.Delay(delay, default).ContinueWith(_ => computed.Invalidate()).Ignore();
+            Task.Delay(delay, default).ContinueWith(_ => computed!.Invalidate()).Ignore();
 
             return Task.FromResult(result);
         }

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Samples.Blazor.Abstractions;
-using Samples.Helpers;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -9,8 +8,7 @@ namespace Samples.Blazor.Server.Services
         public DbSet<ChatUser> ChatUsers { get; protected set; } = null!;
         public DbSet<ChatMessage> ChatMessages { get; protected set; } = null!;
 
-        public AppDbContext(DbContextOptions options) : base(options)
-            => this.DisableChangeTracking();
+        public AppDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

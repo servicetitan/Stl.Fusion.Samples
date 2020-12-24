@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OAuth.GitHub;
@@ -22,7 +23,7 @@ namespace Samples.Blazor.Server.Services
             CancellationToken cancellationToken = default)
         {
             var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
-            if (user.Identity.Name == principal.Identity?.Name)
+            if (((IPrincipal) user).Identity?.Name == principal.Identity?.Name)
                 return;
 
             var authenticationType = principal.Identity?.AuthenticationType ?? "";
