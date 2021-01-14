@@ -12,8 +12,8 @@ Your should reference:
   Blazor clients may reference [Stl.Fusion.Blazor](https://www.nuget.org/packages/Stl.Fusion.Blazor/) instead
 * [Stl.Fusion](https://www.nuget.org/packages/Stl.Fusion/) &ndash; from shared assemblies,
   i.e. the ones to be used on both sides.
-* [Stl.Fusion.EntityFramework](https://www.nuget.org/packages/Stl.Fusion.EntityFramework/), if you plan to
-  use [EF Core](https://docs.microsoft.com/en-us/ef/) - most likely you'll need some of helper types it provides.
+* [Stl.Fusion.EntityFramework](https://www.nuget.org/packages/Stl.Fusion.EntityFramework/) &ndash; from server-side assemblies, 
+  if you plan to use [EF Core](https://docs.microsoft.com/en-us/ef/). Most likely you'll need some of helper types it provides.
 
 The full list of Fusion packages:
 
