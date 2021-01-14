@@ -11,7 +11,7 @@ using Stl.Fusion.Client;
 using static System.Console;
 
 var services = CreateServiceProvider();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
 var timeService = services.GetRequiredService<ITimeService>();
 using var timeState = stateFactory.NewLive<string>(async (s, cancellationToken) => {
     var time = await timeService.GetTimeAsync(cancellationToken);

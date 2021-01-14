@@ -49,7 +49,7 @@ namespace Tutorial
         {
             #region Part03_MutableState
             var services = CreateServices();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             var state = stateFactory.NewMutable<int>(1);
             var computed = state.Computed;
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
@@ -63,7 +63,7 @@ namespace Tutorial
         {
             #region Part03_MutableStateError
             var services = CreateServices();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             var state = stateFactory.NewMutable<int>();
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
             WriteLine("Setting state.Error.");
@@ -83,7 +83,7 @@ namespace Tutorial
             #region Part03_LiveState
             var services = CreateServices();
             var counters = services.GetRequiredService<CounterService>();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             WriteLine("Creating state.");
             using var state = stateFactory.NewLive<string>(
                 options => {

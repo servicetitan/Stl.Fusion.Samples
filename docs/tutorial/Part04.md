@@ -317,7 +317,7 @@ WriteLine("Host started.");
 
 var services = CreateClientServices();
 var counters = services.GetRequiredService<ICounterService>();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
             using var state = stateFactory.NewLive<string>(
                 options =>
                 {

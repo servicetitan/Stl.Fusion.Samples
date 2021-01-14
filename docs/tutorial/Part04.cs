@@ -226,7 +226,7 @@ namespace Tutorial
 
             var services = CreateClientServices();
             var counters = services.GetRequiredService<ICounterService>();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             using var state = stateFactory.NewLive<string>(
                 options => {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
