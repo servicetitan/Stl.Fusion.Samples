@@ -45,7 +45,7 @@ The full list of Fusion packages:
   Implements handy Blazor components. Currently there is `StatefulCompontentBase<TState>`
   and its 2 descendants: `LiveComponentBase<T>` and `LiveComponentBase<T, TLocals>`.
 * [Stl.Fusion.EntityFramework](https://www.nuget.org/packages/Stl.Fusion.EntityFramework/) - depends on `Stl.Fusion` and `Stl.CommandR`.
-  [EF Core](https://docs.microsoft.com/en-us/ef/) related helpers for Fusion apps.
+  [EF Core](https://docs.microsoft.com/en-us/ef/)-related helpers for Fusion apps.
     
 
 #### [Next: Part 1 &raquo;](./Part01.md) | [Tutorial Home](./README.md)
