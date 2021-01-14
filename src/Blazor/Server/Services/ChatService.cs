@@ -11,9 +11,7 @@ using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Samples.Blazor.Abstractions;
-using Samples.Helpers;
-using Stl;
-using Stl.Collections;
+using Stl.Fusion.EntityFramework;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -44,22 +42,24 @@ namespace Samples.Blazor.Server.Services
         public async Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default)
         {
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
-            await using var dbContext = CreateDbContext();
+            await using var dbContext = CreateDbContext().ReadWrite();
 
             var user = new ChatUser() { Name = name };
             await dbContext.ChatUsers.AddAsync(user, cancellationToken).ConfigureAwait(false);
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             // Invalidation
-            Computed.Invalidate(() => GetUserAsync(user.Id, CancellationToken.None));
-            Computed.Invalidate(() => GetUserCountAsync(CancellationToken.None));
+            using (Computed.Invalidate()) {
+                GetUserAsync(user.Id, CancellationToken.None).Ignore();
+                GetUserCountAsync(CancellationToken.None).Ignore();
+            }
             return user;
         }
 
         public async Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default)
         {
             name = await NormalizeNameAsync(name, cancellationToken).ConfigureAwait(false);
-            await using var dbContext = CreateDbContext();
+            await using var dbContext = CreateDbContext().ReadWrite();
 
             var user = await dbContext.ChatUsers.AsQueryable()
                 .SingleAsync(u => u.Id == id, cancellationToken).ConfigureAwait(false);
@@ -67,14 +67,15 @@ namespace Samples.Blazor.Server.Services
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             // Invalidation
-            Computed.Invalidate(() => GetUserAsync(id, CancellationToken.None));
+            using (Computed.Invalidate())
+                GetUserAsync(id, CancellationToken.None).Ignore();
             return user;
         }
 
         public async Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default)
         {
             text = await NormalizeTextAsync(text, cancellationToken).ConfigureAwait(false);
-            await using var dbContext = CreateDbContext();
+            await using var dbContext = CreateDbContext().ReadWrite();
 
             await GetUserAsync(userId, cancellationToken).ConfigureAwait(false); // Check to ensure the user exists
             var message = new ChatMessage() {
@@ -86,7 +87,8 @@ namespace Samples.Blazor.Server.Services
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             // Invalidation
-            Computed.Invalidate(EveryChatTail);
+            using (Computed.Invalidate())
+                EveryChatTail().Ignore();
             return message;
         }
 

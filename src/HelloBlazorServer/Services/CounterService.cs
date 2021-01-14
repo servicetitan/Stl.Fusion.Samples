@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Stl.Async;
 using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer.Services
@@ -25,7 +26,8 @@ namespace Samples.HelloBlazorServer.Services
                 ++_count;
                 _changeTime = DateTime.Now;
             }
-            Computed.Invalidate(() => GetCounterAsync());
+            using (Computed.Invalidate())
+                GetCounterAsync();
             return Task.CompletedTask;
         }
     }

@@ -3,9 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Samples.Caching.Common;
-using Samples.Helpers;
+using Stl.Async;
 using Stl.DependencyInjection;
 using Stl.Fusion;
+using Stl.Fusion.EntityFramework;
 
 namespace Samples.Caching.Server.Services
 {
@@ -20,7 +21,7 @@ namespace Samples.Caching.Server.Services
 
         public async Task AddOrUpdateAsync(Tenant tenant, long? version, CancellationToken cancellationToken = default)
         {
-            await using var dbContext = CreateDbContext();
+            await using var dbContext = CreateDbContext().ReadWrite();
             if (version.HasValue) {
                 var entry = dbContext.Tenants.Update(tenant);
                 entry.Property(nameof(Tenant.Version)).OriginalValue = version.GetValueOrDefault();
@@ -30,23 +31,25 @@ namespace Samples.Caching.Server.Services
             }
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            if (IsComputeService) {
-                Computed.Invalidate(() => TryGetAsync(tenant.Id, CancellationToken.None));
-                Computed.Invalidate(() => GetAllAsync(CancellationToken.None));
-            }
+            if (IsComputeService)
+                using (Computed.Invalidate()) {
+                    TryGetAsync(tenant.Id, default).Ignore();
+                    GetAllAsync(default).Ignore();
+                }
         }
 
         public async Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default)
         {
-            await using var dbContext = CreateDbContext();
+            await using var dbContext = CreateDbContext().ReadWrite();
             var entry = dbContext.Tenants.Remove(new Tenant() { Id = tenantId });
             entry.Property(nameof(Tenant.Version)).OriginalValue = version;
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            if (IsComputeService) {
-                Computed.Invalidate(() => TryGetAsync(tenantId, CancellationToken.None));
-                Computed.Invalidate(() => GetAllAsync(CancellationToken.None));
-            }
+            if (IsComputeService)
+                using (Computed.Invalidate()) {
+                    TryGetAsync(tenantId, default).Ignore();
+                    GetAllAsync(default).Ignore();
+                }
         }
 
         // Compute methods

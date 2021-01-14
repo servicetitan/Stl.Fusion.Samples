@@ -26,7 +26,8 @@ namespace Samples.HelloBlazorServer.Services
                     break;
                 spinWait.SpinOnce();
             }
-            Computed.Invalidate(GetAnyMessagesAsync);
+            using (Computed.Invalidate())
+                GetAnyMessagesAsync();
             return Task.CompletedTask;
         }
 
