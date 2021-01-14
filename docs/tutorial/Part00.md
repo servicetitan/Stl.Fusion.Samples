@@ -32,7 +32,7 @@ The full list of Fusion packages:
   not only interface-based command handlers, but also AOP-style handlers written as 
   regular methods. Besides that, it unifies command handler API (pipeline behaviors and handlers 
   are the same there) and helps to eliminate nearly all boilerplate code you'd have otherwise.
-* [Stl.Fusion](https://www.nuget.org/packages/Stl.Fusion/) - depends on `Stl`.
+* [Stl.Fusion](https://www.nuget.org/packages/Stl.Fusion/) - depends on `Stl`, `Stl.Interception`, and `Stl.CommandR`.
   Nearly everything related to Fusion is there.
 * [Stl.Fusion.Server](https://www.nuget.org/packages/Stl.Fusion.Server/) - depends on `Stl.Fusion` and `Stl.Net`.
   It implements server-side WebSocket endpoint allowing client-side counterpart to communicate
