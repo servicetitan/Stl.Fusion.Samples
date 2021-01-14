@@ -3,6 +3,7 @@
 @using UAParser
 @using System.Collections.Concurrent
 @using Stl.Async
+@using Stl.Fusion.Authentication.Commands
 @inherits LiveComponentBase<List<Authentication.SessionModel>>
 @inject Session Session
 @inject IAuthService AuthService
@@ -173,8 +174,10 @@
     {
         if (sessionId == Session.Id)
             SignOut();
-        else
-            Task.Run(() => AuthService.SignOutAsync(true, new Session(sessionId))).Ignore();
+        else {
+            var command = new SignOutCommand(true, new Session(sessionId));
+            Task.Run(() => AuthService.SignOutAsync(command)).Ignore();
+        }
     }
 
     private void SignOutEverywhere()

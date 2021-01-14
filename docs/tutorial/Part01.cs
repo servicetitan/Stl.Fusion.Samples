@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Stl.Async;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using static System.Console;
@@ -38,7 +39,8 @@ namespace Tutorial
             {
                 WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-                Computed.Invalidate(() => GetAsync(key));
+                using (Computed.Invalidate())
+                    GetAsync(key).Ignore();
             }
         }
         #endregion

@@ -62,7 +62,8 @@ namespace Tutorial
             {
                 WriteLine($"{nameof(IncrementAsync)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-                Computed.Invalidate(() => GetAsync(key, default));
+                using (Computed.Invalidate())
+                    GetAsync(key, default).Ignore();
                 return Task.CompletedTask;
             }
 

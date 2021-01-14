@@ -30,7 +30,8 @@ namespace Tutorial
             {
                 WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-                Computed.Invalidate(() => GetAsync(key));
+                using (Computed.Invalidate())
+                    GetAsync(key).Ignore();
             }
         }
 
@@ -74,8 +75,9 @@ namespace Tutorial
             var counters = CreateServices().GetRequiredService<CounterService>();
             var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
             WriteLine($"computed: {computed}");
-            WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
-            Computed.Invalidate(() => counters.GetAsync("a")); // <- This line
+            WriteLine("using (Computed.Invalidate()) counters.GetAsync(\"a\"))");
+            using (Computed.Invalidate()) // <- This line
+                counters.GetAsync("a").Ignore();
             WriteLine($"computed: {computed}");
             var newComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a")); // <- This line
             WriteLine($"newComputed: {newComputed}");
