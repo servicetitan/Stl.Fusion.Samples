@@ -4,13 +4,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Stl.Async;
+using Stl.CommandR;
+using Stl.CommandR.Configuration;
 using Stl.DependencyInjection;
-using Stl.Fusion;
+using Stl.Fusion.Operations;
 
 namespace Samples.HelloBlazorServer.Services
 {
-    [HostedService]
-    public class ChatBotService : IHostedService, IDisposable
+    [CommandService, AddHostedService]
+    public class ChatBotService : IHostedService
     {
         private static string Morpheus = "M0rpheus";
         private static string MorpheusMessage1 =
@@ -23,51 +26,48 @@ namespace Samples.HelloBlazorServer.Services
         private static string Groot = "Groot";
         private static string GrootMessage = "I am Groot!";
         private static string TimeBot = "Time Bot";
-        private static readonly HashSet<string> BotNames = new HashSet<string>() {Morpheus, Groot, TimeBot};
+        private static readonly HashSet<string> BotNames = new() {Morpheus, Groot, TimeBot};
 
         private readonly ChatService _chatService;
-        private readonly ILiveState<(DateTime Time, string Name, string Message)[]> _state;
 
-        public ChatBotService(ChatService chatService, IStateFactory stateFactory)
-        {
-            _chatService = chatService;
-            _state = stateFactory.NewLive<(DateTime Time, string Name, string Message)[]>(
-                options => {
-                    options.WithInstantUpdates();
-                    options.EventConfigurator = state => {
-                        state.Updated += (s, e) => Task.Run(TryRespondAsync);
-                    };
-                },
-                (state, cancellationToken) => _chatService.GetMessagesAsync(5, cancellationToken));
-        }
+        public ChatBotService(ChatService chatService)
+            => _chatService = chatService;
 
-        public void Dispose() => _state.Dispose();
-        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public async Task StartAsync(CancellationToken cancellationToken)
+            => await _chatService.PostMessageAsync(new(Morpheus, MorpheusMessage1), cancellationToken);
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        private async Task TryRespondAsync()
+        // 100 is priority of invalidation handler, and this handler has to run before it
+        // to avoid being wrapped into Compute.Invalidated() scope.
+        [CommandHandler(Priority = 200, IsFilter = true)]
+        protected virtual async Task OnChatPost(ICompletion<ChatService.PostCommand> completion, CancellationToken cancellationToken)
         {
-            var messages = _state?.Value;
-            if (messages == null) // The initial update
-                return;
-            switch (messages.Length) {
-            case 0:
-                await _chatService.PostMessageAsync(Morpheus, MorpheusMessage1).ConfigureAwait(false);
-                break;
+            // Let the rest of the chain proceed
+            await CommandContext.GetCurrent().InvokeRemainingHandlersAsync(cancellationToken);
+            // And start the reaction - no need to delay the rest of command processing pipeline
+            Task.Run(() => Reaction(completion, default), default).Ignore();
+        }
+
+        protected virtual async Task Reaction(ICompletion<ChatService.PostCommand> completion, CancellationToken cancellationToken)
+        {
+            var messageCount = await _chatService.GetMessageCountAsync();
+            switch (messageCount) {
             case 1:
                 break;
             case 2:
-                await Task.Delay(1000).ConfigureAwait(false);
-                await _chatService.PostMessageAsync(Morpheus, MorpheusMessage2).ConfigureAwait(false);
+                await Task.Delay(1000);
+                await _chatService.PostMessageAsync(new(Morpheus, MorpheusMessage2));
                 break;
             default:
-                var (time, name, message) = messages.LastOrDefault();
-                if (name == null || BotNames.Contains(name))
+                var messages = await _chatService.GetMessagesAsync(1, cancellationToken);
+                var (time, name, message) = messages.SingleOrDefault();
+                name ??= "";
+                if (name == "" || BotNames.Contains(name))
                     break;
                 if (message.ToLowerInvariant().Contains("time"))
-                    await _chatService.PostMessageAsync(TimeBot, DateTime.Now.ToString("F"));
+                    await _chatService.PostMessageAsync(new(TimeBot, DateTime.Now.ToString("F")));
                 else
-                    await _chatService.PostMessageAsync(Groot, GrootMessage).ConfigureAwait(false);
+                    await _chatService.PostMessageAsync(new(Groot, GrootMessage));
                 break;
             }
         }

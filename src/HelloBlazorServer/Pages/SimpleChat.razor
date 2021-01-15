@@ -59,10 +59,10 @@
 
     protected override async Task<(string Name, string Message, string Time)[]> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        var messages = await ChatService.GetMessagesAsync(20, cancellationToken).ConfigureAwait(false);
+        var messages = await ChatService.GetMessagesAsync(20, cancellationToken);
         var result = new List<(string Name, string Message, string Time)>();
         foreach (var message in messages) {
-            var momentsAgo = await TimeService.GetMomentsAgoAsync(message.Time).ConfigureAwait(false);
+            var momentsAgo = await TimeService.GetMomentsAgoAsync(message.Time);
             result.Add((message.Name, message.Message, momentsAgo));
         }
         return result.ToArray();
@@ -72,7 +72,7 @@
     {
         if (Message == "")
             return;
-        await ChatService.PostMessageAsync(Name, Message);
+        await ChatService.PostMessageAsync(new(Name, Message));
         Message = "";
         // The next call just improves UX: it cancels active update delay.
         // You can comment it out & see everything still works, though the
