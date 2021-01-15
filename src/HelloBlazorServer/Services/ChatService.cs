@@ -37,7 +37,8 @@ namespace Samples.HelloBlazorServer.Services
         }
 
         [ComputeMethod]
-        public virtual async Task<int> GetMessageCountAsync() => _messages.Count;
+        public virtual Task<int> GetMessageCountAsync()
+            => Task.FromResult(_messages.Count);
 
         [ComputeMethod]
         public virtual async Task<(DateTime Time, string Name, string Message)[]> GetMessagesAsync(
