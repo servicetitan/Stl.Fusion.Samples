@@ -4,6 +4,7 @@
 @inject IChatService ChatService
 @inject ClientState ClientState
 @inject NavigationManager Navigator
+@inject IJSRuntime JSRuntime
 
 @{
     var locals = Locals.Value;
@@ -29,6 +30,15 @@
     Open <a href="@Navigator.Uri" target="_blank">this page</a> or
     <a href="/composition" target="_blank">Composition example</a>
     in another window to see everything is updated in sync in real time.
+    Besides that, try to
+    <AuthorizeView>
+        <Authorized>
+            <button class="btn btn-primary btn-sm" @onclick="SignOut">Sign out</button>
+        </Authorized>
+        <NotAuthorized>
+            <button class="btn btn-warning btn-sm" @onclick="SignIn">Sign in</button>
+        </NotAuthorized>
+    </AuthorizeView>
 </div>
 @if (locals.Error != null) {
     <div class="alert alert-danger" role="alert">
@@ -172,6 +182,9 @@
             SetError(e);
         }
     }
+
+    private void SignIn() => JSRuntime.InvokeVoidAsync("FusionAuth.signIn");
+    private void SignOut() => JSRuntime.InvokeVoidAsync("FusionAuth.signOut");
 
     // Convenience shortcuts
 

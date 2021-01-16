@@ -1,7 +1,6 @@
 using System;
 using System.Text;
 using Stl.DependencyInjection;
-using Stl.Text;
 
 namespace Samples.Blazor.Server
 {

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Reactive;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,14 +14,19 @@ using static System.Console;
 
 var services = CreateServiceProvider();
 var stateFactory = services.StateFactory();
-var timeService = services.GetRequiredService<ITimeService>();
-using var timeState = stateFactory.NewLive<string>(async (s, cancellationToken) => {
-    var time = await timeService.GetTimeAsync(cancellationToken);
-    var r = time.ToString("F");
-    WriteLine(r);
-    return r;
+var chat = services.GetRequiredService<IChatService>();
+var seenMessageIds = new ConcurrentDictionary<long, Unit>();
+using var timeState = stateFactory.NewLive<ChatPage>(async (s, cancellationToken) => {
+    var chatPage = await chat.GetChatTailAsync(10, cancellationToken);
+    foreach (var message in chatPage.Messages) {
+        if (!seenMessageIds.TryAdd(message.Id, default))
+            continue;
+        WriteLine($"{chatPage.Users[message.UserId].Name}: {message.Text}");
+    }
+    return chatPage;
 });
-WriteLine("LiveState created.");
+WriteLine("LiveState created, waiting for new chat messages.");
+WriteLine("Press <Enter> to stop.");
 ReadLine();
 
 static IServiceProvider CreateServiceProvider()

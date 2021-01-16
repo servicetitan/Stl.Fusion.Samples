@@ -50,7 +50,8 @@ namespace Samples.Blazor.Server
                 logging.ClearProviders();
                 logging.AddConsole();
                 logging.SetMinimumLevel(LogLevel.Information);
-                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+                if (Env.IsDevelopment())
+                    logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
             });
 
             // DbContext & related services
@@ -59,11 +60,16 @@ namespace Samples.Blazor.Server
             services.AddDbContextFactory<AppDbContext>(b => {
                 b.UseSqlite($"Data Source={dbPath}", sqlite => { });
             });
-            services.AddSingleton(new DbOperationLogWatcher<AppDbContext>.Options() {
-                // We don't run it in distributed mode, so let's make these checks rare -
-                // al least to avoid regular log pollution with EF commands
-                CheckInterval = TimeSpan.FromSeconds(30),
-            });
+            if (Env.IsDevelopment()) {
+                // Let's slow down DbOperationLogWatcher in dev mode -
+                // al least to avoid log pollution with its SQL commands.
+                services.AddSingleton(_ => {
+                    var options = new DbOperationLogWatcher<AppDbContext>.Options();
+                    options.CheckInterval = TimeSpan.FromMinutes(1);
+                    options.MaxCommitDuration = options.CheckInterval * 2.1; // The multiplier should be >2 :)
+                    return options;
+                });
+            }
             services.AddDbContextServices<AppDbContext>(b => {
                 // This is the best way to add DbContext-related services from Stl.Fusion.EntityFramework
                 b.AddOperations();
