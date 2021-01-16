@@ -62,7 +62,7 @@ namespace Samples.Blazor.Server.Services
         public virtual async Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default)
         {
             width = Math.Min(MaxWidth, Math.Max(MinWidth, width));
-            var bitmap = await GetScreenshotAsync(cancellationToken).ConfigureAwait(false);
+            var bitmap = await GetScreenshotAsync(cancellationToken);
             return CreateScreenshot(bitmap, width);
         }
 

@@ -74,7 +74,7 @@
     {
         var locals = Locals.Value;
         var values = new[] { locals.ValueA, locals.ValueB };
-        return await SumService.SumAsync(values, true, cancellationToken).ConfigureAwait(false);
+        return await SumService.SumAsync(values, true, cancellationToken);
     }
 
     // Action handlers

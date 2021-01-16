@@ -18,7 +18,7 @@ namespace Samples.Blazor.Server.Services
             if (time.Second % 10 == 0)
                 // This delay is here solely to let you see ServerTime page in
                 // in "Loading" / "Updating" state.
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             return time;
         }
 

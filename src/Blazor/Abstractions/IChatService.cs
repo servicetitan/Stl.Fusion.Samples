@@ -5,9 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Stl;
+using Stl.CommandR.Configuration;
 using Stl.Fusion;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Abstractions
 {
@@ -17,12 +20,23 @@ namespace Samples.Blazor.Abstractions
         public long Id { get; set; }
     }
 
+    [Index(nameof(Name), Name = "IX_Name")]
     public class ChatUser : LongKeyedEntity
     {
         [Required, MaxLength(120)]
+        public string AuthUserId { get; set; } = "";
+        [Required, MaxLength(120)]
         public string Name { get; set; } = "";
+
+        public ChatUser MaskSecureFields()
+            => new() {
+                Id = Id,
+                Name = Name,
+            };
     }
 
+    [Index(nameof(UserId), Name = "IX_UserId")]
+    [Index(nameof(CreatedAt), Name = "IX_CreatedAt")]
     public class ChatMessage : LongKeyedEntity
     {
         public long UserId { get; set; }
@@ -57,12 +71,18 @@ namespace Samples.Blazor.Abstractions
 
     public interface IChatService
     {
-        // Writers
-        Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default);
-        Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default);
-        Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default);
+        public record SetUserNameCommand(string Name, Session Session) : ISessionCommand<ChatUser> { }
+        public record PostMessageCommand(string Text, Session Session) : ISessionCommand<ChatMessage> { }
 
-        // Readers
+        // Commands
+        [CommandHandler]
+        Task<ChatUser> SetUserNameAsync(SetUserNameCommand command, CancellationToken cancellationToken = default);
+        [CommandHandler]
+        Task<ChatMessage> PostMessageAsync(PostMessageCommand command, CancellationToken cancellationToken = default);
+
+        // Queries
+        [ComputeMethod(KeepAliveTime = 10)]
+        Task<ChatUser?> GetCurrentUserAsync(Session session, CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 10)]
         Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 10)]

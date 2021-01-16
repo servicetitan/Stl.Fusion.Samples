@@ -24,13 +24,13 @@ namespace Samples.Blazor.Server.Services
         public async Task SyncAsync(ClaimsPrincipal principal, SessionInfo sessionInfo, Session session,
             CancellationToken cancellationToken = default)
         {
-            var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
+            var user = await AuthService.GetUserAsync(session, cancellationToken);
             if (((IPrincipal) user).Identity?.Name == principal.Identity?.Name)
                 return;
 
             var authenticationType = principal.Identity?.AuthenticationType ?? "";
             if (authenticationType == "") {
-                await AuthService.SignOutAsync(new(false, session), cancellationToken).ConfigureAwait(false);
+                await AuthService.SignOutAsync(new(false, session), cancellationToken);
             }
             else {
                 var id = principal.Identity?.Name ?? "";
@@ -38,9 +38,9 @@ namespace Samples.Blazor.Server.Services
                 var name = claims.GetValueOrDefault(GitHubAuthenticationConstants.Claims.Name) ?? "";
                 user = new User(authenticationType, id, name, claims);
                 var signInCmd = new SignInCommand(user, session).MarkServerSide();
-                await AuthService.SignInAsync(signInCmd, cancellationToken).ConfigureAwait(false);
+                await AuthService.SignInAsync(signInCmd, cancellationToken);
                 var saveSessionInfoCmd = new SaveSessionInfoCommand(sessionInfo, session).MarkServerSide();
-                await AuthService.SaveSessionInfoAsync(saveSessionInfoCmd, cancellationToken).ConfigureAwait(false);
+                await AuthService.SaveSessionInfoAsync(saveSessionInfoCmd, cancellationToken);
             }
         }
     }

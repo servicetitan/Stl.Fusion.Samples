@@ -24,6 +24,7 @@ using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
+using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Server;
 using Stl.IO;
 
@@ -48,14 +49,20 @@ namespace Samples.Blazor.Server
                 logging.ClearProviders();
                 logging.AddConsole();
                 logging.SetMinimumLevel(LogLevel.Information);
-                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+                // logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
             });
 
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
-            services.AddDbContextFactory<AppDbContext>(builder => {
-                builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
+            services.AddDbContextFactory<AppDbContext>(b => {
+                b.UseSqlite($"Data Source={dbPath}", sqlite => { });
+            });
+            services.AddDbContextServices<AppDbContext>(b => {
+                // This is the best way to add DbContext-related services from Stl.Fusion.EntityFramework
+                b.AddOperations();
+                b.AddEntityResolver<long, ChatUser>();
+                b.AddEntityResolver<long, ChatMessage>();
             });
 
             // Fusion services

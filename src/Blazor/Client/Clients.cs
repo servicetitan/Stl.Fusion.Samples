@@ -30,15 +30,15 @@ namespace Samples.Blazor.Client
     [BasePath("chat")]
     public interface IChatClient
     {
-        // Writers
-        [Post("createUser")]
-        Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default);
+        // Commands
         [Post("setUserName")]
-        Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default);
-        [Post("addMessage")]
-        Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default);
+        Task<ChatUser> SetUserNameAsync([Body] IChatService.SetUserNameCommand command, CancellationToken cancellationToken = default);
+        [Post("postMessage")]
+        Task<ChatMessage> PostMessageAsync([Body] IChatService.PostMessageCommand command, CancellationToken cancellationToken = default);
 
         // Readers
+        [Get("getCurrentUser")]
+        Task<ChatUser?> GetCurrentUserAsync(Session? session, CancellationToken cancellationToken = default);
         [Get("getUserCount")]
         Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
         [Get("getActiveUserCount")]

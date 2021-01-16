@@ -1,7 +1,5 @@
 @page "/chat"
 @using System.Threading
-@using Stl
-@using Stl.Reflection
 @inherits LiveComponentBase<Chat.Model, Chat.LocalsModel>
 @inject IChatService ChatService
 @inject ClientState ClientState
@@ -12,6 +10,7 @@
     var state = State.LastValue;
     var lastPage = state.LastPage;
     var error = State.Error;
+    var actualUserName = state.ChatUser?.Name;
 }
 
 <div>
@@ -43,11 +42,21 @@
 }
 
 <form @onsubmit="SetNameAsync">
+    @if (actualUserName != locals.Name) {
+        <div class="input-group-prepend pb-1">
+            @if (@actualUserName == null) {
+                <span class="badge btn-warning">Creating user...</span>
+
+            } else {
+                <span class="badge btn-primary">Current name: @actualUserName</span>
+            }
+        </div>
+    }
     <div class="input-group pb-3">
         <div class="input-group-prepend">
             <span class="input-group-text">Your name</span>
         </div>
-        <input class="form-control" @bind-value="@locals.Name"/>
+        <input class="form-control" @bind-value="@locals.Name" @bind-value:event="oninput" />
         <div class="input-group-append">
             <button type="submit" class="btn btn-warning">Change</button>
         </div>
@@ -91,46 +100,50 @@
 @code {
     public class LocalsModel
     {
-        public string Name { get; set; } = "";
+        private string _name = "";
+
+        public string Name {
+            get => _name;
+            set {
+                _name = value;
+                IsNameModified = true;
+            }
+        }
+
+        public bool IsNameModified { get; set; }
         public string Message { get; set; } = "";
         public Exception? Error { get; set; }
     }
 
     public class Model
     {
-        public long UserCount { get; set; } = 0;
-        public long ActiveUserCount { get; set; } = 0;
-        public ChatPage LastPage { get; set; } = new ChatPage();
-    }
-
-    private bool HasError => Locals.Value.Error != null;
-
-    private ChatUser? ChatUser {
-        get => ClientState.ChatUser.Value;
-        set => ClientState.ChatUser.Value = value;
+        public long UserCount { get; set; }
+        public long ActiveUserCount { get; set; }
+        public ChatUser? ChatUser { get; set; }
+        public ChatPage LastPage { get; set; } = new();
     }
 
     protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
     {
         var userCount = await ChatService.GetUserCountAsync(cancellationToken);
         var activeUserCount = await ChatService.GetActiveUserCountAsync(cancellationToken);
+        var chatUser = await ClientState.ChatUser.UseAsync(cancellationToken);
         var lastPage = await ChatService.GetChatTailAsync(30, cancellationToken);
+        if (!Locals.Value.IsNameModified)
+            ResetName(chatUser?.Name ?? "");
         return new Model() {
             UserCount = userCount,
             ActiveUserCount = activeUserCount,
+            ChatUser = chatUser,
             LastPage = lastPage,
         };
     }
 
     protected override async Task OnInitializedAsync()
     {
-        if (ReferenceEquals(State, null))
-            return; // Not sure why this happens on SSB sometimes, but...
-        if (ChatUser == null)
-            // Let's pre-create the user
+        var chatUser = await ChatService.GetCurrentUserAsync(ClientState.Session);
+        if (chatUser == null)
             await SetNameAsync();
-        else
-            ResetName();
     }
 
     private async Task SetNameAsync()
@@ -138,23 +151,10 @@
         ResetError();
         var locals = Locals.Value;
         try {
-            if (ChatUser != null) {
-                try {
-                    ChatUser = await ChatService.SetUserNameAsync(ChatUser.Id, locals.Name);
-                    return;
-                }
-                catch {
-                    // Prob. the user doesn't exist (server restarted), so we should try to recreate it.
-                }
-            }
-            ChatUser = await ChatService.CreateUserAsync(locals.Name);
+            await ChatService.SetUserNameAsync(new(locals.Name ?? "", ClientState.Session));
         }
         catch (Exception e) {
             SetError(e);
-        }
-        finally {
-            if (!HasError)
-                ResetName();
         }
    }
 
@@ -162,11 +162,11 @@
     {
         ResetError();
         try {
-            var locals = Locals.Value;
-            if (ChatUser == null)
+            if (ClientState.ChatUser.Value == null)
                 throw new ApplicationException("Please set your name first.");
-            await ChatService.AddMessageAsync(ChatUser.Id, locals.Message);
-            UpdateLocals(l => l.Message = "");
+            await ChatService.PostMessageAsync(new(Locals.Value.Message, ClientState.Session));
+            Locals.Value.Message = "";
+            TouchLocals();
         }
         catch (Exception e) {
             SetError(e);
@@ -178,19 +178,19 @@
     private void ResetError()
         => SetError(null);
 
-    private void ResetName()
+    private void ResetName(string name)
     {
-        var chatUser = ClientState.ChatUser.Value;
-        UpdateLocals(l => l.Name = chatUser?.Name ?? "");
+        Locals.Value.Name = name;
+        Locals.Value.IsNameModified = false;
+        TouchLocals();
     }
 
     private void SetError(Exception? error)
-        => UpdateLocals(l => l.Error = error);
-
-    private void UpdateLocals(Action<LocalsModel> updater)
     {
-        var clone = MemberwiseCloner.Invoke(Locals.Value);
-        updater.Invoke(clone);
-        Locals.Value = clone;
+        Locals.Value.Error = error;
+        TouchLocals();
     }
+
+    private void TouchLocals()
+        => Locals.Set(Locals.AsResult());
 }

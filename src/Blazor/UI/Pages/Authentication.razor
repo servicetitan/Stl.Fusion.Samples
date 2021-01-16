@@ -137,18 +137,19 @@
 
     [CascadingParameter]
     private Task<AuthState> AuthStateTask { get; set; } = null!;
-    private AuthState AuthState { get; set; } = new AuthState(new User("")); // For SSB pre-render
+    private AuthState AuthState { get; set; } = new(new User("")); // For SSB pre-render
     private User User => AuthState.User;
-    private ConcurrentDictionary<string, UserAgent> UserAgentCache = new ConcurrentDictionary<string, UserAgent>();
+    private ConcurrentDictionary<string, UserAgent> UserAgentCache { get; } = new();
 
-    protected override async Task OnParametersSetAsync() => AuthState = await AuthStateTask;
+    protected override async Task OnParametersSetAsync()
+        => AuthState = await AuthStateTask;
 
     protected override void ConfigureState(LiveState<List<SessionModel>>.Options options)
         => options.InitialOutputFactory = _ => new List<SessionModel>();
 
     protected override async Task<List<SessionModel>> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        var sessions = await AuthService.GetUserSessionsAsync(Session, cancellationToken).ConfigureAwait(false);
+        var sessions = await AuthService.GetUserSessionsAsync(Session, cancellationToken);
         var result = new List<SessionModel>();
 
         Task<string> GetMomentsAgo(DateTime dateTime) => MomentsAgoService.GetMomentsAgoAsync(dateTime);

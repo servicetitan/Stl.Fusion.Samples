@@ -29,13 +29,13 @@ namespace Samples.Blazor.Server.Services
         // Compute methods
 
         public virtual async Task<double> GetAccumulatorAsync(CancellationToken cancellationToken)
-            => await _accumulator.UseAsync(cancellationToken).ConfigureAwait(false);
+            => await _accumulator.UseAsync(cancellationToken);
 
         public virtual async Task<double> SumAsync(double[] values, bool addAccumulator, CancellationToken cancellationToken)
         {
             var sum = values.Sum();
             if (addAccumulator)
-                sum += await GetAccumulatorAsync(cancellationToken).ConfigureAwait(false);
+                sum += await GetAccumulatorAsync(cancellationToken);
             return sum;
         }
     }
