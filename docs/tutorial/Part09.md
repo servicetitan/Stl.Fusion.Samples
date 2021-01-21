@@ -60,7 +60,7 @@ of its terms to CommandR terms:
 | `IRequest` | `ICommand<Unit>` |
 | `IRequestHandler<TCommand, TResult>` | `ICommandHandler<TCommand, TResult>` |
 | `IRequestHandler<TCommand, Unit>` | `ICommandHandler<TCommand, Unit>` |
-| `RequestHandler<TCommand, Unit>` (synchronous) | No synchronous handlers: they don't add any value in fully async pipelines, but increase the complexity |
+| `RequestHandler<TCommand, Unit>` (synchronous) | No synchronous handlers: sorry, IMO they don't add enough value to justify having an extra set of interfaces for them |
 | `INotification` | No special type for notifications: any command is allowed to have N filtering handlers, so all you need is to declare all of them but one as filters |
 | Pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>` & other types) | No special types for pipeline behaviors: any filtering handler is a pipeline behavior |
 | Exception handlers | No special type for exception handlers: any filtering handler can do this |
