@@ -50,6 +50,7 @@ Without further ado:
 * [Part 6: Real-time UI in Blazor Apps](./Part06.md)
 * [Part 7: Real-time UI in JS / React Apps](./Part07.md)
 * [Part 8: Scaling Fusion Services](./Part08.md)
+* [Part 9: CommandR](./Part09.md)
 * [Epilogue](./PartFF.md)
 
 Check out the
