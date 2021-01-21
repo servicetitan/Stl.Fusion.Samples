@@ -60,21 +60,18 @@ namespace Samples.Blazor.Server
             services.AddDbContextFactory<AppDbContext>(b => {
                 b.UseSqlite($"Data Source={dbPath}", sqlite => { });
             });
-            if (Env.IsDevelopment()) {
-                // Let's slow down DbOperationLogWatcher in dev mode -
-                // al least to avoid log pollution with its SQL commands.
-                services.AddSingleton(_ => {
-                    var options = new DbOperationLogWatcher<AppDbContext>.Options();
-                    options.CheckInterval = TimeSpan.FromMinutes(1);
-                    options.MaxCommitDuration = options.CheckInterval * 2.1; // The multiplier should be >2 :)
-                    return options;
-                });
-            }
             services.AddDbContextServices<AppDbContext>(b => {
                 // This is the best way to add DbContext-related services from Stl.Fusion.EntityFramework
-                b.AddOperations();
-                b.AddEntityResolver<long, ChatUser>();
-                b.AddEntityResolver<long, ChatMessage>();
+                b.AddDbEntityResolver<long, ChatUser>();
+                b.AddDbEntityResolver<long, ChatMessage>();
+                b.AddDbOperations((_, o) => {
+                    // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
+                    // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
+                    o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
+                });
+                var operationLogChangeAlertPath = dbPath + "_changed";
+                b.AddFileBasedDbOperationLogChangeNotifier(operationLogChangeAlertPath);
+                b.AddFileBasedDbOperationLogChangeMonitor(operationLogChangeAlertPath);
             });
 
             // Fusion services
