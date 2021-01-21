@@ -65,7 +65,6 @@ of its terms to CommandR terms:
 | Pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>` & other types) | No special types for pipeline behaviors: any filtering handler is a pipeline behavior |
 | Exception handlers | No special type for exception handlers: any filtering handler can do this |
 | Polymorphic dispatch | Works the same way |
-| 
 
 You might notice the API offered by CommandR is somewhat simpler -
 at least while you don't use some of its unique features mentioned 
