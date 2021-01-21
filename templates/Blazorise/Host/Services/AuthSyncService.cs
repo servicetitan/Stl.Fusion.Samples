@@ -6,8 +6,10 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OAuth.GitHub;
+using Stl.CommandR.Commands;
 using Stl.DependencyInjection;
 using Stl.Fusion.Authentication;
+using Stl.Fusion.Authentication.Commands;
 
 namespace Templates.Blazor2.Host.Services
 {
@@ -28,15 +30,17 @@ namespace Templates.Blazor2.Host.Services
 
             var authenticationType = principal.Identity?.AuthenticationType ?? "";
             if (authenticationType == "") {
-                await AuthService.SignOutAsync(false, session, cancellationToken).ConfigureAwait(false);
+                await AuthService.SignOutAsync(new(false, session), cancellationToken).ConfigureAwait(false);
             }
             else {
                 var id = principal.Identity?.Name ?? "";
                 var claims = principal.Claims.ToDictionary(c => c.Type, c => c.Value);
                 var name = claims.GetValueOrDefault(GitHubAuthenticationConstants.Claims.Name) ?? "";
                 user = new User(authenticationType, id, name, claims);
-                await AuthService.SignInAsync(user, session, cancellationToken).ConfigureAwait(false);
-                await AuthService.SaveSessionInfoAsync(sessionInfo, session, cancellationToken).ConfigureAwait(false);
+                var signInCommand = new SignInCommand(user, session).MarkServerSide();
+                await AuthService.SignInAsync(signInCommand, cancellationToken).ConfigureAwait(false);
+                var saveSessionInfoCommand = new SaveSessionInfoCommand(sessionInfo, session).MarkServerSide();
+                await AuthService.SaveSessionInfoAsync(saveSessionInfoCommand, cancellationToken).ConfigureAwait(false);
             }
         }
     }
