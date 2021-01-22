@@ -49,8 +49,8 @@ a few new features:
 Since many of you are familiar with MediatR, here is the map
 of its terms to CommandR terms:
 
-| MediatR | CommandR
-|-|-
+| MediatR | CommandR |
+|---|---|
 | `IMediator` | `ICommander`
 | `IServiceCollection.AddMediatR` | `IServiceCollection.AddCommander`
 | `IServiceCollection.AddMediatR(assembly)` | `IServiceCollection.AttributeScanner().AddServicesFrom(assembly)` assuming you tag your command handler services with `[AddCommandHandlers]` or `[CommandService]` - in other words, CommandR doesn't have its own type scanner, but listed attributes allow you to use `AttributeScanner` from `Stl.DependencyInjection` to get the same result (and even more - e.g. scope-based registration)
@@ -125,6 +125,7 @@ Notice that:
   `ICommander` instances.
   Commands invoking other commands in the same `ICommander`
   instance share the same service scope.
+- Try cha
 
 **TBD:** Examples and the rest of this part.
 

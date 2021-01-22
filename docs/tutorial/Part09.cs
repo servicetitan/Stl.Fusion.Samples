@@ -20,7 +20,7 @@ namespace Tutorial
         {
             public PrintCommandHandler()
             {
-                WriteLine("PrintCommandHandler service created.");
+                WriteLine("Creating PrintCommandHandler.");
             }
 
             public async Task<Unit> OnCommandAsync(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
