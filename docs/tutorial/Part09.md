@@ -49,23 +49,7 @@ a few new features:
 Since many of you are familiar with MediatR, here is the map
 of its terms to CommandR terms:
 
-| MediatR | CommandR |
-|---|---|
-| `IMediator` | `ICommander`
-| `IServiceCollection.AddMediatR` | `IServiceCollection.AddCommander`
-| `IServiceCollection.AddMediatR(assembly)` | `IServiceCollection.AttributeScanner().AddServicesFrom(assembly)` assuming you tag your command handler services with `[AddCommandHandlers]` or `[CommandService]` - in other words, CommandR doesn't have its own type scanner, but listed attributes allow you to use `AttributeScanner` from `Stl.DependencyInjection` to get the same result (and even more - e.g. scope-based registration)
-| `IServiceProvider.GetRequiredService<IMediator>` | `IServiceProvider.GetRequiredService<ICommander>` or `IServiceProvider.Commander()`
-| `IMediatR.Send(command, cancellationToken)` | `ICommander.CallAsync(command, cancellationToken)`
-| `IRequest<TResult>` | `ICommand<TResult>`
-| `IRequest` | `ICommand<Unit>`
-| `IRequestHandler<TCommand, TResult>` | `ICommandHandler<TCommand, TResult>`
-| `IRequestHandler<TCommand, Unit>` | `ICommandHandler<TCommand, Unit>`
-| `RequestHandler<TCommand, Unit>` (synchronous) | No synchronous handlers: sorry, IMO they don't add enough value to justify having an extra set of interfaces for them
-| `INotification` | No special type for notifications: any command is allowed to have N filtering handlers, so all you need is to declare all of them but one as filters
-| Pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>` & other types) | No special types for pipeline behaviors: any filtering handler is a pipeline behavior
-| Exception handlers | No special type for exception handlers: any filtering handler can do this
-| Polymorphic dispatch | Works the same way 
-| All popular IoC containers are supported | The "official" DI container on .NET, i.e. `IServiceProvider` from `Microsoft.Extensions.DependencyInjection.Abstractions`, is the only supported option. Nearly all other modern containers support its API, so adding an extra complexity to be fully container-agnostic doesn't seem to worth it nowadays. Fusion follows the same philosophy.
+![](./img/MediatR-vs-CommandR.jpg)
 
 You might notice the API offered by CommandR is somewhat simpler -
 at least while you don't use some of its unique features mentioned
@@ -86,7 +70,7 @@ public class PrintCommandHandler : ICommandHandler<PrintCommand, Unit>
 {
     public PrintCommandHandler()
     {
-        WriteLine("PrintCommandHandler service created.");
+        WriteLine("Creating PrintCommandHandler.");
     }
 
     public async Task<Unit> OnCommandAsync(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
