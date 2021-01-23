@@ -398,12 +398,11 @@ Numbers:
 7
 ```
 
-As you see, the proxy type is generated for such services, and
-this type routes every call made to command directly via `ICommander.CallAsync`.
-So the way you invoke these handlers doesn't change anything -
-the whole handler pipeline is always invoked.
+As you see, the proxy type generated for such services routes 
+**every direct invocation of a command handler** through `ICommander.CallAsync`.
+So contrary to regular handlers, you can invoke such handlers
+directly - the whole CommandR pipeline gets invoked for them anyway.
 
-**TBD:** Write the next part on CommandR and Fusion integration.
 
 #### [Next: Multi-Host Invalidation and CQRS with Fusion + CommandR + Operations Framework &raquo;](./Part10.md) | [Tutorial Home](./README.md)
 
