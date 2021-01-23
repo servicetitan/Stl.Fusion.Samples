@@ -65,13 +65,11 @@ public class PrintCommand : ICommand<Unit>
     public string Message { get; set; } = "";
 }
 
-// Let's start with a classic handler
-public class PrintCommandHandler : ICommandHandler<PrintCommand, Unit>
+// Interface-based command handler
+public class PrintCommandHandler : ICommandHandler<PrintCommand, Unit>, IDisposable
 {
-    public PrintCommandHandler()
-    {
-        WriteLine("Creating PrintCommandHandler.");
-    }
+    public PrintCommandHandler() => WriteLine("Creating PrintCommandHandler.");
+    public void Dispose() => WriteLine("Disposing PrintCommandHandler");
 
     public async Task<Unit> OnCommandAsync(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
     {
@@ -97,6 +95,19 @@ await commander.CallAsync(new PrintCommand() { Message = "Are you operational?" 
 await commander.CallAsync(new PrintCommand() { Message = "Are you operational?" });
 ```
 
+The output:
+
+```
+Creating PrintCommandHandler.
+Are you operational?
+Sir, yes, sir!
+Disposing PrintCommandHandler
+Creating PrintCommandHandler.
+Are you operational?
+Sir, yes, sir!
+Disposing PrintCommandHandler
+```
+
 Notice that:
 
 - CommandR doesn't auto-register command handler services - it
@@ -104,14 +115,295 @@ Notice that:
   command handlers available in these services.
   That's why you have to register services separately.
 - `CallAsync` creates its own `IServiceScope` to resolve
-  services for every command invocation. In reality, it does
-  this only for top-level calls and calls switching between
-  `ICommander` instances.
-  Commands invoking other commands in the same `ICommander`
-  instance share the same service scope.
-- Try cha
+  services for every command invocation.
 
-**TBD:** Examples and the rest of this part.
+Try changing `AddScoped` to `AddSingleton` in above example.
 
-#### [Next: Epilogue &raquo;](./PartFF.md) | [Tutorial Home](./README.md)
+## Convention-based handlers, `CommandContext`, recursion
+
+Let's write a bit more complex handler to see how
+`CommandContext` works.
+
+``` cs --region Part09_RecSumCommandSession --source-file Part09.cs --session "Convention-based handlers, CommandContext, recursion"
+public class RecSumCommand : ICommand<long>
+{
+    public long[] Numbers { get; set; } = Array.Empty<long>();
+}
+
+public class RecSumCommandHandler
+{
+    public RecSumCommandHandler() => WriteLine("Creating RecSumCommandHandler.");
+    public void Dispose() => WriteLine("Disposing RecSumCommandHandler");
+
+    [CommandHandler] // Note that ICommandHandler<RecSumCommand, long> support isn't needed
+    private async Task<long> RecSumAsync(
+        RecSumCommand command,
+        IServiceProvider services, // Resolved via CommandContext.Services
+        ICommander commander, // Resolved via CommandContext.Services
+        CancellationToken cancellationToken)
+    {
+        var context = CommandContext.GetCurrent();
+        Debug.Assert(services == context.Services); // context.Services is a scoped IServiceProvider
+        Debug.Assert(commander == services.Commander()); // ICommander is singleton
+        Debug.Assert(services != commander.Services); // Scoped IServiceProvider != top-level IServiceProvider
+        WriteLine($"Numbers: {command.Numbers.ToDelimitedString()}");
+
+        // Each call creates a new CommandContext
+        var contextStack = new List<CommandContext>();
+        var currentContext = context;
+        while (currentContext != null)
+        {
+            contextStack.Add(currentContext);
+            currentContext = currentContext.OuterContext;
+        }
+        WriteLine($"CommandContext stack size: {contextStack.Count}");
+        Debug.Assert(contextStack[^1] == context.OutermostContext);
+
+        // Finally, CommandContext.Items is ~ like HttpContext.Items, and similarly to
+        // service scope, they are the same for all contexts in recursive call chain.
+        var depth = 1 + (int)(context.Items["Depth"] ?? 0);
+        context.Items["Depth"] = depth;
+        WriteLine($"Depth via context.Items: {depth}");
+
+        // Finally, the actual handler logic :)
+        if (command.Numbers.Length == 0)
+            return 0;
+        var head = command.Numbers[0];
+        var tail = command.Numbers[1..];
+        var tailSum = await context.Commander.CallAsync(
+            new RecSumCommand() { Numbers = tail }, false, // Try changing it to true
+            cancellationToken);
+        return head + tailSum;
+    }
+}
+```
+
+``` cs --region Part09_RecSumCommandSession2 --source-file Part09.cs --session "Convention-based handlers, CommandContext, recursion"
+// Building IoC container
+var serviceBuilder = new ServiceCollection()
+    .AddScoped<RecSumCommandHandler>();
+var commanderBuilder = serviceBuilder.AddCommander()
+    .AddHandlers<RecSumCommandHandler>();
+var services = serviceBuilder.BuildServiceProvider();
+
+var commander = services.Commander(); // Same as .GetRequiredService<ICommander>()
+WriteLine(await commander.CallAsync(new RecSumCommand() { Numbers = new[] { 1L, 2, 3 } }));
+```
+
+The output:
+
+```
+Creating RecSumCommandHandler.
+Numbers: 1, 2, 3
+CommandContext stack size: 1
+Depth via context.Items: 1
+Numbers: 2, 3
+CommandContext stack size: 2
+Depth via context.Items: 2
+Numbers: 3
+CommandContext stack size: 3
+Depth via context.Items: 3
+Numbers: 
+CommandContext stack size: 4
+Depth via context.Items: 4
+6
+```
+
+A few things are interesting here:
+
+1. You can use convention-based command handlers:
+   all you need is to decorate a method with `[CommandHandler]`
+   instead of implementing `ICommandHandler<TCommand>`.
+2. Such handlers are more flexible with the arguments:
+   - The first argument should always be the command
+   - The last one should always be the `CancellationToken`
+   - `CommandContext` arguments are resolved via `CommandContext.GetCurrent()`
+   - Everything else is resolved via `CommandContext.Services`,
+     i.e. a scoped service provider.
+
+But the most complex part of this example covers `CommandContext`.
+Contexts are "typed" - even though they all are inherited from
+`CommandContext`, their actual type is `CommandContext<TResult>`.
+
+Command context allows to:
+
+- Find currently running command
+- Set or read its result. Usually you don't have to set the result manually -
+  the code invoking command handlers ensures the result is set once
+  the "deepest" handler exist, but you may want to read it
+  in some handlers in your pipeline.
+- Manage `IServiceScope`
+- Access its `Items`. It's an `OptionSet`, ~ a thread-safe dictionary-like structure
+  helping to store any info associated with the current command.
+
+Finally, `CommandContext` is a class, but there is also
+[`ICommandContext` - an internal interface defining its API](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.CommandR/Internal/ICommandContext.cs) - check it out.
+And if you're looking for details, check out
+[`CommandContext` itself](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.CommandR/CommandContext.cs).
+
+So when you call a command, a new `CommandContext` is created.
+But what about the service scope? The code from `CommandContext<TResult>`
+constructor explains this better than a few sentences:
+
+```cs
+// PreviousContext here is CommandContext.Current, 
+// which will be replaced with `this` soon after.
+if (PreviousContext?.Commander != commander) {
+    OuterContext = null;
+    OutermostContext = this;
+    ServiceScope = Commander.Services.CreateScope();
+    Items = new OptionSet();
+}
+else {
+    OuterContext = PreviousContext;
+    OutermostContext = PreviousContext!.OutermostContext;
+    ServiceScope = OutermostContext.ServiceScope;
+    Items = OutermostContext.Items;
+}
+```
+
+As you see, if you "switch" `ICommander` instances on such
+calls, the new context behaves like it's a top-level one,
+i.e. it creates a new service scope, new `Items`, and
+exposes itself as `OutermostContext`.
+
+Now it's a good time to try changing `false` to `true` in this fragment above:
+
+```cs
+var tailSum = await context.Commander.CallAsync(
+    new RecSumCommand() { Numbers = tail }, false, // Try changing it to true
+    cancellationToken);
+```
+
+## Ways To Run A Command
+
+[`ICommander` offers just a single method to run the command](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.CommandR/ICommander.cs), but in reality,
+it's the most "low-level" option, so you'll rarely need it.
+
+The actual options are implemented in
+[`CommanderEx` type](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.CommandR/CommanderEx.cs)
+(`Ex` is a shortcut for `Extensions` that's used everywhere in `Stl` for such classes).
+
+- `CallAsync` is the one you should normally use.
+  It "invokes" the command and returns its result.
+- `RunAsync` acts like `CallAsync`, but returns `CommandContext`
+  instead. Which is why it doesn't throw an exception
+  even when one of the command handlers does - it completes
+  successfully in any case.
+  You can use e.g. `CommandContext.UntypedResult` to
+  get the actual command completion result or exception.
+- `Start` is fire-and-forget way to start a command.
+  Similarly to `RunAsync`, it returns `CommandContext`,
+  but note that it returns this context immediately,
+  i.e. while the command associated with this context is still running.
+  Even though `CommandContext` allows you to know when
+  the command produced its result (via e.g. `CommandContext.UntypedResultTask`),
+  the result itself doesn't mean the pipeline for this command
+  completed its execution, so code in its handlers might be still running.
+
+All these methods take up to 3 arguments:
+
+- `ICommand` - obviously
+- `bool isolate = false` - an optional parameter indicating whether
+  the command should be executed in isolated fashion. If it's true,
+  the command will be executed inside
+  [`ExecutionContext.SuppressFlow` block](https://docs.microsoft.com/en-us/dotnet/api/system.threading.executioncontext.suppressflow?view=net-5.0),
+  so it will also be the outermost for sure.
+- `CancellationToken cancellationToken = default` -
+  a usual argument of almost any async method.
+
+## Command Services and filtering handlers
+
+The most interesting way to register command handlers
+are to declare them inside command services:
+
+``` cs --region Part09_RecSumCommandServiceSession --source-file Part09.cs --session "Command Services and filtering handlers"
+public class RecSumCommandService
+{
+    [CommandHandler] // Note that ICommandHandler<RecSumCommand, long> support isn't needed
+    public virtual async Task<long> RecSumAsync( // Notice "public virtual"!
+        RecSumCommand command,
+        // You can't have any extra arguments here
+        CancellationToken cancellationToken = default)
+    {
+        if (command.Numbers.Length == 0)
+            return 0;
+        var head = command.Numbers[0];
+        var tail = command.Numbers[1..];
+        var tailSum = await RecSumAsync( // Note it's a direct call, but the whole pipeline still gets invoked!
+            new RecSumCommand() { Numbers = tail },
+            cancellationToken);
+        return head + tailSum;
+    }
+
+    // This handler is associated with ANY command (ICommand)
+    // Priority = 10 means it runs earlier than any handler with the default priority 0
+    // IsFilter tells it triggers other handlers via InvokeRemainingHandlersAsync
+    [CommandHandler(Priority = 10, IsFilter = true)]
+    protected virtual async Task DepthTracker(ICommand command, CancellationToken cancellationToken)
+    {
+        var context = CommandContext.GetCurrent();
+        var depth = 1 + (int)(context.Items["Depth"] ?? 0);
+        context.Items["Depth"] = depth;
+        WriteLine($"Depth via context.Items: {depth}");
+
+        await context.InvokeRemainingHandlersAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    // Another filter for RecSumCommand
+    [CommandHandler(Priority = 9, IsFilter = true)]
+    protected virtual Task ArgumentWriter(RecSumCommand command, CancellationToken cancellationToken)
+    {
+        WriteLine($"Numbers: {command.Numbers.ToDelimitedString()}");
+        var context = CommandContext.GetCurrent();
+        return context.InvokeRemainingHandlersAsync(cancellationToken);
+    }
+}
+```
+
+Such services has to be registered via `AddCommandService` method
+of the `CommanderBuilder`:
+
+``` cs --region Part09_RecSumCommandServiceSession2 --source-file Part09.cs --session "Command Services and filtering handlers"
+// Building IoC container
+var serviceBuilder = new ServiceCollection();
+var commanderBuilder = serviceBuilder.AddCommander()
+    .AddCommandService<RecSumCommandService>(); // Such services are auto-registered as singletons
+var services = serviceBuilder.BuildServiceProvider();
+
+var commander = services.Commander();
+var recSumService = services.GetRequiredService<RecSumCommandService>();
+WriteLine(recSumService.GetType());
+WriteLine(await commander.CallAsync(new RecSumCommand() { Numbers = new[] { 1L, 2 } }));
+WriteLine(await recSumService.RecSumAsync(new RecSumCommand() { Numbers = new[] { 3L, 4 } }));
+```
+
+The output:
+
+```
+Castle.Proxies.RecSumCommandServiceProxy
+Depth via context.Items: 1
+Numbers: 1, 2
+Depth via context.Items: 2
+Numbers: 2
+Depth via context.Items: 3
+Numbers: 
+3
+Depth via context.Items: 1
+Numbers: 3, 4
+Depth via context.Items: 2
+Numbers: 4
+Depth via context.Items: 3
+Numbers: 
+7
+```
+
+As you see, the proxy type is generated for such services, and
+this type routes every call made to command directly via `ICommander.CallAsync`.
+So the way you invoke these handlers doesn't change anything -
+the whole handler pipeline is always invoked.
+
+**TBD:** Write the next part on CommandR and Fusion integration.
+
+#### [Next: Multi-Host Invalidation and CQRS with Fusion + CommandR + Operations Framework &raquo;](./Part10.md) | [Tutorial Home](./README.md)
 
