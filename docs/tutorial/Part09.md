@@ -315,7 +315,7 @@ All these methods take up to 3 arguments:
 ## Command Services and filtering handlers
 
 The most interesting way to register command handlers
-are to declare them inside command services:
+are to declare them inside so-called Command Service:
 
 ``` cs --region Part09_RecSumCommandServiceSession --source-file Part09.cs --session "Command Services and filtering handlers"
 public class RecSumCommandService
