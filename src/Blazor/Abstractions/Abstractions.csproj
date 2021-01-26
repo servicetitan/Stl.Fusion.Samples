@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.9.25" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.9.28" />
   </ItemGroup>
 
 </Project>
