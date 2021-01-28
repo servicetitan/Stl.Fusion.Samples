@@ -1,0 +1,164 @@
+﻿@using Samples.Blazor.UI.UIHelpers
+@inject NavigationManager navigator
+
+@{
+    // var gameStatus = Helper.CalculateGameStatus(values);
+    // string status;
+    // if (gameStatus == Helper.GameStatus.X_wins)
+    // {
+        // status = "Winner: X";
+    }
+    else if (gameStatus == Helper.GameStatus.O_wins)
+    {
+        status = "Winner: O";
+    }
+    else if (gameStatus == Helper.GameStatus.Draw)
+    {
+        status = "Draw";
+    }
+    else
+    {
+        char nextPlayer = xIsNext ? 'X' : 'O';
+        status = $"Next player: {nextPlayer}";
+    }
+    @* <h3>@status</h3> *@
+}
+
+
+<div class="board" id="@BoardId" style="@BoardStyleHandler">
+    @for (int i = 0; i < 9; i++)
+    {
+        int squareNumber = i;
+        <Square @key=squareNumber
+                 Value=values[squareNumber]
+                 ClickHandler="() => DictHandler(BoardId, squareNumber)" />
+    }
+
+</div>
+
+<button class="btn btn-primary"
+        @onclick="PlayAgain"
+        @* disabled="@IsDisabled" *@
+        >
+    New game
+</button>
+
+<h5>BoardId: @BoardId</h5>
+
+@code {
+    // [Parameter]
+    // public string BoardId { get; set; }
+    // [Parameter]
+    // public bool xIsNext { get; set; }
+    // [Parameter]
+    // public char[] values { get; set; }
+    // [Parameter]
+    // public HubConnection hubConnection { get; set; }
+    // [Parameter]
+    // public EventCallback<Dictionary<string, int>> BoardClickHandler { get; set; }
+    // [Parameter]
+    // public string BoardStyleHandler { get; set; } = "pointer-events: none;";
+    //
+    // private void DictHandler(string boardId, int squareNum)
+    // {
+    //     var param = new Dictionary<string, int>()
+    //     {
+    //         {boardId, squareNum}
+    //     };
+    //     BoardClickHandler.InvokeAsync(param);
+    // }
+    //
+    // private bool IsDisabled => Helper.CalculateGameStatus(values) == Helper.GameStatus.NotYetFinished;
+    //
+    // private void HandleClick(int i)
+    // {
+    //     if (values[i] != ' ')
+    //     {
+    //         return;
+    //     }
+    //
+    //     bool isGameFinished = Helper.CalculateGameStatus(values) != Helper.GameStatus.NotYetFinished;
+    //     if (isGameFinished)
+    //     {
+    //         return;
+    //     }
+    //
+    //     bool xToPlay = xIsNext;
+    //     values[i] = xToPlay ? 'X' : 'O';
+    //     xIsNext = !xToPlay;
+    //     hubConnection.SendAsync("ChangeBoardMessage", values, xIsNext);
+    // }
+    //
+    // private void PlayAgainHandler()
+    // {
+    //     hubConnection.SendAsync("PlayAgainMessage", BoardId);
+    // }
+
+    [Parameter]
+    public string BoardId { get; set; } = "";
+    [Parameter]
+    public bool xIsNext { get; set; }
+
+    [Parameter]
+    public char[] values { get; set; }
+    [Parameter]
+    public EventCallback<Dictionary<string, int>> BoardClickHandler { get; set; }
+    [Parameter]
+    public string BoardStyleHandler { get; set; } = "pointer-events: none;";
+    [Parameter]
+    public EventCallback PlayAgain { get; set; }
+
+    private void DictHandler(string boardId, int squareNum)
+    {
+        var param = new Dictionary<string, int>()
+        {
+            {boardId, squareNum}
+        };
+        BoardClickHandler.InvokeAsync(param);
+    }
+
+    // private bool IsDisabled => Helper.CalculateGameStatus(values) == Helper.GameStatus.NotYetFinished;
+
+    private void HandleClick(int i)
+    {
+        if (values[i] != ' ')
+        {
+            return;
+        }
+
+        // bool isGameFinished = Helper.CalculateGameStatus(values) != Helper.GameStatus.NotYetFinished;
+        // if (isGameFinished)
+        // {
+            // return;
+        // }
+
+        bool xToPlay = xIsNext;
+        values[i] = xToPlay ? 'X' : 'O';
+        xIsNext = !xToPlay;
+        // hubConnection.SendAsync("ChangeBoardMessage", values, xIsNext);
+    }
+
+    private void PlayAgainHandler()
+    {
+        // hubConnection.SendAsync("PlayAgainMessage", BoardId);
+        // navigator.NavigateTo(navigator.Uri);
+        // PlayAgain.InvokeAsync();
+    }
+}
+
+<style scoped>
+    .board {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        background-color: orange;
+        padding: 10px;
+        width: 200px;
+        height: 200px;
+        border-radius: 5%;
+    }
+
+    button {
+        border-radius: 10%;
+        margin: 10px;
+    }
+</style>

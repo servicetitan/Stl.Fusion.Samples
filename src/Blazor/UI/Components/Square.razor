@@ -1,0 +1,30 @@
+﻿
+<div class="square" @onclick="@ClickHandler">@Value</div>
+
+@functions {
+    [Parameter]
+    public char Value { get; set; }
+    [Parameter]
+    public EventCallback ClickHandler { get; set; }
+
+}
+
+<style scoped>
+    .square {
+        background-color: white;
+        border: 1px solid black;
+        width: 60px;
+        height: 60px;
+        font-size: 30px;
+        text-align: center;
+        vertical-align: middle;
+        line-height: 60px;
+        border-radius: 10%;
+        cursor: pointer;
+    }
+
+        .square:hover {
+            background-color: navajowhite;
+        }
+</style>
+

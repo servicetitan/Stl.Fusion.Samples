@@ -8,6 +8,8 @@ namespace Samples.Blazor.Server.Services
     {
         public DbSet<ChatUser> ChatUsers { get; protected set; } = null!;
         public DbSet<ChatMessage> ChatMessages { get; protected set; } = null!;
+        public DbSet<Board> Boards { get; protected set; } = null!;
+        public DbSet<Player> Players { get; set; } = null!;
 
         public AppDbContext(DbContextOptions options) : base(options)
             => this.DisableChangeTracking();
@@ -22,6 +24,10 @@ namespace Samples.Blazor.Server.Services
             var message = modelBuilder.Entity<ChatMessage>();
             message.HasIndex(m => m.UserId);
             message.HasIndex(m => m.CreatedAt);
+
+            var board = modelBuilder.Entity<Board>();
+            board.HasIndex(b => b.BoardId);
+            board.HasIndex(b => b.IsXTurn);
         }
     }
 }

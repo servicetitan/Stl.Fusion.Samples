@@ -1,0 +1,214 @@
+﻿@page "/game/{Address}"
+@using Stl.Reflection
+@using Samples.Blazor.UI.UIHelpers
+@using System.Threading
+@using System.Runtime.CompilerServices
+@inject NavigationManager navigator
+@inject IBoardService BoardService
+@inject Session Session
+@inherits LiveComponentBase<GameBoard.CurrentBoard, Board>
+
+@{
+    var locals = Locals.Value;
+    var error = State.Error;
+    var state = State.LastValue;
+    var boardState = state.BoardState;
+}
+
+<h3>Tic Tac Toe</h3>
+<hr>
+
+@{
+    // var gameStatus = Helper.CalculateGameStatus(locals.BoardState.ToCharArray());
+    var gameStatus = Helper.CalculateGameStatus(boardState.ToCharArray());
+    string status;
+    if (gameStatus == Helper.GameStatus.X_wins)
+    {
+        status = "Winner: X";
+        // _boardStyleHandler = boardStyle[1];
+        // ChangeStyle();
+    }
+    else if (gameStatus == Helper.GameStatus.O_wins)
+    {
+        status = "Winner: O";
+        // _boardStyleHandler = boardStyle[1];
+        // ChangeStyle();
+    }
+    else if (gameStatus == Helper.GameStatus.Draw)
+    {
+        status = "Draw";
+        // _boardStyleHandler = boardStyle[1];
+        // ChangeStyle();
+    }
+    else
+    {
+        char nextPlayer = state.IsXTurn ? 'X' : 'O';
+        status = $"Turn: {nextPlayer}";
+    }
+    <h4>@status</h4>
+}
+
+@if (string.IsNullOrWhiteSpace(Address))
+{
+    <TicTacToeGame />
+}
+else
+{
+    if (!_allowView)
+    {
+    }
+    else
+    {
+        <p>@state.BoardId</p>
+        <div class="board" id="@(state.BoardId)" style="@_boardStyleHandler">
+            @for (int i = 0; i < 9; i++)
+            {
+                int squareNumber = i;
+                <Square @key=squareNumber
+                         Value=state.BoardState[squareNumber]
+                         ClickHandler="() => SquareHandler(state.BoardId, squareNumber, state.IsXTurn)"
+                         />
+            }
+
+        </div>
+
+        <button class="btn btn-primary"
+                @onclick="PlayAgainHandler"
+                disabled="@IsDisabled">
+            New game
+        </button>
+        <hr>
+        <h5>BoardId: @(state.BoardId)</h5>
+        <div>Turn: @(state.IsXTurn ? 'X' : 'O')</div>
+    }
+}
+
+
+@code {
+    [Parameter]
+    public string Address { get; set; }
+
+    private string _boardId;
+    private Board _board;
+    private bool _turnX = true;
+    private string _values = "         ";
+
+    private bool _xIsNext;
+    private bool _allowView;
+    private string _boardStyleHandler = "";
+    private Player playerX;
+    private Player playerO;
+    private bool IsDisabled => Helper.CalculateGameStatus(State.LastValue.BoardState.ToCharArray()) == Helper.GameStatus.NotYetFinished;
+
+    public class CurrentBoard
+    {
+        public string BoardId { get; set; } = "";
+        public string BoardState { get; set; } = "         ";
+        public bool IsXTurn { get; set; } = true;
+    }
+
+    private async Task PlayAgainHandler()
+    {
+        Locals.Value = BoardService.ClearBoardAsync(Locals.LastValue.BoardId).Result;
+        await OnInitializedAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_board == null)
+        {
+            _boardId = Address;
+            try
+            {
+                _board = BoardService.GetBoardAsync(_boardId).Result;
+            }
+            catch (Exception ex)
+            {
+                _board = BoardService.CreateBoardAsync(_boardId).Result;
+            }
+        }
+        // try
+        // {
+        //     _playersCount = await GetBoardPlayersCountWithoutClone();
+        //     if(_playersCount > 1)
+        //         navigator.NavigateTo("/game");
+        // }
+        // catch (Exception ex)
+        // {
+        //     _playersCount = 0;
+        // }
+
+        // Locals.Value.BoardId = _boardId;
+        // Locals.Value.BoardState = _board.BoardState;
+        // Locals.Value.IsXTurn = _board.IsXTurn;
+
+        // _boardId = _board.BoardId;
+        // _values = _board.BoardState;
+        // _turnX = _board.IsXTurn;
+        
+        _allowView = true;
+        var pCount = BoardService.GetPlayerCountWithoutCloneAsync(_boardId).Result;
+        if (pCount < 2)
+        {
+            await AddPlayer();
+        }
+        await Task.CompletedTask;
+    }
+
+    private async Task SquareHandler(string boardId, int squareNum, bool turnX)
+    {
+        Locals.Value = await BoardService.ChangeBoardStateAsync(boardId, squareNum, turnX);
+    }
+
+    private async Task AddPlayer()
+    {
+        string sessionId = Session.Id;
+        bool isClone = false;
+        var result = BoardService.CreatePlayerAsync(_boardId, sessionId, isClone).Result;
+        if (result.Item1 == false)
+        {
+            navigator.NavigateTo("/game");
+        } else
+        {
+            var player = BoardService.GetPlayerAsync(result.Item2).Result;
+            if (player.IsXPlayer)
+            {
+                playerX = player;
+                Debug.WriteLine("This is Player X");
+            }
+            else
+            {
+                playerO = player;
+                Debug.WriteLine("This is Player O");
+            }
+        }
+    }
+
+    protected override async Task<CurrentBoard> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        _board = await BoardService.GetBoardAsync(_boardId, cancellationToken).ConfigureAwait(false);
+        return new CurrentBoard()
+        {
+            BoardId = _board.BoardId,
+            BoardState = _board.BoardState,
+            IsXTurn = _board.IsXTurn
+        };
+    }
+}
+
+<style scoped>
+    .board {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        background-color: orange;
+        padding: 10px;
+        width: 200px;
+        height: 200px;
+        border-radius: 5%;
+    }
+
+    button {
+        border-radius: 10%;
+        margin: 10px;
+    }
+</style>

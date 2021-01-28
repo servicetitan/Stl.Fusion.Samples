@@ -51,13 +51,15 @@ namespace Samples.Blazor.Server
                 logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
             });
 
+            services.AddSingleton<IBoardService, BoardService>();
+
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
             services.AddDbContextFactory<AppDbContext>(builder => {
                 builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
             });
-
+            
             // Fusion services
             services.AddSingleton(c => {
                 var serverSettings = c.GetRequiredService<ServerSettings>();
