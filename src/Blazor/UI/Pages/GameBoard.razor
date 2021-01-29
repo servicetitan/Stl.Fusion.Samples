@@ -6,21 +6,20 @@
 @inject NavigationManager navigator
 @inject IBoardService BoardService
 @inject Session Session
-@inherits LiveComponentBase<GameBoard.CurrentBoard, Board>
+@inherits LiveComponentBase<GameBoard.Model, GameBoard.LocalsModel>
 
 @{
     var locals = Locals.Value;
     var error = State.Error;
-    var state = State.LastValue;
-    var boardState = state.BoardState;
+    // var state = State.LastValue;
+    // var boardState = state.BoardState;
 }
 
 <h3>Tic Tac Toe</h3>
 <hr>
 
 @{
-    // var gameStatus = Helper.CalculateGameStatus(locals.BoardState.ToCharArray());
-    var gameStatus = Helper.CalculateGameStatus(boardState.ToCharArray());
+    var gameStatus = Helper.CalculateGameStatus(locals.BoardState.ToCharArray());
     string status;
     if (gameStatus == Helper.GameStatus.X_wins)
     {
@@ -42,7 +41,7 @@
     }
     else
     {
-        char nextPlayer = state.IsXTurn ? 'X' : 'O';
+        char nextPlayer = locals.IsXTurn ? 'X' : 'O';
         status = $"Turn: {nextPlayer}";
     }
     <h4>@status</h4>
@@ -59,14 +58,14 @@ else
     }
     else
     {
-        <p>@state.BoardId</p>
-        <div class="board" id="@(state.BoardId)" style="@_boardStyleHandler">
+        <p>@Address</p>
+        <div class="board" id="@(Address)" style="@_boardStyleHandler">
             @for (int i = 0; i < 9; i++)
             {
                 int squareNumber = i;
                 <Square @key=squareNumber
-                         Value=state.BoardState[squareNumber]
-                         ClickHandler="() => SquareHandler(state.BoardId, squareNumber, state.IsXTurn)"
+                         Value=locals.BoardState[squareNumber]
+                         ClickHandler="() => SquareHandler(Address, squareNumber, locals.IsXTurn)"
                          />
             }
 
@@ -78,8 +77,8 @@ else
             New game
         </button>
         <hr>
-        <h5>BoardId: @(state.BoardId)</h5>
-        <div>Turn: @(state.IsXTurn ? 'X' : 'O')</div>
+        <h5>BoardId: @(Address)</h5>
+        <div>Turn: @(locals.IsXTurn ? 'X' : 'O')</div>
     }
 }
 
@@ -98,18 +97,24 @@ else
     private string _boardStyleHandler = "";
     private Player playerX;
     private Player playerO;
-    private bool IsDisabled => Helper.CalculateGameStatus(State.LastValue.BoardState.ToCharArray()) == Helper.GameStatus.NotYetFinished;
+    private bool IsDisabled => Helper.CalculateGameStatus(Locals.LastValue.BoardState.ToCharArray()) == Helper.GameStatus.NotYetFinished;
 
-    public class CurrentBoard
+    public class LocalsModel
     {
-        public string BoardId { get; set; } = "";
         public string BoardState { get; set; } = "         ";
         public bool IsXTurn { get; set; } = true;
     }
 
+    public class Model
+    {
+        public Board Board { get; set; } = null;
+    }
+
     private async Task PlayAgainHandler()
     {
-        Locals.Value = BoardService.ClearBoardAsync(Locals.LastValue.BoardId).Result;
+        _board = await BoardService.ClearBoardAsync(Address);
+        Locals.Value.BoardState = _board.BoardState;
+        Locals.Value.IsXTurn = _board.IsXTurn;
         await OnInitializedAsync();
     }
 
@@ -145,19 +150,26 @@ else
         // _boardId = _board.BoardId;
         // _values = _board.BoardState;
         // _turnX = _board.IsXTurn;
-        
         _allowView = true;
         var pCount = BoardService.GetPlayerCountWithoutCloneAsync(_boardId).Result;
         if (pCount < 2)
         {
             await AddPlayer();
         }
+        Locals.Value.BoardState = _board.BoardState;
+        Locals.Value.IsXTurn = _board.IsXTurn;
         await Task.CompletedTask;
     }
+    
+    protected override void ConfigureState(LiveState<Model>.Options options)
+        => options.WithUpdateDelayer(0);
 
     private async Task SquareHandler(string boardId, int squareNum, bool turnX)
     {
-        Locals.Value = await BoardService.ChangeBoardStateAsync(boardId, squareNum, turnX);
+        _board = await BoardService.ChangeBoardStateAsync(boardId, squareNum, turnX);
+        Locals.Value.BoardState = _board.BoardState;
+        Locals.Value.IsXTurn = _board.IsXTurn;
+        State.CancelUpdateDelay();
     }
 
     private async Task AddPlayer()
@@ -184,14 +196,12 @@ else
         }
     }
 
-    protected override async Task<CurrentBoard> ComputeStateAsync(CancellationToken cancellationToken)
+    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
     {
         _board = await BoardService.GetBoardAsync(_boardId, cancellationToken).ConfigureAwait(false);
-        return new CurrentBoard()
+        return new Model()
         {
-            BoardId = _board.BoardId,
-            BoardState = _board.BoardState,
-            IsXTurn = _board.IsXTurn
+            Board = _board
         };
     }
 }
