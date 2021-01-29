@@ -14,14 +14,10 @@ namespace Samples.Blazor.Server.Services
     [ComputeService(typeof(IBoardService))]
     public class BoardService : DbServiceBase<AppDbContext>, IBoardService
     {
-        private readonly IPublisher _publisher;
-
         public BoardService(
-            IPublisher publisher,
             IServiceProvider services)
             : base(services)
         {
-            _publisher = publisher;
         }
 
         public virtual async Task<long> GetPlayerCountAsync(string boardId, CancellationToken cancellationToken = default)
@@ -91,20 +87,18 @@ namespace Samples.Blazor.Server.Services
         public async Task<Board> ChangeBoardStateAsync(string boardId, int squareIndex, bool turnX, CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext();
-            var player = dbContext.Players.FirstOrDefault(p => p.PlayerBoard.BoardId == boardId && p.IsXPlayer == turnX)
-                         ?? throw new ApplicationException("Please reload this page.");
             var board = dbContext.Boards.FirstOrDefault(b => b.BoardId == boardId)
                         ?? throw new ApplicationException("Please reload this page.");
             if (board.BoardState[squareIndex] == ' ') {
-                board.BoardState = GetNewValueString(board.BoardState, squareIndex, player.IsXPlayer).Result;
-                board.IsXTurn = !player.IsXPlayer;
+                board.BoardState = GetNewValueString(board.BoardState, squareIndex, turnX).Result;
+                board.IsXTurn = !turnX;
                 dbContext.Boards.Update(board);
                 await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
             Computed.Invalidate(() => GetBoardAsync(boardId, CancellationToken.None));
             return board;
         }
-
+        
         public async Task<Board> CreateBoardAsync(string boardId, CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext();

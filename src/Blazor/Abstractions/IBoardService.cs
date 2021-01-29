@@ -48,6 +48,5 @@ namespace Samples.Blazor.Abstractions
         Task<Board> ClearBoardAsync(string boardId, CancellationToken cancellationToken = default);
         Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isClone, CancellationToken cancellationToken = default);
         Task<Player> CreatePlayerCloneAsync(long id, string boardId, CancellationToken cancellationToken = default);
-        
     }
 }

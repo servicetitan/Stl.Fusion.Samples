@@ -76,7 +76,7 @@ namespace Samples.Blazor.Client
     }
     
     [RestEaseReplicaService(typeof(IBoardService), Scope = Scopes.ClientSideOnly)]
-    [BasePath("game")]
+    [BasePath("board")]
     public interface IBoardClient
     {
         // GET

@@ -2,7 +2,6 @@
 @using Stl.Reflection
 @using Samples.Blazor.UI.UIHelpers
 @using System.Threading
-@using System.Runtime.CompilerServices
 @inject NavigationManager navigator
 @inject IBoardService BoardService
 @inject Session Session
@@ -58,7 +57,6 @@ else
     }
     else
     {
-        <p>@Address</p>
         <div class="board" id="@(Address)" style="@_boardStyleHandler">
             @for (int i = 0; i < 9; i++)
             {
@@ -78,7 +76,6 @@ else
         </button>
         <hr>
         <h5>BoardId: @(Address)</h5>
-        <div>Turn: @(locals.IsXTurn ? 'X' : 'O')</div>
     }
 }
 
@@ -112,9 +109,15 @@ else
 
     private async Task PlayAgainHandler()
     {
-        _board = await BoardService.ClearBoardAsync(Address);
-        Locals.Value.BoardState = _board.BoardState;
-        Locals.Value.IsXTurn = _board.IsXTurn;
+        // _board = await BoardService.ClearBoardAsync(Address);
+        // UpdateLocals(l => l.BoardState = _board.BoardState);
+        // UpdateLocals(l => l.IsXTurn = _board.IsXTurn);
+        // await OnInitializedAsync();
+        var t1 = Task.Run(() => BoardService.ClearBoardAsync(Address));
+        await Task.WhenAll(t1);
+        _board = t1.Result;
+        UpdateLocals(l => l.BoardState = _board.BoardState);
+        UpdateLocals(l => l.IsXTurn = _board.IsXTurn);
         await OnInitializedAsync();
     }
 
@@ -125,11 +128,11 @@ else
             _boardId = Address;
             try
             {
-                _board = BoardService.GetBoardAsync(_boardId).Result;
+                await BoardService.GetBoardAsync(_boardId);
             }
             catch (Exception ex)
             {
-                _board = BoardService.CreateBoardAsync(_boardId).Result;
+                await BoardService.CreateBoardAsync(_boardId);
             }
         }
         // try
@@ -151,24 +154,24 @@ else
         // _values = _board.BoardState;
         // _turnX = _board.IsXTurn;
         _allowView = true;
-        var pCount = BoardService.GetPlayerCountWithoutCloneAsync(_boardId).Result;
+        var t1 = Task.Run(() => BoardService.GetBoardAsync(_boardId));
+        await Task.WhenAll(t1);
+        _board = t1.Result;
+        var pCount = await BoardService.GetPlayerCountWithoutCloneAsync(_boardId);
         if (pCount < 2)
         {
-            await AddPlayer();
+            AddPlayer();
         }
         Locals.Value.BoardState = _board.BoardState;
         Locals.Value.IsXTurn = _board.IsXTurn;
         await Task.CompletedTask;
     }
-    
-    protected override void ConfigureState(LiveState<Model>.Options options)
-        => options.WithUpdateDelayer(0);
 
     private async Task SquareHandler(string boardId, int squareNum, bool turnX)
     {
         _board = await BoardService.ChangeBoardStateAsync(boardId, squareNum, turnX);
-        Locals.Value.BoardState = _board.BoardState;
-        Locals.Value.IsXTurn = _board.IsXTurn;
+        UpdateLocals(l => l.BoardState = _board.BoardState);
+        UpdateLocals(l => l.IsXTurn = _board.IsXTurn);
         State.CancelUpdateDelay();
     }
 
@@ -176,7 +179,10 @@ else
     {
         string sessionId = Session.Id;
         bool isClone = false;
-        var result = BoardService.CreatePlayerAsync(_boardId, sessionId, isClone).Result;
+        var t1 = Task.Run(() => BoardService.CreatePlayerAsync(Address, sessionId, isClone));
+        await Task.WhenAll(t1);
+        var result = t1.Result;
+        // var result = BoardService.CreatePlayerAsync(_boardId, sessionId, isClone).Result;
         if (result.Item1 == false)
         {
             navigator.NavigateTo("/game");
@@ -203,6 +209,16 @@ else
         {
             Board = _board
         };
+    }
+        
+    protected override void ConfigureState(LiveState<Model>.Options options)
+        => options.WithUpdateDelayer(0);
+    
+    private void UpdateLocals(Action<LocalsModel> updater)
+    {
+        var clone = MemberwiseCloner.Clone(Locals.Value);
+        updater.Invoke(clone);
+        Locals.Value = clone;
     }
 }
 

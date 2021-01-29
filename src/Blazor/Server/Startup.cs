@@ -51,7 +51,7 @@ namespace Samples.Blazor.Server
                 logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
             });
 
-            services.AddSingleton<IBoardService, BoardService>();
+            // services.AddSingleton<IBoardService, BoardService>();
 
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);

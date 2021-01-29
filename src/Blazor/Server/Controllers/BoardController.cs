@@ -11,70 +11,63 @@ namespace Samples.Blazor.Server.Controllers
     [ApiController, JsonifyErrors]
     public class BoardController : ControllerBase, IBoardService
     {
-        private readonly IBoardService _board;
+        private readonly IBoardService _boardService;
 
-        public BoardController(IBoardService board) => _board = board;
+        public BoardController(IBoardService board) => _boardService = board;
 
         // POST
 
         [HttpPost("changeBoardState")]
         public async Task<Board> ChangeBoardStateAsync(string boardId, int squareIndex, bool turnX, CancellationToken cancellationToken = default)
-        {
-            return await _board.ChangeBoardStateAsync(boardId, squareIndex, turnX, cancellationToken);
-        }
+            => await _boardService.ChangeBoardStateAsync(boardId, squareIndex, turnX, cancellationToken);
 
         [HttpPost("createBoard")]
-        public async Task<Board> CreateBoardAsync(string boardId, CancellationToken cancellationToken = default)
+        public async Task<Board> CreateBoardAsync(string? boardId, CancellationToken cancellationToken = default)
         {
-            return await _board.CreateBoardAsync(boardId, cancellationToken);
+            boardId ??= "";
+            return await _boardService.CreateBoardAsync(boardId, cancellationToken);
         }
-        
+
         [HttpPost("clearBoard")]
         public async Task<Board> ClearBoardAsync(string boardId, CancellationToken cancellationToken = default)
-        {
-            return await _board.ClearBoardAsync(boardId, cancellationToken);
-        }
+            => await _boardService.ClearBoardAsync(boardId, cancellationToken);
 
         [HttpPost("createPlayer")]
         public async Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isClone, CancellationToken cancellationToken = default)
-        {
-            return await _board.CreatePlayerAsync(boardId, sessionId, isClone, cancellationToken);
-        }
+            => await _boardService.CreatePlayerAsync(boardId, sessionId, isClone, cancellationToken);
         
         [HttpPost("createPlayerClone")]
         public async Task<Player> CreatePlayerCloneAsync(long id, string boardId, CancellationToken cancellationToken = default)
-        {
-            return await _board.CreatePlayerCloneAsync(id, boardId, cancellationToken);
-        }
+            => await _boardService.CreatePlayerCloneAsync(id, boardId, cancellationToken);
 
         // GET
 
         [HttpGet("getPlayerCount"), Publish]
         public Task<long> GetPlayerCountAsync(string boardId, CancellationToken cancellationToken = default)
-            => _board.GetPlayerCountAsync(boardId, cancellationToken);
+            => _boardService.GetPlayerCountAsync(boardId, cancellationToken);
 
         [HttpGet("getPlayerCountWithoutClone"), Publish]
         public Task<long> GetPlayerCountWithoutCloneAsync(string boardId, CancellationToken cancellationToken = default)
-            => _board.GetPlayerCountWithoutCloneAsync(boardId, cancellationToken);
+            => _boardService.GetPlayerCountWithoutCloneAsync(boardId, cancellationToken);
 
         [HttpGet("getPlayer"), Publish]
         public Task<Player> GetPlayerAsync(long id, CancellationToken cancellationToken = default)
-            => _board.GetPlayerAsync(id, cancellationToken);
+            => _boardService.GetPlayerAsync(id, cancellationToken);
         
         [HttpGet("getPlayerBySession"), Publish]
         public Task<Player> GetPlayerBySessionAsync(string sessionId, CancellationToken cancellationToken = default)
-            => _board.GetPlayerBySessionAsync(sessionId, cancellationToken);
+            => _boardService.GetPlayerBySessionAsync(sessionId, cancellationToken);
 
         [HttpGet("getBoardState"), Publish]
         public Task<Board> GetBoardStateAsync(string boardId, CancellationToken cancellationToken = default)
-            => _board.GetBoardStateAsync(boardId, cancellationToken);
+            => _boardService.GetBoardStateAsync(boardId, cancellationToken);
 
         [HttpGet("getBoardPlayers"), Publish]
         public Task<List<Player>> GetBoardPlayersAsync(string boardId, CancellationToken cancellationToken = default)
-            => _board.GetBoardPlayersAsync(boardId, cancellationToken);
+            => _boardService.GetBoardPlayersAsync(boardId, cancellationToken);
 
         [HttpGet("getBoard"), Publish]
         public Task<Board> GetBoardAsync(string boardId, CancellationToken cancellationToken = default)
-            => _board.GetBoardAsync(boardId, cancellationToken);
+            => _boardService.GetBoardAsync(boardId, cancellationToken);
     }
 }
