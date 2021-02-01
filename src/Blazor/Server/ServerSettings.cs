@@ -9,10 +9,10 @@ namespace Samples.Blazor.Server
     {
         public string PublisherId { get; set; } = "p";
 
-        public string MicrosoftAccountClientId { get; set; } = "c17d7c8e-de2c-42e3-9859-9437f03fb9a8";
+        public string MicrosoftAccountClientId { get; set; } = "6839dbf7-d1d3-4eb2-a7e1-ce8d48f34d00";
         public string MicrosoftAccountClientSecret { get; set; } =
             Encoding.UTF8.GetString(Convert.FromBase64String(
-                "c2pPR1VydmJkaDlVLn5VNk9Ycn41aFE3di1EeHpFNy50Qw=="));
+                "REFYeH4yNTNfcVNWX2h0WkVoc1V6NHIueDN+LWRxUTA2Zw=="));
 
         public string GitHubClientId { get; set; } = "7a38bc415f7e1200fee2";
         public string GitHubClientSecret { get; set; } =

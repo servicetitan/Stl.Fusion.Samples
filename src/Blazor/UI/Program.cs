@@ -31,8 +31,8 @@ namespace Samples.Blazor.UI
             ConfigureServices(builder.Services, builder);
             builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
-            host.Services.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
 
+            host.Services.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
             var runTask = host.RunAsync();
             Task.Run(async () => {
                 // We "manually" start IHostedServices here, because Blazor host doesn't do this.
