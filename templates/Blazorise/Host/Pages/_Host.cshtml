@@ -1,31 +1,19 @@
 ﻿@page "/"
 @namespace Templates.Blazor2.Host.Pages
 @using Templates.Blazor2.UI
-@using Templates.Blazor2.Host.Controllers
-@using Templates.Blazor2.Host.Services
 @using Stl.Async
-@using Stl.Fusion.Authentication
+@using Stl.Fusion.Server.Authentication
+@using Stl.Fusion.Server.Controllers
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@inject AuthSyncService AuthSyncService
-@inject ISessionResolver SessionResolver
+@inject ServerAuthHelper ServerAuthHelper
+@inject ServerSettings ServerSettings
 @{
-    var authSyncService = AuthSyncService;
-    var principal = HttpContext.User;
-    var session = SessionResolver.Session;
-    var now = DateTime.UtcNow;
-    var sessionInfo = new SessionInfo(session.Id) {
-        CreatedAt = now,
-        LastSeenAt = now,
-        IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "",
-        UserAgent = Request.Headers["User-Agent"].ToString() ?? "",
-    };
-    Task.Run(() => authSyncService.SyncAsync(principal, sessionInfo, session)).Ignore();
-
-    Layout = null;
+    Task.Run(() => ServerAuthHelper.UpdateAuthStateAsync(HttpContext)).Ignore();
+    var authSchemas = await ServerAuthHelper.GetSchemasAsync(HttpContext);
+    var sessionId = ServerAuthHelper.Session.Id.Value;
     var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
-    var request = HttpContext.Request;
-    var mustClose = request.Path.Value == "/close";
-    var flowName = request.Query.TryGetValue("flow", out var flows) ? flows.FirstOrDefault() : "";
+    var isCloseWindowRequest = ServerAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
+    Layout = null;
 }
 
 <!DOCTYPE html>
@@ -39,17 +27,21 @@
 
     <partial name="Blazorise.Head" />
     <script src="_content/Stl.Fusion.Blazor/scripts/fusionAuth.js"></script>
-    <script>window.FusionAuth.sessionId = "@session.Id";</script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script>
+        window.FusionAuth.schemas = "@authSchemas";
+        window.FusionAuth.sessionId = "@sessionId";
+    </script>
 </head>
 <body>
-@if (mustClose) {
+@if (isCloseWindowRequest) {
     <script>
         setTimeout(function () {
             window.close();
         }, 500)
     </script>
     <div class="alert alert-primary">
-        @(flowName) completed, you can close this window.
+        @(closeWindowFlowName) completed, you can close this window.
     </div>
 } else if (!isServerSideBlazor) {
     <app id="app">Loading...</app>
@@ -65,8 +57,7 @@
     <script src="_framework/blazor.webassembly.js"></script>
 } else {
     <app>
-        @* <component type="typeof(App)" render-mode="ServerPrerendered"/> *@
-        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered, new { SessionId = session.Id }))
+        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered, new { SessionId = sessionId }))
     </app>
 
     <div id="blazor-error-ui">

@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="0.9.54" />
+  </ItemGroup>
+
 </Project>
