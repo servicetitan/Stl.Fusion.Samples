@@ -3,6 +3,8 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using AspNet.Security.OAuth.GitHub;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +27,6 @@ using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.EntityFramework;
-using Stl.Fusion.EntityFramework.Internal;
 using Stl.Fusion.Server;
 using Stl.IO;
 
@@ -45,6 +46,13 @@ namespace Samples.Blazor.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+#pragma warning disable ASP0000
+            var serverSettings = services
+                .UseAttributeScanner(s => s.AddService<ServerSettings>())
+                .BuildServiceProvider()
+                .GetRequiredService<ServerSettings>();
+#pragma warning restore ASP0000
+
             // Logging
             services.AddLogging(logging => {
                 logging.ClearProviders();
@@ -56,13 +64,14 @@ namespace Samples.Blazor.Server
 
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
-            var dbPath = appTempDir & "App_v09x.db";
+            var dbPath = appTempDir & "App_v095.db";
             services.AddDbContextFactory<AppDbContext>(b => {
                 b.UseSqlite($"Data Source={dbPath}", sqlite => { });
+                if (Env.IsDevelopment())
+                    b.EnableSensitiveDataLogging();
             });
             services.AddDbContextServices<AppDbContext>(b => {
                 // This is the best way to add DbContext-related services from Stl.Fusion.EntityFramework
-                b.AddDbEntityResolver<long, ChatUser>();
                 b.AddDbEntityResolver<long, ChatMessage>();
                 b.AddDbOperations((_, o) => {
                     // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
@@ -72,43 +81,37 @@ namespace Samples.Blazor.Server
                 var operationLogChangeAlertPath = dbPath + "_changed";
                 b.AddFileBasedDbOperationLogChangeNotifier(operationLogChangeAlertPath);
                 b.AddFileBasedDbOperationLogChangeMonitor(operationLogChangeAlertPath);
+                b.AddDbAuthentication();
             });
 
             // Fusion services
-            services.AddSingleton(c => {
-                var serverSettings = c.GetRequiredService<ServerSettings>();
-                return new Publisher.Options() { Id = serverSettings.PublisherId };
-            });
+            services.AddSingleton(new Publisher.Options() { Id = serverSettings.PublisherId });
             services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
             var fusion = services.AddFusion();
-            var fusionServer = fusion.AddWebSocketServer();
+            var fusionServer = fusion.AddWebServer();
             var fusionClient = fusion.AddRestEaseClient();
             var fusionAuth = fusion.AddAuthentication().AddServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 
             services.AddAuthentication(options => {
-                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                })
-                .AddCookie(options => {
-                    options.LoginPath = "/signin";
-                    options.LogoutPath = "/signout";
-                })
-                .AddGitHub(options => {
-                    options.Scope.Add("read:user");
-                    // options.Scope.Add("user:email");
-                    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-                });
-            // We want to get ClientId and ClientSecret from ServerSettings,
-            // and they're available only when IServiceProvider is already created,
-            // that's why this overload of Configure<TOptions> is used here.
-            services.Configure<GitHubAuthenticationOptions>((c, name, options) => {
-                var serverSettings = c.GetRequiredService<ServerSettings>();
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            }).AddCookie(options => {
+                options.LoginPath = "/signIn";
+                options.LogoutPath = "/signOut";
+            }).AddMicrosoftAccount(options => {
+                options.ClientId = serverSettings.MicrosoftAccountClientId;
+                options.ClientSecret = serverSettings.MicrosoftAccountClientSecret;
+                options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+            }).AddGitHub(options => {
+                options.Scope.Add("read:user");
+                options.Scope.Add("user:email");
                 options.ClientId = serverSettings.GitHubClientId;
                 options.ClientSecret = serverSettings.GitHubClientSecret;
+                options.CorrelationCookie.SameSite = SameSiteMode.Lax;
             });
 
             // Web
@@ -171,6 +174,7 @@ namespace Samples.Blazor.Server
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.ApplicationServices.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
             app.UseEndpoints(endpoints => {
                 endpoints.MapBlazorHub();
                 endpoints.MapFusionWebSocketServer();

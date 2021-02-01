@@ -1,11 +1,18 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="sidebar">
-    <NavMenu />
-</div>
+<Layout Sider="true" Class="main">
+    <LayoutSider>
+        <LayoutSiderContent>
+            <LeftBar />
+        </LayoutSiderContent>
+    </LayoutSider>
+    <Layout>
+        <LayoutHeader Fixed="true">
+            <TopBar />
+        </LayoutHeader>
 
-<div class="main">
-    <div class="content px-4">
-        @Body
-    </div>
-</div>
+        <LayoutContent Padding="Padding.Is4">
+            @Body
+        </LayoutContent>
+    </Layout>
+</Layout>

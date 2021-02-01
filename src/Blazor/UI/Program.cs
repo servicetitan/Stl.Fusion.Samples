@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,6 +31,7 @@ namespace Samples.Blazor.UI
             ConfigureServices(builder.Services, builder);
             builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
+            host.Services.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
 
             var runTask = host.RunAsync();
             Task.Run(async () => {
@@ -61,12 +65,20 @@ namespace Samples.Blazor.UI
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+            services.UseAttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
             ConfigureSharedServices(services);
         }
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
+            services.AddBlazorise(options => {
+                    options.ChangeTextOnKeyPress = true;
+                    options.DelayTextOnKeyPress = true;
+                    options.DelayTextOnKeyPressInterval = 100;
+                })
+                .AddBootstrapProviders()
+                .AddFontAwesomeIcons();
+
             // Default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {
                 Delay = TimeSpan.FromSeconds(0.1),
@@ -76,7 +88,7 @@ namespace Samples.Blazor.UI
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }
 }

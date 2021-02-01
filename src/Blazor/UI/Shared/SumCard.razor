@@ -8,48 +8,43 @@
     var error = State.Error;
 }
 
-<div class="@CssClass">
-    <div class="card-header">@Title</div>
+<Card Class="@CssClass">
+    <CardHeader>@Title</CardHeader>
 
-    <div class="card-body">
+    <CardBody>
         <StatefulComponentState Component="@this" />
 
-        @if (error != null) {
-            <div class="alert alert-warning" role="alert">
-                Update error: @error.Message
-            </div>
-        }
+        <WhenException Title="Update error:" Exception="@error"/>
 
-        <div class="input-group mb-1">
-            <div class="input-group-prepend">
-                <span class="input-group-text">A:</span>
-            </div>
+        <Addons Margin="Margin.Is3.OnY">
+            <Addon AddonType="AddonType.Start">
+                <AddonLabel>A</AddonLabel>
+            </Addon>
             <input class="form-control" @bind-value="locals.ValueA" @bind-value:event="oninput" @onkeyup="Apply"/>
-        </div>
+        </Addons>
 
-        <div class="input-group">
-            <div class="input-group-prepend">
-                <span class="input-group-text">B:</span>
-            </div>
+        <Addons>
+            <Addon AddonType="AddonType.Start">
+                <AddonLabel>B</AddonLabel>
+            </Addon>
             <input class="form-control" @bind-value="locals.ValueB" @bind-value:event="oninput" @onkeyup="Apply"/>
-        </div>
+        </Addons>
+    </CardBody>
 
-    </div>
-
-    <div class="card-footer">
+    <CardFooter>
         @locals.ValueA + @locals.ValueB + Accumulator = <b>@sum</b>
-    </div>
-</div>
+    </CardFooter>
+</Card>
 
 @code {
     public class LocalsModel
     {
-        public double ValueA { get; set; } = 0;
-        public double ValueB { get; set; } = 0;
+        public double ValueA { get; set; }
+        public double ValueB { get; set; }
     }
 
     [Parameter]
-    public string CssClass { get; set; } = "card";
+    public string CssClass { get; set; } = "";
     [Parameter]
     public string Title { get; set; } = "Sum";
     [Parameter]

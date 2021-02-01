@@ -2,57 +2,50 @@
 @using System.Threading
 @using UAParser
 @using System.Collections.Concurrent
-@using Stl.Async
-@using Stl.Fusion.Authentication.Commands
 @inherits LiveComponentBase<List<Authentication.SessionModel>>
 @inject Session Session
 @inject IAuthService AuthService
+@inject ClientAuthHelper ClientAuthHelper
 @inject MomentsAgoService MomentsAgoService
 @inject NavigationManager Navigator
-@inject IJSRuntime JSRuntime
 
 @{
     var state = State.LastValue;
     var error = State.Error;
+    var usedAuthSchemas = User.Identities.Select(kv => kv.Key.Schema).ToHashSet();
+    var unusedAuthSchemas = AuthSchemas.Where(p => !usedAuthSchemas.Contains(p.Name)).ToArray();
 }
 
 <h1>Authentication</h1>
 
-@if (error != null) {
-    <div class="alert alert-warning" role="alert">
-        Update error: @error.Message
-    </div>
-}
+<WhenException Title="Update error:" Exception="@error"></WhenException>
 
-<div class="alert alert-primary">
-    <div class="mb-1">
+<Note>
+    <Text Margin="Margin.Is1.FromBottom">
         Open <a href="@Navigator.Uri" target="_blank">this page</a> or
         <a href="/composition" target="_blank">Composition example</a>
         in another window to see how authentication state is synchronized everywhere.
-    </div>
-    <div>
+    </Text>
+    <Text>
         If authentication doesn't work, most likely you need to provide
-        <code>ClientId</code> and <code>ClientSecret</code> for a GitHub application;
-        you can create one:
-        <a href="https://github.com/settings/developers" target="_blank">https://github.com/settings/developers</a>.
-    </div>
-</div>
+        <code>ClientId</code> and <code>ClientSecret</code> for one of
+        authentication providers.
+    </Text>
+</Note>
 
-<div class="card">
-    <div class="card-body">
-        <div class="card-title">
-            Session properties:
-        </div>
-        <div class="card-text">
+<Card>
+    <CardBody>
+        <CardTitle>Session properties:</CardTitle>
+        <CardText>
             <ul>
                 <li><code>Session.Id</code>: <b><code>@Session.Id</code></b></li>
             </ul>
-        </div>
-        <div class="card-title">
-            User properties:
-        </div>
-        <div class="card-text">
+        </CardText>
+
+        <CardTitle>User properties:</CardTitle>
+        <CardText>
             <ul>
+                <li><code>User.IsAuthenticated</code>: <b><code>@User.IsAuthenticated</code></b></li>
                 <li><code>User.Id</code>: <b><code>@User.Id</code></b></li>
                 <li><code>User.Name</code>: <b><code>@User.Name</code></b></li>
             </ul>
@@ -63,13 +56,17 @@
                         <li><code>@key</code>: <b><code>@value</code></b></li>
                     }
                 </ul>
+                <div class="card-subtitle">Identities:</div>
+                <ul>
+                    @foreach (var ((schema, schemaBoundId), _) in User.Identities) {
+                        <li><code>@schema</code>: <b><code>@schemaBoundId</code></b></li>
+                    }
+                </ul>
             }
-        </div>
+        </CardText>
         @if (User.IsAuthenticated && state.Count > 0) {
-            <div class="card-title">
-                Sessions:
-            </div>
-            <div class="card-text">
+            <CardTitle>Sessions:</CardTitle>
+            <CardText>
                 <table class="table table-sm">
                     <thead>
                     <tr>
@@ -92,35 +89,41 @@
                                     <span>Current</span>
                                 } else {
                                     <button type="button" class="btn btn-sm btn-danger"
-                                            @onclick="_ => Kick(session.Id)">Kick</button>
+                                            @onclick="_ => ClientAuthHelper.SignOutAsync(session.Id)">Kick</button>
                                 }
                             </td>
                         </tr>
                     }
                     </tbody>
                 </table>
-            </div>
+            </CardText>
         }
-    </div> @* card-body *@
-    <div class="card-footer">
+    </CardBody>
+    <CardFooter>
         <AuthorizeView>
             <Authorized>
-                <div class="mb-2">
-                    <button type="button" class="btn btn-warning" @onclick="SignOut">Sign out</button>
-                    <button type="button" class="btn btn-danger" @onclick="SignOutEverywhere">Sign out everywhere</button>
-                </div>
-                <div class="alert alert-warning">
-                    To sign out completely, you need to either sign out from GitHub,
-                    or revoke access from this application here:
-                    <a href="https://github.com/settings/applications" target="_blank">https://github.com/settings/applications</a>.
-                </div>
+                <Buttons Margin="Margin.Is0">
+                    <Button Color="Color.Warning"
+                            @onclick="_ => ClientAuthHelper.SignOutAsync()">Sign out</Button>
+                    <Button Color="Color.Danger"
+                            @onclick="_ => ClientAuthHelper.SignOutEverywhereAsync()">Sign out everywhere</Button>
+                </Buttons>
+                @if (unusedAuthSchemas.Length != 0) {
+                    <span> or add account: </span>
+                    <Buttons Margin="Margin.Is0">
+                        @foreach (var (name, displayName) in unusedAuthSchemas) {
+                            <Button Color="Color.Primary"
+                                    @onclick="_ => ClientAuthHelper.SignInAsync(name)">@displayName</Button>
+                        }
+                    </Buttons>
+                }
             </Authorized>
             <NotAuthorized>
-                <div class="mb-2"><button class="btn btn-secondary" @onclick="SignIn">Sign in</button></div>
+                <SignInDropdown/>
             </NotAuthorized>
         </AuthorizeView>
-    </div>
-</div>
+    </CardFooter>
+</Card>
 
 @code {
     public class SessionModel
@@ -140,16 +143,28 @@
     private AuthState AuthState { get; set; } = new(new User("")); // For SSB pre-render
     private User User => AuthState.User;
     private ConcurrentDictionary<string, UserAgent> UserAgentCache { get; } = new();
+    private (string Name, string DisplayName)[] AuthSchemas { get; set; } = Array.Empty<(string, string)>();
 
     protected override async Task OnParametersSetAsync()
-        => AuthState = await AuthStateTask;
+    {
+        AuthState = await AuthStateTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            // GetSchemasAsync requires JS interop, so it can be called only at this point
+            AuthSchemas = await ClientAuthHelper.GetSchemasAsync();
+            StateHasChanged();
+        }
+    }
 
     protected override void ConfigureState(LiveState<List<SessionModel>>.Options options)
         => options.InitialOutputFactory = _ => new List<SessionModel>();
 
     protected override async Task<List<SessionModel>> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        var sessions = await AuthService.GetUserSessionsAsync(Session, cancellationToken);
+        var sessions = await AuthService.GetUserSessionsAsync(Session, cancellationToken).ConfigureAwait(false);
         var result = new List<SessionModel>();
 
         Task<string> GetMomentsAgo(DateTime dateTime) => MomentsAgoService.GetMomentsAgoAsync(dateTime);
@@ -167,27 +182,5 @@
             result.Add(model);
         }
         return result;
-    }
-
-    private void SignIn() => JSRuntime.InvokeVoidAsync("FusionAuth.signIn");
-    private void SignOut() => JSRuntime.InvokeVoidAsync("FusionAuth.signOut");
-    private void Kick(string sessionId)
-    {
-        if (sessionId == Session.Id)
-            SignOut();
-        else {
-            var command = new SignOutCommand(true, new Session(sessionId));
-            Task.Run(() => AuthService.SignOutAsync(command)).Ignore();
-        }
-    }
-
-    private void SignOutEverywhere()
-    {
-        // No server-side API endpoint for this action(yet), so let's do this on the client
-        var sessions = State.LastValue.Where(s => s.Id != Session.Id);
-        foreach (var sessionModel in sessions) {
-            Kick(sessionModel.Id);
-        }
-        SignOut();
     }
 }

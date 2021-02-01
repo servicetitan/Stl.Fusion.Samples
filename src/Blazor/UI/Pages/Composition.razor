@@ -13,44 +13,37 @@
 
 <h1>Composition</h1>
 
-<div class="alert alert-primary">
+<Note>
     Open <a href="/chat" target="_blank">Chat</a>,
     <a href="/consistency" target="_blank">Consistency</a>, or
     <a href="/authentication" target="_blank">Authentication</a>
     examples in other window(s) to see how values on this page
     are updated in real-time due to changes made there.
-</div>
+</Note>
 
 <StatefulComponentState Component="@this" />
 
-@if (error != null) {
-    <div class="alert alert-warning" role="alert">
-        Update error: @error.Message
-    </div>
-}
+<WhenException Title="Update error:" Exception="@error"/>
 
-<div class="input-group pb-3">
-    <div class="input-group-prepend">
-        <span class="input-group-text">Parameter</span>
-    </div>
-    <input class="form-control"
-           placeholder="Type something here"
-           @bind-value="Locals.Value"
-           @bind-value:event="oninput" />
-</div>
+<Addons>
+    <Addon AddonType="AddonType.Start">
+        <AddonLabel>Parameter</AddonLabel>
+    </Addon>
+    <TextEdit @bind-Text="@Locals.Value" Placeholder="Type something here"/>
+</Addons>
 
-<div class="d-flex">
-    <div class="col-6">
+<Row Margin="Margin.Is3.OnY">
+    <Column ColumnSize="ColumnSize.Is6">
         <ComposedValueCard
             Title="Locally composed value"
             Source="@state.LocallyComposedValue"/>
-    </div>
-    <div class="col-6">
+    </Column>
+    <Column ColumnSize="ColumnSize.Is6">
         <ComposedValueCard
             Title="Remotely composed value"
             Source="@state.RemotelyComposedValue"/>
-    </div>
-</div>
+    </Column>
+</Row>
 
 @code {
     public class Model

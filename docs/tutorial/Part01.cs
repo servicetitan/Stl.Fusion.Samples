@@ -17,7 +17,7 @@ namespace Tutorial
         {
             var services = new ServiceCollection();
             services.AddFusion();
-            services.AttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             return services.BuildServiceProvider();
         }
         #endregion

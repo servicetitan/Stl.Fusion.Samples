@@ -20,23 +20,8 @@ namespace Samples.Blazor.Abstractions
         public long Id { get; set; }
     }
 
-    [Index(nameof(Name), Name = "IX_Name")]
-    public class ChatUser : LongKeyedEntity
-    {
-        [Required, MaxLength(120)]
-        public string AuthUserId { get; set; } = "";
-        [Required, MaxLength(120)]
-        public string Name { get; set; } = "";
-
-        public ChatUser MaskSecureFields()
-            => new() {
-                Id = Id,
-                Name = Name,
-            };
-    }
-
-    [Index(nameof(UserId), Name = "IX_UserId")]
-    [Index(nameof(CreatedAt), Name = "IX_CreatedAt")]
+    [Index(nameof(UserId))]
+    [Index(nameof(CreatedAt))]
     public class ChatMessage : LongKeyedEntity
     {
         public long UserId { get; set; }
@@ -69,27 +54,34 @@ namespace Samples.Blazor.Abstractions
         }
     }
 
+    // Not an entity!
+    public class ChatUser : LongKeyedEntity
+    {
+        public static ChatUser None => new() { Id = -1, Name = "No user found" };
+
+        [Required, MaxLength(120)]
+        public string Name { get; set; } = "";
+        public bool IsValid => Id >= 0;
+    }
+
     public interface IChatService
     {
-        public record SetUserNameCommand(string Name, Session Session) : ISessionCommand<ChatUser> { }
         public record PostMessageCommand(string Text, Session Session) : ISessionCommand<ChatMessage> { }
 
         // Commands
         [CommandHandler]
-        Task<ChatUser> SetUserNameAsync(SetUserNameCommand command, CancellationToken cancellationToken = default);
-        [CommandHandler]
         Task<ChatMessage> PostMessageAsync(PostMessageCommand command, CancellationToken cancellationToken = default);
 
         // Queries
-        [ComputeMethod(KeepAliveTime = 10)]
-        Task<ChatUser?> GetCurrentUserAsync(Session session, CancellationToken cancellationToken = default);
-        [ComputeMethod(KeepAliveTime = 10)]
-        Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
-        [ComputeMethod(KeepAliveTime = 10)]
-        Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 11)]
+        Task<ChatUser> GetCurrentUserAsync(Session session, CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 1)]
         Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default);
-        [ComputeMethod(KeepAliveTime = 10)]
+        [ComputeMethod(KeepAliveTime = 61)]
+        Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 61)]
+        Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 11)]
         Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 1)]
         Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);

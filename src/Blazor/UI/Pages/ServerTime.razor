@@ -10,17 +10,13 @@
 
 <h1>Server Time</h1>
 
+<WhenException Title="Update error:" Exception="@error"/>
+
 <StatefulComponentState Component="@this" />
 
-@if (error != null) {
-    <div class="alert alert-warning" role="alert">
-        Update error: @error.Message
-    </div>
-}
+<p>Server Time: <b>@time</b></p>
 
-<p>Server Time: @time</p>
-
-<button class="btn btn-primary" @onclick="() => State.CancelUpdateDelay()">Refresh</button>
+<Button Color="Color.Primary" @onclick="() => State.CancelUpdateDelay()">Refresh</Button>
 
 @code {
     protected override void OnInitialized()

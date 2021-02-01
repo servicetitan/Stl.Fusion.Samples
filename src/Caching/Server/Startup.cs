@@ -55,10 +55,10 @@ namespace Samples.Caching.Server
                 return new Publisher.Options() {Id = serverSettings.PublisherId};
             });
             var fusion = services.AddFusion();
-            var fusionServer = fusion.AddWebSocketServer();
+            var fusionServer = fusion.AddWebServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
 
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());

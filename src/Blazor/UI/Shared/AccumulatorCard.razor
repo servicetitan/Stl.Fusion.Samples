@@ -8,46 +8,43 @@
     var error = State.Error;
 }
 
-<div class="@CssClass">
-    <div class="card-header">Accumulator</div>
+<Card Class="@CssClass">
+    <CardHeader>Accumulator</CardHeader>
 
-    <div class="card-body">
-        <StatefulComponentState Component="@this" />
+    <CardBody>
+        <StatefulComponentState Component="@this"/>
 
-        @if (error != null) {
-            <div class="alert alert-warning" role="alert">
-                Update error: @error.Message
-            </div>
-        }
+        <WhenException Title="Update error:" Exception="@error"/>
 
-        <div class="mb-2">
+        <Paragraph Margin="Margin.Is3.OnY">
             Value: <b>@accumulator</b>
-            <button class="btn btn-warning btn-sm" @onclick="ResetAsync">Reset</button>
-        </div>
+            <Button Color="Color.Warning" @onclick="ResetAsync">Reset</Button>
+        </Paragraph>
 
         <form @onsubmit="AccumulateAsync">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Value</span>
-                </div>
-                <input class="form-control" @bind-value="locals.Value" />
-                <div class="input-group-append">
-                    <button type="submit" class="btn btn-success">Accumulate</button>
-                </div>
-            </div>
+            <Addons>
+                <Addon AddonType="AddonType.Start">
+                    <AddonLabel>Increment by</AddonLabel>
+                </Addon>
+                <TextEdit @bind-Text="@locals.ValueText"/>
+                <Addon>
+                    <Button Type="@ButtonType.Submit" Color="Color.Success">Increment</Button>
+                </Addon>
+            </Addons>
         </form>
 
-    </div>
-</div>
+    </CardBody>
+</Card>
 
 @code {
     public class LocalsModel
     {
-        public double Value { get; set; } = 1;
+        public string ValueText { get; set; } = "1";
+        public double Value => double.TryParse(ValueText, out var v) ? v : 0;
     }
 
     [Parameter]
-    public string CssClass { get; set; } = "card";
+    public string CssClass { get; set; } = "";
     [Parameter]
     public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
 

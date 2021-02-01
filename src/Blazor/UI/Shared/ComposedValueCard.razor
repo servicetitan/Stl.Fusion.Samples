@@ -1,12 +1,10 @@
 @using Pluralize.NET
 @inject IPluralize Pluralize
 
-<div class="@CssClass">
-    <div class="card-header">
-        @(Title)
-    </div>
-    <div class="card-body">
-        <table class="table table-sm">
+<Card Class="@CssClass">
+    <CardHeader>@Title</CardHeader>
+    <CardBody>
+        <Table Narrow="true">
             <tbody>
             <tr>
                 <td>Parameter:</td>
@@ -36,14 +34,13 @@
                 <td>@Source.ActiveUserCount</td>
             </tr>
             </tbody>
-        </table>
-    </div>
-</div>
-
+        </Table>
+    </CardBody>
+</Card>
 
 @code {
     [Parameter]
-    public string CssClass { get; set; } = "card";
+    public string CssClass { get; set; } = "";
     [Parameter]
     public string Title { get; set; } = null!;
     [Parameter]

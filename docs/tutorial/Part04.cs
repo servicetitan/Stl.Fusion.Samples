@@ -141,7 +141,7 @@ namespace Tutorial
                 logging.ClearProviders().SetMinimumLevel(LogLevel.Information).AddDebug());
             builder.ConfigureServices((b, services) => {
                 services.AddFusion(f => {
-                    f.AddWebSocketServer();
+                    f.AddWebServer();
                     f.AddComputeService<ICounterService, CounterService>();
                 });
                 services.AddRouting();

@@ -1,111 +1,97 @@
 @page "/chat"
 @using System.Threading
+@using Blazorise.Icons.FontAwesome
+@using Stl.CommandR
+@using Stl.Fusion.Authentication.Commands
 @inherits LiveComponentBase<Chat.Model, Chat.LocalsModel>
+@inject Session Session
+@inject ICommander Commander
 @inject IChatService ChatService
-@inject ClientState ClientState
 @inject NavigationManager Navigator
-@inject IJSRuntime JSRuntime
 
 @{
     var locals = Locals.Value;
     var state = State.LastValue;
     var lastPage = state.LastPage;
     var error = State.Error;
-    var actualUserName = state.ChatUser?.Name;
 }
 
 <div>
-    <span class="float-right">
-        <span class="badge btn-primary">
-            @(state.ActiveUserCount) <span class="oi oi-chat"></span>
-        </span>
-        <span class="badge btn-light">
-            @(state.UserCount) <span class="oi oi-people"></span>
-        </span>
-    </span>
+    <div class="float-right">
+        <Badge Color="Color.Light">
+            @(state.UserCount) <Blazorise.Icon Name="FontAwesomeIcons.Users"/>
+        </Badge>
+        <Badge Color="Color.Primary">
+            @(state.ActiveUserCount) <Blazorise.Icon Name="FontAwesomeIcons.Plug"/>
+        </Badge>
+    </div>
     <h1>Chat</h1>
 </div>
 
-<div class="alert alert-primary">
+<Note>
     Open <a href="@Navigator.Uri" target="_blank">this page</a> or
     <a href="/composition" target="_blank">Composition example</a>
     in another window to see everything is updated in sync in real time.
-    Besides that, try to
-    <AuthorizeView>
-        <Authorized>
-            <button class="btn btn-primary btn-sm" @onclick="SignOut">Sign out</button>
-        </Authorized>
-        <NotAuthorized>
-            <button class="btn btn-warning btn-sm" @onclick="SignIn">Sign in</button>
-        </NotAuthorized>
-    </AuthorizeView>
-</div>
-@if (locals.Error != null) {
-    <div class="alert alert-danger" role="alert">
-        @locals.Error.Message
-    </div>
-}
-@if (error != null) {
-    <div class="alert alert-warning" role="alert">
-        Update error: @error.Message
-    </div>
-}
+</Note>
 
-<form @onsubmit="SetNameAsync">
-    @if (actualUserName != locals.Name) {
-        <div class="input-group-prepend pb-1">
-            @if (@actualUserName == null) {
-                <span class="badge btn-warning">Creating user...</span>
+<WhenException Title="Action failed:" Exception="@locals.Error"></WhenException>
+<WhenException Title="Update error:" Exception="@error"></WhenException>
 
-            } else {
-                <span class="badge btn-primary">Current name: @actualUserName</span>
-            }
-        </div>
-    }
-    <div class="input-group pb-3">
-        <div class="input-group-prepend">
-            <span class="input-group-text">Your name</span>
-        </div>
-        <input class="form-control" @bind-value="@locals.Name" @bind-value:event="oninput" />
-        <div class="input-group-append">
-            <button type="submit" class="btn btn-warning">Change</button>
-        </div>
-    </div>
-</form>
-
-<table class="table table-sm table-striped">
-    <thead>
-    <tr>
-        <th scope="col">User</th>
-        <th scope="col">Message</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach(var message in lastPage.Messages) {
-        var user = lastPage.Users[message.UserId];
-        {
-            <tr>
-                <td style="width: 20%; max-width: 33%">@user.Name</td>
-                <td style="width: auto; min-width: 67%">@message.Text</td>
-            </tr>
+<AuthorizeView>
+    <Authorized>
+        @if (state.ChatUser.Name != locals.Name) {
+            <Badge Color="Color.Primary">Current name: @state.ChatUser.Name</Badge>
         }
-    }
-    </tbody>
-</table>
+        <form @onsubmit="SetNameAsync">
+            <Addons>
+                <Addon AddonType="AddonType.Start">
+                    <AddonLabel>Your name</AddonLabel>
+                </Addon>
+                <TextEdit @bind-Text="@locals.Name"></TextEdit>
+                <Addon>
+                    <Button Type="@ButtonType.Submit" Color="Color.Warning">Change</Button>
+                </Addon>
+            </Addons>
+        </form>
+    </Authorized>
+</AuthorizeView>
 
-<form @onsubmit="SendMessageAsync">
-    <div class="input-group pb-3">
-        <div class="input-group-prepend">
-            <span class="input-group-text">Message</span>
-        </div>
-        <input class="form-control"
-            placeholder="No ideas? Send an empty one!"
-            @bind-value="locals.Message" />
-        <div class="input-group-append">
-            <button type="submit" class="btn btn-success">Send</button>
-        </div>
-    </div>
-</form>
+<Table Narrow="true" Striped="true" Margin="Margin.Is3.OnY">
+    <TableHeader ThemeContrast="ThemeContrast.Dark">
+        <TableRow>
+            <TableHeaderCell>User</TableHeaderCell>
+            <TableHeaderCell>Message</TableHeaderCell>
+        </TableRow>
+    </TableHeader>
+    <TableBody>
+        @foreach(var message in lastPage.Messages) {
+            var user = lastPage.Users[message.UserId];
+            <TableRow>
+                <TableRowCell Style="width: 20%; max-width: 33%">@user.Name</TableRowCell>
+                <TableRowCell Style="width: auto; min-width: 67%">@message.Text</TableRowCell>
+            </TableRow>
+        }
+    </TableBody>
+</Table>
+
+<AuthorizeView>
+    <Authorized>
+        <form @onsubmit="SendMessageAsync">
+            <Addons>
+                <Addon AddonType="AddonType.Start">
+                    <AddonLabel>Message</AddonLabel>
+                </Addon>
+                <TextEdit @bind-Text="@locals.Message" Placeholder="No ideas? Send an empty one!"/>
+                <Addon AddonType="AddonType.End">
+                    <Button Type="@ButtonType.Submit" Color="Color.Success">Send</Button>
+                </Addon>
+            </Addons>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <SignInDropdown Why="to chat"></SignInDropdown>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     public class LocalsModel
@@ -129,7 +115,7 @@
     {
         public long UserCount { get; set; }
         public long ActiveUserCount { get; set; }
-        public ChatUser? ChatUser { get; set; }
+        public ChatUser ChatUser { get; set; } = ChatUser.None;
         public ChatPage LastPage { get; set; } = new();
     }
 
@@ -137,10 +123,10 @@
     {
         var userCount = await ChatService.GetUserCountAsync(cancellationToken);
         var activeUserCount = await ChatService.GetActiveUserCountAsync(cancellationToken);
-        var chatUser = await ClientState.ChatUser.UseAsync(cancellationToken);
+        var chatUser = await ChatService.GetCurrentUserAsync(Session, cancellationToken);
         var lastPage = await ChatService.GetChatTailAsync(30, cancellationToken);
         if (!Locals.Value.IsNameModified)
-            ResetName(chatUser?.Name ?? "");
+            ResetName(chatUser.IsValid ? chatUser.Name : "");
         return new Model() {
             UserCount = userCount,
             ActiveUserCount = activeUserCount,
@@ -149,19 +135,13 @@
         };
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        var chatUser = await ChatService.GetCurrentUserAsync(ClientState.Session);
-        if (chatUser == null)
-            await SetNameAsync();
-    }
-
     private async Task SetNameAsync()
     {
         ResetError();
         var locals = Locals.Value;
         try {
-            await ChatService.SetUserNameAsync(new(locals.Name ?? "", ClientState.Session));
+            var command = new EditUserCommand(locals.Name ?? "", Session);
+            await Commander.CallAsync(command);
         }
         catch (Exception e) {
             SetError(e);
@@ -172,9 +152,9 @@
     {
         ResetError();
         try {
-            if (ClientState.ChatUser.Value == null)
-                throw new ApplicationException("Please set your name first.");
-            await ChatService.PostMessageAsync(new(Locals.Value.Message, ClientState.Session));
+            if (!State.LastValue.ChatUser.IsValid)
+                throw new ApplicationException("Please sign in first.");
+            await ChatService.PostMessageAsync(new(Locals.Value.Message, Session));
             Locals.Value.Message = "";
             TouchLocals();
         }
@@ -182,9 +162,6 @@
             SetError(e);
         }
     }
-
-    private void SignIn() => JSRuntime.InvokeVoidAsync("FusionAuth.signIn");
-    private void SignOut() => JSRuntime.InvokeVoidAsync("FusionAuth.signOut");
 
     // Convenience shortcuts
 

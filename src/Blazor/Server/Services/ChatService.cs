@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading;
@@ -11,7 +12,9 @@ using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Samples.Blazor.Abstractions;
 using Stl.CommandR;
+using Stl.CommandR.Configuration;
 using Stl.Fusion.Authentication;
+using Stl.Fusion.Authentication.Commands;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Operations;
 
@@ -21,71 +24,23 @@ namespace Samples.Blazor.Server.Services
     public class ChatService : DbServiceBase<AppDbContext>, IChatService
     {
         private readonly ILogger _log;
-        private readonly IUzbyClient _uzbyClient;
+        private readonly IServerSideAuthService _authService;
         private readonly IForismaticClient _forismaticClient;
-        private readonly IAuthService _authService;
-        private readonly DbEntityResolver<AppDbContext, long, ChatUser> _userResolver;
-        private readonly DbEntityResolver<AppDbContext, long, ChatMessage> _messageResolver;
-        private readonly IPublisher _publisher;
 
         public ChatService(
-            IUzbyClient uzbyClient,
+            IServerSideAuthService authService,
             IForismaticClient forismaticClient,
-            IAuthService authService,
-            DbEntityResolver<AppDbContext, long, ChatUser> userResolver,
-            DbEntityResolver<AppDbContext, long, ChatMessage> messageResolver,
-            IPublisher publisher,
             IServiceProvider services,
             ILogger<ChatService>? log = null)
             : base(services)
         {
             _log = log ??= NullLogger<ChatService>.Instance;
-            _uzbyClient = uzbyClient;
-            _forismaticClient = forismaticClient;
             _authService = authService;
-            _userResolver = userResolver;
-            _messageResolver = messageResolver;
-            _publisher = publisher;
+            _forismaticClient = forismaticClient;
         }
+
 
         // Commands
-
-        public virtual async Task<ChatUser> SetUserNameAsync(
-            IChatService.SetUserNameCommand command, CancellationToken cancellationToken = default)
-        {
-            var (name, session) = command;
-            var context = CommandContext.GetCurrent();
-            ChatUser? user;
-            if (Computed.IsInvalidating()) {
-                user = context.Items.Get<OperationItem<ChatUser>>().Value;
-                GetUserAsync(user.Id, cancellationToken).Ignore();
-                PseudoGetUserAsync(user.AuthUserId).Ignore();
-                if (context.Items.TryGet<OperationItem<bool>>()?.Value ?? false)
-                    GetUserCountAsync(cancellationToken).Ignore();
-                return default!;
-            }
-
-            var authUser = await _authService.GetUserAsync(session, cancellationToken);
-            name = await NormalizeNameAsync(name, authUser, cancellationToken);
-
-            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
-            user = await dbContext.ChatUsers.AsQueryable()
-                .SingleOrDefaultAsync(u => u.AuthUserId == authUser.Id, cancellationToken);
-            if (user == null) {
-                user = new ChatUser() {
-                    AuthUserId = authUser.Id,
-                    Name = name
-                };
-                await dbContext.ChatUsers.AddAsync(user, cancellationToken);
-                context.Items.Set(OperationItem.New(true)); // Used on invalidation
-            }
-            else
-                user.Name = name;
-            await dbContext.SaveChangesAsync(cancellationToken);
-
-            context.Items.Set(OperationItem.New(user)); // Used on invalidation
-            return user;
-        }
 
         public virtual async Task<ChatMessage> PostMessageAsync(
             IChatService.PostMessageCommand command, CancellationToken cancellationToken = default)
@@ -115,40 +70,35 @@ namespace Samples.Blazor.Server.Services
 
         // Queries
 
+        [ComputeMethod(KeepAliveTime = 61, AutoInvalidateTime = 60)]
         public virtual async Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext();
-            return await dbContext.ChatUsers.AsQueryable().LongCountAsync(cancellationToken);
+            return await dbContext.Users.AsQueryable().LongCountAsync(cancellationToken);
         }
 
-        public virtual Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
+        [ComputeMethod(KeepAliveTime = 61, AutoInvalidateTime = 60)]
+        public virtual async Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
         {
-            var channelHub = _publisher.ChannelHub;
-            var userCount = (long) channelHub.ChannelCount;
-            var c = Computed.GetCurrent();
-            Task.Run(async () => {
-                do {
-                    await Task.Delay(1000, default);
-                } while (userCount == channelHub.ChannelCount);
-                c!.Invalidate();
-            }, default).Ignore();
-            return Task.FromResult(Math.Max(0, userCount));
-        }
-
-        public virtual async Task<ChatUser?> GetCurrentUserAsync(Session session, CancellationToken cancellationToken = default)
-        {
-            var authUser = await _authService.GetUserAsync(session, cancellationToken);
-            await PseudoGetUserAsync(authUser.Id);
+            var minLastSeenAt = (Clock.Now - TimeSpan.FromMinutes(5)).ToDateTime();
             await using var dbContext = CreateDbContext();
-            var user = await dbContext.ChatUsers.AsQueryable()
-                .SingleOrDefaultAsync(u => u.AuthUserId == authUser.Id, cancellationToken);
-            return user?.MaskSecureFields();
+            return await dbContext.Sessions.AsQueryable()
+                .Where(s => s.LastSeenAt >= minLastSeenAt)
+                .Select(s => s.UserId)
+                .Distinct()
+                .LongCountAsync(cancellationToken);
+        }
+
+        public virtual async Task<ChatUser> GetCurrentUserAsync(Session session, CancellationToken cancellationToken = default)
+        {
+            var user = await _authService.GetUserAsync(session, cancellationToken);
+            return ToChatUser(user);
         }
 
         public virtual async Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
         {
-            var user = await _userResolver.GetAsync(id, cancellationToken);
-            return user.MaskSecureFields();
+            var user = await _authService.TryGetUserAsync(id.ToString(), cancellationToken);
+            return ToChatUser(user ?? throw new KeyNotFoundException());
         }
 
         public virtual async Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
@@ -179,33 +129,38 @@ namespace Samples.Blazor.Server.Services
 
         [ComputeMethod]
         protected virtual Task<Unit> PseudoGetAnyChatTailAsync() => TaskEx.UnitTask;
-        [ComputeMethod]
-        protected virtual Task<Unit> PseudoGetUserAsync(string authUserId) => TaskEx.UnitTask;
 
-        protected virtual async ValueTask<string> NormalizeNameAsync(
-            string name, User authUser, CancellationToken cancellationToken = default)
+        [CommandHandler(IsFilter = true, Priority = 1)]
+        protected virtual async Task OnSignInAsync(SignInCommand command, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(name))
-                return name;
-            if (authUser.IsAuthenticated) {
-                name = authUser.Name;
-                if (!string.IsNullOrEmpty(name))
-                    return name;
+            var context = CommandContext.GetCurrent();
+            await context.InvokeRemainingHandlersAsync(cancellationToken);
+            if (Computed.IsInvalidating()) {
+                var isNewUser = context.Items.Get<OperationItem<bool>>().Value;
+                if (isNewUser) {
+                    GetUserCountAsync(default).Ignore();
+                    GetActiveUserCountAsync(default).Ignore();
+                }
             }
-            name = await _uzbyClient.GetNameAsync(cancellationToken: cancellationToken);
-            if (name.GetHashCode() % 3 == 0)
-                // First-last name pairs are fun too :)
-                name += " " + await _uzbyClient.GetNameAsync(cancellationToken: cancellationToken);
-            return name;
         }
 
-        protected virtual async ValueTask<string> NormalizeTextAsync(
+        private async ValueTask<string> NormalizeTextAsync(
             string text, CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrEmpty(text))
                 return text;
             var json = await _forismaticClient.GetQuoteAsync(cancellationToken: cancellationToken);
             return json.Value<string>("quoteText");
+        }
+
+        private ChatUser ToChatUser(User? user)
+        {
+            if (user == null || !long.TryParse(user.Id, out var userId))
+                return ChatUser.None;
+            return new() {
+                Id = userId,
+                Name = user.Name,
+            };
         }
     }
 }

@@ -22,13 +22,6 @@ namespace Samples.Blazor.Server.Controllers
 
         // Commands
 
-        [HttpPost("setUserName")]
-        public Task<ChatUser> SetUserNameAsync([FromBody] IChatService.SetUserNameCommand command, CancellationToken cancellationToken = default)
-        {
-            command.UseDefaultSession(_sessionResolver);
-            return _chat.SetUserNameAsync(command, cancellationToken);
-        }
-
         [HttpPost("postMessage")]
         public Task<ChatMessage> PostMessageAsync([FromBody] IChatService.PostMessageCommand command, CancellationToken cancellationToken = default)
         {
@@ -39,11 +32,15 @@ namespace Samples.Blazor.Server.Controllers
         // Queries
 
         [HttpGet("getCurrentUser"), Publish]
-        public Task<ChatUser?> GetCurrentUserAsync(Session? session, CancellationToken cancellationToken = default)
+        public Task<ChatUser> GetCurrentUserAsync(Session? session, CancellationToken cancellationToken = default)
         {
             session ??= _sessionResolver.Session;
             return _chat.GetCurrentUserAsync(session, cancellationToken);
         }
+
+        [HttpGet("getUser"), Publish]
+        public Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
+            => _chat.GetUserAsync(id, cancellationToken);
 
         [HttpGet("getUserCount"), Publish]
         public Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
@@ -52,10 +49,6 @@ namespace Samples.Blazor.Server.Controllers
         [HttpGet("getActiveUserCount"), Publish]
         public Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
             => _chat.GetActiveUserCountAsync(cancellationToken);
-
-        [HttpGet("getUser"), Publish]
-        public Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
-            => _chat.GetUserAsync(id, cancellationToken);
 
         [HttpGet("getChatTail"), Publish]
         public Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)

@@ -63,7 +63,7 @@ static IServiceProvider CreateServiceProvider()
 
     // This method registers services marked with any of ServiceAttributeBase descendants, including:
     // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-    services.AttributeScanner()
+    services.UseAttributeScanner()
         .AddServicesFrom(Assembly.GetExecutingAssembly())
         .WithScope(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
 

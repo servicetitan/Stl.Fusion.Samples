@@ -31,20 +31,18 @@ namespace Samples.Blazor.Client
     public interface IChatClient
     {
         // Commands
-        [Post("setUserName")]
-        Task<ChatUser> SetUserNameAsync([Body] IChatService.SetUserNameCommand command, CancellationToken cancellationToken = default);
         [Post("postMessage")]
         Task<ChatMessage> PostMessageAsync([Body] IChatService.PostMessageCommand command, CancellationToken cancellationToken = default);
 
         // Readers
         [Get("getCurrentUser")]
-        Task<ChatUser?> GetCurrentUserAsync(Session? session, CancellationToken cancellationToken = default);
+        Task<ChatUser> GetCurrentUserAsync(Session? session, CancellationToken cancellationToken = default);
+        [Get("getUser")]
+        Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default);
         [Get("getUserCount")]
         Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
         [Get("getActiveUserCount")]
         Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default);
-        [Get("getUser")]
-        Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default);
         [Get("getChatTail")]
         Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default);
         [Get("getChatPage")]

@@ -8,6 +8,7 @@ using Stl.Async;
 using Stl.CommandR;
 using Stl.CommandR.Configuration;
 using Stl.DependencyInjection;
+using Stl.Fusion;
 using Stl.Fusion.Operations;
 
 namespace Samples.HelloBlazorServer.Services
@@ -37,18 +38,21 @@ namespace Samples.HelloBlazorServer.Services
             => await _chatService.PostMessageAsync(new(Morpheus, MorpheusMessage1), cancellationToken);
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        // 100 is priority of invalidation handler, and this handler has to run before it
-        // to avoid being wrapped into Compute.Invalidated() scope.
-        [CommandHandler(Priority = 200, IsFilter = true)]
-        protected virtual async Task OnChatPost(ICompletion<ChatService.PostCommand> completion, CancellationToken cancellationToken)
+        [CommandHandler(Priority = 1, IsFilter = true)]
+        protected virtual async Task OnChatPost(ChatService.PostCommand command, CancellationToken cancellationToken)
         {
-            // Let the rest of the chain proceed
             await CommandContext.GetCurrent().InvokeRemainingHandlersAsync(cancellationToken);
-            // And start the reaction - no need to delay the rest of command processing pipeline
-            Task.Run(() => Reaction(completion, default), default).Ignore();
+            if (Computed.IsInvalidating()) {
+                // We know for sure here the command has completed successfully
+                // Now we need to suppress ExecutionContext flow to ensure
+                // Reaction runs its commands outside of the current command context,
+                // outside Computed.Invalidate() block, etc.
+                using var _ = ExecutionContextEx.SuppressFlow();
+                Task.Run(() => Reaction(command, default), default).Ignore();
+            }
         }
 
-        protected virtual async Task Reaction(ICompletion<ChatService.PostCommand> completion, CancellationToken cancellationToken)
+        protected virtual async Task Reaction(ChatService.PostCommand command, CancellationToken cancellationToken)
         {
             var messageCount = await _chatService.GetMessageCountAsync();
             switch (messageCount) {
@@ -56,7 +60,7 @@ namespace Samples.HelloBlazorServer.Services
                 break;
             case 2:
                 await Task.Delay(1000);
-                await _chatService.PostMessageAsync(new(Morpheus, MorpheusMessage2));
+                await _chatService.PostMessageAsync(new(Morpheus, MorpheusMessage2), default);
                 break;
             default:
                 var messages = await _chatService.GetMessagesAsync(1, cancellationToken);
@@ -65,9 +69,9 @@ namespace Samples.HelloBlazorServer.Services
                 if (name == "" || BotNames.Contains(name))
                     break;
                 if (message.ToLowerInvariant().Contains("time"))
-                    await _chatService.PostMessageAsync(new(TimeBot, DateTime.Now.ToString("F")));
+                    await _chatService.PostMessageAsync(new(TimeBot, DateTime.Now.ToString("F")), default);
                 else
-                    await _chatService.PostMessageAsync(new(Groot, GrootMessage));
+                    await _chatService.PostMessageAsync(new(Groot, GrootMessage), default);
                 break;
             }
         }
