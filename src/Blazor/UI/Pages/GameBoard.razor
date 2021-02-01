@@ -198,12 +198,12 @@ else
 
     protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        _board = await BoardService.GetBoardAsync(Address, cancellationToken).ConfigureAwait(false);
+        var board = await BoardService.GetBoardAsync(Address, cancellationToken).ConfigureAwait(false);
         return new Model()
         {
-            BoardId = _board.BoardId,
-            BoardState = _board.BoardState,
-            IsXTurn = _board.IsXTurn
+            BoardId = board.BoardId,
+            BoardState = board.BoardState,
+            IsXTurn = board.IsXTurn
         };
     }
         
