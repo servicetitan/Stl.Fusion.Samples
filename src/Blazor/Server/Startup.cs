@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
@@ -90,7 +91,10 @@ namespace Samples.Blazor.Server
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
             var fusionClient = fusion.AddRestEaseClient();
-            var fusionAuth = fusion.AddAuthentication().AddServer();
+            var fusionAuth = fusion.AddAuthentication().AddServer(
+                signInControllerOptionsBuilder: (_, options) => {
+                    options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
+                });
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
@@ -102,6 +106,8 @@ namespace Samples.Blazor.Server
             }).AddCookie(options => {
                 options.LoginPath = "/signIn";
                 options.LogoutPath = "/signOut";
+                if (Env.IsDevelopment())
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
             }).AddMicrosoftAccount(options => {
                 options.ClientId = serverSettings.MicrosoftAccountClientId;
                 options.ClientSecret = serverSettings.MicrosoftAccountClientSecret;
