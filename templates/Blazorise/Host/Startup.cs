@@ -97,9 +97,6 @@ namespace Templates.Blazor2.Host
             var fusionAuth = fusion.AddAuthentication().AddServer(
                 signInControllerOptionsBuilder: (_, options) => {
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
-                },
-                authHelperOptionsBuilder: (_, options) => {
-                    options.NameClaimKeys = Array.Empty<string>();
                 });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
@@ -115,6 +112,8 @@ namespace Templates.Blazor2.Host
             }).AddCookie(options => {
                 options.LoginPath = "/signIn";
                 options.LogoutPath = "/signOut";
+                if (Env.IsDevelopment())
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
             }).AddMicrosoftAccount(options => {
                 options.ClientId = serverSettings.MicrosoftAccountClientId;
                 options.ClientSecret = serverSettings.MicrosoftAccountClientSecret;
