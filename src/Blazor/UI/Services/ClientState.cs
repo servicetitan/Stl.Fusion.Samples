@@ -22,6 +22,7 @@ namespace Samples.Blazor.UI.Services
         // Own properties
         public ILiveState<User> User { get; }
         public IMutableState<ChatUser?> ChatUser { get; }
+        public IMutableState<Board?> Board { get; }
 
         public ClientState(AuthStateProvider authStateProvider, IStateFactory stateFactory)
         {
@@ -35,6 +36,7 @@ namespace Samples.Blazor.UI.Services
                     return authState.User;
                 });
             ChatUser = stateFactory.NewMutable(Result.Value<ChatUser?>(null));
+            Board = stateFactory.NewMutable(Result.Value<Board?>(null));
         }
 
         void IDisposable.Dispose() => User.Dispose();

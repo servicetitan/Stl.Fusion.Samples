@@ -95,7 +95,7 @@ namespace Samples.Blazor.Server.Services
                 dbContext.Boards.Update(board);
                 await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
-            Computed.Invalidate(() => GetBoardAsync(boardId, CancellationToken.None));
+            Computed.Invalidate(() => GetBoardAsync(boardId, cancellationToken));
             return board;
         }
         
@@ -108,7 +108,7 @@ namespace Samples.Blazor.Server.Services
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             var board = boardEntry.Entity;
 
-            Computed.Invalidate(() => GetBoardAsync(boardId, CancellationToken.None));
+            Computed.Invalidate(() => GetBoardAsync(boardId, cancellationToken));
             return board;
         }
         

@@ -4,44 +4,43 @@
 @using System.Threading
 @inject NavigationManager navigator
 @inject IBoardService BoardService
+@inject ClientState ClientState
 @inject Session Session
 @inherits LiveComponentBase<GameBoard.Model, GameBoard.LocalsModel>
 
 @{
     var locals = Locals.Value;
     var error = State.Error;
-    // var state = State.LastValue;
-    // var boardState = state.BoardState;
+    var state = State.LastValue;
+    var boardState = state.BoardState;
 }
 
 <h3>Tic Tac Toe</h3>
 <hr>
 
 @{
-    var gameStatus = Helper.CalculateGameStatus(locals.BoardState.ToCharArray());
+    var gameStatus = Helper.CalculateGameStatus(state.BoardState.ToCharArray());
     string status;
     if (gameStatus == Helper.GameStatus.X_wins)
     {
         status = "Winner: X";
-        // _boardStyleHandler = boardStyle[1];
-        // ChangeStyle();
+        _boardStyleHandler = "pointer-events: none;";
     }
     else if (gameStatus == Helper.GameStatus.O_wins)
     {
         status = "Winner: O";
-        // _boardStyleHandler = boardStyle[1];
-        // ChangeStyle();
+        _boardStyleHandler = "pointer-events: none;";
     }
     else if (gameStatus == Helper.GameStatus.Draw)
     {
         status = "Draw";
-        // _boardStyleHandler = boardStyle[1];
-        // ChangeStyle();
+        _boardStyleHandler = "pointer-events: none;";
     }
     else
     {
-        char nextPlayer = locals.IsXTurn ? 'X' : 'O';
+        char nextPlayer = state.IsXTurn ? 'X' : 'O';
         status = $"Turn: {nextPlayer}";
+        _boardStyleHandler = "";
     }
     <h4>@status</h4>
 }
@@ -62,8 +61,8 @@ else
             {
                 int squareNumber = i;
                 <Square @key=squareNumber
-                         Value=locals.BoardState[squareNumber]
-                         ClickHandler="() => SquareHandler(Address, squareNumber, locals.IsXTurn)"
+                         Value=boardState[squareNumber]
+                         ClickHandler="() => SquareHandler(squareNumber, state.IsXTurn)"
                          />
             }
 
@@ -94,7 +93,7 @@ else
     private string _boardStyleHandler = "";
     private Player playerX;
     private Player playerO;
-    private bool IsDisabled => Helper.CalculateGameStatus(Locals.LastValue.BoardState.ToCharArray()) == Helper.GameStatus.NotYetFinished;
+    private bool IsDisabled => Helper.CalculateGameStatus(State.Value.BoardState.ToCharArray()) == Helper.GameStatus.NotYetFinished;
 
     public class LocalsModel
     {
@@ -104,37 +103,44 @@ else
 
     public class Model
     {
-        public Board Board { get; set; } = null;
+        public string BoardId { get; set; } = "";
+        public bool IsXTurn { get; set; } = true;
+        public string BoardState { get; set; } = "         ";
+    }
+    
+    private Board? Board {
+        get => ClientState.Board.Value;
+        set => ClientState.Board.Value = value;
     }
 
     private async Task PlayAgainHandler()
     {
-        // _board = await BoardService.ClearBoardAsync(Address);
-        // UpdateLocals(l => l.BoardState = _board.BoardState);
-        // UpdateLocals(l => l.IsXTurn = _board.IsXTurn);
-        // await OnInitializedAsync();
-        var t1 = Task.Run(() => BoardService.ClearBoardAsync(Address));
-        await Task.WhenAll(t1);
-        _board = t1.Result;
-        UpdateLocals(l => l.BoardState = _board.BoardState);
-        UpdateLocals(l => l.IsXTurn = _board.IsXTurn);
-        await OnInitializedAsync();
+        if (Board == null)
+        {
+            await GetOrCreateBoardAsync();
+            return;
+        }
+        Board = await BoardService.ClearBoardAsync(Board.BoardId);
+    }
+    
+    private async Task GetOrCreateBoardAsync()
+    {
+        if (Board == null) {
+            try {
+                Board = await BoardService.GetBoardAsync(Address);
+            }
+            catch {
+                Board = await BoardService.CreateBoardAsync(Address);
+            }
+        }
+        UpdateLocals(l => l.BoardState = Board.BoardState);
+        UpdateLocals(l => l.IsXTurn = Board.IsXTurn);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        if (_board == null)
-        {
-            _boardId = Address;
-            try
-            {
-                await BoardService.GetBoardAsync(_boardId);
-            }
-            catch (Exception ex)
-            {
-                await BoardService.CreateBoardAsync(_boardId);
-            }
-        }
+        if (Board == null)
+            await GetOrCreateBoardAsync();
         // try
         // {
         //     _playersCount = await GetBoardPlayersCountWithoutClone();
@@ -146,33 +152,21 @@ else
         //     _playersCount = 0;
         // }
 
-        // Locals.Value.BoardId = _boardId;
-        // Locals.Value.BoardState = _board.BoardState;
-        // Locals.Value.IsXTurn = _board.IsXTurn;
-
-        // _boardId = _board.BoardId;
-        // _values = _board.BoardState;
-        // _turnX = _board.IsXTurn;
         _allowView = true;
-        var t1 = Task.Run(() => BoardService.GetBoardAsync(_boardId));
-        await Task.WhenAll(t1);
-        _board = t1.Result;
-        var pCount = await BoardService.GetPlayerCountWithoutCloneAsync(_boardId);
+        var pCount = await BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId);
         if (pCount < 2)
         {
             AddPlayer();
         }
-        Locals.Value.BoardState = _board.BoardState;
-        Locals.Value.IsXTurn = _board.IsXTurn;
+        UpdateLocals(l => l.BoardState = Board.BoardState);
         await Task.CompletedTask;
     }
 
-    private async Task SquareHandler(string boardId, int squareNum, bool turnX)
+    private async Task SquareHandler(int squareNum, bool turnX)
     {
-        _board = await BoardService.ChangeBoardStateAsync(boardId, squareNum, turnX);
-        UpdateLocals(l => l.BoardState = _board.BoardState);
-        UpdateLocals(l => l.IsXTurn = _board.IsXTurn);
-        State.CancelUpdateDelay();
+        Board = await BoardService.ChangeBoardStateAsync(Board.BoardId, squareNum, turnX);
+        UpdateLocals(l => l.BoardState = Board.BoardState);
+        UpdateLocals(l => l.IsXTurn = Board.IsXTurn);
     }
 
     private async Task AddPlayer()
@@ -204,10 +198,12 @@ else
 
     protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
     {
-        _board = await BoardService.GetBoardAsync(_boardId, cancellationToken).ConfigureAwait(false);
+        _board = await BoardService.GetBoardAsync(Address, cancellationToken).ConfigureAwait(false);
         return new Model()
         {
-            Board = _board
+            BoardId = _board.BoardId,
+            BoardState = _board.BoardState,
+            IsXTurn = _board.IsXTurn
         };
     }
         
