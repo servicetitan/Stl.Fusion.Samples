@@ -12,8 +12,8 @@
 @{
     var state = State.LastValue;
     var error = State.Error;
-    var usedAuthSchemas = User.Identities.Select(kv => kv.Key.Schema).ToHashSet();
-    var unusedAuthSchemas = AuthSchemas.Where(p => !usedAuthSchemas.Contains(p.Name)).ToArray();
+    var usedAuthSchemas = User.Identities.Select(kv => kv.Key.Schema.ToLowerInvariant()).ToHashSet();
+    var unusedAuthSchemas = AuthSchemas.Where(p => !usedAuthSchemas.Contains(p.Name.ToLowerInvariant())).ToArray();
 }
 
 <h1>Authentication</h1>
