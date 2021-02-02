@@ -28,6 +28,7 @@ using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.EntityFramework;
+using Stl.Fusion.Operations.Internal;
 using Stl.Fusion.Server;
 using Stl.IO;
 
@@ -59,8 +60,10 @@ namespace Samples.Blazor.Server
                 logging.ClearProviders();
                 logging.AddConsole();
                 logging.SetMinimumLevel(LogLevel.Information);
-                if (Env.IsDevelopment())
+                if (Env.IsDevelopment()) {
                     logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+                    logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
+                }
             });
 
             // DbContext & related services
@@ -72,7 +75,9 @@ namespace Samples.Blazor.Server
                     b.EnableSensitiveDataLogging();
             });
             services.AddDbContextServices<AppDbContext>(b => {
-                // This is the best way to add DbContext-related services from Stl.Fusion.EntityFramework
+                services.AddSingleton(new CompletionProducer.Options() {
+                    LogLevel = LogLevel.Information, // Let's log completions of "external" operations
+                });
                 b.AddDbEntityResolver<long, ChatMessage>();
                 b.AddDbOperations((_, o) => {
                     // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
