@@ -1,0 +1,18 @@
+﻿@inherits LayoutComponentBase
+
+<Layout Sider="true" Class="main">
+    <LayoutSider>
+        <LayoutSiderContent>
+            <LeftBar />
+        </LayoutSiderContent>
+    </LayoutSider>
+    <Layout>
+        <LayoutHeader Fixed="true">
+            <TopBar />
+        </LayoutHeader>
+
+        <LayoutContent Padding="Padding.Is4">
+            @Body
+        </LayoutContent>
+    </Layout>
+</Layout>
