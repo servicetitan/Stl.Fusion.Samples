@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Samples.Gomoku.Abstractions</RootNamespace>
+    <AssemblyName>Samples.Gomoku.Abstractions</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.9.59" />
+  </ItemGroup>
+
+</Project>
