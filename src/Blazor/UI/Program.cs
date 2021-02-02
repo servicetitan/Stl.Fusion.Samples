@@ -73,7 +73,7 @@ namespace Samples.Blazor.UI
         {
             services.AddBlazorise(options => {
                     options.DelayTextOnKeyPress = true;
-                    options.DelayTextOnKeyPressInterval = 300;
+                    options.DelayTextOnKeyPressInterval = 100;
                 })
                 .AddBootstrapProviders()
                 .AddFontAwesomeIcons();

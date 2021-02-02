@@ -13,10 +13,9 @@ Welcome to a collection of [Fusion] samples!
 Sorry, we don't provide `dotnet new`-based templates yet, but the ones
 you can copy & modify can be found in the [`templates` folder](./templates).
 
-Currently there are 3 app templates:
-- Plain Blazor app template
+Currently there are 2 app templates:
 - [Blazorise](https://blazorise.com/)-based app template
-- [MudBlazor](https://mudblazor.com/)-based app template.
+- [MudBlazor](https://mudblazor.com/)-based app template (it uses an older Fusion version now, but we'll update it soon)
 
 Open `Templates.sln`, run any of `*.Host` or `*.Server` projects,
 and go to http://localhost:5005 to them in action.
