@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Stl.DependencyInjection;
 
-namespace Samples.Gomoku.Host
+namespace Samples.BoardGames.Host
 {
     [Settings("Server")]
     public class ServerSettings

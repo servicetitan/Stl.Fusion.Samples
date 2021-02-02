@@ -17,7 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Samples.Gomoku.Services;
+using Samples.BoardGames.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Blazor;
@@ -31,7 +31,7 @@ using Microsoft.EntityFrameworkCore;
 using Stl.Fusion.EntityFramework;
 using Stl.IO;
 
-namespace Samples.Gomoku.Host
+namespace Samples.BoardGames.Host
 {
     public class Startup
     {
@@ -138,7 +138,7 @@ namespace Samples.Gomoku.Host
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "Samples.Gomoku API", Version = "v1"
+                    Title = "Samples.BoardGames API", Version = "v1"
                 });
             });
         }

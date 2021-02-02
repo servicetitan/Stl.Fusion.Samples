@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Stl.Fusion.EntityFramework.Authentication;
 using Stl.Fusion.EntityFramework.Operations;
 
-namespace Samples.Gomoku.Services
+namespace Samples.BoardGames.Services
 {
     public class AppDbContext : DbContext
     {

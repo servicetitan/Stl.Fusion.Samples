@@ -3,8 +3,8 @@
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>Samples.Gomoku.Host</RootNamespace>
-    <AssemblyName>Samples.Gomoku.Host</AssemblyName>
+    <RootNamespace>Samples.BoardGames.Host</RootNamespace>
+    <AssemblyName>Samples.BoardGames.Host</AssemblyName>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 

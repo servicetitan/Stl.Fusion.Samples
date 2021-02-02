@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
-using Samples.Gomoku.Abstractions;
+using Samples.BoardGames.Abstractions;
 
-namespace Samples.Gomoku.Services
+namespace Samples.BoardGames.Services
 {
     [ComputeService(typeof(ITimeService))]
     public class TimeService : ITimeService

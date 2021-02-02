@@ -16,7 +16,7 @@ using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 
-namespace Samples.Gomoku.UI
+namespace Samples.BoardGames.UI
 {
     public class Program
     {

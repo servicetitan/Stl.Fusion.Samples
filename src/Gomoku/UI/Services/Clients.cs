@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
 using Stl.Fusion.Client;
-using Samples.Gomoku.Abstractions;
+using Samples.BoardGames.Abstractions;
 
-namespace Samples.Gomoku.UI.Services
+namespace Samples.BoardGames.UI.Services
 {
     [RestEaseReplicaService(typeof(ITimeService), Scope = Program.ClientSideScope)]
     [BasePath("time")]

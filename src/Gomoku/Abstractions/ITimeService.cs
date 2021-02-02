@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
 
-namespace Samples.Gomoku.Abstractions
+namespace Samples.BoardGames.Abstractions
 {
     public interface ITimeService
     {

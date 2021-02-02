@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Stl.Fusion.Server;
-using Samples.Gomoku.Abstractions;
+using Samples.BoardGames.Abstractions;
 
-namespace Samples.Gomoku.Host.Controllers
+namespace Samples.BoardGames.Host.Controllers
 {
     [Route("api/[controller]")]
     [ApiController, JsonifyErrors]

@@ -4,7 +4,7 @@ using Pluralize.NET;
 using Stl.Async;
 using Stl.Fusion;
 
-namespace Samples.Gomoku.UI.Services
+namespace Samples.BoardGames.UI.Services
 {
     // This service is local both on the server and on the client
     [ComputeService]

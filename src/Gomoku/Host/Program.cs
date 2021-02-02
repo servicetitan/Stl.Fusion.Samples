@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Samples.Gomoku.Host;
-using Samples.Gomoku.Services;
+using Samples.BoardGames.Host;
+using Samples.BoardGames.Services;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureHostConfiguration(builder => {

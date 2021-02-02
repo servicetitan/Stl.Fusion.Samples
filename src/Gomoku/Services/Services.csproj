@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <OutputType>Library</OutputType>
-    <RootNamespace>Samples.Gomoku.Services</RootNamespace>
-    <AssemblyName>Samples.Gomoku.Services</AssemblyName>
+    <RootNamespace>Samples.BoardGames.Services</RootNamespace>
+    <AssemblyName>Samples.BoardGames.Services</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

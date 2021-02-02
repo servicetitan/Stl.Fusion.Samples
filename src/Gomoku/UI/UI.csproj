@@ -4,8 +4,8 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-    <RootNamespace>Samples.Gomoku.UI</RootNamespace>
-    <AssemblyName>Samples.Gomoku.UI</AssemblyName>
+    <RootNamespace>Samples.BoardGames.UI</RootNamespace>
+    <AssemblyName>Samples.BoardGames.UI</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

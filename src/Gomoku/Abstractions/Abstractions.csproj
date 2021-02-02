@@ -6,8 +6,8 @@
     <LangVersion>latest</LangVersion>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <OutputType>Library</OutputType>
-    <RootNamespace>Samples.Gomoku.Abstractions</RootNamespace>
-    <AssemblyName>Samples.Gomoku.Abstractions</AssemblyName>
+    <RootNamespace>Samples.BoardGames.Abstractions</RootNamespace>
+    <AssemblyName>Samples.BoardGames.Abstractions</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
