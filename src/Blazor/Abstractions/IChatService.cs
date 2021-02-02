@@ -66,7 +66,11 @@ namespace Samples.Blazor.Abstractions
 
     public interface IChatService
     {
-        public record PostMessageCommand(string Text, Session Session) : ISessionCommand<ChatMessage> { }
+        public record PostMessageCommand(string Text, Session Session) : ISessionCommand<ChatMessage>
+        {
+            // Default constructor is needed for JSON deserialization
+            public PostMessageCommand() : this(null!, Session.Null) { }
+        }
 
         // Commands
         [CommandHandler]

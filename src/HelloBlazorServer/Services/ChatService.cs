@@ -14,7 +14,11 @@ namespace Samples.HelloBlazorServer.Services
     [ComputeService]
     public class ChatService
     {
-        public record PostCommand(string Name, string Message) : ICommand<Unit> { }
+        public record PostCommand(string Name, string Message) : ICommand<Unit>
+        {
+            // Default constructor is needed for JSON deserialization
+            public PostCommand() : this(null!, null!) { }
+        }
 
         private volatile ImmutableList<(DateTime Time, string Name, string Message)> _messages =
             ImmutableList<(DateTime, string, string)>.Empty;
