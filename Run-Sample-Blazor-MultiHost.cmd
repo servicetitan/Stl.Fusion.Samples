@@ -1,7 +1,7 @@
 @echo off
 dotnet build
 
-set ASPNETCORE_ENVIRONMENT=Production
+set ASPNETCORE_ENVIRONMENT=Development
 
 set ASPNETCORE_URLS=http://localhost:5005/
 start cmd /C timeout 5 ^& start http://localhost:5005/"
