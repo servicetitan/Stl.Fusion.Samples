@@ -20,14 +20,14 @@
             <Addon AddonType="AddonType.Start">
                 <AddonLabel>A</AddonLabel>
             </Addon>
-            <input class="form-control" @bind-value="locals.ValueA" @bind-value:event="oninput" @onkeyup="Apply"/>
+            <input class="form-control" type="search" @bind-value="locals.ValueA" @bind-value:event="oninput" @onkeyup="Apply"/>
         </Addons>
 
         <Addons>
             <Addon AddonType="AddonType.Start">
                 <AddonLabel>B</AddonLabel>
             </Addon>
-            <input class="form-control" @bind-value="locals.ValueB" @bind-value:event="oninput" @onkeyup="Apply"/>
+            <input class="form-control" type="search" @bind-value="locals.ValueB" @bind-value:event="oninput" @onkeyup="Apply"/>
         </Addons>
     </CardBody>
 

@@ -14,7 +14,7 @@
 
 <Addons>
     <Addon AddonType="AddonType.Start"><AddonLabel>Screenshot width (in pixels):</AddonLabel></Addon>
-    <TextEdit Text="@locals.WidthText" TextChanged="@OnWidthChanged"/>
+    <TextEdit Text="@locals.WidthText" TextChanged="@OnWidthChanged" type="search" />
     @if (locals.WidthText != locals.Width.ToString()) {
         <Addon AddonType="AddonType.End"><AddonLabel>(actual width: @locals.Width)</AddonLabel></Addon>
     }

@@ -1,6 +1,5 @@
 @page "/chat"
 @using System.Threading
-@using Blazorise.Icons.FontAwesome
 @using Stl.CommandR
 @using Stl.Fusion.Authentication.Commands
 @inherits LiveComponentBase<Chat.Model, Chat.LocalsModel>
@@ -34,8 +33,8 @@
     in another window to see everything is updated in sync in real time.
 </Note>
 
-<WhenException Title="Action failed:" Exception="@locals.Error"></WhenException>
-<WhenException Title="Update error:" Exception="@error"></WhenException>
+<WhenException Title="Action failed:" Exception="@locals.Error"/>
+<WhenException Title="Update error:" Exception="@error"/>
 
 <AuthorizeView>
     <Authorized>
@@ -43,11 +42,12 @@
             <Badge Color="Color.Primary">Current name: @state.ChatUser.Name</Badge>
         }
         <form @onsubmit="SetNameAsync">
+
             <Addons>
                 <Addon AddonType="AddonType.Start">
                     <AddonLabel>Your name</AddonLabel>
                 </Addon>
-                <TextEdit @bind-Text="@locals.Name"></TextEdit>
+                <TextEdit @bind-Text="@locals.Name" type="search" />
                 <Addon>
                     <Button Type="@ButtonType.Submit" Color="Color.Warning">Change</Button>
                 </Addon>
@@ -81,7 +81,7 @@
                 <Addon AddonType="AddonType.Start">
                     <AddonLabel>Message</AddonLabel>
                 </Addon>
-                <TextEdit @bind-Text="@locals.Message" Placeholder="No ideas? Send an empty one!"/>
+                <TextEdit @bind-Text="@locals.Message" Placeholder="No ideas? Send an empty one!" type="search" />
                 <Addon AddonType="AddonType.End">
                     <Button Type="@ButtonType.Submit" Color="Color.Success">Send</Button>
                 </Addon>
@@ -140,7 +140,9 @@
         ResetError();
         var locals = Locals.Value;
         try {
-            var command = new EditUserCommand(locals.Name ?? "", Session);
+            var command = new EditUserCommand(Session, locals.Name ?? "");
+            if (command.Name!.Length < 4)
+                throw new ApplicationException("The name should be at least 4 character long.");
             await Commander.CallAsync(command);
         }
         catch (Exception e) {
