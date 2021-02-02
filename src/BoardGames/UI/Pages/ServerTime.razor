@@ -2,7 +2,7 @@
 @using System.Threading
 @using Samples.BoardGames.Abstractions
 @inherits LiveComponentBase<DateTime>
-@inject ITimeService Time
+@inject IGameService Game
 
 @{
     var time = State.LastValue.ToString("F") ?? "n/a";
@@ -34,7 +34,8 @@
         => options.WithUpdateDelayer(0.5);
 
     protected override Task<DateTime> ComputeStateAsync(CancellationToken cancellationToken)
-        => Time.GetTimeAsync(cancellationToken);
+        => throw new NotImplementedException();
+        // => Game.GetTimeAsync(cancellationToken);
 
     private void Refresh()
     {

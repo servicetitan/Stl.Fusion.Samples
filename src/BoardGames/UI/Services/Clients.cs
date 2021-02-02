@@ -7,7 +7,7 @@ using Samples.BoardGames.Abstractions;
 
 namespace Samples.BoardGames.UI.Services
 {
-    [RestEaseReplicaService(typeof(ITimeService), Scope = Program.ClientSideScope)]
+    [RestEaseReplicaService(typeof(IGameService), Scope = Program.ClientSideScope)]
     [BasePath("time")]
     public interface ITimeClient
     {

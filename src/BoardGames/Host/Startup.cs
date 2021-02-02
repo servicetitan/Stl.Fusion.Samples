@@ -102,7 +102,7 @@ namespace Samples.BoardGames.Host
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.UseAttributeScanner()
-                .AddServicesFrom(typeof(TimeService).Assembly)
+                .AddServicesFrom(typeof(GameService).Assembly)
                 .AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
