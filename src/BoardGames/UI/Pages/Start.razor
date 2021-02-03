@@ -1,0 +1,24 @@
+@page "/start/{GameEngineId}"
+@using System.Threading
+@inherits LiveComponentBase<Start.Model>
+@inject IGameService GameService
+@inject IEnumerable<IGameEngine> GameEngines;
+
+<h1>@GameEngine.Title</h1>
+
+<MatchingComponentFor Source="@GameEngine" SourceParameterName="GameEngine" Scope="@ComponentScopes.GameRules" />
+
+@code {
+    public class Model {
+    }
+
+    [Parameter]
+    public string GameEngineId { get; set; } = "";
+    private IGameEngine GameEngine { get; set; } = null!;
+
+    protected override void OnParametersSet()
+        => GameEngine = GameEngines.Single(e => e.Id == GameEngineId);
+
+    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+        => new();
+}

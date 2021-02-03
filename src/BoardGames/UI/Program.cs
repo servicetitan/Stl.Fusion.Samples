@@ -16,6 +16,7 @@ using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
+using Stl.Extensibility;
 using Stl.Fusion.Blazor;
 
 namespace Samples.BoardGames.UI
@@ -75,6 +76,7 @@ namespace Samples.BoardGames.UI
         {
             // Game engines
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IGameEngine, GomokuEngine>());
+            services.AddSingleton<IMatchingTypeFinder>(new MatchingTypeFinder(typeof(Program).Assembly));
 
             // UI services: Blazorise, Pluralizer, etc.
             services.AddSingleton<IPluralize, Pluralizer>();

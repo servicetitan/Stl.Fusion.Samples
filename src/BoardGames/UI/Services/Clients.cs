@@ -25,6 +25,6 @@ namespace Samples.BoardGames.UI.Services
 
         // Queries
         [Get("find/{id}")]
-        Task<Game?> FindAsync(string id, Session session, CancellationToken cancellationToken = default);
+        Task<Game?> FindAsync([Path] string id, Session session, CancellationToken cancellationToken = default);
     }
 }
