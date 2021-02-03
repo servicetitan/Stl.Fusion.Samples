@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reactive;
 using Stl.Fusion.Authentication;
 
 namespace Samples.BoardGames.Abstractions
@@ -19,16 +20,16 @@ namespace Samples.BoardGames.Abstractions
         public record CreateCommand(Session Session, string Type) : ISessionCommand<Game> {
             public CreateCommand() : this(Session.Null, "") { }
         }
-        public record JoinCommand(Session Session, string Id) : ISessionCommand {
+        public record JoinCommand(Session Session, string Id) : ISessionCommand<Unit> {
             public JoinCommand() : this(Session.Null, "") { }
         }
-        public record StartCommand(Session Session, string Id) : ISessionCommand {
+        public record StartCommand(Session Session, string Id) : ISessionCommand<Unit> {
             public StartCommand() : this(Session.Null, "") { }
         }
-        public record MoveCommand(Session Session, string Id, GameMove Move) : ISessionCommand {
+        public record MoveCommand(Session Session, string Id, GameMove Move) : ISessionCommand<Unit> {
             public MoveCommand() : this(Session.Null, "", null!) { }
         }
-        public record EditCommand(Session Session, string Id, bool IsPublic) : ISessionCommand {
+        public record EditCommand(Session Session, string Id, bool IsPublic) : ISessionCommand<Unit> {
             public EditCommand() : this(Session.Null, "", false) { }
         }
 
@@ -42,7 +43,7 @@ namespace Samples.BoardGames.Abstractions
         public DateTime? EndedAt { get; init; }
         public GameStage Stage { get; init; }
         public GameState? State { get; init; }
-        public string GameEndMessage { get; init; }
+        public string GameEndMessage { get; init; } = "";
     }
 
     public record GamePlayer

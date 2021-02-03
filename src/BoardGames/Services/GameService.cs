@@ -31,7 +31,7 @@ namespace Samples.BoardGames.Services
 
         // Commands
 
-        public async Task<Game> CreateAsync(Game.CreateCommand command, CancellationToken cancellationToken = default)
+        public virtual async Task<Game> CreateAsync(Game.CreateCommand command, CancellationToken cancellationToken = default)
         {
             var (session, engineId) = command;
             var engine = GameEngines[engineId]; // Just to check it exists
@@ -64,7 +64,7 @@ namespace Samples.BoardGames.Services
             return game;
         }
 
-        public async Task JoinAsync(Game.JoinCommand command, CancellationToken cancellationToken = default)
+        public virtual async Task JoinAsync(Game.JoinCommand command, CancellationToken cancellationToken = default)
         {
             var (session, id) = command;
             var context = CommandContext.GetCurrent();
@@ -96,7 +96,7 @@ namespace Samples.BoardGames.Services
             context.Items.Set(OperationItem.New(game.Id));
         }
 
-        public async Task StartAsync(Game.StartCommand command, CancellationToken cancellationToken = default)
+        public virtual async Task StartAsync(Game.StartCommand command, CancellationToken cancellationToken = default)
         {
             var (session, id) = command;
             var context = CommandContext.GetCurrent();
@@ -135,7 +135,7 @@ namespace Samples.BoardGames.Services
             context.Items.Set(OperationItem.New(game.Id));
         }
 
-        public async Task MoveAsync(Game.MoveCommand command, CancellationToken cancellationToken = default)
+        public virtual async Task MoveAsync(Game.MoveCommand command, CancellationToken cancellationToken = default)
         {
             var (session, id, move) = command;
             var context = CommandContext.GetCurrent();
@@ -179,7 +179,7 @@ namespace Samples.BoardGames.Services
             context.Items.Set(OperationItem.New(game.Id));
         }
 
-        public async Task EditAsync(Game.EditCommand command, CancellationToken cancellationToken = default)
+        public virtual async Task EditAsync(Game.EditCommand command, CancellationToken cancellationToken = default)
         {
             var (session, id, isPublic) = command;
             var context = CommandContext.GetCurrent();
@@ -202,7 +202,7 @@ namespace Samples.BoardGames.Services
 
         // Queries
 
-        public async Task<Game?> FindAsync(string id, Session session, CancellationToken cancellationToken = default)
+        public virtual async Task<Game?> FindAsync(string id, Session session, CancellationToken cancellationToken = default)
         {
             var dbGame = await GameResolver.TryGetAsync(id, cancellationToken).ConfigureAwait(false);
             return dbGame?.ToModel();

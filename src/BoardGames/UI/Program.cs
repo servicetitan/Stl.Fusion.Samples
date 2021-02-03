@@ -7,9 +7,11 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Pluralize.NET;
+using Samples.BoardGames.Abstractions;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
@@ -71,6 +73,11 @@ namespace Samples.BoardGames.UI
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
+            // Game engines
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IGameEngine, GomokuEngine>());
+
+            // UI services: Blazorise, Pluralizer, etc.
+            services.AddSingleton<IPluralize, Pluralizer>();
             services.AddBlazorise(options => {
                     options.DelayTextOnKeyPress = true;
                     options.DelayTextOnKeyPressInterval = 300;
@@ -78,12 +85,10 @@ namespace Samples.BoardGames.UI
                 .AddBootstrapProviders()
                 .AddFontAwesomeIcons();
 
-            // Default delay for update delayers
+            // Fusion: default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {
                 Delay = TimeSpan.FromSeconds(0.1),
             });
-
-            services.AddSingleton<IPluralize, Pluralizer>();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]

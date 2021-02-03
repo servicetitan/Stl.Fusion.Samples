@@ -1,4 +1,7 @@
 ﻿@using Blazorise.Icons.FontAwesome
+@using Samples.BoardGames.Abstractions
+@inject IEnumerable<IGameEngine> GameEngines
+
 <Bar Mode="BarMode.VerticalInline" CollapseMode="BarCollapseMode.Small">
     <BarToggler />
     <BarBrand>
@@ -6,7 +9,9 @@
     </BarBrand>
     <BarMenu>
         <BarStart>
-            @Item(FontAwesomeIcons.Clock, "Server Time", "serverTime")
+            @foreach(var e in GameEngines) {
+                @Item(e.Icon, e.Title, $"game/{e.Id}")
+            }
             @Item(FontAwesomeIcons.Key, "Authentication", "authentication")
             <BarItem Style="min-height: 20px"></BarItem>
             @Item(FontAwesomeIcons.Code, "Source @ GitHub", "https://github.com/servicetitan/Stl.Fusion.Samples")

@@ -9,6 +9,7 @@ namespace Samples.BoardGames.Abstractions
     {
         string Id { get; }
         string Title { get; }
+        string Icon { get; }
         int MinPlayerCount { get; }
         int MaxPlayerCount { get; }
 
@@ -22,6 +23,7 @@ namespace Samples.BoardGames.Abstractions
     {
         public abstract string Id { get; }
         public abstract string Title { get; }
+        public abstract string Icon { get; }
         public abstract int MinPlayerCount { get; }
         public abstract int MaxPlayerCount { get; }
 

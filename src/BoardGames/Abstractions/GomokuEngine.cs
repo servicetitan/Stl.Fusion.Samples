@@ -8,6 +8,7 @@ namespace Samples.BoardGames.Abstractions
         public static int BoardSize { get; } = 19;
         public override string Id => "Gomoku";
         public override string Title => "Gomoku (Five in a Row)";
+        public override string Icon => "fa-border-all";
         public override int MinPlayerCount => 2;
         public override int MaxPlayerCount => 2;
 
@@ -66,7 +67,7 @@ namespace Samples.BoardGames.Abstractions
     public record GomokuState : GameState
     {
         public int MoveIndex { get; init; }
-        public CharBoard Board { get; init; }
+        public CharBoard Board { get; init; } = null!;
     }
 
     public record GomokuMove : GameMove

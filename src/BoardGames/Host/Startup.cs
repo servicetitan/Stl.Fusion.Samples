@@ -76,7 +76,6 @@ namespace Samples.BoardGames.Host
                     builder.EnableSensitiveDataLogging();
             });
             services.AddDbContextServices<AppDbContext>(b => {
-                // This is the best way to add DbContext-related services from Stl.Fusion.EntityFramework
                 b.AddDbOperations((_, o) => {
                     // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
                     // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
@@ -85,8 +84,10 @@ namespace Samples.BoardGames.Host
                 var operationLogChangeAlertPath = dbPath + "_changed";
                 b.AddFileBasedDbOperationLogChangeNotifier(operationLogChangeAlertPath);
                 b.AddFileBasedDbOperationLogChangeMonitor(operationLogChangeAlertPath);
-                if (!serverSettings.UseInMemoryAuthService)
-                    b.AddDbAuthentication();
+                b.AddDbAuthentication();
+                b.AddDbEntityResolver<string, DbGame>((_, options) => {
+                    options.QueryTransformer = games => games.Include(g => g.Players);
+                });
             });
 
             // Fusion services
