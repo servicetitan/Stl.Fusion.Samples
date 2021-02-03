@@ -3,15 +3,19 @@ using System.Linq;
 
 namespace Samples.BoardGames.Abstractions
 {
-    public class Gomoku : BoardGame<GomokuState, GomokuMove>
+    public class GomokuEngine : GameEngine<GomokuState, GomokuMove>
     {
         public static int BoardSize { get; } = 19;
-        public override string Type => "Gomoku";
+        public override string Id => "Gomoku";
         public override string Title => "Gomoku (Five in a Row)";
-        public override int PlayerCount => 2;
+        public override int MinPlayerCount => 2;
+        public override int MaxPlayerCount => 2;
 
         public override GomokuState New()
-            => new() { Board = new GameBoard(BoardSize) };
+            => new() {
+                PlayerScores = new long[2],
+                Board = new CharBoard(BoardSize)
+            };
 
         public override GomokuState Move(GomokuState state, GomokuMove move)
         {
@@ -22,18 +26,27 @@ namespace Samples.BoardGames.Abstractions
             var board = state.Board;
             if (board[move.Row, move.Column] != ' ')
                 throw new ApplicationException("The cell is already occupied.");
+
             var nextBoard = board.Set(move.Row, move.Column, GetPlayerMarker(move.PlayerIndex));
-            return new GomokuState() {
+            state = state with {
                 Board = nextBoard,
                 MoveIndex = state.MoveIndex + 1,
-                IsGameEnded = CheckGameEnded(nextBoard, move),
             };
+            if (CheckGameEnded(nextBoard, move)) {
+                var playerScores = state.PlayerScores.ToArray();
+                playerScores[move.PlayerIndex] = 1;
+                state = state with {
+                    GameEndMessage = $"@Player{move.PlayerIndex} won.",
+                    PlayerScores = playerScores,
+                };
+            }
+            return state;
         }
 
         public char GetPlayerMarker(int playerIndex)
             => playerIndex == 0 ? 'X' : 'O';
 
-        private bool CheckGameEnded(GameBoard board, GomokuMove lastMove)
+        private bool CheckGameEnded(CharBoard board, GomokuMove lastMove)
         {
             var marker = GetPlayerMarker(lastMove.PlayerIndex);
             int Count(int dr, int dc)
@@ -50,7 +63,11 @@ namespace Samples.BoardGames.Abstractions
         }
     }
 
-    public record GomokuState : GameState { }
+    public record GomokuState : GameState
+    {
+        public int MoveIndex { get; init; }
+        public CharBoard Board { get; init; }
+    }
 
     public record GomokuMove : GameMove
     {

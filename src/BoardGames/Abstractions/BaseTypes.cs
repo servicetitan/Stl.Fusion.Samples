@@ -5,28 +5,31 @@ using Stl.Time;
 
 namespace Samples.BoardGames.Abstractions
 {
-    public interface IBoardGame
+    public interface IGameEngine
     {
+        string Id { get; }
         string Title { get; }
-        int PlayerCount { get; }
+        int MinPlayerCount { get; }
+        int MaxPlayerCount { get; }
 
         GameState New();
         GameState Move(GameState state, GameMove move);
     }
 
-    public abstract class BoardGame<TGameState, TGameMove> : IBoardGame
+    public abstract class GameEngine<TGameState, TGameMove> : IGameEngine
         where TGameState : GameState
         where TGameMove : GameMove
     {
-        public abstract string Type { get; }
+        public abstract string Id { get; }
         public abstract string Title { get; }
-        public abstract int PlayerCount { get; }
+        public abstract int MinPlayerCount { get; }
+        public abstract int MaxPlayerCount { get; }
 
         public abstract TGameState New();
         public abstract TGameState Move(TGameState state, TGameMove move);
 
-        GameState IBoardGame.New() => New();
-        GameState IBoardGame.Move(GameState state, GameMove move)
+        GameState IGameEngine.New() => New();
+        GameState IGameEngine.Move(GameState state, GameMove move)
             => Move((TGameState) state, (TGameMove) move);
     }
 
@@ -37,12 +40,12 @@ namespace Samples.BoardGames.Abstractions
 
     public record GameState
     {
-        public GameBoard Board { get; init; } = null!;
-        public int MoveIndex { get; init; }
-        public bool IsGameEnded { get; init; }
+        public long[] PlayerScores { get; init; } = Array.Empty<long>();
+        public bool IsGameEnded => !string.IsNullOrEmpty(GameEndMessage);
+        public string GameEndMessage { get; init; } = "";
     }
 
-    public record GameBoard
+    public record CharBoard
     {
         public int Size { get; }
         public string Cells { get; }
@@ -65,7 +68,7 @@ namespace Samples.BoardGames.Abstractions
             }
         }
 
-        public GameBoard(int size)
+        public CharBoard(int size)
         {
             if (size < 1)
                 throw new ArgumentOutOfRangeException(nameof(size));
@@ -74,7 +77,7 @@ namespace Samples.BoardGames.Abstractions
         }
 
         [JsonConstructor]
-        public GameBoard(int size, string cells)
+        public CharBoard(int size, string cells)
         {
             if (size < 1)
                 throw new ArgumentOutOfRangeException(nameof(size));
@@ -95,7 +98,7 @@ namespace Samples.BoardGames.Abstractions
 
         public int GetCellIndex(int r, int c) => r * Size + c;
 
-        public GameBoard Set(int r, int c, char value)
+        public CharBoard Set(int r, int c, char value)
         {
             if (r < 0 || r >= Size)
                 throw new ArgumentOutOfRangeException(nameof(r));
@@ -103,7 +106,7 @@ namespace Samples.BoardGames.Abstractions
                 throw new ArgumentOutOfRangeException(nameof(c));
             var cellIndex = GetCellIndex(r, c);
             var newCells = Cells.Substring(0, cellIndex) + c + Cells.Substring(cellIndex + 1);
-            return new GameBoard(Size, newCells);
+            return new CharBoard(Size, newCells);
         }
     }
 }
