@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import formatDate from "date-fns/format";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { fusion, makeFusionObservable } from "@rgdelato/js-fusion";
+import { fusion, makeFusionObservable } from "stl.fusion";
 import Section from "./Section";
 
 class TimeStoreWithDecorators {

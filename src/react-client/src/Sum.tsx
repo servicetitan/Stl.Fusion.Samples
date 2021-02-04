@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Section from "./Section";
-import { useFusionSubscription } from "@rgdelato/js-fusion";
+import { useFusionSubscription } from "stl.fusion";
 import LoadingSVG from "./LoadingSVG";
 
 export default function SumSection() {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import debounce from "lodash/debounce";
 import formatDate from "date-fns/format";
 import Section from "./Section";
-import { useFusionSubscription } from "@rgdelato/js-fusion";
+import { useFusionSubscription } from "stl.fusion";
 import LoadingSVG from "./LoadingSVG";
 
 type MessageType = {

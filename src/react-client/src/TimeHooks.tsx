@@ -1,7 +1,7 @@
 import React from "react";
 import formatDate from "date-fns/format";
 import Section from "./Section";
-import { useFusionSubscription } from "@rgdelato/js-fusion";
+import { useFusionSubscription } from "stl.fusion";
 
 export default function TimeSection() {
   return (

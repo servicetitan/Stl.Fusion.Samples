@@ -1,8 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import Section from "./Section";
-import { fusion, makeFusionObservable } from "@rgdelato/js-fusion";
+import { fusion, makeFusionObservable } from "stl.fusion";
 
 type MessageType = {
   id?: number;
