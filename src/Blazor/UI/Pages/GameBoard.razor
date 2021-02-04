@@ -128,23 +128,9 @@ else
     
     private async Task GetOrCreateBoardAsync()
     {
-        Board ??= BoardService.GetBoardAsync(Address).Result;
+        Board ??= await BoardService.GetBoardAsync(Address);
         UpdateLocals(l => l.BoardState = Board.BoardState);
         UpdateLocals(l => l.IsXTurn = Board.IsXTurn);
-    }
-
-    private async Task PlayerHandler()
-    {
-        var pCount = BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId).Result;
-        if (pCount < 2)
-        {
-            AddPlayer();
-        }
-
-        while (playersCount < 2)
-        {
-            
-        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -153,24 +139,16 @@ else
             await GetOrCreateBoardAsync();
         _allowView = true;
         
-        var pCount = BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId).Result;
+        var pCount = await BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId);
+        var result = await BoardService.CreatePlayerAsync(Board.BoardId, Session.Id).ConfigureAwait(false);
+        await BoardService.GetPlayerAsync(result.Item2).ConfigureAwait(false);
         if (pCount == 0)
         {
-            var result1 = await BoardService.CreatePlayerAsync(Board.BoardId, Session.Id).ConfigureAwait(false);
-            var player1 = await BoardService.GetPlayerAsync(result1.Item2).ConfigureAwait(false);
-            var clone = await BoardService.CreatePlayerCloneAsync(result1.Item2, Board.BoardId).ConfigureAwait(false);
+            var clone = await BoardService.CreatePlayerCloneAsync(result.Item2, Board.BoardId).ConfigureAwait(false);
         }
-        else
-        {
-            var firstPlayer = (await BoardService.GetBoardPlayersAsync(Board.BoardId))[0];
-            var result2 = await BoardService.CreatePlayerAsync(Board.BoardId, Session.Id, !firstPlayer.IsXPlayer).ConfigureAwait(false);
-            await BoardService.GetPlayerAsync(result2.Item2).ConfigureAwait(false);
-        }
-        pCount = BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId).Result;
+        pCount = await BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId);
         playersCount = pCount;
 
-        // PlayerHandler();
-        
         UpdateLocals(l => l.BoardState = Board.BoardState);
         UpdateLocals(l => l.PlayersCount = playersCount);
         await Task.CompletedTask;
