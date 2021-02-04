@@ -1,0 +1,46 @@
+@attribute [MatchFor(typeof(GomokuEngine), ComponentScopes.GamePlay)]
+@inherits GamePlayBase
+
+@{
+    var gameState = (GomokuState) GameState;
+    var board = gameState.Board;
+}
+
+<WhenCommandError Exception="CommandRunner.Error"/>
+
+@if (!gameState.IsGameEnded) {
+    <Paragraph>
+        <GameUserBadge User="OrderedUsers[gameState.MoveIndex % 2]"/>, it's your turn!
+    </Paragraph>
+}
+
+<Row><Column ColumnSize="ColumnSize.Is6">
+    <table><tbody>
+        @for (var r = 0; r < GomokuEngine.BoardSize; r++) {
+            var row = r;
+            <tr>
+                @for (var c = 0; c < GomokuEngine.BoardSize; c++) {
+                    var col = c;
+                    var cell = board[row, col];
+                    <td>
+                        <Button Color="@GetButtonColor(cell)"
+                                Style="margin: 1px; padding: 0px; min-width: 30px; min-height: 30px;"
+                                @onclick="_ => MoveAsync(row, col)">@cell.ToString()</Button>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody></table>
+</Column></Row>
+
+@code {
+    private Task MoveAsync(int r, int c)
+    {
+        var move = new GomokuMove(MyIndex, r, c);
+        var command = new Game.MoveCommand(Session, Game.Id, move);
+        return CommandRunner.CallAsync(command);
+    }
+
+    private Color GetButtonColor(char c)
+        => c == 'X' ? Color.Dark : Color.Light;
+}

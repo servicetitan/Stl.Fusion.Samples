@@ -6,7 +6,7 @@
 
 @if (GameState.IsGameEnded) {
     <Paragraph>
-        @GameState.GameEndMessage
+        <GameEndMessage Message="@GameState.GameEndMessage" OrderedUsers="@OrderedUsers"/>
     </Paragraph>
 }
 

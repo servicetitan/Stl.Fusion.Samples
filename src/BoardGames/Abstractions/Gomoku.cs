@@ -1,11 +1,23 @@
 using System;
 using System.Linq;
+using Stl.Time;
 
 namespace Samples.BoardGames.Abstractions
 {
+    public record GomokuState(CharBoard Board, int MoveIndex = 0) : GameState
+    {
+        public GomokuState() : this((CharBoard) null!) { }
+    }
+
+    public record GomokuMove(int PlayerIndex, int Row, int Column, Moment Time = default) : GameMove(Time)
+    {
+        public GomokuMove() : this(0, 0, 0) { }
+    }
+
     public class GomokuEngine : GameEngine<GomokuState, GomokuMove>
     {
         public static int BoardSize { get; } = 19;
+
         public override string Id => "gomoku";
         public override string Title => "Gomoku (Five in a Row)";
         public override string Icon => "fa-border-all";
@@ -14,9 +26,8 @@ namespace Samples.BoardGames.Abstractions
         public override bool AutoStart => true;
 
         public override GomokuState New()
-            => new() {
+            => new(CharBoard.Empty(BoardSize)) {
                 PlayerScores = new long[2],
-                Board = new CharBoard(BoardSize)
             };
 
         public override GomokuState Move(GomokuState state, GomokuMove move)
@@ -34,11 +45,11 @@ namespace Samples.BoardGames.Abstractions
                 Board = nextBoard,
                 MoveIndex = state.MoveIndex + 1,
             };
-            if (CheckGameEnded(nextBoard, move)) {
+            if (true || CheckGameEnded(nextBoard, move)) {
                 var playerScores = state.PlayerScores.ToArray();
                 playerScores[move.PlayerIndex] = 1;
                 state = state with {
-                    GameEndMessage = $"@Player{move.PlayerIndex} won.",
+                    GameEndMessage = $"|@p{move.PlayerIndex}| won.",
                     PlayerScores = playerScores,
                 };
             }
@@ -63,18 +74,5 @@ namespace Samples.BoardGames.Abstractions
                 => SymmetricCount(dr, dc) >= 5;
             return IsGameEnded(0, 1) || IsGameEnded(1, 0) || IsGameEnded(1, 1) || IsGameEnded(-1, 1);
         }
-    }
-
-    public record GomokuState : GameState
-    {
-        public int MoveIndex { get; init; }
-        public CharBoard Board { get; init; } = null!;
-    }
-
-    public record GomokuMove : GameMove
-    {
-        public int Row { get; init; }
-        public int Column { get; init; }
-        public int PlayerIndex { get; init; }
     }
 }

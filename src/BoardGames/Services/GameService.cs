@@ -156,6 +156,7 @@ namespace Samples.BoardGames.Services
             var engine = GameEngines[game.EngineId];
 
             var state = game.State ?? engine.New();
+            move = move with { Time = Clock.Now };
             state = engine.Move(state, move);
             game = game with { State = state };
             if (state.IsGameEnded) {

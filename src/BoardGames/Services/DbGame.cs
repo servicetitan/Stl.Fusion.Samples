@@ -29,7 +29,10 @@ namespace Samples.BoardGames.Services
         public bool IsPublic { get; set; }
 
         public List<DbGamePlayer> Players { get; set; } = new();
-        public string StateJson { get; set; } = "";
+        public string StateJson {
+            get => _state.SerializedValue;
+            set => _state.SerializedValue = value;
+        }
 
         public DateTime CreatedAt {
             get => _createdAt.DefaultKind(DateTimeKind.Utc);
@@ -82,6 +85,7 @@ namespace Samples.BoardGames.Services
             StartedAt = game.StartedAt;
             EndedAt = game.EndedAt;
             Stage = game.Stage;
+            State = game.State;
             GameEndMessage = game.GameEndMessage;
 
             var players = game.Players.ToDictionary(p => p.UserId);

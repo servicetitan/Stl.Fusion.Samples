@@ -18,6 +18,7 @@
     protected GameState GameState { get; set; } = null!;
     protected bool IsOwner => Me.Id == Game.UserId;
     protected bool IsParticipant => !IsOwner && Users.ContainsKey(Me.Id);
+    protected int MyIndex => OrderedUsers.IndexOf(Me);
 
     protected override Task OnParametersSetAsync()
     {

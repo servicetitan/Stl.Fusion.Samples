@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Text;
 using Newtonsoft.Json;
 using Stl.Time;
@@ -37,9 +38,9 @@ namespace Samples.BoardGames.Abstractions
             => Move((TGameState) state, (TGameMove) move);
     }
 
-    public abstract record GameMove
+    public abstract record GameMove(Moment Time)
     {
-        public Moment Time { get; init; }
+        protected GameMove() : this(default(Moment)) { }
     }
 
     public record GameState
@@ -51,6 +52,9 @@ namespace Samples.BoardGames.Abstractions
 
     public record CharBoard
     {
+        private static readonly ConcurrentDictionary<int, CharBoard> EmptyCache = new();
+        public static CharBoard Empty(int size) => EmptyCache.GetOrAdd(size, size1 => new CharBoard(size1));
+
         public int Size { get; }
         public string Cells { get; }
 
@@ -109,7 +113,7 @@ namespace Samples.BoardGames.Abstractions
             if (c < 0 || c >= Size)
                 throw new ArgumentOutOfRangeException(nameof(c));
             var cellIndex = GetCellIndex(r, c);
-            var newCells = Cells.Substring(0, cellIndex) + c + Cells.Substring(cellIndex + 1);
+            var newCells = Cells.Substring(0, cellIndex) + value + Cells.Substring(cellIndex + 1);
             return new CharBoard(Size, newCells);
         }
     }
