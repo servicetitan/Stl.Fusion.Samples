@@ -18,11 +18,11 @@
     <table><tbody>
         @for (var r = 0; r < GomokuEngine.BoardSize; r++) {
             var row = r;
-            <tr>
+            <tr @key=@row>
                 @for (var c = 0; c < GomokuEngine.BoardSize; c++) {
                     var col = c;
                     var cell = board[row, col];
-                    <td>
+                    <td @key=@((row, col))>
                         <Button Color="@GetButtonColor(cell)"
                                 Style="margin: 1px; padding: 0px; min-width: 30px; min-height: 30px;"
                                 @onclick="_ => MoveAsync(row, col)">@cell.ToString()</Button>

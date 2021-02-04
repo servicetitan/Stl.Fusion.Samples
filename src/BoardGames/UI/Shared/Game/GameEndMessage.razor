@@ -15,7 +15,7 @@
 
 @code {
     [Parameter]
-    public string Message { get; set; }
+    public string Message { get; set; } = "";
     [Parameter]
-    public ImmutableList<GameUser> OrderedUsers { get; set; }
+    public ImmutableList<GameUser> OrderedUsers { get; set; } = ImmutableList<GameUser>.Empty;
 }

@@ -19,6 +19,7 @@ using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Extensibility;
 using Stl.Fusion.Blazor;
+using Stl.Serialization;
 
 namespace Samples.BoardGames.UI
 {

@@ -28,9 +28,12 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Operations.Internal;
 using Stl.IO;
+using Stl.Reflection;
+using Stl.Serialization;
 
 namespace Samples.BoardGames.Host
 {

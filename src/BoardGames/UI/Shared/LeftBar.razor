@@ -12,7 +12,7 @@
             @foreach(var engine in GameEngines.OrderBy(e => e.Title)) {
                 @Item(engine.Icon, engine.Title, LinkBuilder.Game(engine.Id), Match.Prefix)
             }
-            @Item(FontAwesomeIcons.Key, "Authentication", "authentication")
+            @* @Item(FontAwesomeIcons.Key, "Authentication", "authentication") *@
             <BarItem Style="min-height: 20px"></BarItem>
             @Item(FontAwesomeIcons.Code, "Source @ GitHub", "https://github.com/servicetitan/Stl.Fusion.Samples")
         </BarStart>

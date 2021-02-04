@@ -24,35 +24,35 @@ namespace Samples.BoardGames.Host.Controllers
         // Commands
 
         [HttpPost("create")]
-        public Task<Game> CreateAsync(Game.CreateCommand command, CancellationToken cancellationToken = default)
+        public Task<Game> CreateAsync([FromBody] Game.CreateCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
             return Games.CreateAsync(command, cancellationToken);
         }
 
         [HttpPost("join")]
-        public Task JoinAsync(Game.JoinCommand command, CancellationToken cancellationToken = default)
+        public Task JoinAsync([FromBody] Game.JoinCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
             return Games.JoinAsync(command, cancellationToken);
         }
 
         [HttpPost("start")]
-        public Task StartAsync(Game.StartCommand command, CancellationToken cancellationToken = default)
+        public Task StartAsync([FromBody] Game.StartCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
             return Games.StartAsync(command, cancellationToken);
         }
 
         [HttpPost("move")]
-        public Task MoveAsync(Game.MoveCommand command, CancellationToken cancellationToken = default)
+        public Task MoveAsync([FromBody] Game.MoveCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
             return Games.MoveAsync(command, cancellationToken);
         }
 
         [HttpPost("edit")]
-        public Task EditAsync(Game.EditCommand command, CancellationToken cancellationToken = default)
+        public Task EditAsync([FromBody] Game.EditCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
             return Games.EditAsync(command, cancellationToken);
