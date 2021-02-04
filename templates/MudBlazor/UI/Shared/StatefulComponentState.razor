@@ -1,0 +1,20 @@
+@{
+    var isInSync = !(Component.IsUpdatePending || Component.IsUpdating || Component.IsLoading);
+    var isUpdatePending = Component.IsUpdatePending && !Component.IsUpdating;
+    var updateStage = isUpdatePending ? "Update pending..." : Component.IsLoading ? "Loading..." : "Updating...";
+}
+
+<div>
+    <MudText Inline="true">Component state: </MudText>
+    @if (isInSync) {
+        <MudChip Icon="@Icons.Material.Check">In sync</MudChip>
+    }
+    else {
+        <MudChip Icon="@Icons.Material.Refresh">@updateStage</MudChip>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public StatefulComponentBase Component { get; set; } = null!;
+}

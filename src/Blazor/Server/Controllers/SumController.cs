@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Stl.Fusion.Server;
 
 namespace Samples.Blazor.Server.Controllers

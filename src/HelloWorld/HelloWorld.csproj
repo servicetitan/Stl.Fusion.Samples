@@ -3,11 +3,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <AssemblyName>Samples.HelloWorld</AssemblyName>
     <RootNamespace>Samples.HelloWorld</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion" Version="0.7.65" />
+    <PackageReference Include="Stl.Fusion" Version="0.9.69" />
   </ItemGroup>
 </Project>

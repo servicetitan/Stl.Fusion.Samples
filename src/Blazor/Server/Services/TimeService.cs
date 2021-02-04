@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -18,7 +18,7 @@ namespace Samples.Blazor.Server.Services
             if (time.Second % 10 == 0)
                 // This delay is here solely to let you see ServerTime page in
                 // in "Loading" / "Updating" state.
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             return time;
         }
 

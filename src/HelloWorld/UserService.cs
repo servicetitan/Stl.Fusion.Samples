@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Stl.Async;
 using Stl.Fusion;
 
 namespace Samples.HelloWorld
@@ -16,7 +17,8 @@ namespace Samples.HelloWorld
         public Task AddOrUpdateUserAsync(User user, CancellationToken cancellationToken = default)
         {
             _users.AddOrUpdate(user.Id, id => user, (id, _) => user);
-            Computed.Invalidate(() => GetUserAsync(user.Id, default));
+            using (Computed.Invalidate())
+                GetUserAsync(user.Id, default);
             return Task.CompletedTask;
         }
     }

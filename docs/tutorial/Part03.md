@@ -127,7 +127,8 @@ public class CounterService
     {
         WriteLine($"{nameof(Increment)}({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-        Computed.Invalidate(() => GetAsync(key));
+        using (Computed.Invalidate())
+            GetAsync(key).Ignore();
     }
 }
 
@@ -135,7 +136,7 @@ public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
     services.AddFusion();
-    services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
     return services.BuildServiceProvider();
 }
 ```
@@ -144,7 +145,7 @@ Here is how you use `MutableState<T>`:
 
 ``` cs --region Part03_MutableState --source-file Part03.cs
 var services = CreateServices();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
 var state = stateFactory.NewMutable<int>(1);
 var computed = state.Computed;
 WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
@@ -170,7 +171,7 @@ Let's look at error handling example:
 
 ``` cs --region Part03_MutableStateError --source-file Part03.cs
 var services = CreateServices();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
 var state = stateFactory.NewMutable<int>();
 WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
 WriteLine("Setting state.Error.");
@@ -210,7 +211,7 @@ Let's play with `ILiveState<T>` now:
 ``` cs --region Part03_LiveState --source-file Part03.cs
 var services = CreateServices();
 var counters = services.GetRequiredService<CounterService>();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
 WriteLine("Creating state.");
             using var state = stateFactory.NewLive<string>(
                 options =>

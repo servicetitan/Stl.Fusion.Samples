@@ -1,0 +1,82 @@
+@using System.Threading
+@inherits LiveComponentBase<double, AccumulatorCard.LocalsModel>
+@inject ISumService SumService
+
+@{
+    var accumulator = State.LastValue;
+    var locals = Locals.Value;
+    var error = State.Error;
+}
+
+<Card Class="@CssClass">
+    <CardHeader>Accumulator</CardHeader>
+
+    <CardBody>
+        <StatefulComponentState Component="@this"/>
+
+        <WhenException Title="Update error:" Exception="@error"/>
+
+        <Paragraph Margin="Margin.Is3.OnY">
+            Value: <b>@accumulator</b>
+            <Button Color="Color.Warning" @onclick="ResetAsync">Reset</Button>
+        </Paragraph>
+
+        <form @onsubmit="AccumulateAsync">
+            <Addons>
+                <Addon AddonType="AddonType.Start">
+                    <AddonLabel>Increment by</AddonLabel>
+                </Addon>
+                <TextEdit @bind-Text="@locals.ValueText" type="search" />
+                <Addon>
+                    <Button Type="@ButtonType.Submit" Color="Color.Success">Increment</Button>
+                </Addon>
+            </Addons>
+        </form>
+
+    </CardBody>
+</Card>
+
+@code {
+    public class LocalsModel
+    {
+        public string ValueText { get; set; } = "1";
+        public double Value => double.TryParse(ValueText, out var v) ? v : 0;
+    }
+
+    [Parameter]
+    public string CssClass { get; set; } = "";
+    [Parameter]
+    public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    protected override void OnInitialized()
+    {
+        StateHasChangedTriggers = StateEventKind.All;
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
+            updateDelayer.Delay = UpdateDelay;
+    }
+
+    protected override void ConfigureState(LiveState<double>.Options options)
+        => options.WithUpdateDelayer(UpdateDelay);
+
+    protected override Task<double> ComputeStateAsync(CancellationToken cancellationToken)
+        => SumService.GetAccumulatorAsync(cancellationToken);
+
+    // Action handlers
+
+    private async Task ResetAsync()
+    {
+        await SumService.ResetAsync();
+        State.CancelUpdateDelay();
+    }
+
+    private async Task AccumulateAsync()
+    {
+        await SumService.AccumulateAsync(Locals.Value.Value);
+        State.CancelUpdateDelay();
+    }
+}

@@ -13,7 +13,7 @@ namespace Samples.HelloWorld
         [ComputeMethod]
         public virtual async Task<string> GreetUserAsync(long userId, CancellationToken cancellationToken = default)
         {
-            var user = await _users.GetUserAsync(userId, cancellationToken).ConfigureAwait(false);
+            var user = await _users.GetUserAsync(userId, cancellationToken);
             return $"Hello, {user.Name}!";
         }
     }

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Samples.Caching.Common;
-using Samples.Helpers;
 
 namespace Samples.Caching.Server.Services
 {
@@ -8,15 +7,13 @@ namespace Samples.Caching.Server.Services
     {
         public DbSet<Tenant> Tenants { get; protected set; } = null!;
 
-        public AppDbContext(DbContextOptions options) : base(options)
-            => this.DisableChangeTracking();
+        public AppDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             var user = modelBuilder.Entity<Tenant>();
-            user.Ignore(u => u.IsFrozen);
             user.HasKey(u => u.Id);
             user.HasIndex(u => u.Name);
             user.Property(u => u.Version).IsConcurrencyToken();

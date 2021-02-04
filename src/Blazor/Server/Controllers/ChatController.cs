@@ -2,7 +2,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Stl.Fusion.Server;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Controllers
 {
@@ -11,33 +12,35 @@ namespace Samples.Blazor.Server.Controllers
     public class ChatController : ControllerBase, IChatService
     {
         private readonly IChatService _chat;
+        private readonly ISessionResolver _sessionResolver;
 
-        public ChatController(IChatService chat) => _chat = chat;
-
-        // Writers
-
-        [HttpPost("createUser")]
-        public Task<ChatUser> CreateUserAsync(string? name, CancellationToken cancellationToken = default)
+        public ChatController(IChatService chat, ISessionResolver sessionResolver)
         {
-            name ??= "";
-            return _chat.CreateUserAsync(name, cancellationToken);
+            _chat = chat;
+            _sessionResolver = sessionResolver;
         }
 
-        [HttpPost("setUserName")]
-        public async Task<ChatUser> SetUserNameAsync(long id, string? name, CancellationToken cancellationToken = default)
+        // Commands
+
+        [HttpPost("postMessage")]
+        public Task<ChatMessage> PostMessageAsync([FromBody] IChatService.PostMessageCommand command, CancellationToken cancellationToken = default)
         {
-            name ??= "";
-            return await _chat.SetUserNameAsync(id, name, cancellationToken);
+            command.UseDefaultSession(_sessionResolver);
+            return _chat.PostMessageAsync(command, cancellationToken);
         }
 
-        [HttpPost("addMessage")]
-        public async Task<ChatMessage> AddMessageAsync(long userId, string? text, CancellationToken cancellationToken = default)
+        // Queries
+
+        [HttpGet("getCurrentUser"), Publish]
+        public Task<ChatUser> GetCurrentUserAsync(Session? session, CancellationToken cancellationToken = default)
         {
-            text ??= "";
-            return await _chat.AddMessageAsync(userId, text, cancellationToken);
+            session ??= _sessionResolver.Session;
+            return _chat.GetCurrentUserAsync(session, cancellationToken);
         }
 
-        // Readers
+        [HttpGet("getUser"), Publish]
+        public Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
+            => _chat.GetUserAsync(id, cancellationToken);
 
         [HttpGet("getUserCount"), Publish]
         public Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
@@ -46,10 +49,6 @@ namespace Samples.Blazor.Server.Controllers
         [HttpGet("getActiveUserCount"), Publish]
         public Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
             => _chat.GetActiveUserCountAsync(cancellationToken);
-
-        [HttpGet("getUser"), Publish]
-        public Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
-            => _chat.GetUserAsync(id, cancellationToken);
 
         [HttpGet("getChatTail"), Publish]
         public Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)

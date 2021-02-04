@@ -1,0 +1,74 @@
+@page "/composition"
+@using System.Threading
+@inherits LiveComponentBase<Composition.Model, string>
+@inject ILocalComposerService LocalComposer;
+@inject IComposerService Composer;
+@inject Session Session;
+@inject NavigationManager Navigator
+
+@{
+    var state = State.LastValue;
+    var error = State.Error;
+}
+
+<h1>Composition</h1>
+
+<Note>
+    Open <a href="/chat" target="_blank">Chat</a>,
+    <a href="/consistency" target="_blank">Consistency</a>, or
+    <a href="/authentication" target="_blank">Authentication</a>
+    examples in other window(s) to see how values on this page
+    are updated in real-time due to changes made there.
+</Note>
+
+<StatefulComponentState Component="@this" />
+
+<WhenException Title="Update error:" Exception="@error"/>
+
+<Addons>
+    <Addon AddonType="AddonType.Start">
+        <AddonLabel>Parameter</AddonLabel>
+    </Addon>
+    <TextEdit @bind-Text="@Locals.Value" Placeholder="Type something here" type="search" />
+</Addons>
+
+<Row Margin="Margin.Is3.OnY">
+    <Column ColumnSize="ColumnSize.Is6">
+        <ComposedValueCard
+            Title="Locally composed value"
+            Source="@state.LocallyComposedValue"/>
+    </Column>
+    <Column ColumnSize="ColumnSize.Is6">
+        <ComposedValueCard
+            Title="Remotely composed value"
+            Source="@state.RemotelyComposedValue"/>
+    </Column>
+</Row>
+
+@code {
+    public class Model
+    {
+        public ComposedValue LocallyComposedValue { get; set; } = new ComposedValue();
+        public ComposedValue RemotelyComposedValue { get; set; } = new ComposedValue();
+    }
+
+    protected override void OnInitialized()
+    {
+        StateHasChangedTriggers = StateEventKind.All;
+        base.OnInitialized();
+    }
+
+    protected override void ConfigureState(LiveState<Model>.Options options)
+        => options.WithUpdateDelayer(0.5);
+
+    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        var parameter = Locals.Value;
+        var localValue = await LocalComposer.GetComposedValueAsync(parameter, Session, cancellationToken);
+        var remoteValue = await Composer.GetComposedValueAsync(parameter, Session, cancellationToken);
+        return new Model() {
+            LocallyComposedValue = localValue,
+            RemotelyComposedValue = remoteValue,
+        };
+    }
+}

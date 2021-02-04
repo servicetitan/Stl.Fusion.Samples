@@ -1,7 +1,7 @@
 using System;
-using Samples.Blazor.Common.Services;
-using Samples.Helpers;
+using Samples.Blazor.Abstractions;
 using Stl.DependencyInjection;
+using Stl.Fusion.EntityFramework;
 
 namespace Samples.Blazor.Server.Services
 {

@@ -1,0 +1,188 @@
+@page "/chat"
+@using System.Threading
+@using Stl.CommandR
+@using Stl.Fusion.Authentication.Commands
+@inherits LiveComponentBase<Chat.Model, Chat.LocalsModel>
+@inject Session Session
+@inject ICommander Commander
+@inject IChatService ChatService
+@inject NavigationManager Navigator
+
+@{
+    var locals = Locals.Value;
+    var state = State.LastValue;
+    var lastPage = state.LastPage;
+    var error = State.Error;
+}
+
+<div>
+    <div class="float-right">
+        <Badge Color="Color.Light">
+            @(state.UserCount) <Blazorise.Icon Name="FontAwesomeIcons.Users"/>
+        </Badge>
+        <Badge Color="Color.Primary">
+            @(state.ActiveUserCount) <Blazorise.Icon Name="FontAwesomeIcons.Plug"/>
+        </Badge>
+    </div>
+    <h1>Chat</h1>
+</div>
+
+<Note>
+    Open <a href="@Navigator.Uri" target="_blank">this page</a> or
+    <a href="/composition" target="_blank">Composition example</a>
+    in another window to see everything is updated in sync in real time.
+</Note>
+
+<WhenException Title="Action failed:" Exception="@locals.Error"/>
+<WhenException Title="Update error:" Exception="@error"/>
+
+<AuthorizeView>
+    <Authorized>
+        @if (state.ChatUser.Name != locals.Name) {
+            <Badge Color="Color.Primary">Current name: @state.ChatUser.Name</Badge>
+        }
+        <form @onsubmit="SetNameAsync">
+
+            <Addons>
+                <Addon AddonType="AddonType.Start">
+                    <AddonLabel>Your name</AddonLabel>
+                </Addon>
+                <TextEdit @bind-Text="@locals.Name" type="search" />
+                <Addon>
+                    <Button Type="@ButtonType.Submit" Color="Color.Warning">Change</Button>
+                </Addon>
+            </Addons>
+        </form>
+    </Authorized>
+</AuthorizeView>
+
+<Table Narrow="true" Striped="true" Margin="Margin.Is3.OnY">
+    <TableHeader ThemeContrast="ThemeContrast.Dark">
+        <TableRow>
+            <TableHeaderCell>User</TableHeaderCell>
+            <TableHeaderCell>Message</TableHeaderCell>
+        </TableRow>
+    </TableHeader>
+    <TableBody>
+        @foreach(var message in lastPage.Messages) {
+            var user = lastPage.Users[message.UserId];
+            <TableRow>
+                <TableRowCell Style="width: 20%; max-width: 33%">@user.Name</TableRowCell>
+                <TableRowCell Style="width: auto; min-width: 67%">@message.Text</TableRowCell>
+            </TableRow>
+        }
+    </TableBody>
+</Table>
+
+<AuthorizeView>
+    <Authorized>
+        <form @onsubmit="SendMessageAsync">
+            <Addons>
+                <Addon AddonType="AddonType.Start">
+                    <AddonLabel>Message</AddonLabel>
+                </Addon>
+                <TextEdit @bind-Text="@locals.Message" Placeholder="No ideas? Send an empty one!" type="search" />
+                <Addon AddonType="AddonType.End">
+                    <Button Type="@ButtonType.Submit" Color="Color.Success">Send</Button>
+                </Addon>
+            </Addons>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <SignInDropdown Why="to chat"></SignInDropdown>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    public class LocalsModel
+    {
+        private string _name = "";
+
+        public string Name {
+            get => _name;
+            set {
+                _name = value;
+                IsNameModified = true;
+            }
+        }
+
+        public bool IsNameModified { get; set; }
+        public string Message { get; set; } = "";
+        public Exception? Error { get; set; }
+    }
+
+    public class Model
+    {
+        public long UserCount { get; set; }
+        public long ActiveUserCount { get; set; }
+        public ChatUser ChatUser { get; set; } = ChatUser.None;
+        public ChatPage LastPage { get; set; } = new();
+    }
+
+    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        var userCount = await ChatService.GetUserCountAsync(cancellationToken);
+        var activeUserCount = await ChatService.GetActiveUserCountAsync(cancellationToken);
+        var chatUser = await ChatService.GetCurrentUserAsync(Session, cancellationToken);
+        var lastPage = await ChatService.GetChatTailAsync(30, cancellationToken);
+        if (!Locals.Value.IsNameModified)
+            ResetName(chatUser.IsValid ? chatUser.Name : "");
+        return new Model() {
+            UserCount = userCount,
+            ActiveUserCount = activeUserCount,
+            ChatUser = chatUser,
+            LastPage = lastPage,
+        };
+    }
+
+    private async Task SetNameAsync()
+    {
+        ResetError();
+        var locals = Locals.Value;
+        try {
+            var command = new EditUserCommand(Session, locals.Name ?? "");
+            if (command.Name!.Length < 4)
+                throw new ApplicationException("The name should be at least 4 character long.");
+            await Commander.CallAsync(command);
+        }
+        catch (Exception e) {
+            SetError(e);
+        }
+   }
+
+    private async Task SendMessageAsync()
+    {
+        ResetError();
+        try {
+            if (!State.LastValue.ChatUser.IsValid)
+                throw new ApplicationException("Please sign in first.");
+            await ChatService.PostMessageAsync(new(Locals.Value.Message, Session));
+            Locals.Value.Message = "";
+            TouchLocals();
+        }
+        catch (Exception e) {
+            SetError(e);
+        }
+    }
+
+    // Convenience shortcuts
+
+    private void ResetError()
+        => SetError(null);
+
+    private void ResetName(string name)
+    {
+        Locals.Value.Name = name;
+        Locals.Value.IsNameModified = false;
+        TouchLocals();
+    }
+
+    private void SetError(Exception? error)
+    {
+        Locals.Value.Error = error;
+        TouchLocals();
+    }
+
+    private void TouchLocals()
+        => Locals.Set(Locals.AsResult());
+}

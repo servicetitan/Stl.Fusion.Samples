@@ -1,0 +1,11 @@
+﻿body div.mud-main-content {
+    padding-top: 86px;
+    padding-bottom: 64px;
+}
+
+@media (min-width: 960px) {
+    body div.mud-main-content {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
+}

@@ -33,7 +33,7 @@ public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
     services.AddFusion();
-    services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
     return services.BuildServiceProvider();
 }
 ```
@@ -67,7 +67,8 @@ public class CounterService
     {
         WriteLine($"{nameof(Increment)}({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-        Computed.Invalidate(() => GetAsync(key));
+        using (Computed.Invalidate())
+            GetAsync(key).Ignore();
     }
 }
 ```

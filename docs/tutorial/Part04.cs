@@ -62,7 +62,8 @@ namespace Tutorial
             {
                 WriteLine($"{nameof(IncrementAsync)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-                Computed.Invalidate(() => GetAsync(key, default));
+                using (Computed.Invalidate())
+                    GetAsync(key, default).Ignore();
                 return Task.CompletedTask;
             }
 
@@ -139,9 +140,10 @@ namespace Tutorial
             builder.ConfigureLogging(logging =>
                 logging.ClearProviders().SetMinimumLevel(LogLevel.Information).AddDebug());
             builder.ConfigureServices((b, services) => {
-                services.AddFusion()
-                    .AddWebSocketServer().BackToFusion()
-                    .AddComputeService<ICounterService, CounterService>();
+                services.AddFusion(f => {
+                    f.AddWebServer();
+                    f.AddComputeService<ICounterService, CounterService>();
+                });
                 services.AddRouting();
                 services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
             });
@@ -224,7 +226,7 @@ namespace Tutorial
 
             var services = CreateClientServices();
             var counters = services.GetRequiredService<ICounterService>();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             using var state = stateFactory.NewLive<string>(
                 options => {
                     options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay

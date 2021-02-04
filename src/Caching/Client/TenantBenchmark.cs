@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Samples.Caching.Common;
 using Stl.DependencyInjection;
-using Stl.Frozen;
 using Stl.OS;
 using Stl.Time;
 using static System.Console;
@@ -85,8 +84,7 @@ namespace Samples.Caching.Client
             {
                 var tenantId = rnd.Next(0, TenantCount).ToString();
                 var tenant = await tenants.GetAsync(tenantId, cancellationToken);
-                tenant = tenant.ToUnfrozen();
-                tenant.Name = $"Tenant-{tenant.Id}-{tenant.Version + 1}";
+                tenant = tenant with { Name = $"Tenant-{tenant.Id}-{tenant.Version + 1}" };
                 await tenants.AddOrUpdateAsync(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
             }
 

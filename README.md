@@ -8,10 +8,17 @@ Welcome to a collection of [Fusion] samples!
 
 ## What's Inside?
 
-### 0. Project Templates <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle">
+### 0. Solution Templates <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle">
 
 Sorry, we don't provide `dotnet new`-based templates yet, but the ones
 you can copy & modify can be found in the [`templates` folder](./templates).
+
+Currently there are 2 app templates:
+- [Blazorise](https://blazorise.com/)-based app template
+- [MudBlazor](https://mudblazor.com/)-based app template (it uses an older Fusion version now, but we'll update it soon)
+
+Open `Templates.sln`, run any of `*.Host` or `*.Server` projects,
+and go to http://localhost:5005 to them in action.
 
 ### 1. HelloWorld Sample
 
@@ -67,7 +74,7 @@ that properly tracks all these dependencies and updates accordingly:
   [composed on the server-side](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Server/Services/ComposerService.cs);
   its client-side replica is bound to the component displaying the panel
 * And the second panel uses an UI model
-  [composed completely on the client](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Client/Services/LocalComposerService.cs) 
+  [composed completely on the client](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/UI/Services/LocalComposerService.cs) 
   by combining server-side replicas of all the values used there.
 * **The surprising part:** two above files are almost identical!
 

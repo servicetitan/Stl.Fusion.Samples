@@ -106,7 +106,8 @@ public class CounterService : ICounterService
     {
         WriteLine($"{nameof(IncrementAsync)}({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-        Computed.Invalidate(() => GetAsync(key, default));
+        using (Computed.Invalidate())
+            GetAsync(key, default).Ignore();
         return Task.CompletedTask;
     }
 
@@ -185,9 +186,11 @@ public static IHost CreateHost()
         logging.ClearProviders().SetMinimumLevel(LogLevel.Information).AddDebug());
     builder.ConfigureServices((b, services) =>
     {
-        services.AddFusion()
-            .AddWebSocketServer().BackToFusion()
-            .AddComputeService<ICounterService, CounterService>();
+        services.AddFusion(f =>
+        {
+            f.AddWebSocketServer();
+            f.AddComputeService<ICounterService, CounterService>();
+        });
         services.AddRouting();
         services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
     });
@@ -314,7 +317,7 @@ WriteLine("Host started.");
 
 var services = CreateClientServices();
 var counters = services.GetRequiredService<ICounterService>();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
             using var state = stateFactory.NewLive<string>(
                 options =>
                 {

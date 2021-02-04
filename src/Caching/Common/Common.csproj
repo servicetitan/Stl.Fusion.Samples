@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <RootNamespace>Samples.Caching.Common</RootNamespace>
     <AssemblyName>Samples.Caching.Common</AssemblyName>
   </PropertyGroup>
@@ -9,6 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Stl.Fusion.Client" Version="0.7.65" />
+    <PackageReference Include="Stl.Fusion.Client" Version="0.9.69" />
   </ItemGroup>
 </Project>

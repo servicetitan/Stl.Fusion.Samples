@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Samples.Helpers;
 using Stl.DependencyInjection;
+using Stl.Fusion.EntityFramework;
 
 namespace Samples.Caching.Server.Services
 {

@@ -2,12 +2,15 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using AspNet.Security.OAuth.GitHub;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using Samples.Blazor.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
@@ -24,6 +27,8 @@ using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
+using Stl.Fusion.EntityFramework;
+using Stl.Fusion.Operations.Internal;
 using Stl.Fusion.Server;
 using Stl.IO;
 
@@ -43,53 +48,84 @@ namespace Samples.Blazor.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+#pragma warning disable ASP0000
+            var serverSettings = services
+                .UseAttributeScanner(s => s.AddService<ServerSettings>())
+                .BuildServiceProvider()
+                .GetRequiredService<ServerSettings>();
+#pragma warning restore ASP0000
+
             // Logging
             services.AddLogging(logging => {
                 logging.ClearProviders();
                 logging.AddConsole();
                 logging.SetMinimumLevel(LogLevel.Information);
-                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+                if (Env.IsDevelopment()) {
+                    logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+                    logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
+                }
             });
 
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
-            var dbPath = appTempDir & "App.db";
-            services.AddDbContextFactory<AppDbContext>(builder => {
-                builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
+            var dbPath = appTempDir & "App_v095.db";
+            services.AddDbContextFactory<AppDbContext>(b => {
+                b.UseSqlite($"Data Source={dbPath}", sqlite => { });
+                if (Env.IsDevelopment())
+                    b.EnableSensitiveDataLogging();
+            });
+            services.AddDbContextServices<AppDbContext>(b => {
+                services.AddSingleton(new CompletionProducer.Options() {
+                    LogLevel = LogLevel.Information, // Let's log completions of "external" operations
+                });
+                b.AddDbEntityResolver<long, ChatMessage>();
+                b.AddDbOperations((_, o) => {
+                    // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
+                    // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
+                    o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
+                });
+                var operationLogChangeAlertPath = dbPath + "_changed";
+                b.AddFileBasedDbOperationLogChangeNotifier(operationLogChangeAlertPath);
+                b.AddFileBasedDbOperationLogChangeMonitor(operationLogChangeAlertPath);
+                b.AddDbAuthentication();
             });
 
             // Fusion services
-            services.AddSingleton(new Publisher.Options() { Id = Settings.PublisherId });
+            services.AddSingleton(new Publisher.Options() { Id = serverSettings.PublisherId });
             services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
             var fusion = services.AddFusion();
-            var fusionServer = fusion.AddWebSocketServer();
+            var fusionServer = fusion.AddWebServer();
             var fusionClient = fusion.AddRestEaseClient();
-            var fusionAuth = fusion.AddAuthentication().AddServer();
+            var fusionAuth = fusion.AddAuthentication().AddServer(
+                signInControllerOptionsBuilder: (_, options) => {
+                    options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
+                });
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
-            Client.Program.ConfigureSharedServices(services);
+            UI.Program.ConfigureSharedServices(services);
 
             services.AddAuthentication(options => {
-                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                })
-                .AddCookie(options => {
-                    options.LoginPath = "/signin";
-                    options.LogoutPath = "/signout";
-                })
-                .AddGitHub(options => {
-                    options.Scope.Add("read:user");
-                    // options.Scope.Add("user:email");
-                    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-                });
-            // We want to get ClientId and ClientSecret from ServerSettings,
-            // and they're available only when IServiceProvider is already created,
-            // that's why this overload of Configure<TOptions> is used here.
-            services.Configure<GitHubAuthenticationOptions>((c, name, options) => {
-                var serverSettings = c.GetRequiredService<ServerSettings>();
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            }).AddCookie(options => {
+                options.LoginPath = "/signIn";
+                options.LogoutPath = "/signOut";
+                if (Env.IsDevelopment())
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+            }).AddMicrosoftAccount(options => {
+                options.ClientId = serverSettings.MicrosoftAccountClientId;
+                options.ClientSecret = serverSettings.MicrosoftAccountClientSecret;
+                // That's for personal account authentication flow
+                options.AuthorizationEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
+                options.TokenEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
+                options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+            }).AddGitHub(options => {
+                options.Scope.Add("read:user");
+                options.Scope.Add("user:email");
                 options.ClientId = serverSettings.GitHubClientId;
                 options.ClientSecret = serverSettings.GitHubClientSecret;
+                options.CorrelationCookie.SameSite = SameSiteMode.Lax;
             });
 
             // Web
@@ -120,7 +156,7 @@ namespace Samples.Blazor.Server
             if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
                 // This is a regular build, not a build produced w/ "publish",
                 // so we remap wwwroot to the client's wwwroot folder
-                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../Client/{binCfgPart}/net5.0/wwwroot"));
+                wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net5.0/wwwroot"));
             Env.WebRootPath = wwwRootPath;
             Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
             StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
@@ -134,6 +170,9 @@ namespace Samples.Blazor.Server
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
+            app.UseForwardedHeaders(new ForwardedHeadersOptions {
+                ForwardedHeaders = ForwardedHeaders.XForwardedProto
+            });
 
             app.UseWebSockets(new WebSocketOptions() {
                 KeepAliveInterval = TimeSpan.FromSeconds(30),
@@ -152,6 +191,7 @@ namespace Samples.Blazor.Server
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.ApplicationServices.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
             app.UseEndpoints(endpoints => {
                 endpoints.MapBlazorHub();
                 endpoints.MapFusionWebSocketServer();

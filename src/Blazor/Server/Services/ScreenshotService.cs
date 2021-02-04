@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stl.Fusion;
 using Stl.OS;
-using Samples.Blazor.Common.Services;
+using Samples.Blazor.Abstractions;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -47,7 +47,7 @@ namespace Samples.Blazor.Server.Services
 
             _unixJpegEncoder = _unixJpegEncoder = new JpegEncoder() { Quality = 50 };
             _jpegEncoder = (source, stream) =>source.Image.Save(stream, _unixJpegEncoder);
-            if (OSInfo.Kind == OSKind.Windows) {
+            if (OSInfo.IsWindows) {
                 var winJpegEncoder = ImageCodecInfo
                     .GetImageDecoders()
                     .Single(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
@@ -62,7 +62,7 @@ namespace Samples.Blazor.Server.Services
         public virtual async Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default)
         {
             width = Math.Min(MaxWidth, Math.Max(MinWidth, width));
-            var bitmap = await GetScreenshotAsync(cancellationToken).ConfigureAwait(false);
+            var bitmap = await GetScreenshotAsync(cancellationToken);
             return CreateScreenshot(bitmap, width);
         }
 
@@ -85,12 +85,12 @@ namespace Samples.Blazor.Server.Services
         private DirectBitmap TakeScreenshot()
         {
             var (w, h) = (1280, 720);
-            if (OSInfo.Kind == OSKind.Windows) {
+            if (OSInfo.IsWindows) {
                 var dd = DisplayInfo.PrimaryDisplayDimensions;
                 (w, h) = (dd?.Width ?? 1280, dd?.Height ?? 720);
             }
             var screen = new DirectBitmap(w, h);
-            if (OSInfo.Kind == OSKind.Windows) {
+            if (OSInfo.IsWindows) {
                 using var gScreen = Graphics.FromImage(screen.Bitmap);
                 gScreen.CopyFromScreen(0, 0, 0, 0, screen.Bitmap.Size);
                 return screen;
@@ -137,7 +137,7 @@ namespace Samples.Blazor.Server.Services
             using var stream = new MemoryStream(100000);
             if (source.Width == width)
                 _jpegEncoder.Invoke(source, stream);
-            else if (OSInfo.Kind == OSKind.Windows) {
+            else if (OSInfo.IsWindows) {
                 var target = new DirectBitmap(width, height);
                 using var gTarget = Graphics.FromImage(target.Bitmap);
                 gTarget.CompositingQuality = CompositingQuality.HighSpeed;
