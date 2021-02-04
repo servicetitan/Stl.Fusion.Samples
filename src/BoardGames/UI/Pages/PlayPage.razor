@@ -1,0 +1,63 @@
+@page "/game/{GameEngineId}/{GameId}"
+@inherits LiveComponentBase<PlayPage.Model>
+@inject IGameService Games
+@inject IGameUserService GameUsers
+@inject ImmutableDictionary<string, IGameEngine> GameEngines;
+@inject IAuthService AuthService
+@inject Session Session
+@inject NavigationManager Navigator
+
+<h1>@GameEngine.Title</h1>
+
+<WhenUpdateError Exception="@State.Error" />
+
+<AuthorizeView>
+    <Authorized>
+        @if (State.HasValue) {
+            switch (State.Value.Game.Stage) {
+            case GameStage.New:
+                <GameLobbyPart Model="@State.Value" GameEngine="@GameEngine" />
+                break;
+            case GameStage.Playing:
+            case GameStage.Ended:
+                <GamePlayPart Model="@State.Value" GameEngine="@GameEngine" />
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+            }
+        }
+    </Authorized>
+    <NotAuthorized>
+        <SignInDropdown Why="to join the game" />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    public record Model
+    {
+        public Game Game { get; init; } = new();
+        public ImmutableDictionary<long, GameUser> Users { get; init; } = ImmutableDictionary<long, GameUser>.Empty;
+        public GameUser Me { get; init; } = GameUser.None;
+    }
+
+    [Parameter]
+    public string GameEngineId { get; set; } = "";
+    [Parameter]
+    public string GameId { get; set; } = "";
+    private IGameEngine GameEngine => GameEngines[GameEngineId];
+
+    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+    {
+        var game = await Games.FindAsync(GameId, cancellationToken);
+        if (game == null || game.EngineId != GameEngineId)
+            throw new KeyNotFoundException("Specified game doesn't exist.");
+        var users = await game.Players.ParallelSelectToListAsync((p, ct) => GameUsers.FindAsync(p.UserId, ct), cancellationToken);
+        var user = await AuthService.GetUserAsync(Session, cancellationToken);
+        var gameUser = user.IsAuthenticated ? new GameUser(long.Parse(user.Id), user.Name) : GameUser.None;
+        return new Model() {
+            Game = game,
+            Users = users.Where(u => u != null).ToImmutableDictionary(u => u!.Id)!,
+            Me = gameUser,
+        };
+    }
+}

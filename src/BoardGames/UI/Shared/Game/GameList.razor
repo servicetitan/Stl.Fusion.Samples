@@ -11,15 +11,15 @@
 }
 
 <div class="@CssClass">
-    <Heading Size="HeadingSize.Is3">@Title</Heading>
+    <Heading Size="HeadingSize.Is4">@Title</Heading>
     <WhenUpdateError Exception="@error" />
     @if (state.Games.Count > 0) {
         <Table Narrow="true" Striped="true">
             <TableHeader>
                 <TableHeaderCell>Creator</TableHeaderCell>
                 <TableHeaderCell>Players</TableHeaderCell>
-                <TableHeaderCell>Created at</TableHeaderCell>
-                <TableHeaderCell>Join</TableHeaderCell>
+                <TableHeaderCell>Created</TableHeaderCell>
+                <TableHeaderCell></TableHeaderCell>
             </TableHeader>
             <TableBody>
                 @foreach(var game in state.Games) {
@@ -35,7 +35,7 @@
                         </TableRowCell>
                         <TableRowCell>
                             <Button Size="Size.Small" Color="Color.Info"
-                                    Type="@ButtonType.Link" To="@(LinkBuilder.Game(game.EngineId, game.Id))">Join</Button>
+                                    Type="@ButtonType.Link" To="@(LinkBuilder.Game(game.EngineId, game.Id))">Open</Button>
                         </TableRowCell>
                     </TableRow>
                 }

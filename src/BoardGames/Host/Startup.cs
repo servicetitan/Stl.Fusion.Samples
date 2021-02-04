@@ -29,6 +29,7 @@ using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
 using Stl.Fusion.EntityFramework;
+using Stl.Fusion.Operations.Internal;
 using Stl.IO;
 
 namespace Samples.BoardGames.Host
@@ -63,19 +64,25 @@ namespace Samples.BoardGames.Host
                 logging.ClearProviders();
                 logging.AddConsole();
                 logging.SetMinimumLevel(LogLevel.Information);
-                if (Env.IsDevelopment())
+                if (Env.IsDevelopment()) {
                     logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
+                    logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
+
+                }
             });
 
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
-            var dbPath = appTempDir & "App.db";
+            var dbPath = appTempDir & "App_v0_1.db";
             services.AddDbContextFactory<AppDbContext>(builder => {
                 builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
                 if (Env.IsDevelopment())
                     builder.EnableSensitiveDataLogging();
             });
             services.AddDbContextServices<AppDbContext>(b => {
+                services.AddSingleton(new CompletionProducer.Options() {
+                    LogLevel = LogLevel.Information, // Let's log completions of "external" operations
+                });
                 b.AddDbOperations((_, o) => {
                     // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
                     // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.

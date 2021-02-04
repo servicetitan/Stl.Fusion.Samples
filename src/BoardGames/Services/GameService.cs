@@ -16,19 +16,20 @@ using Stl.CommandR.Configuration;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Operations;
+using Stl.Generators;
 
 namespace Samples.BoardGames.Services
 {
     [ComputeService(typeof(IGameService))]
     public class GameService : DbServiceBase<AppDbContext>, IGameService
     {
-        protected Dictionary<string, IGameEngine> GameEngines { get; }
+        protected ImmutableDictionary<string, IGameEngine> GameEngines { get; }
         protected IAuthService AuthService { get; }
         protected DbEntityResolver<AppDbContext, string, DbGame> GameResolver { get; }
 
         public GameService(IServiceProvider services) : base(services)
         {
-            GameEngines = services.GetRequiredService<IEnumerable<IGameEngine>>().ToDictionary(e => e.Id);
+            GameEngines = services.GetRequiredService<ImmutableDictionary<string, IGameEngine>>();
             AuthService = services.GetRequiredService<IAuthService>();
             GameResolver = services.GetRequiredService<DbEntityResolver<AppDbContext, string, DbGame>>();
         }
@@ -57,7 +58,7 @@ namespace Samples.BoardGames.Services
             };
             var dbGame = new DbGame();
             dbGame.UpdateFrom(game);
-            dbContext.Add(game);
+            dbContext.Add(dbGame);
             await dbContext.SaveChangesAsync(cancellationToken);
             context.Items.Set(OperationItem.New(game));
             return game;
@@ -65,7 +66,7 @@ namespace Samples.BoardGames.Services
 
         public virtual async Task JoinAsync(Game.JoinCommand command, CancellationToken cancellationToken = default)
         {
-            var (session, id) = command;
+            var (session, id, join) = command;
             var context = CommandContext.GetCurrent();
 
             var user = await AuthService.GetUserAsync(session, cancellationToken);
@@ -75,22 +76,28 @@ namespace Samples.BoardGames.Services
             await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
             var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
+            var engine = GameEngines[game.EngineId];
 
             if (game.Stage != GameStage.New)
                 throw new InvalidOperationException("Game has already been started.");
-            if (game.Players.Any(p => p.UserId == userId))
-                throw new InvalidOperationException("You've already joined this game.");
-            var engine = GameEngines[game.EngineId];
-            if (game.Players.Count > engine.MaxPlayerCount)
-                throw new InvalidOperationException("You can't join this game: there too many players already.");
+            if (join) {
+                if (game.Players.Any(p => p.UserId == userId))
+                    throw new InvalidOperationException("You've already joined this game.");
+                if (game.Players.Count > engine.MaxPlayerCount)
+                    throw new InvalidOperationException("You can't join this game: there too many players already.");
+                game = game with { Players = game.Players.Add(new GamePlayer(userId)) };
+            } else { // Leave
+                if (game.Players.All(p => p.UserId != userId))
+                    throw new InvalidOperationException("You've already left this game.");
+                game = game with { Players = game.Players.RemoveAll(p => p.UserId == userId) };
+            }
 
-            game.Players.Add(new GamePlayer(userId));
             dbGame.UpdateFrom(game);
             await dbContext.SaveChangesAsync(cancellationToken);
             context.Items.Set(OperationItem.New(game));
 
             // Try auto-start
-            if (engine.AutoStart && game.Players.Count == engine.MaxPlayerCount)
+            if (join && engine.AutoStart && game.Players.Count == engine.MaxPlayerCount)
                 await StartAsync(new Game.StartCommand(session, id), cancellationToken);
         }
 
@@ -296,8 +303,10 @@ namespace Samples.BoardGames.Services
             }
         }
 
+        [ComputeMethod]
         protected virtual Task<Unit> PseudoListOwnAsync(string userId, CancellationToken cancellationToken = default)
             => TaskEx.UnitTask;
+        [ComputeMethod]
         protected virtual Task<Unit> PseudoListAsync(string? engineId, GameStage? stage, CancellationToken cancellationToken = default)
             => TaskEx.UnitTask;
 

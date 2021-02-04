@@ -9,8 +9,8 @@
     </BarBrand>
     <BarMenu>
         <BarStart>
-            @foreach(var e in GameEngines.OrderBy(e => e.Title)) {
-                @Item(e.Icon, e.Title, $"start/{e.Id}")
+            @foreach(var engine in GameEngines.OrderBy(e => e.Title)) {
+                @Item(engine.Icon, engine.Title, LinkBuilder.Game(engine.Id), Match.Prefix)
             }
             @Item(FontAwesomeIcons.Key, "Authentication", "authentication")
             <BarItem Style="min-height: 20px"></BarItem>

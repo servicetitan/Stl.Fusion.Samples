@@ -22,7 +22,7 @@ namespace Samples.BoardGames.Abstractions
         public record CreateCommand(Session Session, string EngineId) : IGameCommand<Game> {
             public CreateCommand() : this(Session.Null, "") { }
         }
-        public record JoinCommand(Session Session, string Id) : IGameCommand<Unit> {
+        public record JoinCommand(Session Session, string Id, bool Join = true) : IGameCommand<Unit> {
             public JoinCommand() : this(Session.Null, "") { }
         }
         public record StartCommand(Session Session, string Id) : IGameCommand<Unit> {

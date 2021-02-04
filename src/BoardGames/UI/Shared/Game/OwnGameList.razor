@@ -23,8 +23,8 @@
                 }
                 <TableHeaderCell>Stage</TableHeaderCell>
                 <TableHeaderCell>Players</TableHeaderCell>
-                <TableHeaderCell>Created at</TableHeaderCell>
-                <TableHeaderCell>Join</TableHeaderCell>
+                <TableHeaderCell>Created</TableHeaderCell>
+                <TableHeaderCell></TableHeaderCell>
             </TableHeader>
             <TableBody>
                 @foreach(var game in state.Games) {
@@ -45,7 +45,7 @@
                         </TableRowCell>
                         <TableRowCell>
                             <Button Size="Size.Small" Color="Color.Info"
-                                    Type="@ButtonType.Link" To="@(LinkBuilder.Game(game.EngineId, game.Id))">Join</Button>
+                                    Type="@ButtonType.Link" To="@(LinkBuilder.Game(game.EngineId, game.Id))">Open</Button>
                         </TableRowCell>
                     </TableRow>
                 }

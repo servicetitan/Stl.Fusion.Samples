@@ -1,5 +1,8 @@
-﻿@using System.Diagnostics
+﻿@using System.Collections.Immutable
+@using System.Diagnostics
+@using System.Linq
 @using System.Net.Http
+@using System.Threading
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
@@ -15,6 +18,8 @@
 @using Samples.BoardGames.UI
 @using Samples.BoardGames.UI.Services
 @using Samples.BoardGames.UI.Shared
+@using Samples.BoardGames.UI.Shared.Game
+@using Stl.CommandR
 @using Stl.Extensibility
 @using Stl.Fusion
 @using Stl.Fusion.Blazor

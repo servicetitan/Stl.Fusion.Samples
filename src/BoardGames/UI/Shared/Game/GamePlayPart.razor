@@ -1,0 +1,14 @@
+@inherits GamePlayBase
+
+<Paragraph>
+    Players: <GameUsersBadge Users="@OrderedUsers" />
+</Paragraph>
+
+@if (GameState.IsGameEnded) {
+    <Paragraph>
+        @GameState.GameEndMessage
+    </Paragraph>
+}
+
+<MatchingComponentFor Source="@GameEngine" SourceParameterName="GameEngine" Scope="@ComponentScopes.GamePlay"
+                      Model="@Model" GameEngine="@GameEngine" />

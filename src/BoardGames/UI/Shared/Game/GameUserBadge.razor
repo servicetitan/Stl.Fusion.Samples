@@ -1,0 +1,11 @@
+<Badge Color="Color.Light">
+    <Blazorise.Icon Name="FontAwesomeIcons.User" />
+    @User.Name
+</Badge>
+
+<span></span>
+
+@code {
+    [Parameter]
+    public GameUser User { get; set; } = GameUser.None;
+}

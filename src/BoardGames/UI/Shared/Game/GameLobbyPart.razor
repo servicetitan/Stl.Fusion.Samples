@@ -1,0 +1,29 @@
+@inherits GamePlayBase
+
+<Paragraph>
+    Players (min. @GameEngine.MinPlayerCount, max. @GameEngine.MaxPlayerCount):
+    <GameUsersBadge Users="@OrderedUsers" />
+</Paragraph>
+
+<WhenCommandError Exception="@CommandRunner.Error"/>
+
+<Paragraph>
+    @if (IsOwner) {
+        <Button Color="Color.Primary" @onclick="_ => StartAsync()">Start the game</Button>
+    } else if (!IsParticipant) {
+        <Button Color="Color.Primary" @onclick="_ => JoinAsync()">Join the game</Button>
+    } else {
+        <Button Color="Color.Warning" @onclick="_ => LeaveAsync()">Leave this game</Button>
+    }
+</Paragraph>
+
+@code {
+    private Task StartAsync()
+        => CommandRunner.CallAsync(new Game.StartCommand(Session, Game.Id));
+
+    private Task JoinAsync()
+        => CommandRunner.CallAsync(new Game.JoinCommand(Session, Game.Id));
+
+    private Task LeaveAsync()
+        => CommandRunner.CallAsync(new Game.JoinCommand(Session, Game.Id, false));
+}

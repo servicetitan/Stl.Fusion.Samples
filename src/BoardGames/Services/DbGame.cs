@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Samples.BoardGames.Abstractions;
-using Stl.Collections;
 using Stl.Serialization;
 using Stl.Time;
 
@@ -66,16 +65,20 @@ namespace Samples.BoardGames.Services
                 StartedAt = StartedAt,
                 EndedAt = EndedAt,
                 Stage = Stage,
+                State = State,
                 GameEndMessage = GameEndMessage,
                 Players = Players.OrderBy(p => p.Index).Select(p => p.ToModel()).ToImmutableList(),
             };
 
         public void UpdateFrom(Game game)
         {
-            EngineId = game.EngineId;
-            UserId = game.UserId;
+            if (string.IsNullOrEmpty(Id)) {
+                Id = game.Id;
+                EngineId = game.EngineId;
+                UserId = game.UserId;
+                CreatedAt = game.CreatedAt;
+            }
             IsPublic = game.IsPublic;
-            CreatedAt = game.CreatedAt;
             StartedAt = game.StartedAt;
             EndedAt = game.EndedAt;
             Stage = game.Stage;
