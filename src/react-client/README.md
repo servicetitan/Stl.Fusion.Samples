@@ -2,90 +2,12 @@
 
 **NOTE:** The sample code project currently requires running the Blazor sample server.
 
-Basic usage:
-
-```js
-import useFusionSubscription from "./lib/useFusionSubscription";
-
-export default function Time() {
-  const { data, loading, error } = useFusionSubscription("/api/Time/get");
-
-  return loading ? (
-    <div>loading...</div>
-  ) : error ? (
-    <div>failed to load</div>
-  ) : (
-    <div>The time is {data}!</div>
-  );
-}
+```bash
+cd /path/to/Stl.Fusion.Samples && dotnet run --project src/Blazor/Server/Server.csproj
+cd /path/to/Stl.Fusion.Samples/src/react-client && npm install && npm start
 ```
 
-Context configuration:
-
-```js
-import FusionConfig from "./lib/FusionConfig";
-
-ReactDOM.render(
-  <React.StrictMode>
-    <FusionConfig uri="ws://localhost:5005/fusion/ws" wait={300}>
-      <App />
-    </FusionConfig>
-  </React.StrictMode>,
-  document.getElementById("root")
-);
-```
-
-Hook configuration:
-
-```js
-import useFusionSubscription from "./lib/useFusionSubscription";
-
-export default function Time() {
-  const { data, loading, error } = useFusionSubscription(
-    "/api/Time/get",
-    { headers: { "Content-Type": "application/json" } },
-    {
-      uri: "ws://localhost:5005/fusion/ws",
-      options: { wait: 300 },
-    }
-  );
-
-  return loading ? (
-    <div>loading...</div>
-  ) : error ? (
-    <div>failed to load</div>
-  ) : (
-    <div>The time is {data}!</div>
-  );
-}
-```
-
-Custom fetcher, using `axios` as an example:
-
-```js
-import FusionConfig from "./lib/FusionConfig";
-import axios from "axios";
-
-ReactDOM.render(
-  <React.StrictMode>
-    <FusionConfig
-      uri="ws://localhost:5005/fusion/ws"
-      wait={300}
-      fetcher={async (url, params) => {
-        const { data, headers } = await axios.get(url, {
-          ...params,
-          headers: { ...params?.headers, "x-fusion-publish": 1 },
-        });
-
-        return { data, header: JSON.parse(headers["x-fusion-publication"]) };
-      }}
-    >
-      <App />
-    </FusionConfig>
-  </React.StrictMode>,
-  document.getElementById("root")
-);
-```
+The JS client library code has been moved to: https://github.com/rgdelato/js-fusion
 
 ---
 
