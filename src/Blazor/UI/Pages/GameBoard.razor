@@ -75,6 +75,7 @@ else
         </button>
         <hr>
         <h5>BoardId: @(Address)</h5>
+        @*<h5>Players without clones: @(locals.PlayersCount)</h5>*@
     }
 }
 
@@ -87,6 +88,7 @@ else
     private Board _board;
     private bool _turnX = true;
     private string _values = "         ";
+    private long playersCount;
 
     private bool _xIsNext;
     private bool _allowView;
@@ -99,6 +101,7 @@ else
     {
         public string BoardState { get; set; } = "         ";
         public bool IsXTurn { get; set; } = true;
+        public long PlayersCount { get; set; } = 0;
     }
 
     public class Model
@@ -125,40 +128,51 @@ else
     
     private async Task GetOrCreateBoardAsync()
     {
-        if (Board == null) {
-            try {
-                Board = await BoardService.GetBoardAsync(Address);
-            }
-            catch {
-                Board = await BoardService.CreateBoardAsync(Address);
-            }
-        }
+        Board ??= BoardService.GetBoardAsync(Address).Result;
         UpdateLocals(l => l.BoardState = Board.BoardState);
         UpdateLocals(l => l.IsXTurn = Board.IsXTurn);
+    }
+
+    private async Task PlayerHandler()
+    {
+        var pCount = BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId).Result;
+        if (pCount < 2)
+        {
+            AddPlayer();
+        }
+
+        while (playersCount < 2)
+        {
+            
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
         if (Board == null)
             await GetOrCreateBoardAsync();
-        // try
-        // {
-        //     _playersCount = await GetBoardPlayersCountWithoutClone();
-        //     if(_playersCount > 1)
-        //         navigator.NavigateTo("/game");
-        // }
-        // catch (Exception ex)
-        // {
-        //     _playersCount = 0;
-        // }
-
         _allowView = true;
-        var pCount = await BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId);
-        if (pCount < 2)
+        
+        var pCount = BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId).Result;
+        if (pCount == 0)
         {
-            AddPlayer();
+            var result1 = await BoardService.CreatePlayerAsync(Board.BoardId, Session.Id).ConfigureAwait(false);
+            var player1 = await BoardService.GetPlayerAsync(result1.Item2).ConfigureAwait(false);
+            var clone = await BoardService.CreatePlayerCloneAsync(result1.Item2, Board.BoardId).ConfigureAwait(false);
         }
+        else
+        {
+            var firstPlayer = (await BoardService.GetBoardPlayersAsync(Board.BoardId))[0];
+            var result2 = await BoardService.CreatePlayerAsync(Board.BoardId, Session.Id, !firstPlayer.IsXPlayer).ConfigureAwait(false);
+            await BoardService.GetPlayerAsync(result2.Item2).ConfigureAwait(false);
+        }
+        pCount = BoardService.GetPlayerCountWithoutCloneAsync(Board.BoardId).Result;
+        playersCount = pCount;
+
+        // PlayerHandler();
+        
         UpdateLocals(l => l.BoardState = Board.BoardState);
+        UpdateLocals(l => l.PlayersCount = playersCount);
         await Task.CompletedTask;
     }
 

@@ -32,6 +32,12 @@ namespace Samples.Blazor.Server.Services
         public virtual async Task<long> GetPlayerCountWithoutCloneAsync(string boardId, CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext();
+            // var t1 = Task.Run(() => dbContext.Players.AsQueryable()
+                // .Where(p => p.PlayerBoard.BoardId == boardId && !p.IsClone)
+                // .LongCountAsync(cancellationToken)
+                // .ConfigureAwait(false));
+            // Task.WhenAll(t1);
+            // return await t1.Result;
             return await dbContext.Players.AsQueryable()
                 .Where(p => p.PlayerBoard.BoardId == boardId && !p.IsClone)
                 .LongCountAsync(cancellationToken)
@@ -77,10 +83,7 @@ namespace Samples.Blazor.Server.Services
         {
             await using var dbContext = CreateDbContext();
             var board = dbContext.Boards.AsQueryable().FirstOrDefault(b => b.BoardId == boardId);
-            if (board == null) {
-                throw new ApplicationException("Please reload this page.");
-            }
-            return board;
+            return board ?? await CreateBoardAsync(boardId, cancellationToken);
         }
 
         
@@ -126,50 +129,72 @@ namespace Samples.Blazor.Server.Services
             return board;
         }
 
-        public async Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isClone, CancellationToken cancellationToken = default)
+        // public async Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isClone, CancellationToken cancellationToken = default)
+        // {
+        //     bool res = false;
+        //     long resId = 0;
+        //     await using var dbContext = CreateDbContext();
+        //     var board = dbContext.Boards.AsQueryable().FirstOrDefault(b => b.BoardId == boardId);
+        //     if (board == null)
+        //         throw new ApplicationException("Please reload this page.");
+        //     var count = await GetPlayerCountWithoutCloneAsync(boardId, cancellationToken);
+        //     if (count < 1) {
+        //         dbContext.Boards.Update(board);
+        //         var playerEntry = dbContext.Players.Add(new Player() {
+        //             PlayerBoard = board,
+        //             SessionId = sessionId,
+        //             IsClone = false,
+        //             IsXPlayer = true
+        //         });
+        //         var player = playerEntry.Entity;
+        //         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        //         var cloneEntry = dbContext.Players.Add(new Player() {
+        //             PlayerBoard = board,
+        //             SessionId = sessionId,
+        //             IsClone = true,
+        //             IsXPlayer = false
+        //         });
+        //         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        //         res = true;
+        //         resId = player.Id;
+        //     } else {
+        //         var firstPlayer = dbContext.Players.AsQueryable().
+        //                               FirstOrDefault(p => p.PlayerBoard.BoardId == boardId && !p.IsClone)
+        //                           ?? throw new ApplicationException("Please reload this page.");
+        //         await RemoveClones(boardId, cancellationToken);
+        //         dbContext.Boards.Update(board);
+        //         var secondEntry = dbContext.Players.Add(new Player() {
+        //             PlayerBoard = board,
+        //             IsXPlayer = !firstPlayer.IsXPlayer,
+        //             SessionId = sessionId,
+        //             IsClone = false
+        //         });
+        //         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        //         res = true;
+        //         resId = secondEntry.Entity.Id;
+        //     }
+        //     return (res, resId);
+        // }
+        
+        public async Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isXPlayer, CancellationToken cancellationToken = default)
         {
             bool res = false;
             long resId = 0;
             await using var dbContext = CreateDbContext();
-            var board = dbContext.Boards.AsQueryable().FirstOrDefault(b => b.BoardId == boardId);
-            if (board == null)
-                throw new ApplicationException("Please reload this page.");
-            var count = await GetPlayerCountWithoutCloneAsync(boardId, cancellationToken);
-            if (count < 1) {
-                dbContext.Boards.Update(board);
-                var playerEntry = dbContext.Players.Add(new Player() {
-                    PlayerBoard = board,
-                    SessionId = sessionId,
-                    IsClone = false,
-                    IsXPlayer = true
-                });
-                var player = playerEntry.Entity;
-                await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                var cloneEntry = dbContext.Players.Add(new Player() {
-                    PlayerBoard = board,
-                    SessionId = sessionId,
-                    IsClone = true,
-                    IsXPlayer = false
-                });
-                await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                res = true;
-                resId = player.Id;
-            } else {
-                var firstPlayer = dbContext.Players.AsQueryable().
-                                      FirstOrDefault(p => p.PlayerBoard.BoardId == boardId && !p.IsClone)
-                                  ?? throw new ApplicationException("Please reload this page.");
-                await RemoveClones(boardId, cancellationToken);
-                dbContext.Boards.Update(board);
-                var secondEntry = dbContext.Players.Add(new Player() {
-                    PlayerBoard = board,
-                    IsXPlayer = !firstPlayer.IsXPlayer,
-                    SessionId = sessionId,
-                    IsClone = false
-                });
-                await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                res = true;
-                resId = secondEntry.Entity.Id;
-            }
+            var board = await GetBoardAsync(boardId, cancellationToken);
+            dbContext.Boards.Update(board);
+            RemoveClones(boardId, cancellationToken);
+            var playerEntry = dbContext.Players.Add(new Player() {
+                PlayerBoard = board,
+                SessionId = sessionId,
+                IsClone = false,
+                IsXPlayer = isXPlayer
+            });
+            var player = playerEntry.Entity;
+            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            res = true;
+            resId = player.Id;
+            Computed.Invalidate(() => GetPlayerCountWithoutCloneAsync(boardId, cancellationToken));
             return (res, resId);
         }
 
@@ -189,6 +214,7 @@ namespace Samples.Blazor.Server.Services
             var clone = cloneEntry.Entity;
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             Computed.Invalidate(() => GetPlayerAsync(clone.Id, CancellationToken.None));
+            Computed.Invalidate(() => GetPlayerCountWithoutCloneAsync(boardId, CancellationToken.None));
             return clone;
         }
         
@@ -205,7 +231,7 @@ namespace Samples.Blazor.Server.Services
         protected virtual async Task RemoveClones(string boardId, CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext();
-            var board = dbContext.Boards.AsQueryable().FirstOrDefault(b => b.BoardId == boardId);
+            var board = await GetBoardAsync(boardId,cancellationToken);
             if (board == null)
                 throw new ApplicationException("Please reload this page.");
             var clones = dbContext.Players.AsQueryable().Where(p => p.PlayerBoard.BoardId == boardId && p.IsClone);

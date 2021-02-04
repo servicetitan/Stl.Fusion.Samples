@@ -103,7 +103,7 @@ namespace Samples.Blazor.Client
         [Post("clearBoard")]
         Task<Board> ClearBoardAsync(string boardId, CancellationToken cancellationToken = default);
         [Post("createPlayer")]        
-        Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isClone, CancellationToken cancellationToken = default);
+        Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isXPlayer, CancellationToken cancellationToken = default);
         [Post("createPlayerClone")]
         Task<Player> CreatePlayerCloneAsync(long id, string boardId, CancellationToken cancellationToken = default);
 

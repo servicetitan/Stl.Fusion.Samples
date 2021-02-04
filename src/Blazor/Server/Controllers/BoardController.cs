@@ -33,8 +33,8 @@ namespace Samples.Blazor.Server.Controllers
             => await _boardService.ClearBoardAsync(boardId, cancellationToken);
 
         [HttpPost("createPlayer")]
-        public async Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isClone, CancellationToken cancellationToken = default)
-            => await _boardService.CreatePlayerAsync(boardId, sessionId, isClone, cancellationToken);
+        public async Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isXPlayer, CancellationToken cancellationToken = default)
+            => await _boardService.CreatePlayerAsync(boardId, sessionId, isXPlayer, cancellationToken);
         
         [HttpPost("createPlayerClone")]
         public async Task<Player> CreatePlayerCloneAsync(long id, string boardId, CancellationToken cancellationToken = default)
