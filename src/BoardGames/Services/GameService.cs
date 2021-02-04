@@ -113,12 +113,12 @@ namespace Samples.BoardGames.Services
             await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
             var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
+            var engine = GameEngines[game.EngineId];
 
             if (game.Stage != GameStage.New)
                 throw new InvalidOperationException("Game has already been started.");
-            if (game.UserId != userId)
+            if (game.UserId != userId && !engine.AutoStart)
                 throw new InvalidOperationException("Only the creator of the game can start it.");
-            var engine = GameEngines[game.EngineId];
             if (game.Players.Count < engine.MinPlayerCount)
                 throw new InvalidOperationException(
                     $"{engine.MinPlayerCount - game.Players.Count} more player(s) must join to start the game.");
