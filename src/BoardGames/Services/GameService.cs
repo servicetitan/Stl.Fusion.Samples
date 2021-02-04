@@ -52,7 +52,7 @@ namespace Samples.BoardGames.Services
                 EngineId = engineId,
                 UserId = userId,
                 CreatedAt = Clock.Now,
-                Stage = GameStage.Created,
+                Stage = GameStage.New,
                 Players = ImmutableList<GamePlayer>.Empty.Add(new GamePlayer(userId))
             };
             var dbGame = new DbGame();
@@ -76,7 +76,7 @@ namespace Samples.BoardGames.Services
             var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
 
-            if (game.Stage != GameStage.Created)
+            if (game.Stage != GameStage.New)
                 throw new InvalidOperationException("Game has already been started.");
             if (game.Players.Any(p => p.UserId == userId))
                 throw new InvalidOperationException("You've already joined this game.");
@@ -107,7 +107,7 @@ namespace Samples.BoardGames.Services
             var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
 
-            if (game.Stage != GameStage.Created)
+            if (game.Stage != GameStage.New)
                 throw new InvalidOperationException("Game has already been started.");
             if (game.UserId != userId)
                 throw new InvalidOperationException("Only the creator of the game can start it.");
@@ -122,7 +122,7 @@ namespace Samples.BoardGames.Services
             context.Items.Set(OperationItem.New(game.Stage)); // Saving prev. stage
             game = game with {
                 StartedAt = Clock.Now,
-                Stage = GameStage.Running,
+                Stage = GameStage.Playing,
             };
             dbGame.UpdateFrom(game);
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -142,7 +142,7 @@ namespace Samples.BoardGames.Services
             var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
 
-            if (game.Stage != GameStage.Running)
+            if (game.Stage != GameStage.Playing)
                 throw new InvalidOperationException("Game has already ended or hasn't started yet.");
             if (game.Players.All(p => p.UserId != userId))
                 throw new InvalidOperationException("You aren't a participant of this game.");
@@ -210,10 +210,10 @@ namespace Samples.BoardGames.Services
             if (stage != null) {
                 games = games.Where(g => g.Stage == stage.GetValueOrDefault());
                 switch (stage.GetValueOrDefault()) {
-                case GameStage.Created:
+                case GameStage.New:
                     games = games.OrderByDescending(g => g.CreatedAt);
                     break;
-                case GameStage.Running:
+                case GameStage.Playing:
                     games = games.OrderByDescending(g => g.StartedAt);
                     break;
                 case GameStage.Ended:
@@ -247,10 +247,10 @@ namespace Samples.BoardGames.Services
             if (stage != null) {
                 games = games.Where(g => g.Stage == stage.GetValueOrDefault());
                 switch (stage.GetValueOrDefault()) {
-                case GameStage.Created:
+                case GameStage.New:
                     games = games.OrderByDescending(g => g.CreatedAt);
                     break;
-                case GameStage.Running:
+                case GameStage.Playing:
                     games = games.OrderByDescending(g => g.StartedAt);
                     break;
                 case GameStage.Ended:

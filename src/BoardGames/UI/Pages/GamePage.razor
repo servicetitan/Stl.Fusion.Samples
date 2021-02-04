@@ -1,0 +1,54 @@
+@page "/game/{GameEngineId}"
+@using System.Collections.Immutable
+@inject IGameService Games
+@inject ImmutableDictionary<string, IGameEngine> GameEngines;
+@inject Session Session
+@inject NavigationManager Navigator
+
+<h1>@GameEngine.Title</h1>
+
+<MatchingComponentFor Source="@GameEngine" SourceParameterName="GameEngine" Scope="@ComponentScopes.GameRules" />
+
+<WhenCommandError Exception="@CommandError" />
+
+<AuthorizeView>
+    <Authorized>
+        <Button Color="Color.Primary" @onclick="_ => OnStartAsync()">Start a new game</Button>
+        <OwnGameList GameStage="GameStage.New"></OwnGameList>
+        <OwnGameList GameStage="GameStage.Playing"></OwnGameList>
+    </Authorized>
+    <NotAuthorized>
+        <SignInDropdown Why="to start or join the game" />
+    </NotAuthorized>
+</AuthorizeView>
+
+<GameList GameEngineId="@GameEngineId" GameStage="GameStage.New"/>
+
+@code {
+    [Parameter]
+    public string GameEngineId { get; set; } = "";
+    [Parameter]
+    public string GameId { get; set; } = "";
+    private IGameEngine GameEngine => GameEngines[GameEngineId];
+    private Exception? CommandError { get; set; } = null;
+
+    private async Task OnStartAsync()
+    {
+        SetCommandError();
+        try {
+            var game = await Games.CreateAsync(new Game.CreateCommand(Session, GameEngine.Id));
+            Navigator.NavigateTo(LinkBuilder.Game(GameEngineId, game.Id));
+        }
+        catch (Exception e) {
+            SetCommandError(e);
+        }
+    }
+
+    private void SetCommandError(Exception? commandError = null)
+    {
+        if (CommandError == commandError)
+            return;
+        CommandError = commandError;
+        StateHasChanged();
+    }
+}

@@ -9,8 +9,8 @@ namespace Samples.BoardGames.Abstractions
 
     public enum GameStage
     {
-        Created = 0,
-        Running = 1,
+        New = 0,
+        Playing = 1,
         Ended = 0x10,
     }
 

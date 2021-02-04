@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Threading.Tasks;
 using Blazorise;
@@ -76,7 +77,8 @@ namespace Samples.BoardGames.UI
         {
             // Game engines
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IGameEngine, GomokuEngine>());
-            services.AddSingleton<IMatchingTypeFinder>(new MatchingTypeFinder(typeof(Program).Assembly));
+            services.AddSingleton(c =>
+                c.GetRequiredService<IEnumerable<IGameEngine>>().ToImmutableDictionary(e => e.Id));
 
             // UI services: Blazorise, Pluralizer, etc.
             services.AddSingleton<IPluralize, Pluralizer>();
@@ -91,6 +93,9 @@ namespace Samples.BoardGames.UI
             services.AddSingleton(c => new UpdateDelayer.Options() {
                 Delay = TimeSpan.FromSeconds(0.1),
             });
+
+            // Other UI services
+            services.AddSingleton<IMatchingTypeFinder>(new MatchingTypeFinder(typeof(Program).Assembly));
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]

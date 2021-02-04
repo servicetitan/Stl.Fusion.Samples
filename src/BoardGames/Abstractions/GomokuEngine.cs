@@ -6,7 +6,7 @@ namespace Samples.BoardGames.Abstractions
     public class GomokuEngine : GameEngine<GomokuState, GomokuMove>
     {
         public static int BoardSize { get; } = 19;
-        public override string Id => "Gomoku";
+        public override string Id => "gomoku";
         public override string Title => "Gomoku (Five in a Row)";
         public override string Icon => "fa-border-all";
         public override int MinPlayerCount => 2;
