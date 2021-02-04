@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +12,12 @@ namespace Samples.BoardGames.Host.Controllers
     [ApiController, JsonifyErrors]
     public class GameController : ControllerBase, IGameService
     {
-        protected IGameService GameService { get; }
+        protected IGameService Games { get; }
         protected ISessionResolver SessionResolver { get; }
 
-        public GameController(IGameService gameService, ISessionResolver sessionResolver)
+        public GameController(IGameService games, ISessionResolver sessionResolver)
         {
-            GameService = gameService;
+            Games = games;
             SessionResolver = sessionResolver;
         }
 
@@ -26,43 +27,56 @@ namespace Samples.BoardGames.Host.Controllers
         public Task<Game> CreateAsync(Game.CreateCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
-            return GameService.CreateAsync(command, cancellationToken);
+            return Games.CreateAsync(command, cancellationToken);
         }
 
         [HttpPost("join")]
         public Task JoinAsync(Game.JoinCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
-            return GameService.JoinAsync(command, cancellationToken);
+            return Games.JoinAsync(command, cancellationToken);
         }
 
         [HttpPost("start")]
         public Task StartAsync(Game.StartCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
-            return GameService.StartAsync(command, cancellationToken);
+            return Games.StartAsync(command, cancellationToken);
         }
 
         [HttpPost("move")]
         public Task MoveAsync(Game.MoveCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
-            return GameService.MoveAsync(command, cancellationToken);
+            return Games.MoveAsync(command, cancellationToken);
         }
 
         [HttpPost("edit")]
         public Task EditAsync(Game.EditCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(SessionResolver);
-            return GameService.EditAsync(command, cancellationToken);
+            return Games.EditAsync(command, cancellationToken);
         }
 
         // Queries
-        [HttpGet("find/{id}")]
-        public Task<Game?> FindAsync(string id, Session? session, CancellationToken cancellationToken = default)
+
+        [HttpGet("find/{id}"), Publish]
+        public Task<Game?> FindAsync([FromRoute] string id, CancellationToken cancellationToken = default)
+            => Games.FindAsync(id, cancellationToken);
+
+        [HttpGet("listOwn"), Publish]
+        public Task<ImmutableList<Game>> ListOwnAsync(
+            string? engineId, GameStage? stage, int count, Session? session,
+            CancellationToken cancellationToken = default)
         {
             session ??= SessionResolver.Session;
-            return GameService.FindAsync(id, session, cancellationToken);
+            return Games.ListOwnAsync(engineId, stage, count, session, cancellationToken);
         }
+
+        [HttpGet("list"), Publish]
+        public Task<ImmutableList<Game>> ListAsync(
+            string? engineId, GameStage? stage, int count,
+            CancellationToken cancellationToken = default)
+            => Games.ListAsync(engineId, stage, count, cancellationToken);
     }
 }

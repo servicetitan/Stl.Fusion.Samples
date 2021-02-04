@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
@@ -25,6 +26,10 @@ namespace Samples.BoardGames.UI.Services
 
         // Queries
         [Get("find/{id}")]
-        Task<Game?> FindAsync([Path] string id, Session session, CancellationToken cancellationToken = default);
+        Task<Game?> FindAsync([Path] string id, CancellationToken cancellationToken = default);
+        [Get("listOwn")]
+        Task<ImmutableList<Game>> ListOwnAsync(string? engineId, GameStage? stage, int count, Session session, CancellationToken cancellationToken = default);
+        [Get("list")]
+        Task<ImmutableList<Game>> ListAsync(string? engineId, GameStage? stage, int count, CancellationToken cancellationToken = default);
     }
 }

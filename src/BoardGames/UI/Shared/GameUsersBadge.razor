@@ -1,0 +1,15 @@
+@{
+    var first = true;
+}
+@foreach(var user in Users) {
+    if (!first) {
+        <span>, </span>
+    }
+    <GameUserBadge User="@user" />
+    first = false;
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<GameUser> Users { get; set; } = Enumerable.Empty<GameUser>();
+}

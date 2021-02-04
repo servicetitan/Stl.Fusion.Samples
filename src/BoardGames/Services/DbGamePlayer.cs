@@ -13,7 +13,7 @@ namespace Samples.BoardGames.Services
         public long Score { get; set; }
 
         public GamePlayer ToModel()
-            => new() { UserId = UserId, Score = Score };
+            => new(UserId, Score);
 
         public void UpdateFrom(GamePlayer player, Game game, int index)
         {

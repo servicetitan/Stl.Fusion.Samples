@@ -12,6 +12,7 @@ namespace Samples.BoardGames.Abstractions
         string Icon { get; }
         int MinPlayerCount { get; }
         int MaxPlayerCount { get; }
+        bool AutoStart { get; }
 
         GameState New();
         GameState Move(GameState state, GameMove move);
@@ -26,6 +27,7 @@ namespace Samples.BoardGames.Abstractions
         public abstract string Icon { get; }
         public abstract int MinPlayerCount { get; }
         public abstract int MaxPlayerCount { get; }
+        public abstract bool AutoStart { get; }
 
         public abstract TGameState New();
         public abstract TGameState Move(TGameState state, TGameMove move);

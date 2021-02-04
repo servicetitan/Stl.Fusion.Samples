@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Reactive;
 using Stl.Fusion.Authentication;
 
@@ -17,19 +16,22 @@ namespace Samples.BoardGames.Abstractions
 
     public record Game
     {
-        public record CreateCommand(Session Session, string Type) : ISessionCommand<Game> {
+        public interface IGameCommand : ISessionCommand { }
+        public interface IGameCommand<TResult> : ISessionCommand<TResult>, IGameCommand { }
+
+        public record CreateCommand(Session Session, string EngineId) : IGameCommand<Game> {
             public CreateCommand() : this(Session.Null, "") { }
         }
-        public record JoinCommand(Session Session, string Id) : ISessionCommand<Unit> {
+        public record JoinCommand(Session Session, string Id) : IGameCommand<Unit> {
             public JoinCommand() : this(Session.Null, "") { }
         }
-        public record StartCommand(Session Session, string Id) : ISessionCommand<Unit> {
+        public record StartCommand(Session Session, string Id) : IGameCommand<Unit> {
             public StartCommand() : this(Session.Null, "") { }
         }
-        public record MoveCommand(Session Session, string Id, GameMove Move) : ISessionCommand<Unit> {
+        public record MoveCommand(Session Session, string Id, GameMove Move) : IGameCommand<Unit> {
             public MoveCommand() : this(Session.Null, "", null!) { }
         }
-        public record EditCommand(Session Session, string Id, bool IsPublic) : ISessionCommand<Unit> {
+        public record EditCommand(Session Session, string Id, bool IsPublic) : IGameCommand<Unit> {
             public EditCommand() : this(Session.Null, "", false) { }
         }
 
@@ -46,9 +48,15 @@ namespace Samples.BoardGames.Abstractions
         public string GameEndMessage { get; init; } = "";
     }
 
-    public record GamePlayer
+    public record GamePlayer(long UserId, long Score = 0)
     {
-        public long UserId { get; set; }
-        public long Score { get; set; }
+        public GamePlayer() : this(0) { }
+    }
+
+    public record GameUser(long Id, string Name)
+    {
+        public static GameUser None { get; } = new();
+
+        public GameUser() : this(0, "n/a") { }
     }
 }

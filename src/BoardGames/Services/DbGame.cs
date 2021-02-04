@@ -54,7 +54,7 @@ namespace Samples.BoardGames.Services
         }
 
         public GameStage Stage { get; set; }
-        public string GameEndMessage { get; set; }
+        public string GameEndMessage { get; set; } = "";
 
         public Game ToModel()
             => new() {

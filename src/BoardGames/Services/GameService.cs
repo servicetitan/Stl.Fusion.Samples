@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Stl.Fusion;
 using Samples.BoardGames.Abstractions;
 using Stl.Async;
+using Stl.Collections;
 using Stl.CommandR;
+using Stl.CommandR.Configuration;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Operations;
@@ -36,17 +40,12 @@ namespace Samples.BoardGames.Services
             var (session, engineId) = command;
             var engine = GameEngines[engineId]; // Just to check it exists
             var context = CommandContext.GetCurrent();
-            if (Computed.IsInvalidating()) {
-                var invGameId = context.Items.Get<OperationItem<string>>().Value;
-                FindAsync(invGameId, session, default).Ignore();
-                return default!;
-            }
 
-            var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
+            var user = await AuthService.GetUserAsync(session, cancellationToken);
             user = user.MustBeAuthenticated();
             var userId = long.Parse(user.Id);
 
-            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
 
             var game = new Game() {
                 Id = Ulid.NewUlid().ToString(),
@@ -54,13 +53,13 @@ namespace Samples.BoardGames.Services
                 UserId = userId,
                 CreatedAt = Clock.Now,
                 Stage = GameStage.Created,
-                Players = ImmutableList<GamePlayer>.Empty.Add(new GamePlayer() { UserId = userId })
+                Players = ImmutableList<GamePlayer>.Empty.Add(new GamePlayer(userId))
             };
             var dbGame = new DbGame();
             dbGame.UpdateFrom(game);
             dbContext.Add(game);
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            context.Items.Set(OperationItem.New(game.Id));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            context.Items.Set(OperationItem.New(game));
             return game;
         }
 
@@ -68,18 +67,13 @@ namespace Samples.BoardGames.Services
         {
             var (session, id) = command;
             var context = CommandContext.GetCurrent();
-            if (Computed.IsInvalidating()) {
-                var invGameId = context.Items.Get<OperationItem<string>>().Value;
-                FindAsync(invGameId, session, default).Ignore();
-                return;
-            }
 
-            var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
+            var user = await AuthService.GetUserAsync(session, cancellationToken);
             user = user.MustBeAuthenticated();
             var userId = long.Parse(user.Id);
 
-            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var dbGame = await GetDbGame(dbContext, id, cancellationToken).ConfigureAwait(false);
+            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
+            var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
 
             if (game.Stage != GameStage.Created)
@@ -90,28 +84,27 @@ namespace Samples.BoardGames.Services
             if (game.Players.Count > engine.MaxPlayerCount)
                 throw new InvalidOperationException("You can't join this game: there too many players already.");
 
-            game.Players.Add(new GamePlayer() { UserId = userId });
+            game.Players.Add(new GamePlayer(userId));
             dbGame.UpdateFrom(game);
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            context.Items.Set(OperationItem.New(game.Id));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            context.Items.Set(OperationItem.New(game));
+
+            // Try auto-start
+            if (engine.AutoStart && game.Players.Count == engine.MaxPlayerCount)
+                await StartAsync(new Game.StartCommand(session, id), cancellationToken);
         }
 
         public virtual async Task StartAsync(Game.StartCommand command, CancellationToken cancellationToken = default)
         {
             var (session, id) = command;
             var context = CommandContext.GetCurrent();
-            if (Computed.IsInvalidating()) {
-                var invGameId = context.Items.Get<OperationItem<string>>().Value;
-                FindAsync(invGameId, session, default).Ignore();
-                return;
-            }
 
-            var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
+            var user = await AuthService.GetUserAsync(session, cancellationToken);
             user = user.MustBeAuthenticated();
             var userId = long.Parse(user.Id);
 
-            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var dbGame = await GetDbGame(dbContext, id, cancellationToken).ConfigureAwait(false);
+            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
+            var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
 
             if (game.Stage != GameStage.Created)
@@ -126,31 +119,27 @@ namespace Samples.BoardGames.Services
                 throw new InvalidOperationException(
                     $"Too many players: {engine.MaxPlayerCount - game.Players.Count} player(s) must leave to start the game.");
 
+            context.Items.Set(OperationItem.New(game.Stage)); // Saving prev. stage
             game = game with {
                 StartedAt = Clock.Now,
                 Stage = GameStage.Running,
             };
             dbGame.UpdateFrom(game);
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            context.Items.Set(OperationItem.New(game.Id));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            context.Items.Set(OperationItem.New(game));
         }
 
         public virtual async Task MoveAsync(Game.MoveCommand command, CancellationToken cancellationToken = default)
         {
             var (session, id, move) = command;
             var context = CommandContext.GetCurrent();
-            if (Computed.IsInvalidating()) {
-                var invGameId = context.Items.Get<OperationItem<string>>().Value;
-                FindAsync(invGameId, session, default).Ignore();
-                return;
-            }
 
-            var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
+            var user = await AuthService.GetUserAsync(session, cancellationToken);
             user = user.MustBeAuthenticated();
             var userId = long.Parse(user.Id);
 
-            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var dbGame = await GetDbGame(dbContext, id, cancellationToken).ConfigureAwait(false);
+            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
+            var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             var game = dbGame.ToModel();
 
             if (game.Stage != GameStage.Running)
@@ -163,10 +152,10 @@ namespace Samples.BoardGames.Services
             state = engine.Move(state, move);
             game = game with { State = state };
             if (state.IsGameEnded) {
-                var players = game.Players.Select((p, index) => new GamePlayer() {
-                    UserId = p.UserId,
-                    Score = state.PlayerScores[index],
-                }).ToImmutableList();
+                context.Items.Set(OperationItem.New(game.Stage)); // Saving prev. stage
+                var players = game.Players
+                    .Select((p, index) => new GamePlayer(p.UserId, state.PlayerScores[index]))
+                    .ToImmutableList();
                 game = game with {
                     EndedAt = Clock.Now,
                     Stage = GameStage.Ended,
@@ -175,44 +164,154 @@ namespace Samples.BoardGames.Services
                 };
             }
             dbGame.UpdateFrom(game);
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            context.Items.Set(OperationItem.New(game.Id));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            context.Items.Set(OperationItem.New(game));
         }
 
         public virtual async Task EditAsync(Game.EditCommand command, CancellationToken cancellationToken = default)
         {
             var (session, id, isPublic) = command;
             var context = CommandContext.GetCurrent();
-            if (Computed.IsInvalidating()) {
-                var invGameId = context.Items.Get<OperationItem<string>>().Value;
-                FindAsync(invGameId, session, default).Ignore();
-                return;
-            }
 
-            var user = await AuthService.GetUserAsync(session, cancellationToken).ConfigureAwait(false);
+            var user = await AuthService.GetUserAsync(session, cancellationToken);
             user = user.MustBeAuthenticated();
 
-            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var dbGame = await GetDbGame(dbContext, id, cancellationToken).ConfigureAwait(false);
+            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
+            var dbGame = await GetDbGame(dbContext, id, cancellationToken);
             dbGame.IsPublic = isPublic;
             var game = dbGame.ToModel();
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            context.Items.Set(OperationItem.New(game.Id));
+            await dbContext.SaveChangesAsync(cancellationToken);
+            context.Items.Set(OperationItem.New(game));
         }
 
         // Queries
 
-        public virtual async Task<Game?> FindAsync(string id, Session session, CancellationToken cancellationToken = default)
+        public virtual async Task<Game?> FindAsync(string id, CancellationToken cancellationToken = default)
         {
-            var dbGame = await GameResolver.TryGetAsync(id, cancellationToken).ConfigureAwait(false);
+            var dbGame = await GameResolver.TryGetAsync(id, cancellationToken);
             return dbGame?.ToModel();
         }
 
+        public virtual async Task<ImmutableList<Game>> ListOwnAsync(
+            string? engineId, GameStage? stage, int count, Session session,
+            CancellationToken cancellationToken = default)
+        {
+            if (count < 1)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            var user = await AuthService.GetUserAsync(session, cancellationToken);
+            user = user.MustBeAuthenticated();
+            await PseudoListOwnAsync(user.Id, cancellationToken);
+
+            await using var dbContext = CreateDbContext();
+            var games = dbContext.Games.AsQueryable();
+            if (engineId != null)
+                games = games.Where(g => g.EngineId == engineId);
+            if (stage != null) {
+                games = games.Where(g => g.Stage == stage.GetValueOrDefault());
+                switch (stage.GetValueOrDefault()) {
+                case GameStage.Created:
+                    games = games.OrderByDescending(g => g.CreatedAt);
+                    break;
+                case GameStage.Running:
+                    games = games.OrderByDescending(g => g.StartedAt);
+                    break;
+                case GameStage.Ended:
+                    games = games.OrderByDescending(g => g.EndedAt);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+                }
+            }
+            else {
+                games = games.OrderByDescending(g => g.CreatedAt);
+            }
+            var gameIds = await games.Select(g => g.Id).Take(count)
+                .ToListAsync(cancellationToken);
+            return await GetManyAsync(gameIds, cancellationToken);
+        }
+
+        public virtual async Task<ImmutableList<Game>> ListAsync(
+            string? engineId, GameStage? stage, int count,
+            CancellationToken cancellationToken = default)
+        {
+            if (count < 1)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            await PseudoListAsync(engineId, stage, cancellationToken);
+
+            await using var dbContext = CreateDbContext();
+            var games = dbContext.Games.AsQueryable().Where(g => g.IsPublic);
+            if (engineId != null)
+                games = games.Where(g => g.EngineId == engineId);
+            if (stage != null) {
+                games = games.Where(g => g.Stage == stage.GetValueOrDefault());
+                switch (stage.GetValueOrDefault()) {
+                case GameStage.Created:
+                    games = games.OrderByDescending(g => g.CreatedAt);
+                    break;
+                case GameStage.Running:
+                    games = games.OrderByDescending(g => g.StartedAt);
+                    break;
+                case GameStage.Ended:
+                    games = games.OrderByDescending(g => g.EndedAt);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+                }
+            }
+            else {
+                games = games.OrderByDescending(g => g.CreatedAt);
+            }
+            var gameIds = await games.Select(g => g.Id).Take(count)
+                .ToListAsync(cancellationToken);
+            return await GetManyAsync(gameIds, cancellationToken);
+        }
+
+        // Invalidation
+
+        [CommandHandler(IsFilter = true, Priority = 1)]
+        protected virtual async Task OnGameCommandAsync(Game.IGameCommand command, CancellationToken cancellationToken = default)
+        {
+            // Common invalidation logic for all IGameCommands
+            var context = CommandContext.GetCurrent();
+            if (!Computed.IsInvalidating()) {
+                await context.InvokeRemainingHandlersAsync(cancellationToken);
+                return;
+            }
+
+            var game = context.Items.Get<OperationItem<Game>>().Value;
+            var prevStage = context.Items.TryGet<OperationItem<GameStage>>()?.Value;
+
+            // Invalidation
+            FindAsync(game.Id, default).Ignore();
+            PseudoListOwnAsync(game.UserId.ToString(), default).Ignore();
+            PseudoListAsync(game.EngineId, game.Stage, default).Ignore();
+            PseudoListAsync(game.EngineId, null, default).Ignore();
+            PseudoListAsync(null, game.Stage, default).Ignore();
+            PseudoListAsync(null, null, default).Ignore();
+            if (prevStage.HasValue) {
+                PseudoListAsync(game.EngineId, prevStage.Value, default).Ignore();
+                PseudoListAsync(null, prevStage.Value, default).Ignore();
+            }
+        }
+
+        protected virtual Task<Unit> PseudoListOwnAsync(string userId, CancellationToken cancellationToken = default)
+            => TaskEx.UnitTask;
+        protected virtual Task<Unit> PseudoListAsync(string? engineId, GameStage? stage, CancellationToken cancellationToken = default)
+            => TaskEx.UnitTask;
+
         // Protected methods
+
+        protected async Task<ImmutableList<Game>> GetManyAsync(IEnumerable<string> gameIds, CancellationToken cancellationToken)
+        {
+            var result = await gameIds.ParallelSelectToListAsync(FindAsync, cancellationToken);
+            return ImmutableList<Game>.Empty.AddRange(result.Where(g => g != null)!);
+        }
 
         protected async Task<DbGame> GetDbGame(AppDbContext dbContext, string id, CancellationToken cancellationToken)
         {
-            var dbGame = await FindDbGame(dbContext, id, cancellationToken).ConfigureAwait(false);
+            var dbGame = await FindDbGame(dbContext, id, cancellationToken);
             if (dbGame == null)
                 throw new KeyNotFoundException("Game not found.");
             return dbGame;
@@ -220,11 +319,11 @@ namespace Samples.BoardGames.Services
 
         protected async Task<DbGame?> FindDbGame(AppDbContext dbContext, string id, CancellationToken cancellationToken)
         {
-            var dbGame = await dbContext.Games.FindAsync(ComposeKey(id), cancellationToken).ConfigureAwait(false);
+            var dbGame = await dbContext.Games.FindAsync(ComposeKey(id), cancellationToken);
             if (dbGame == null)
                 return null;
             await dbContext.Entry(dbGame).Collection(nameof(dbGame.Players))
-                .LoadAsync(cancellationToken).ConfigureAwait(false);
+                .LoadAsync(cancellationToken);
             return dbGame;
         }
     }

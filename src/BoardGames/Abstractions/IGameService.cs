@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.CommandR.Configuration;
@@ -22,6 +23,10 @@ namespace Samples.BoardGames.Abstractions
 
         // Queries
         [ComputeMethod(KeepAliveTime = 1)]
-        Task<Game?> FindAsync(string id, Session session, CancellationToken cancellationToken = default);
+        Task<Game?> FindAsync(string id, CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 1)]
+        Task<ImmutableList<Game>> ListOwnAsync(string? engineId, GameStage? stage, int count, Session session, CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 1)]
+        Task<ImmutableList<Game>> ListAsync(string? engineId, GameStage? stage, int count, CancellationToken cancellationToken = default);
     }
 }

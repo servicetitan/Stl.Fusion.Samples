@@ -11,6 +11,7 @@ namespace Samples.BoardGames.Abstractions
         public override string Icon => "fa-border-all";
         public override int MinPlayerCount => 2;
         public override int MaxPlayerCount => 2;
+        public override bool AutoStart => true;
 
         public override GomokuState New()
             => new() {

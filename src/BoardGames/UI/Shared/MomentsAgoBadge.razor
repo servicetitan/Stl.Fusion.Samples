@@ -1,0 +1,16 @@
+@using System.Threading
+@inherits LiveComponentBase<string>
+@inject MomentsAgoService MomentsAgoService
+
+<span class="@CssClass">@State.Value</span>
+
+@code {
+    [Parameter]
+    public string CssClass { get; set; } = "";
+
+    [Parameter]
+    public DateTime Time { get; set; }
+
+    protected override Task<string> ComputeStateAsync(CancellationToken cancellationToken)
+        => MomentsAgoService.GetMomentsAgoAsync(Time);
+}
