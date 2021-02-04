@@ -45,7 +45,7 @@ namespace Samples.BoardGames.Abstractions
                 Board = nextBoard,
                 MoveIndex = state.MoveIndex + 1,
             };
-            if (true || CheckGameEnded(nextBoard, move)) {
+            if (CheckGameEnded(nextBoard, move)) {
                 var playerScores = state.PlayerScores.ToArray();
                 playerScores[move.PlayerIndex] = 1;
                 state = state with {
