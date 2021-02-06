@@ -136,7 +136,7 @@ namespace Samples.Blazor.Server.Services
             var context = CommandContext.GetCurrent();
             await context.InvokeRemainingHandlersAsync(cancellationToken);
             if (Computed.IsInvalidating()) {
-                var isNewUser = context.Items.Get<OperationItem<bool>>().Value;
+                var isNewUser = context.Operation().Items.TryGet<bool>();
                 if (isNewUser) {
                     GetUserCountAsync(default).Ignore();
                     GetActiveUserCountAsync(default).Ignore();
