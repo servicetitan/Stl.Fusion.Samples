@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.2" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.9.82" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.9.87" />
     <PackageReference Include="UAParser" Version="3.1.44" />
   </ItemGroup>
 
