@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl.Async;
 using Stl.Fusion;
+using static System.Console;
 
 namespace Samples.HelloWorld
 {
@@ -11,39 +11,55 @@ namespace Samples.HelloWorld
         static async Task Main(string[] args)
         {
             var services = new ServiceCollection()
-                .AddFusion(f => f
-                    .AddComputeService<UserService>()
-                    .AddComputeService<GreetingService>()
-                    )
+                .AddFusion(f => f.AddComputeService<IncrementalBuilder>())
                 .BuildServiceProvider();
 
-            var users = services.GetRequiredService<UserService>();
-            var greetings = services.GetRequiredService<GreetingService>();
-            var userId = 1;
-            var user = new User(userId, "(name isn't set yet)");
-            await users.AddOrUpdateUserAsync(user);
+            var builder = services.GetRequiredService<IncrementalBuilder>();
 
-            Task.Run(async () => {
-                var computed = await Computed.CaptureAsync(_ => greetings.GreetUserAsync(userId));
+            // Creating projects
+            Project pAbstractions = new("Abstractions");
+            Project pClient = new("Client", pAbstractions.Id);
+            Project pUI = new("UI", pClient.Id);
+            Project pServer = new("Server", pUI.Id);
+            Project pConsoleClient = new("ConsoleClient", pClient.Id);
+            Project pAll = new("All", pServer.Id, pConsoleClient.Id);
+            var projects = new [] { pAbstractions, pClient, pUI, pServer, pConsoleClient, pAll };
+
+            WriteLine("Projects:");
+            var index = 1;
+            foreach (var project in projects) {
+                WriteLine($"{index++}. {project}");
+                await builder.AddOrUpdateAsync(project);
+            }
+
+            Project InputProject(string prompt)
+            {
                 while (true) {
-                    Console.WriteLine($"Background task: {computed.Value}");
-                    // Wait for invalidation of GreetUserAsync(userId) result (IComputed);
-                    // The invalidation is triggered by the following chain:
-                    // AddOrUpdateUserAsync -> GetUserAsync -> GreetUserAsync.
+                    WriteLine($"{prompt} Type the number 1 ... {projects.Length}:");
+                    var input = ReadLine();
+                    if (int.TryParse(input, out var index) && index >= 1 && index <= projects.Length)
+                        return projects[index - 1];
+                    WriteLine("Wrong input.");
+                }
+            }
+
+            var watchedProject = InputProject("Which project do you want to continuously rebuild?");
+            Task.Run(async () => {
+                WriteLine($"Watching: {watchedProject}");
+                var computed = await Computed.CaptureAsync(_ => builder.GetOrBuildAsync(watchedProject.Id, default));
+                while (true) {
+                    WriteLine($"* Build result: {computed.Value}");
                     await computed.WhenInvalidatedAsync();
-                    // Computed instances are immutable, so we need
-                    // to get a new one to observe the updated value.
+                    // Computed instances are ~ immutable, so update means getting a new one
                     computed = await computed.UpdateAsync(false);
                 }
             }).Ignore();
 
             // Notice the code below doesn't even know there are some IComputed, etc.
             while (true) {
-                Console.WriteLine("What's your name?");
-                var name = Console.ReadLine() ?? "";
-                await users.AddOrUpdateUserAsync(new User(userId, name));
-                var greeting = await greetings.GreetUserAsync(userId);
-                Console.WriteLine(greeting);
+                await Task.Delay(1000); // Let's give a chance for building task to do its job
+                var invProject = InputProject("Project to invalidate?");
+                builder.InvalidateGetOrBuildResult(invProject.Id);
             }
         }
     }
