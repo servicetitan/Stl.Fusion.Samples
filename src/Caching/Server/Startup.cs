@@ -57,7 +57,7 @@ namespace Samples.Caching.Server
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
             services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
 
             services.AddRouting();

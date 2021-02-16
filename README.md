@@ -6,16 +6,18 @@ Welcome to a collection of [Fusion] samples!
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
 > [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
+<img src="https://img.shields.io/badge/-New!-red" valign="middle"> Check out [Board Games](https://github.com/alexyakunin/BoardGames) - a new Fusion sample and a fully functional web app allowing to play real-time multiplayer board games. **Nearly everything you'll find there is built in just one man-week, and every bit of content is updated in real-time!**
+
 ## What's Inside?
 
-### 0. Solution Templates <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle">
+### 0. Solution Templates
 
 Sorry, we don't provide `dotnet new`-based templates yet, but the ones
 you can copy & modify can be found in the [`templates` folder](./templates).
 
 Currently there are 2 app templates:
 - [Blazorise](https://blazorise.com/)-based app template
-- [MudBlazor](https://mudblazor.com/)-based app template (it uses an older Fusion version now, but we'll update it soon)
+- [MudBlazor](https://mudblazor.com/)-based app template (it uses an older Fusion version now, so we don't recommend to use it yet)
 
 Open `Templates.sln`, run any of `*.Host` or `*.Server` projects,
 and go to http://localhost:5005 to them in action.
@@ -23,8 +25,15 @@ and go to http://localhost:5005 to them in action.
 ### 1. HelloWorld Sample
 
 Fusion-style [HelloWorld](src/HelloWorld) shows how to create
-simple dependency chains and react to invalidation events. 
-[Its Program.cs](src/HelloWorld/Program.cs) is just about 40 lines long.
+an incremental build simulation on Fusion. Nothing is really 
+built there, of course - the goal is to shows how Fusion
+"captures" dependencies right when you use them and runs
+cascading invalidations.
+
+Its [Program.cs](src/HelloWorld/Program.cs) is just about 60 lines long,
+but Fusion-based service doing the job there 
+([IncrementalBuilder.cs](src/HelloWorld/IncrementalBuilder.cs) - 
+that's the code you really need to look at) is even smaller.
 
 ![](docs/img/Samples-HelloWorld.gif)
 
@@ -46,8 +55,7 @@ features,
 
 ### 3. Blazor Samples
 
-<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Play
-with live instance of this app hosted on a small 1-core K8s cluster
+<img src="https://img.shields.io/badge/-Live!-red" valign="middle"> Check out live instance of this app hosted on a small 1-core K8s cluster
 [right now](https://fusion-samples.servicetitan.com)!
 
 It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
@@ -139,6 +147,11 @@ or [Docker](https://www.docker.com/).
 
 Build & run locally with [.NET 5.0 SDK](https://dotnet.microsoft.com/download):
 
+```bash
+# Run this command first
+dotnet build
+```
+
 | Sample | Command |
 |-|-|
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
@@ -167,6 +180,7 @@ docker-compose build
 
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
+* Explore [Board Games](https://github.com/alexyakunin/BoardGames) -  a real-time multiplayer board gaming app built on Fusion
 * Join our [Discord Server] or [Gitter] to ask questions and track project updates.
 
 **P.S.** If you've already spent some time learning about Fusion, 

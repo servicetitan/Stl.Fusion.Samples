@@ -22,6 +22,12 @@ namespace Samples.HelloWorld
             var version = _versions.AddOrUpdate(projectId, id => 1, (id, version) => version + 1);
             // Build dependencies
             await Task.WhenAll(project.DependsOn.Select(
+                // IMPORTANT: Noticed recursive GetOrBuildAsync call below?
+                // Such calls - i.e. calls made inside [ComputeMethod]-s to
+                // other [ComputeMethod]-s - is all Fusion needs to know that
+                // A (currently produced output) depends on B (the output of
+                // whatever is called).
+                // Note it's also totally fine to run such calls concurrently.
                 dependencyId => GetOrBuildAsync(dependencyId, cancellationToken)));
             // Simulate build
             await Task.Delay(100);

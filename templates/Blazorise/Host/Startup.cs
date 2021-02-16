@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -82,11 +81,10 @@ namespace Templates.Blazor2.Host
                     // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
                 });
-                var operationLogChangeAlertPath = dbPath + "_changed";
-                b.AddFileBasedDbOperationLogChangeNotifier(operationLogChangeAlertPath);
-                b.AddFileBasedDbOperationLogChangeMonitor(operationLogChangeAlertPath);
+                b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
                 if (!serverSettings.UseInMemoryAuthService)
                     b.AddDbAuthentication();
+                b.AddKeyValueStore();
             });
 
             // Fusion services
@@ -102,7 +100,7 @@ namespace Templates.Blazor2.Host
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
             services.UseAttributeScanner()
-                .AddServicesFrom(typeof(TimeService).Assembly)
+                .AddServicesFrom(typeof(TodoService).Assembly)
                 .AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);

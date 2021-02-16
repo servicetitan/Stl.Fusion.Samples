@@ -47,7 +47,15 @@ The full list of Fusion packages:
   Implements handy Blazor components. Currently there is `StatefulCompontentBase<TState>`
   and its 2 descendants: `LiveComponentBase<T>` and `LiveComponentBase<T, TLocals>`.
 * [Stl.Fusion.EntityFramework](https://www.nuget.org/packages/Stl.Fusion.EntityFramework/) - depends on `Stl.Fusion`.
-  Contains [EF Core](https://docs.microsoft.com/en-us/ef/)-related helpers for Fusion apps.
+  Contains [EF Core](https://docs.microsoft.com/en-us/ef/) - based implementation of 
+  Fusion authentication, operation persistence, `IKeyValueStore`, etc.
+* [Stl.Fusion.EntityFramework.Npgsql](https://www.nuget.org/packages/Stl.Fusion.EntityFramework.Npgsql/) - 
+  depends on `Stl.Fusion.EntityFramework`.  
+  Contains [Npgsql](https://www.npgsql.org/) - based implementation of operation log change tracking.
+  PostgreSQL has [`NOTIFY / LISTEN`](https://www.postgresql.org/docs/13/sql-notify.html) 
+  commands allowing to use it as a message queue, so if you use this database, 
+  you don't need a separate message queue to allow Fusion to notify peer hosts about 
+  operation log changes.
 
 #### [Next: Part 1 &raquo;](./Part01.md) | [Tutorial Home](./README.md)
 

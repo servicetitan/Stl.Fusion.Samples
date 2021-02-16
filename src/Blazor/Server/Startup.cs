@@ -84,9 +84,7 @@ namespace Samples.Blazor.Server
                     // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
                 });
-                var operationLogChangeAlertPath = dbPath + "_changed";
-                b.AddFileBasedDbOperationLogChangeNotifier(operationLogChangeAlertPath);
-                b.AddFileBasedDbOperationLogChangeMonitor(operationLogChangeAlertPath);
+                b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
                 b.AddDbAuthentication();
             });
 
@@ -101,7 +99,7 @@ namespace Samples.Blazor.Server
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
                 });
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
             services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);

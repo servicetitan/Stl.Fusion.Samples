@@ -12,17 +12,19 @@ using Microsoft.Extensions.Logging;
 using Pluralize.NET;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Client;
+using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
+using Stl.Fusion.Extensions;
 
 namespace Samples.Blazor.UI
 {
     public class Program
     {
-        public static Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             if (!OSInfo.IsWebAssembly)
                 throw new ApplicationException("This app runs only in browser.");
@@ -33,14 +35,8 @@ namespace Samples.Blazor.UI
             var host = builder.Build();
 
             host.Services.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
-            var runTask = host.RunAsync();
-            Task.Run(async () => {
-                // We "manually" start IHostedServices here, because Blazor host doesn't do this.
-                var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
-                foreach (var hostedService in hostedServices)
-                    await hostedService.StartAsync(default);
-            });
-            return runTask;
+            await host.Services.HostedServices().StartAsync();
+            await host.RunAsync();
         }
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
@@ -64,7 +60,7 @@ namespace Samples.Blazor.UI
             var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
             services.UseAttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
             ConfigureSharedServices(services);
         }
@@ -83,10 +79,12 @@ namespace Samples.Blazor.UI
                 Delay = TimeSpan.FromSeconds(0.1),
             });
 
+            // Other UI-related services
             services.AddSingleton<IPluralize, Pluralizer>();
+            services.AddFusion().AddLiveClock();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
+            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
             services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }

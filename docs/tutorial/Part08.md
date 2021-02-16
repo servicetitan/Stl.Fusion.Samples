@@ -1,5 +1,11 @@
 # Part 8: Scaling Fusion Services
 
+> NOTE: Nearly everything described in this section (and even more)
+> is already implemented. Sections covering CommandR
+> and Operations Framework describe this in details,
+> but it still makes sense to read this section to better
+> understand the problem they solve.
+
 Scaling Fusion services is actually simpler than it may seem
 at first - and mostly, you should take into account two
 key factors:

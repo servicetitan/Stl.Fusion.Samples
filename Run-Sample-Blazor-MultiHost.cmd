@@ -1,6 +1,5 @@
 @echo off
-dotnet build
-
+rem The next line is optional - you need it if you want to debug Blazor client
 set ASPNETCORE_ENVIRONMENT=Development
 
 set ASPNETCORE_URLS=http://localhost:5005/

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MudBlazor;
 using MudBlazor.Services;
 using Pluralize.NET;
 using Stl.Fusion;
@@ -69,9 +68,7 @@ namespace Templates.Blazor3.UI
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
-            services.AddMudBlazorDialog();
-            services.AddMudBlazorSnackbar();
-            services.AddMudBlazorResizeListener();
+            services.AddMudServices();
 
             // Default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {

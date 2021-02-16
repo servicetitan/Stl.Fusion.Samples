@@ -1,4 +1,4 @@
-# Part 10: Multi-Host Invalidation and CQRS with Fusion + CommandR + Operations Framework
+# Part 10: Multi-Host Invalidation and CQRS with Operations Framework
 
 To be written shortly.
 

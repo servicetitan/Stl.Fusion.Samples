@@ -11,12 +11,12 @@
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="5.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.2" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.9.87" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="5.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.3" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.10.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Pages\_Host.cshtml" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" />
+    <Content Update="Pages\_Host.cshtml" CopyToPublishDirectory="PreserveNewest" />
     <None Include="$(ProjectDir)\Resources\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Resources\" />
   </ItemGroup>
 

@@ -1,8 +1,9 @@
 ﻿@page "/counter"
 @using System.Threading
+@using Stl.Fusion.Extensions
 @inherits LiveComponentBase<string>
 @inject CounterService CounterService
-@inject TimeService TimeService
+@inject ILiveClock LiveClock
 @inject NavigationManager Navigator
 
 @{
@@ -27,7 +28,7 @@
     protected override async Task<string> ComputeStateAsync(CancellationToken cancellationToken)
     {
         var (count, changeTime) = await CounterService.GetCounterAsync();
-        var momentsAgo = await TimeService.GetMomentsAgoAsync(changeTime);
+        var momentsAgo = await LiveClock.GetMomentsAgoAsync(changeTime);
         return $"{count}, changed {momentsAgo}";
     }
 
