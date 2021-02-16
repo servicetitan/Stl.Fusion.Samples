@@ -19,6 +19,8 @@ Currently there are 2 app templates:
 - [Blazorise](https://blazorise.com/)-based app template
 - [MudBlazor](https://mudblazor.com/)-based app template (it uses an older Fusion version now, so we don't recommend to use it yet)
 
+![](docs/img/Samples-Template.gif)
+
 Open `Templates.sln`, run any of `*.Host` or `*.Server` projects,
 and go to http://localhost:5005 to them in action.
 
