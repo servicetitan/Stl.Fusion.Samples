@@ -25,8 +25,8 @@ namespace Samples.HelloWorld
 
     public record ProjectBuildResult
     {
-        public Project Project { get; init; }
+        public Project Project { get; init; } = null!;
         public long Version { get; init; }
-        public string Artifacts { get; init; }
+        public string Artifacts { get; init; } = "";
     }
 }
