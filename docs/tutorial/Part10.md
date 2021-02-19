@@ -272,11 +272,11 @@ talking about EF:
   [creates and "injects"](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/Operations/DbOperationScopeProvider.cs#L54)
   `DbOperationScope<TDbContext>` into
   `CommandContext.GetCurrent().Items` collection.
-- Once your service needs to access `SomeDbContext` from the
+- Once your service needs to access `AppDbContext` from the
   command handler, it typically calls its protected
   `CreateCommandDbContextAsync` method, which 
-  ["pulls" the `DbOperationScope<SomeDbContext>`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/DbServiceBase.cs#L38)
-  and asks it to provide actual `SomeDbContext`.
+  ["pulls" the `DbOperationScope<AppDbContext>`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/DbServiceBase.cs#L38)
+  and asks it to provide actual `AppDbContext`.
 - Finally, `DbOperationScope.CreateDbContext` does all the magic:
   when you call this method for the first time, not only it creates 
   "primary" `DbContext`, but also starts a new transaction there. 
