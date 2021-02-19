@@ -194,7 +194,7 @@ public virtual async Task<ChatMessage> PostMessageAsync(
         return default!;
     }
 
-    // Notice I 
+    // Notice I use a special method to get DbContext here? I'll explain this shortly. 
     await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
     // The same action handler code as it was in example above.
 }
