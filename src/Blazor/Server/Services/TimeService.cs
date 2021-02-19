@@ -9,7 +9,7 @@ namespace Samples.Blazor.Server.Services
     [ComputeService(typeof(ITimeService))]
     public class TimeService : ITimeService
     {
-        private DateTime _startTime = DateTime.UtcNow;
+        private readonly DateTime _startTime = DateTime.UtcNow;
 
         [ComputeMethod(AutoInvalidateTime = 0.25, KeepAliveTime = 1)]
         public virtual async Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)

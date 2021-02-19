@@ -17,8 +17,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.3" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.10.4" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="0.10.4" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.10.18" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="0.10.18" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>

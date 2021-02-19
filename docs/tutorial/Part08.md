@@ -5,6 +5,9 @@
 > and Operations Framework describe this in details,
 > but it still makes sense to read this section to better
 > understand the problem they solve.
+>
+> If you want to see it in action, check out 
+> http://boardgames.alexyakunin.com
 
 Scaling Fusion services is actually simpler than it may seem
 at first - and mostly, you should take into account two
