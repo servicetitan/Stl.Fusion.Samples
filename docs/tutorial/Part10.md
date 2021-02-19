@@ -414,6 +414,37 @@ Just `DbOperationLogReader` -
 As you might notice, it skips all local commands, and a big
 comment there explains why it does so.
 
+> Q: So every host invokes some logic for every command
+> running on other hosts?
+
+Yes. All of this means that:
+- Even though there are typically way more queries than
+  commands,  some actions (e.g. presence info updates) 
+  might be quite frequent. And you should avoid hitting 
+  the DB or running any resource-consuming activities
+  inside your invalidation blocks. Especially -
+  inside such blocks for frequent actions.
+- If you know for sure that at some point you'll 
+  reach the scale that won't allow you to rely on
+  a single operation log (e.g. an extremely high 
+  frequency of "read tail" calls from ~ hundreds of 
+  hosts may bring it down), or e.g. that even 
+  replaying the invalidations for every command
+  won't be possible - you need to think how to 
+  partition your system.
+  
+For the note, invalidations are extremely fast - 
+it's safe to assume they are ~ as fast as identical
+calls resolving via `IComptuted` instances, i.e.
+it's safe to assume you can run ~ a 1 million of 
+invalidations per second per HT core, which 
+means that an extremely high command rate is 
+needed to "flood" OF's invalidation pipeline,
+and most likely it won't be due to the cost of
+invalidation. JSON deserialization and
+CommandR pipeline itself is much more likely 
+to become a bottleneck under extreme load.
+
 Ok, back to our command execution pipeline :)
 
 ### 4. `DbOperationScopeProvider<TDbContext>`, priority: 1000
