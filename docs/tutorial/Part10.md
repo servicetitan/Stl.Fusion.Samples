@@ -109,15 +109,14 @@ What happens here?
     
 ## Using Operations Framework
 
-It's actually as simple as it could be. Let's look how use of 
-Operations Framework requires you to transform the code
-of your action handlers:
+Here is how Operations Framework requires you to transform 
+the code of your old action handlers:
 
-Before:
+**Pre-OF handler:**
 
 ```cs
 public async Task<ChatMessage> PostMessageAsync(
-    long userId, string text, CancellationToken cancellationToken = default)
+    Session session, string text, CancellationToken cancellationToken = default)
 {
     await using var dbContext = CreateDbContext().ReadWrite();
     // Actual code...
@@ -129,29 +128,27 @@ public async Task<ChatMessage> PostMessageAsync(
 }
 ```
 
-After:
+**Post-OF handler:**
 
-1. Create a dedicated type for every command. 
-   In this case it can be:
+1. Create a dedicated command type for this action: 
 
 ```cs
-public record PostMessageCommand(string Text, Session Session) : ICommand<ChatMessage>
+public record PostMessageCommand(Session Session, string Text) : ICommand<ChatMessage>
 {
     // Default constructor is needed for JSON deserialization -
     // positional records don't have one by default
-    public PostMessageCommand() : this(null!, Session.Null) { }
+    public PostMessageCommand() : this(Session.Null, "") { }
 }
 ```
 
 Notice that above type implements `ICommand<ChatMessage>` - the
-generic parameter here tells the type of result this command returns,
-and regular handlers for this command (non-filtering ones) should
-use matching `Task<T>` as their return type.
+generic parameter `ChatMessage` here is the type of result of 
+this command.
 
-Finally, note that such types don't have to be records - 
-I use records mainly because they are immutable + support `with`
-syntax from C# 9, but overall, there is no requirement like
-"every command has to be a record".
+Even though it's a record type in this example, there is no requirement 
+like "every command has to be a record". Any JSON-serializable
+class will work equally well; I prefer to use records mostly due 
+to their immutability.
 
 2. Refactor action to command handler:
 
@@ -170,8 +167,9 @@ public virtual async Task<ChatMessage> PostMessageAsync(
 }
 ```
 
-Brief recap of how `[CommandHandler]` should from [Part 8](./Part08.md): 
-- Add `virtual` + tag it with `[CommandHandler]`.
+A recap from [Part 8](./Part08.md) of how `[CommandHandler]`s 
+should look like: 
+- Add `virtual` + tag the method with `[CommandHandler]`.
   You can apply it to corresponding interface member as well, 
   the attribute is "inherited" and can be "overriden" like
   `[ComputeMethod]` does too.
@@ -181,22 +179,28 @@ Brief recap of how `[CommandHandler]` should from [Part 8](./Part08.md):
   and these types should match unless your command implements 
   `ICommand<Unit>` or you write filtering handler (in these case
   it can be `Task` too).
+- The method must be `public` or `protected`.
      
 The invalidation block inside the handler should be transformed too:
 - Move it to the very beginning of the method
 - Replace `using (Computed.Invalidate()) { Code(); }` construction 
-  there with
+  with
   `if (Computed.IsInvalidating()) { Code(); return default!; }`.
 - If your service derives from `DbServiceBase` or `DbAsyncProcessBase`,
   you should use its protected `CreateCommandDbContextAsync` method
   to get `DbContext` where you are going to make changes.
   You still have to call `SaveAsync` on this `DbContext` in the end.
 
-And finally, since the code inside your invalidation block
-will run in other processes too, you can't pass values
-from the "main" block to it directly. You should use
-`CommandContext.Operation().Items` collection to pass 
-them - like this:
+And finally, note that now you can't pass values from the 
+"main" block to the invalidation block directly. 
+It's not just due to their new order - the code from your 
+invalidation blocks will run a few times for every command 
+execution (once on every host), but the "main" block's code
+will run only on the host where the command was started.
+
+So to pass some data to your invalidation blocks, you should use 
+`CommandContext.Operation().Items` collection - 
+nearly as follows:
 
 ```cs
 public virtual async Task SignOutAsync(
