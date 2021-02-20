@@ -130,7 +130,7 @@ public async Task<ChatMessage> PostMessageAsync(
 
 **Post-OF handler:**
 
-1. Create a dedicated command type for this action: 
+‎1. Create a dedicated command type for this action: 
 
 ```cs
 public record PostMessageCommand(Session Session, string Text) : ICommand<ChatMessage>
@@ -150,7 +150,7 @@ like "every command has to be a record". Any JSON-serializable
 class will work equally well; I prefer to use records mostly due 
 to their immutability.
 
-2. Refactor action to command handler:
+‎2. Refactor action to command handler:
 
 ```cs
 [CommandHandler]
