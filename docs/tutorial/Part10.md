@@ -131,13 +131,14 @@ public async Task<ChatMessage> PostMessageAsync(
 
 After:
 
-1. You need a dedicated type for every command. 
-   In this case it's going to be:
+1. Create a dedicated type for every command. 
+   In this case it can be:
 
 ```cs
 public record PostMessageCommand(string Text, Session Session) : ICommand<ChatMessage>
 {
-    // Default constructor is needed for JSON deserialization
+    // Default constructor is needed for JSON deserialization -
+    // positional records don't have one by default
     public PostMessageCommand() : this(null!, Session.Null) { }
 }
 ```
@@ -152,65 +153,110 @@ I use records mainly because they are immutable + support `with`
 syntax from C# 9, but overall, there is no requirement like
 "every command has to be a record".
 
-2. The action handler should be transformed into a command handler:
-   - Make it a virtual method tagged with `[CommandHandler]`.
-     You can apply it to corresponding interface member as well, 
-     the attribute is "inherited" and can be "overriden" like
-     `[ComputeMethod]` does too.
-   - As any method-based command handler (see [Part 8](./Part08.md)), 
-     this method should have 
-     `Task<TResult> AnyName(TCommand, [dependencies, ]CancellationToken)`
-     signature.
-   - `Task<TResult>` can be simply `Task` for any command returning 
-     `Unit` (i.e. implementing `ICommand<Unit>` interface), as well
-     as for any filtering handlers (because they might process 
-     commands of multiple result types).
-     
-3. The invalidation block inside the handler should be transformed 
-   as well:
-   - Move it to the very beginning of the method
-   - Replace `using (Computed.Invalidate()) { Code(); }` construction 
-     there with
-     `if (Computed.IsInvalidating()) { Code(); return default!; }`.
-   - If your service derives from `DbServiceBase` or `DbAsyncProcessBase`,
-     you should use its protected `CreateCommandDbContextAsync` method
-     to get `DbContext` where you are going to make changes.
-     You still have to call `SaveAsync` on this `DbContext` in the end.
+2. Refactor action to command handler:
 
-Here is how transformed handler for above command should look like:
-     
 ```cs
-
 [CommandHandler]
 public virtual async Task<ChatMessage> PostMessageAsync(
-    IChatService.PostMessageCommand command, CancellationToken cancellationToken = default)
+    PostMessageCommand command, CancellationToken cancellationToken = default)
 {
-    // CommandContext is typically used inside both branches, so
-    // it makes sense to get it before anything else.
-    var context = CommandContext.GetCurrent();
-      
     if (Computed.IsInvalidating()) {
         PseudoGetAnyChatTailAsync().Ignore();
         return default!;
     }
 
-    // Notice I use a special method to get DbContext here? I'll explain this shortly. 
     await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
     // The same action handler code as it was in example above.
 }
-
 ```
+
+Brief recap of how `[CommandHandler]` should from [Part 8](./Part08.md): 
+- Add `virtual` + tag it with `[CommandHandler]`.
+  You can apply it to corresponding interface member as well, 
+  the attribute is "inherited" and can be "overriden" like
+  `[ComputeMethod]` does too.
+- New method arguments: `(PostCommand, CancellationToken)` 
+- New return type: `Task<ChatMessage>`. Notice that
+  `ChatMessage` is a generic parameter of its command too -
+  and these types should match unless your command implements 
+  `ICommand<Unit>` or you write filtering handler (in these case
+  it can be `Task` too).
+     
+The invalidation block inside the handler should be transformed too:
+- Move it to the very beginning of the method
+- Replace `using (Computed.Invalidate()) { Code(); }` construction 
+  there with
+  `if (Computed.IsInvalidating()) { Code(); return default!; }`.
+- If your service derives from `DbServiceBase` or `DbAsyncProcessBase`,
+  you should use its protected `CreateCommandDbContextAsync` method
+  to get `DbContext` where you are going to make changes.
+  You still have to call `SaveAsync` on this `DbContext` in the end.
+
+And finally, since the code inside your invalidation block
+will run in other processes too, you can't pass values
+from the "main" block to it directly. You should use
+`CommandContext.Operation().Items` collection to pass 
+them - like this:
+
+```cs
+public virtual async Task SignOutAsync(
+    SignOutCommand command, CancellationToken cancellationToken = default)
+{
+    // ...
+    var context = CommandContext.GetCurrent();
+    if (Computed.IsInvalidating()) {
+        // Fetch operation item
+        var invSessionInfo = context.Operation().Items.Get<SessionInfo>();
+        // Use it
+        TryGetUserAsync(invSessionInfo.UserId, default).Ignore();
+        GetUserSessionsAsync(invSessionInfo.UserId, default).Ignore();
+        return;
+    }
+
+    await using var dbContext = await CreateCommandDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+    var dbSessionInfo = await Sessions.FindOrCreateAsync(dbContext, session, cancellationToken).ConfigureAwait(false);
+    var sessionInfo = dbSessionInfo.ToModel();
+    if (sessionInfo.IsSignOutForced)
+        return;
+    
+    // Store operation item for invalidation logic
+    context.Operation().Items.Set(sessionInfo);
+    // ... 
+}
+```
+
+Calling some other commands from your own commands is totally fine: 
+OF logs & "plays" their invalidation logic on other hosts too, 
+it also isolates their own operation items.
+
+That's mostly it. Now, if you're curious how it works - continue reading.
+Otherwise you can simply try this. To see this in action, try running:
+- `Run-Sample-Blazor-MultiHost.cmd` from
+  [Fusion Samples](https://github.com/servicetitan/Stl.Fusion.Samples)
+- `Run-MultiHost.cmd` from
+  [Board Games](https://github.com/alexyakunin/BoardGames).
+     
 ## How all of this works?
 
-Let's list all the pipeline handlers in their invocation order:
+OF adds a number of generic filtering command handlers to `Commander`'s
+pipeline, and they - together with a couple other services - do all the 
+heavy-lifting.
+- "Generic" means they handle `ICommand` - the very base type for
+  any command you create
+- "Filtering" means they act like middlewares in ASP.NET Core, so
+  in fact, they "wrap" the execution of downstream handlers with
+  their own prologue/epilogue logic.
 
-### 1. `PreparedCommandHandler`, priority:
-- `1_000_000_001` for `IPreparedCommand`
-- `1_000_000_000` for `IAsyncPreparedCommand`
+Here is the list of such handlers in their invocation order:
 
-This filtering handler simply invokes `Prepare` / `PrepareAsync` method
-on the command, and in fact, its role is to trigger self-validation
-for the command before anything else.
+### 1. `PreparedCommandHandler`, priority: `1_000_000_001` and  `1_000_000_000`
+
+This filtering handler simply invokes `IPreparedCommand.Prepare` 
+(higher priority) and `IAsyncPreparedCommand.PrepareAsync` (lower priority)
+on commands that implement these interfaces, where some pre-execution
+validation or fixup is supposed to happen. And as you might judge by 
+the priority, this supposed to happen before anything else.
 
 You may find out this handler is actually a part of `Stl.CommandR`,
 and it's auto-registered when you call `.AddCommander(...)`, so
@@ -236,14 +282,17 @@ it's super simple, and it's clear how it's supposed to work:
   
 ### 2. `NestedCommandLogger`, priority: 11_000
 
-This filter is responsible for logging all nested commands.
-You are free to call one command from another, and it's implied
-that each command implements its own invalidation properly,
-so "parent" commands shouldn't do anything special to process
-invalidations for "child" commands - thanks to this handler.
+This filter is responsible for logging all nested commands,
+i.e. commands called while running other commands.
 
-I won't dig deeply into the details of how it works yet,
-let's just assume it does the job - for now :) 
+It's implied that each command implements its own invalidation logic,
+so "parent" commands shouldn't do anything special to process
+invalidations for "child" commands - and thanks to this handler,
+they shouldn't even call them explicitly inside the invalidation 
+block - it happens automatically.
+
+I won't dig into the details of how it works just yet,
+let's just assume it does the job - for now. 
 
 ### 3. `TransientOperationScopeProvider`, priority: 10_000
 
