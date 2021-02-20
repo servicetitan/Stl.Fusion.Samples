@@ -190,15 +190,17 @@ The invalidation block inside the handler should be transformed too:
   you should use its protected `CreateCommandDbContextAsync` method
   to get `DbContext` where you are going to make changes.
   You still have to call `SaveAsync` on this `DbContext` in the end.
+  
+And two last things 😋:
 
-And finally, note that now you can't pass values from the 
-"main" block to the invalidation block directly. 
+‎1. You can't pass values from the "main" block to the 
+invalidation block directly. 
 It's not just due to their new order - the code from your 
 invalidation blocks will run a few times for every command 
 execution (once on every host), but the "main" block's code
 will run only on the host where the command was started.
 
-So to pass some data to your invalidation blocks, you should use 
+So to pass some data to your invalidation blocks, use 
 `CommandContext.Operation().Items` collection - 
 nearly as follows:
 
@@ -230,7 +232,7 @@ public virtual async Task SignOutAsync(
 }
 ```
 
-Calling some other commands from your own commands is totally fine: 
+‎2. Calling some other commands from your own commands is totally fine: 
 OF logs & "plays" their invalidation logic on other hosts too, 
 it also isolates their own operation items.
 
@@ -303,7 +305,7 @@ let's just assume it does the job - for now.
 It is the outermost, "catch-all" operation scope provider 
 for commands that don't use any other (real) operation scopes. 
 
-Let me explain what all of this means now :) 
+Let me explain what all of this means now 😈 
 
 Your app may have a few different types of `DbContext`-s, 
 or maybe even other (non-EF) storages. 
@@ -498,7 +500,7 @@ invalidation. JSON deserialization and
 CommandR pipeline itself is much more likely 
 to become a bottleneck under extreme load.
 
-Ok, back to our command execution pipeline :)
+Ok, back to our command execution pipeline 😁
 
 ### 4. `DbOperationScopeProvider<TDbContext>`, priority: 1000
 
@@ -652,7 +654,7 @@ and stored solely to simplify invalidation, and if this piece
 won't be there, you'd have to manually duplicate any logic 
 triggering commands both in the "main" and in the "invalidation" 
 sections. Luckily, I'm a big fan of DRY, so I had no choice 
-other than solving this problem once and forever :)
+other than solving this problem once and forever 😎
 
 ## How can I learn Operation Framework deeper?
 
@@ -697,7 +699,7 @@ commander.AddHandlers<InvalidateOnCompletionCommandHandler>();
 
 I'll briefly describe the services I didn't mention yet; 
 as for anything else, this piece of code is the best option to
-start digging into OF deeper :)
+start digging into OF deeper.
 
 `AgentInfo` is a simple type allowing OF to check if an
 operation is originating from this or some other process.
