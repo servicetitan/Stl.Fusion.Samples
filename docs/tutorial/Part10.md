@@ -14,7 +14,7 @@ invalidation requires the following components:
    
 Operations Framework implements this in a very robust way.
 
-## Operation Framework
+## Operations Framework
 
 Useful definitions:
 
