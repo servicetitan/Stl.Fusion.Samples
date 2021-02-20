@@ -6,7 +6,7 @@ Welcome to a collection of [Fusion] samples!
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
 > [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
-<img src="https://img.shields.io/badge/-New!-red" valign="middle"> Check out [Board Games](https://github.com/alexyakunin/BoardGames) - a new Fusion sample and a fully functional web app allowing to play real-time multiplayer board games. **Nearly everything you'll find there is built in just one man-week, and every bit of content is updated in real-time!**
+<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Check out [Board Games](https://github.com/alexyakunin/BoardGames) - the newest Fusion sample that implements both Blazor Server and WASM modes, 2 games, chat, online presence, OAuth sign-in, user session tracking, and a number of other 100% real-time features. All of this is powered by Fusion + just 35 lines of code related to real-time updates!
 
 ## What's Inside?
 
@@ -57,8 +57,7 @@ features,
 
 ### 3. Blazor Samples
 
-<img src="https://img.shields.io/badge/-Live!-red" valign="middle"> Check out live instance of this app hosted on a small 1-core K8s cluster
-[right now](https://fusion-samples.servicetitan.com)!
+<img src="https://img.shields.io/badge/-Live!-red" valign="middle"> Play with [live version of this app](https://fusion-samples.servicetitan.com) right now!
 
 It's a dual-mode [Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/hosting-models?view=aspnetcore-3.1) SPA hosted by
 [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet) website,
