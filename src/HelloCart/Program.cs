@@ -31,18 +31,19 @@ await using var services = new ServiceCollection()
     .AddSingleton<Watcher>()
     .BuildServiceProvider();
 var products = services.GetRequiredService<IProductService>();
-var carts = services.GetRequiredService<ICartService>();
 await products.EditAsync(new EditCommand<Product>(pApple));
 await products.EditAsync(new EditCommand<Product>(pBanana));
 await products.EditAsync(new EditCommand<Product>(pCarrot));
+var carts = services.GetRequiredService<ICartService>();
 await carts.EditAsync(new EditCommand<Cart>(cart1));
 await carts.EditAsync(new EditCommand<Cart>(cart2));
 
+// Starting watch tasks
 using var stopCts = new CancellationTokenSource();
 var watcher = services.GetRequiredService<Watcher>();
 watcher.WatchAsync(new[] {pApple, pBanana, pCarrot}, new[] {cart1, cart2}, stopCts.Token).Ignore();
-
 await Task.Delay(100); // Just to make sure watch tasks print whatever they want before our prompt appears
+
 WriteLine();
 WriteLine("Change product price by typing [productId]=[price], e.g. \"apple=0\".");
 WriteLine("See the total of every affected cart changes.");
