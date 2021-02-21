@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "src\Blazor\Client
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClient", "src\Blazor\ConsoleClient\ConsoleClient.csproj", "{AB5D5E44-4E90-48BA-BF15-1108C3950550}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloCart", "src\HelloCart\HelloCart.csproj", "{B36E4A0D-11B7-4F54-8E98-2A9D1C4E6F2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,7 @@ Global
 		{C2B70735-480E-4B22-9DF1-8AFAC2C0F634} = {E3EFB37C-E523-44D0-ADC9-DE1257A19125}
 		{D6FEBDE1-2FF2-4354-A500-692DD41FA1CA} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
 		{AB5D5E44-4E90-48BA-BF15-1108C3950550} = {9B29BD3F-7D94-4936-8379-61A2F48259AF}
+		{B36E4A0D-11B7-4F54-8E98-2A9D1C4E6F2E} = {B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -95,5 +98,9 @@ Global
 		{AB5D5E44-4E90-48BA-BF15-1108C3950550}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB5D5E44-4E90-48BA-BF15-1108C3950550}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB5D5E44-4E90-48BA-BF15-1108C3950550}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B36E4A0D-11B7-4F54-8E98-2A9D1C4E6F2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B36E4A0D-11B7-4F54-8E98-2A9D1C4E6F2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B36E4A0D-11B7-4F54-8E98-2A9D1C4E6F2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B36E4A0D-11B7-4F54-8E98-2A9D1C4E6F2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
