@@ -1,19 +1,18 @@
 using Microsoft.Extensions.DependencyInjection;
-using Stl.Extensibility;
 using Stl.Fusion;
 
 namespace Samples.HelloCart.V1
 {
-    public class InMemoryModule : ModuleBase
+    public class InMemoryApp : AppBase
     {
-        public InMemoryModule(IServiceCollection services) : base(services) { }
-
-        public override void Use()
+        public InMemoryApp()
         {
-            Services.AddFusion(fusion => {
+            var services = new ServiceCollection();
+            services.AddFusion(fusion => {
                 fusion.AddComputeService<IProductService, InMemoryProductService>();
                 fusion.AddComputeService<ICartService, InMemoryCartService>();
             });
+            ClientServices = Services = services.BuildServiceProvider();
         }
     }
 }

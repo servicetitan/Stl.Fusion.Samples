@@ -17,18 +17,19 @@ namespace Samples.HelloCart.V1
 
         public virtual Task EditAsync(EditCommand<Cart> command, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(command.Id))
+            var (cartId, cart) = command;
+            if (string.IsNullOrEmpty(cartId))
                 throw new ArgumentOutOfRangeException(nameof(command));
             if (Computed.IsInvalidating()) {
-                FindAsync(command.Id, default).Ignore();
-                GetTotalAsync(command.Id, default).Ignore();
+                FindAsync(cartId, default).Ignore();
+                GetTotalAsync(cartId, default).Ignore();
                 return Task.CompletedTask;
             }
 
-            if (command.Value == null)
-                _carts.Remove(command.Id, out _);
+            if (cart == null)
+                _carts.Remove(cartId, out _);
             else
-                _carts[command.Id] = command.Value;
+                _carts[cartId] = cart;
             return Task.CompletedTask;
         }
 

@@ -14,17 +14,18 @@ namespace Samples.HelloCart.V1
 
         public virtual Task EditAsync(EditCommand<Product> command, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(command.Id))
+            var (productId, product) = command;
+            if (string.IsNullOrEmpty(productId))
                 throw new ArgumentOutOfRangeException(nameof(command));
             if (Computed.IsInvalidating()) {
-                FindAsync(command.Id, default).Ignore();
+                FindAsync(productId, default).Ignore();
                 return Task.CompletedTask;
             }
 
-            if (command.Value == null)
-                _products.Remove(command.Id, out _);
+            if (product == null)
+                _products.Remove(productId, out _);
             else
-                _products[command.Id] = command.Value;
+                _products[productId] = product;
             return Task.CompletedTask;
         }
 
