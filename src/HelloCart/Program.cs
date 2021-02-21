@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Samples.HelloCart;
 using Samples.HelloCart.V1;
 using Samples.HelloCart.V2;
-using Stl.Async;
 using static System.Console;
 
 // Create services
