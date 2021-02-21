@@ -31,7 +31,7 @@ namespace Samples.HelloCart
         {
             var computed = await Computed.CaptureAsync(ct => _products.FindAsync(productId, ct), cancellationToken);
             while (!cancellationToken.IsCancellationRequested) {
-                WriteLine(computed.Value);
+                WriteLine($"  {computed.Value}");
                 await computed.WhenInvalidatedAsync(cancellationToken);
                 // Computed instances are ~ immutable, so update means getting a new one
                 computed = await computed.UpdateAsync(false, cancellationToken);
@@ -42,7 +42,7 @@ namespace Samples.HelloCart
         {
             var computed = await Computed.CaptureAsync(ct => _carts.GetTotalAsync(cartId, ct), cancellationToken);
             while (!cancellationToken.IsCancellationRequested) {
-                WriteLine($"{cartId}: total = {computed.Value}");
+                WriteLine($"  {cartId}: total = {computed.Value}");
                 await computed.WhenInvalidatedAsync(cancellationToken);
                 // Computed instances are ~ immutable, so update means getting a new one
                 computed = await computed.UpdateAsync(false, cancellationToken);

@@ -11,15 +11,15 @@ using Stl.Extensibility;
 using static System.Console;
 
 // This is our initial data
-var pApple = new Product { Id = "apple", Price = 1.3M };
-var pBanana = new Product { Id = "banana", Price = 0.6M };
-var pCarrot = new Product { Id = "carrot", Price = 0.9M };
-var cart1 = new Cart() { Id = "cart_1apple_2banana",
+var pApple = new Product { Id = "apple", Price = 2M };
+var pBanana = new Product { Id = "banana", Price = 0.5M };
+var pCarrot = new Product { Id = "carrot", Price = 1M };
+var cart1 = new Cart() { Id = "cart:apple=1,banana=2",
     Items = ImmutableDictionary<string, decimal>.Empty
         .Add(pApple.Id, 1)
         .Add(pBanana.Id, 2)
 };
-var cart2 = new Cart() { Id = "cart_1banana_1carrot",
+var cart2 = new Cart() { Id = "cart:banana=1,carrot=1",
     Items = ImmutableDictionary<string, decimal>.Empty
         .Add(pBanana.Id, 1)
         .Add(pCarrot.Id, 1)
@@ -39,8 +39,9 @@ await carts.EditAsync(new EditCommand<Cart>(cart1));
 await carts.EditAsync(new EditCommand<Cart>(cart2));
 
 // Starting watch tasks
-using var stopCts = new CancellationTokenSource();
 var watcher = services.GetRequiredService<Watcher>();
+using var stopCts = new CancellationTokenSource();
+WriteLine("Initial state:");
 watcher.WatchAsync(new[] {pApple, pBanana, pCarrot}, new[] {cart1, cart2}, stopCts.Token).Ignore();
 await Task.Delay(100); // Just to make sure watch tasks print whatever they want before our prompt appears
 
@@ -49,6 +50,7 @@ WriteLine("Change product price by typing [productId]=[price], e.g. \"apple=0\".
 WriteLine("See the total of every affected cart changes.");
 while (true) {
     await Task.Delay(100);
+    WriteLine();
     Write("[productId]=[price]: ");
     try {
         var parts = (ReadLine() ?? "").Split("=");
