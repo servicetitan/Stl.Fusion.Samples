@@ -7,6 +7,7 @@ using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
@@ -38,6 +39,7 @@ namespace Samples.Blazor.Server
     {
         private IConfiguration Cfg { get; }
         private IWebHostEnvironment Env { get; }
+        private ServerSettings ServerSettings { get; set; } = null!;
         private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
 
         public Startup(IConfiguration cfg, IWebHostEnvironment environment)
@@ -48,27 +50,31 @@ namespace Samples.Blazor.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-#pragma warning disable ASP0000
-            var serverSettings = services
-                .UseAttributeScanner(s => s.AddService<ServerSettings>())
-                .BuildServiceProvider()
-                .GetRequiredService<ServerSettings>();
-#pragma warning restore ASP0000
-
             // Logging
             services.AddLogging(logging => {
                 logging.ClearProviders();
                 logging.AddConsole();
                 logging.SetMinimumLevel(LogLevel.Information);
                 if (Env.IsDevelopment()) {
+                    logging.AddFilter("Microsoft", LogLevel.Warning);
+                    logging.AddFilter("Microsoft.AspNetCore.Hosting", LogLevel.Information);
                     logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
                     logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
                 }
             });
 
+            // Creating Log and HostSettings as early as possible
+#pragma warning disable ASP0000
+            var tmpServices = services
+                .UseAttributeScanner(s => s.AddService<ServerSettings>())
+                .BuildServiceProvider();
+#pragma warning restore ASP0000
+            Log = tmpServices.GetRequiredService<ILogger<Startup>>();
+            ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
+
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
-            var dbPath = appTempDir & "App_v010.db";
+            var dbPath = appTempDir & "App_v011.db";
             services.AddDbContextFactory<AppDbContext>(b => {
                 b.UseSqlite($"Data Source={dbPath}");
                 if (Env.IsDevelopment())
@@ -89,7 +95,7 @@ namespace Samples.Blazor.Server
             });
 
             // Fusion services
-            services.AddSingleton(new Publisher.Options() { Id = serverSettings.PublisherId });
+            services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
             services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
@@ -104,6 +110,10 @@ namespace Samples.Blazor.Server
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 
+            // Data protection
+            services.AddScoped(c => c.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
+            services.AddDataProtection().PersistKeysToDbContext<AppDbContext>();
+
             services.AddAuthentication(options => {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie(options => {
@@ -112,8 +122,8 @@ namespace Samples.Blazor.Server
                 if (Env.IsDevelopment())
                     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
             }).AddMicrosoftAccount(options => {
-                options.ClientId = serverSettings.MicrosoftAccountClientId;
-                options.ClientSecret = serverSettings.MicrosoftAccountClientSecret;
+                options.ClientId = ServerSettings.MicrosoftAccountClientId;
+                options.ClientSecret = ServerSettings.MicrosoftAccountClientSecret;
                 // That's for personal account authentication flow
                 options.AuthorizationEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
                 options.TokenEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
@@ -121,12 +131,17 @@ namespace Samples.Blazor.Server
             }).AddGitHub(options => {
                 options.Scope.Add("read:user");
                 options.Scope.Add("user:email");
-                options.ClientId = serverSettings.GitHubClientId;
-                options.ClientSecret = serverSettings.GitHubClientSecret;
+                options.ClientId = ServerSettings.GitHubClientId;
+                options.ClientSecret = ServerSettings.GitHubClientSecret;
                 options.CorrelationCookie.SameSite = SameSiteMode.Lax;
             });
 
             // Web
+            services.Configure<ForwardedHeadersOptions>(options => {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor(o => o.DetailedErrors = true);
@@ -142,7 +157,13 @@ namespace Samples.Blazor.Server
 
         public void Configure(IApplicationBuilder app, ILogger<Startup> log)
         {
-            Log = log;
+            if (ServerSettings.AssumeHttps) {
+                Log.LogInformation("AssumeHttps on");
+                app.Use((context, next) => {
+                    context.Request.Scheme = "https";
+                    return next();
+                });
+            }
 
             // This server serves static content from Blazor Client,
             // and since we don't copy it to local wwwroot,

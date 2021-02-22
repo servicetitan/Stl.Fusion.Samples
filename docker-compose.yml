@@ -78,4 +78,5 @@ services:
     ports:
      - "80:80"
     environment:
-      ASPNETCORE_URLS: "https://*:443;http://*:80"
+      ASPNETCORE_URLS: "http://*:80"
+      Server__AssumeHttps: "true"

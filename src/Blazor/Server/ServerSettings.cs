@@ -7,6 +7,7 @@ namespace Samples.Blazor.Server
     [Settings("Server")]
     public class ServerSettings
     {
+        public bool AssumeHttps { get; set; } = false;
         public string PublisherId { get; set; } = "p";
 
         public string MicrosoftAccountClientId { get; set; } = "6839dbf7-d1d3-4eb2-a7e1-ce8d48f34d00";
