@@ -61,10 +61,14 @@ FROM build as publish
 WORKDIR /samples
 RUN dotnet publish -c:Release -f:net5.0 --no-build --no-restore src/Blazor/Server/Server.csproj
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine as runtime
-RUN apk add icu-libs libx11-dev
-RUN apk add libgdiplus-dev \
-  --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim as runtime
+RUN apt-get update \
+  && apt-get install -y --allow-unauthenticated \
+    libc6-dev \
+    libgdiplus \
+    libx11-dev \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 WORKDIR /samples
 COPY --from=publish /samples .
