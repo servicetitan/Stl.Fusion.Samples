@@ -3,9 +3,9 @@ using Stl.Fusion;
 
 namespace Samples.HelloCart.V1
 {
-    public class InMemoryApp : AppBase
+    public class AppV1 : AppBase
     {
-        public InMemoryApp()
+        public AppV1()
         {
             var services = new ServiceCollection();
             services.AddFusion(fusion => {

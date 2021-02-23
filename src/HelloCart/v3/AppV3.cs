@@ -3,16 +3,17 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Samples.HelloCart.V2;
 using Stl.Fusion;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Operations.Internal;
 using Stl.IO;
 
-namespace Samples.HelloCart.V2
+namespace Samples.HelloCart.V3
 {
-    public class DbApp : AppBase
+    public class AppV3 : AppBase
     {
-        public DbApp()
+        public AppV3()
         {
             var services = new ServiceCollection();
             services.AddLogging(logging => {
@@ -43,6 +44,11 @@ namespace Samples.HelloCart.V2
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5);
                 });
                 b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
+                b.AddDbEntityResolver<string, DbProduct>();
+                b.AddDbEntityResolver<string, DbCart>((_, options) => {
+                    // Cart is always loaded together with items
+                    options.QueryTransformer = carts => carts.Include(c => c.Items);
+                });
             });
             ClientServices = Services = services.BuildServiceProvider();
         }

@@ -3,19 +3,27 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Samples.HelloCart.V2;
 using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.EntityFramework;
 
-namespace Samples.HelloCart.V2
+namespace Samples.HelloCart.V3
 {
     public class DbCartService : DbServiceBase<AppDbContext>, ICartService
     {
         private readonly IProductService _products;
+        private readonly DbEntityResolver<AppDbContext, string, DbCart> _cartResolver;
 
-        public DbCartService(IServiceProvider services, IProductService products)
+        public DbCartService(
+            IServiceProvider services,
+            IProductService products,
+            DbEntityResolver<AppDbContext, string, DbCart> cartResolver)
             : base(services)
-            => _products = products;
+        {
+            _products = products;
+            _cartResolver = cartResolver;
+        }
 
         public virtual async Task EditAsync(EditCommand<Cart> command, CancellationToken cancellationToken = default)
         {
@@ -67,12 +75,9 @@ namespace Samples.HelloCart.V2
 
         public virtual async Task<Cart?> FindAsync(string id, CancellationToken cancellationToken = default)
         {
-            await using var dbContext = CreateDbContext();
-            dbContext.EnableChangeTracking(); // Otherwise LoadAsync below won't work
-            var dbCart = await dbContext.Carts.FindAsync(ComposeKey(id), cancellationToken);
+            var dbCart = await _cartResolver.TryGetAsync(id, cancellationToken);
             if (dbCart == null)
                 return null;
-            await dbContext.Entry(dbCart).Collection(c => c.Items).LoadAsync(cancellationToken);
             return new Cart() {
                 Id = dbCart.Id,
                 Items = dbCart.Items.ToImmutableDictionary(i => i.DbProductId, i => i.Quantity),
@@ -84,12 +89,11 @@ namespace Samples.HelloCart.V2
             var cart = await FindAsync(id, cancellationToken);
             if (cart == null)
                 return 0;
-            var total = 0M;
-            foreach (var (productId, quantity) in cart.Items) {
-                var product = await _products.FindAsync(productId, cancellationToken);
-                total += (product?.Price ?? 0M) * quantity;
-            }
-            return total;
+            var itemTotals = await Task.WhenAll(cart.Items.Select(async item => {
+                var product = await _products.FindAsync(item.Key, cancellationToken);
+                return item.Value * (product?.Price ?? 0M);
+            }));
+            return itemTotals.Sum();
         }
     }
 }

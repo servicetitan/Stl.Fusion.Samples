@@ -5,19 +5,37 @@ using System.Threading.Tasks;
 using Samples.HelloCart;
 using Samples.HelloCart.V1;
 using Samples.HelloCart.V2;
+using Samples.HelloCart.V3;
+using Stl.Async;
 using static System.Console;
 
 // Create services
-// await using var app = new InMemoryApp();
-await using var app = new DbApp();
-
-// Add initial data there
+AppBase? app;
+while(true) {
+    WriteLine("Select the implementation to use:");
+    WriteLine("  1: ConcurrentDictionary-based");
+    WriteLine("  2: EF Core + Operations Framework (OF)");
+    WriteLine("  3: EF Core + DbEntityResolvers + OF");
+    // WriteLine("  4: 3 + client-server mode");
+    Write("Type 1..3: ");
+    app = (ReadLine() ?? "").Trim() switch {
+        "1" => new AppV1(),
+        "2" => new AppV2(),
+        "3" => new AppV3(),
+        _ => null,
+    };
+    if (app != null)
+        break;
+    WriteLine("Invalid selection.");
+    WriteLine();
+}
+await using var appDisposable = app;
 await app.InitializeAsync();
 
 // Starting watch tasks
 WriteLine("Initial state:");
 using var cts = new CancellationTokenSource();
-var watchTask = Task.Run(() => app.WatchAsync(cts.Token));
+app.WatchAsync(cts.Token).Ignore();
 await Task.Delay(100); // Just to make sure watch tasks print whatever they want before our prompt appears
 
 WriteLine();
