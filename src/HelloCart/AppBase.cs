@@ -12,11 +12,11 @@ namespace Samples.HelloCart
 {
     public abstract class AppBase
     {
-        public IServiceProvider Services { get; protected init; } = null!;
-        public IProductService ProductService => ClientServices.GetRequiredService<IProductService>();
-        public ICartService CartService => ClientServices.GetRequiredService<ICartService>();
+        public IServiceProvider Services { get; protected set; } = null!;
+        public IProductService ProductService => Services.GetRequiredService<IProductService>();
+        public ICartService CartService => Services.GetRequiredService<ICartService>();
 
-        public IServiceProvider ClientServices { get; protected init; } = null!;
+        public IServiceProvider ClientServices { get; protected set; } = null!;
         public IProductService ClientProductService => ClientServices.GetRequiredService<IProductService>();
         public ICartService ClientCartService => ClientServices.GetRequiredService<ICartService>();
 
@@ -47,7 +47,7 @@ namespace Samples.HelloCart
                 await CartService.EditAsync(new EditCommand<Cart>(cart));
         }
 
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             if (ClientServices is IAsyncDisposable csd)
                 await csd.DisposeAsync();
