@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Stl.Async;
 using Stl.Fusion;
 using static System.Console;
 
@@ -22,6 +21,7 @@ namespace Samples.HelloCart
 
         public Product[] ExistingProducts { get; set; } = Array.Empty<Product>();
         public Cart[] ExistingCarts { get; set; } = Array.Empty<Cart>();
+        public virtual IServiceProvider WatchServices => ClientServices;
 
         public virtual async Task InitializeAsync()
         {
@@ -67,7 +67,8 @@ namespace Samples.HelloCart
 
         public async Task WatchProductAsync(string productId, CancellationToken cancellationToken = default)
         {
-            var computed = await Computed.CaptureAsync(ct => ClientProductService.FindAsync(productId, ct), cancellationToken);
+            var productService = WatchServices.GetRequiredService<IProductService>();
+            var computed = await Computed.CaptureAsync(ct => productService.FindAsync(productId, ct), cancellationToken);
             while (true) {
                 WriteLine($"  {computed.Value}");
                 await computed.WhenInvalidatedAsync(cancellationToken);
@@ -77,7 +78,8 @@ namespace Samples.HelloCart
 
         public async Task WatchCartTotalAsync(string cartId, CancellationToken cancellationToken = default)
         {
-            var computed = await Computed.CaptureAsync(ct => ClientCartService.GetTotalAsync(cartId, ct), cancellationToken);
+            var cartService = WatchServices.GetRequiredService<ICartService>();
+            var computed = await Computed.CaptureAsync(ct => cartService.GetTotalAsync(cartId, ct), cancellationToken);
             while (true) {
                 WriteLine($"  {cartId}: total = {computed.Value}");
                 await computed.WhenInvalidatedAsync(cancellationToken);

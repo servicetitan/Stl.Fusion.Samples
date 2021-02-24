@@ -25,10 +25,13 @@ namespace Samples.HelloCart.V4
         public AppV4()
         {
             var baseUri = new Uri("http://localhost:7005");
-            var apiBaseUri = new Uri($"{baseUri}api/");
+            Host = BuildHost(baseUri);
+            Services = Host.Services;
+            ClientServices = BuildClientServices(baseUri);
+        }
 
-            // ReSharper disable once VariableHidesOuterVariable
-            Host = new HostBuilder()
+        protected IHost BuildHost(Uri baseUri)
+            => new HostBuilder()
                 .ConfigureHostConfiguration(cfg => {
                     // Looks like there is no better way to set _default_ URL
                     cfg.Sources.Insert(0, new MemoryConfigurationSource() {
@@ -57,9 +60,7 @@ namespace Samples.HelloCart.V4
                             services.AddSingleton(new CompletionProducer.Options() {
                                 LogLevel = LogLevel.Information,
                             });
-                            b.AddDbOperations((_, o) => {
-                                o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5);
-                            });
+                            b.AddDbOperations((_, o) => { o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5); });
                             b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
                             b.AddDbEntityResolver<string, DbProduct>();
                             b.AddDbEntityResolver<string, DbCart>((_, options) => {
@@ -80,27 +81,26 @@ namespace Samples.HelloCart.V4
                     })
                 )
                 .Build();
-            Services = Host.Services;
 
-            // Building ClientServices
+        protected IServiceProvider BuildClientServices(Uri baseUri)
+        {
             var services = new ServiceCollection();
             ConfigureLogging(services);
             services.AddFusion(fusion => {
                 fusion.AddRestEaseClient(client => {
                     client.ConfigureHttpClientFactory((c, name, options) => {
+                        var apiBaseUri = new Uri($"{baseUri}api/");
                         options.HttpClientActions.Add(httpClient => httpClient.BaseAddress = apiBaseUri);
                     });
-                    client.ConfigureWebSocketChannel((c, options) => {
-                        options.BaseUri = baseUri;
-                    });
+                    client.ConfigureWebSocketChannel((c, options) => { options.BaseUri = baseUri; });
                     client.AddReplicaService<IProductService, IProductClient>();
                     client.AddReplicaService<ICartService, ICartClient>();
                 });
             });
-            ClientServices = services.BuildServiceProvider();
+            return services.BuildServiceProvider();
         }
 
-        private void ConfigureLogging(IServiceCollection services)
+        protected void ConfigureLogging(IServiceCollection services)
         {
             services.AddLogging(logging => {
                 logging.ClearProviders();
@@ -119,7 +119,7 @@ namespace Samples.HelloCart.V4
             await dbContext.Database.EnsureCreatedAsync();
             await base.InitializeAsync();
             await Host.StartAsync();
-            await Task.Delay(500);
+            await Task.Delay(100);
         }
 
         public override async ValueTask DisposeAsync()

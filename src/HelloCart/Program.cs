@@ -8,6 +8,7 @@ using Samples.HelloCart.V1;
 using Samples.HelloCart.V2;
 using Samples.HelloCart.V3;
 using Samples.HelloCart.V4;
+using Samples.HelloCart.V5;
 using Stl.Async;
 using static System.Console;
 
@@ -20,8 +21,9 @@ while(true) {
     WriteLine("  2: EF Core + Operations Framework (OF)");
     WriteLine("  3: EF Core + OF + DbEntityResolvers (pipelined fetches)");
     WriteLine("  4: EF Core + OF + DbEntityResolvers + Client-Server");
+    WriteLine("  5: EF Core + OF + DbEntityResolvers + Client-Server + Multi-Host");
     // WriteLine("  4: 3 + client-server mode");
-    Write("Type 1..4: ");
+    Write("Type 1..5: ");
     var input = isFirstTry
         ? args.SingleOrDefault() ?? ReadLine()
         : ReadLine();
@@ -31,6 +33,7 @@ while(true) {
         "2" => new AppV2(),
         "3" => new AppV3(),
         "4" => new AppV4(),
+        "5" => new AppV5(),
         _ => null,
     };
     if (app != null)
