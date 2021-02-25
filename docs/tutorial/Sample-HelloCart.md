@@ -87,8 +87,8 @@ One possible option is:
 2. Make it broadcast every command to every client
 3. Make clients to maintain their own copies of
    their carts by "watching" for `EditCommand<Product>`
-   and `EditCommand<Cart>` - and consequently, update
-   cart's prices.
+   and `EditCommand<Cart>` and update cart's content
+   and total.
 
 Note that point #3 already implies that you have to add
 a fair amount of code on the client side:
