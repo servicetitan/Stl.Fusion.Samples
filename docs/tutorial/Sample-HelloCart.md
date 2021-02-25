@@ -149,17 +149,22 @@ described above:
 4. Most of real-time messaging APIs 
    [don't provide strong guarantees for message ordering](https://github.com/dotnet/aspnetcore/issues/9240) - especially for messages
    sent to different topics / channels, and any *real* real-time
-   app uses a number of them. Moreover, if you send requests
+   app uses a number of such channels. Moreover, if you send requests
    via regular HTTP API to the same server, the order of
    these responses and the order of messages you get via SignalR
-   can be completely messed up. In other words, you might
-   receive `EditCommand("apple", 5)` message first (set "apple" price to 5),
-   and after that get a new cart's content, which is actually
-   an old content you requested a few second ago due to reconnect.
-   This old cart doesn't even have "apple". All of this means
-   you need some extra to ensure the state your client exposes
-   is eventually consistent (i.e. eventually displays the right
-   cart's total).
+   can differ from their order on server side. 
+   In other words, you might receive `EditCommand("apple", 5)` 
+   message first (which sets "apple" price to 5),
+   and after that get the "current" cart content, which is 
+   already an outdated now - you requested it few second ago 
+   due to reconnect, and this request was completed by 
+   server before processing `EditCommand("apple", 5)` command,
+   but the message describing this command somehow got
+   to the client faster.
+   In other words, you need to take a number of extra steps
+   to ensure the state exposed by your client is still
+   eventually consistent (i.e. eventually the client will display
+   the right cart content and the right total).
 
 5. "Real real-time app" also means you'll have multiple 
    servers. Usually each client talks with just one of them,
