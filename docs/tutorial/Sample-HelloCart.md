@@ -72,15 +72,15 @@ once anything impacting it changes.
 
 This is why `ICartService.GetTotalAsync` exists - this
 method is expected to return the right total. 
-But it looks like there is nothing in our API that could
+But... Looks like there is nothing in our API that could
 tell the client that total for the specific cart changes, 
 right?
 
-The right answer to this question is "no, because it's 
+The right answer to this question is "Wrong! It's a 
 Fusion API, and every read endpoint of a Fusion API is
-capable of doing exactly this!". But before we jump into
-this, let's think how we'd implement the same behavior
-without Fusion.
+capable of doing exactly this!". But before we jump to
+the details, let's think how we'd implement the same 
+behavior without Fusion.
 
 One possible option is:
 1. Add SignalR hub on server
