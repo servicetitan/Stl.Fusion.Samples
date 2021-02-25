@@ -96,8 +96,8 @@ a fair amount of code on the client side:
   the commands that aren't related to the cart you're 
   watching. Remember, server broadcasts every command,
   so the client may see `EditCommand("apple")`, but 
-  a `Product` with `Id == "apple"` might not exist in its
-  cart, right?
+  a `Product` with `Id == "apple"` might not exist in the
+  user's cart on this client, right?
 - Once the client recognizes above command as "relevant",
   it should somehow update the cart. One option is to 
   update it right on the client, but it requires us
