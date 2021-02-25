@@ -25,8 +25,8 @@ namespace Samples.HelloCart.V3
             });
 
             services.AddFusion(fusion => {
-                fusion.AddComputeService<IProductService, DbProductService>();
-                fusion.AddComputeService<ICartService, DbCartService>();
+                fusion.AddComputeService<IProductService, DbProductService2>();
+                fusion.AddComputeService<ICartService, DbCartService2>();
             });
 
             // Add AppDbContext & related services
@@ -50,13 +50,13 @@ namespace Samples.HelloCart.V3
                     options.QueryTransformer = carts => carts.Include(c => c.Items);
                 });
             });
-            ClientServices = Services = services.BuildServiceProvider();
+            ClientServices = HostServices = services.BuildServiceProvider();
         }
 
         public override async Task InitializeAsync()
         {
             // Let's re-create the database first
-            await using var dbContext = Services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
+            await using var dbContext = HostServices.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
             await base.InitializeAsync();

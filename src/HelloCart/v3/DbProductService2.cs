@@ -8,11 +8,11 @@ using Stl.Fusion.EntityFramework;
 
 namespace Samples.HelloCart.V3
 {
-    public class DbProductService : DbServiceBase<AppDbContext>, IProductService
+    public class DbProductService2 : DbServiceBase<AppDbContext>, IProductService
     {
         private readonly DbEntityResolver<AppDbContext, string, DbProduct> _productResolver;
 
-        public DbProductService(
+        public DbProductService2(
             IServiceProvider services,
             DbEntityResolver<AppDbContext, string, DbProduct> productResolver)
             : base(services)

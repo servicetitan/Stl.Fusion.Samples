@@ -9,13 +9,13 @@ namespace Samples.HelloCart.V5
     {
         public IHost ExtraHost { get; protected set; }
         // We'll modify the data on ExtraHost & watch on Host
-        public override IServiceProvider WatchServices => Services;
+        public override IServiceProvider WatchServices => HostServices;
 
         public AppV5()
         {
             var hostUri = new Uri("http://localhost:7005");
             Host = BuildHost(hostUri);
-            Services = Host.Services;
+            HostServices = Host.Services;
 
             var extraHostUri = new Uri("http://localhost:7006");
             ExtraHost = BuildHost(extraHostUri);

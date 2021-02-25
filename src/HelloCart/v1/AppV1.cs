@@ -12,7 +12,7 @@ namespace Samples.HelloCart.V1
                 fusion.AddComputeService<IProductService, InMemoryProductService>();
                 fusion.AddComputeService<ICartService, InMemoryCartService>();
             });
-            ClientServices = Services = services.BuildServiceProvider();
+            ClientServices = HostServices = services.BuildServiceProvider();
         }
     }
 }

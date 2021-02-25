@@ -10,12 +10,12 @@ using Stl.Fusion.EntityFramework;
 
 namespace Samples.HelloCart.V3
 {
-    public class DbCartService : DbServiceBase<AppDbContext>, ICartService
+    public class DbCartService2 : DbServiceBase<AppDbContext>, ICartService
     {
         private readonly IProductService _products;
         private readonly DbEntityResolver<AppDbContext, string, DbCart> _cartResolver;
 
-        public DbCartService(
+        public DbCartService2(
             IServiceProvider services,
             IProductService products,
             DbEntityResolver<AppDbContext, string, DbCart> cartResolver)

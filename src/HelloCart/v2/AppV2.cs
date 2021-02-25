@@ -44,13 +44,13 @@ namespace Samples.HelloCart.V2
                 });
                 b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
             });
-            ClientServices = Services = services.BuildServiceProvider();
+            ClientServices = HostServices = services.BuildServiceProvider();
         }
 
         public override async Task InitializeAsync()
         {
             // Let's re-create the database first
-            await using var dbContext = Services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
+            await using var dbContext = HostServices.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
             await base.InitializeAsync();

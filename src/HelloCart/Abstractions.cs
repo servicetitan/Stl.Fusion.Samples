@@ -25,7 +25,8 @@ namespace Samples.HelloCart
         where TValue : class, IHasId<string>
     {
         public EditCommand(TValue value) : this(value.Id, value) { }
-        public EditCommand() : this("", null) { } // Needed just for JSON deserialization
+        // Needed just to make JSON deserialization work for this type:
+        public EditCommand() : this("", null) { }
     }
 
     public interface IProductService

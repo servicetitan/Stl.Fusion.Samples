@@ -1,19 +1,22 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl.Fusion;
+using Stl.Fusion.Internal;
 using static System.Console;
 
 namespace Samples.HelloCart
 {
     public abstract class AppBase
     {
-        public IServiceProvider Services { get; protected set; } = null!;
-        public IProductService ProductService => Services.GetRequiredService<IProductService>();
-        public ICartService CartService => Services.GetRequiredService<ICartService>();
+        public IServiceProvider HostServices { get; protected set; } = null!;
+        public IProductService HostProductService => HostServices.GetRequiredService<IProductService>();
+        public ICartService HostCartService => HostServices.GetRequiredService<ICartService>();
 
         public IServiceProvider ClientServices { get; protected set; } = null!;
         public IProductService ClientProductService => ClientServices.GetRequiredService<IProductService>();
@@ -30,7 +33,7 @@ namespace Samples.HelloCart
             var pCarrot = new Product { Id = "carrot", Price = 1M };
             ExistingProducts = new [] { pApple, pBanana, pCarrot };
             foreach (var product in ExistingProducts)
-                await ProductService.EditAsync(new EditCommand<Product>(product));
+                await HostProductService.EditAsync(new EditCommand<Product>(product));
 
             var cart1 = new Cart() { Id = "cart:apple=1,banana=2",
                 Items = ImmutableDictionary<string, decimal>.Empty
@@ -44,14 +47,14 @@ namespace Samples.HelloCart
             };
             ExistingCarts = new [] { cart1, cart2 };
             foreach (var cart in ExistingCarts)
-                await CartService.EditAsync(new EditCommand<Cart>(cart));
+                await HostCartService.EditAsync(new EditCommand<Cart>(cart));
         }
 
         public virtual async ValueTask DisposeAsync()
         {
             if (ClientServices is IAsyncDisposable csd)
                 await csd.DisposeAsync();
-            if (Services is IAsyncDisposable sd)
+            if (HostServices is IAsyncDisposable sd)
                 await sd.DisposeAsync();
         }
 

@@ -26,7 +26,7 @@ namespace Samples.HelloCart.V4
         {
             var baseUri = new Uri("http://localhost:7005");
             Host = BuildHost(baseUri);
-            Services = Host.Services;
+            HostServices = Host.Services;
             ClientServices = BuildClientServices(baseUri);
         }
 
@@ -114,7 +114,7 @@ namespace Samples.HelloCart.V4
         public override async Task InitializeAsync()
         {
             // Let's re-create the database first
-            await using var dbContext = Services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
+            await using var dbContext = HostServices.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
             await dbContext.Database.EnsureDeletedAsync();
             await dbContext.Database.EnsureCreatedAsync();
             await base.InitializeAsync();

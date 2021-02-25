@@ -10,6 +10,7 @@ using Samples.HelloCart.V3;
 using Samples.HelloCart.V4;
 using Samples.HelloCart.V5;
 using Stl.Async;
+using Stl.CommandR;
 using static System.Console;
 
 // Create services
@@ -49,7 +50,8 @@ await app.InitializeAsync();
 WriteLine("Initial state:");
 using var cts = new CancellationTokenSource();
 app.WatchAsync(cts.Token).Ignore();
-await Task.Delay(600); // Just to make sure watch tasks print whatever they want before our prompt appears
+await Task.Delay(700); // Just to make sure watch tasks print whatever they want before our prompt appears
+// await AutoRunner.RunAsync(app);
 
 WriteLine();
 WriteLine("Change product price by typing [productId]=[price], e.g. \"apple=0\".");
@@ -70,7 +72,10 @@ while (true) {
         var product = await app.ClientProductService.FindAsync(productId);
         if (product == null)
             throw new KeyNotFoundException("Specified product doesn't exist.");
-        await app.ClientProductService.EditAsync(new EditCommand<Product>(product with { Price = price }));
+        var command = new EditCommand<Product>(product with { Price = price });
+        await app.ClientServices.Commander().CallAsync(command);
+        // You can do the same with:
+        // await app.ClientProductService.EditAsync(command);
     }
     catch (Exception e) {
         WriteLine($"Error: {e.Message}");
