@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl.Fusion;
-using Stl.Fusion.Internal;
 using static System.Console;
 
 namespace Samples.HelloCart

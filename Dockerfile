@@ -35,6 +35,10 @@ RUN dotnet build -c:Release --no-restore
 FROM build as sample_hello_world
 WORKDIR /samples/src/HelloWorld/bin/Debug/net5.0
 
+# Create HelloCart sample image
+FROM build as sample_hello_cart
+WORKDIR /samples/src/HelloCart/bin/Debug/net5.0
+
 # Create HelloBlazorServer sample image
 FROM build as sample_hello_blazor_server
 WORKDIR /samples/src/HelloBlazorServer

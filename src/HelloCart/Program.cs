@@ -73,12 +73,13 @@ while (true) {
         if (product == null)
             throw new KeyNotFoundException("Specified product doesn't exist.");
         var command = new EditCommand<Product>(product with { Price = price });
-        await app.ClientServices.Commander().CallAsync(command);
-        // You can do the same with:
-        // await app.ClientProductService.EditAsync(command);
+        await app.ClientProductService.EditAsync(command);
+        // You can run absolutely identical action with:
+        // await app.ClientServices.Commander().CallAsync(command);
     }
     catch (Exception e) {
         WriteLine($"Error: {e.Message}");
     }
 }
 WriteLine("Terminating...");
+cts.Cancel();
