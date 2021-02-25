@@ -101,9 +101,15 @@ a fair amount of code on the client side:
 - Once the client recognizes above command as "relevant",
   it should somehow update the cart. One option is to 
   update it right on the client, but it requires us
-  to ~ duplicate the cart update logic on the client,
-  and if you're a big fan of DRY & minimalism, you might
-  also prefer to request a new cart directly from the server.
+  to have a separate version of cart update logic running 
+  on the client, which isn't perfect from DRY standpoint. 
+- So if you're a big fan of DRY & minimalism, 
+  you might prefer to request a new cart directly from 
+  server once you see a command impacting it.
+  On a downside, it will definitely increase the load on
+  server - fetching the cart requires fetching its items,
+  products, etc... So you almost certainly need to cache 
+  carts there.
 
 And that's just the beginning of our problems - the implementation
 described above:
