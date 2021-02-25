@@ -131,15 +131,18 @@ described above:
    and notifies every customer watching these carts.
 
    Here you realize you need a pub-sub to implement
-   this - i.e. your clients will have to subscribe to
-   topics like `"cart-[cartId]"` to watch for... 
+   this - i.e. your clients will have to subscribe to and
+   unsubscribe from topics like `"cart-[cartId]"` to 
+   watch for... 
    Wait, are we still going to send `Edit<Product>` commands
    to these topics, or we better go with a separate 
-   model for these notifications?
+   model for these notifications? And if yes - we'll definitely
+   need a separate logic to process these...
 
-3. What if your client temporarily loses a connection 
-   to server? Remember that it needs to know a precise
-   cart's content to properly update its total.
+3. What if your client temporarily loses its connection 
+   to server? Remember that it needs to know precise
+   cart content to properly update it on every command 
+   or change notification.
    So you need a logic that will refresh the cart
    once reconnection happens, right?
 
