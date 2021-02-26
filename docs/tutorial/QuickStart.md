@@ -7,7 +7,7 @@
 > and tell him *everything* 😈
 
 The content below implies you can browse, build, and run
-`HelloCart` sample, so before you start reading further, 
+[HelloCart Sample], so before you start reading further, 
 it's highly recommended to:
 1. Clone https://github.com/servicetitan/Stl.Fusion.Samples
 2. Open `Samples.sln` in your favorite IDE.
@@ -1084,3 +1084,6 @@ So now you know almost everything! The parts we didn't touch at all are:
   caching behavior.
 
 #### [Next: Part 0 &raquo;](./Part00.md) | [Tutorial Home](./README.md)
+
+[HelloCart]: https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart
+[HelloCart Sample]: https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart
