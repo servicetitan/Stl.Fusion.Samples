@@ -32,7 +32,7 @@ and go to http://localhost:5005 to them in action.
 is a small console app designed to show how to implement a simple 
 Fusion API by starting from a toy version of it
 and gradually transition to its production-ready version
-that uses EF Core, can be called remotely, and scale 
+that uses EF Core, can be called remotely, and scales 
 horizontally relying on multi-host invalidation.
 
 ["QuickStart: Learn 80% of Fusion by walking through HelloCart sample"](./docs/tutorial/QuickStart.md) is the newest part of [Fusion Tutorial] that covers
