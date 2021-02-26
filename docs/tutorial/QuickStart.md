@@ -68,7 +68,9 @@ public interface ICartService
 
 If we ignore `[CommandHandler]` and `[ComputeMethod]` for now,
 it's a tiny CRUD CQRS-style API, where `EditCommand<T>`
-is used to implement creation, update, and deletion:
+is used to implement creation, update, and deletion
+(it's a demo project, so a single command is used here
+mainly to save some amount of code):
 
 ```cs
 public record EditCommand<TValue>(string Id, TValue? Value = null) : ICommand<Unit>
