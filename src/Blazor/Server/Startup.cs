@@ -81,9 +81,6 @@ namespace Samples.Blazor.Server
                     b.EnableSensitiveDataLogging();
             });
             services.AddDbContextServices<AppDbContext>(b => {
-                services.AddSingleton(new CompletionProducer.Options() {
-                    LogLevel = LogLevel.Information, // Let's log completions of "external" operations
-                });
                 b.AddDbEntityResolver<long, ChatMessage>();
                 b.AddDbOperations((_, o) => {
                     // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period

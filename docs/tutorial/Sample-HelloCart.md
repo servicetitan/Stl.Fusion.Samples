@@ -296,8 +296,11 @@ of `IProductService` and `ICartService`.
 
 ## Version 1: ConcurrentDictionary-based API implementation
 
-Code: [src/HelloCart/v1](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v1
-)
+Code: [src/HelloCart/v1](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v1)
+
+> ☝ This is the most complex, but also the most important part
+> of this document, because it explains nearly all key abstractions.
+> Please be patient and read it carefully 🙏
 
 First, check out `InMemoryProductService` there. 
 You might notice just a few unusual things there:
@@ -463,10 +466,8 @@ dependent on:
 > `IComputed`, check out [Part 1](Part01.md) and [Part 2](Part02.md)
 > of this Tutorial later.
 
-Now it's time to demystify the last part: 
-so how it happens that when a product with `productId`
-gets changed, `FindAsync(productId)` result gets
-invalidated?
+Now it's time to demystify how `FindAsync(productId)` call result gets
+invalidated once a product with `productId` gets changed.
 
 Again, remember this code?
 ```cs
@@ -500,16 +501,23 @@ if (Computed.IsInvalidating()) {
 }
 ```
 
-So now you know that:
+So now you have *almost* the full picture:
+- Low-level methods (the ones that don't have any 
+  dependencies) are invalidated explicitly &ndash;
+  by the invalidation blocks in command handlers 
+  that may render cached results of calls to such methods 
+  inconsistent with the ground truth.
 - High-level methods like `GetTotalAsync` are invalidated
-  because their dependencies are invalidated.
-- Low-level methods (usually - the ones that don't have any 
-  dependencies) are invalidated explicitly by such blocks.
+  automatically due to invalidation of their dependencies.
+  This is why you don't see a call to `GetTotalAsync` in 
+  any of invalidation blocks.
 
-But you must be curious how it happens that when you call `EditAsync`,
-*both* `if (Computed.IsInvalidating()) { ... }` and the code
-outside of this block runs, assuming this block contains `return` statement.
-That's a tricky question, actually, and the short answer is:
+What's missing is how it happens that when you call `EditAsync`,
+***both** `if (Computed.IsInvalidating()) { ... }` and the code
+outside of this block runs, assuming this block contains `return` 
+statement?
+
+I'll give a brief answer here:
 - Yes, in reality any Compute Service method decorated with 
   `[CommandHandler]` is called `N + 1` times, where `N` is the
   number of servers in your cluster 🙀
@@ -518,48 +526,269 @@ That's a tricky question, actually, and the short answer is:
   `using (Computed.Invalidate()) { ... }` block, and they are reliably
   executed on every server in your cluster, including the one 
   where the command was originally executed.
-- Moreover, when your command completes on the original server,
-  it's guaranteed that both these two calls are made on it.
+- Moreover, when your command (the `Task<T>` running it) completes
+  on the original server, it's guaranteed that both its normal handler 
+  call and "the invalidation call" were completed for it locally.
 
-As you might suspect, all of this is powered by the same AOP-style
-decorators, though in this case a different kind of decorator is used,
-because the method we are calling is decorated by `[CommandHandler]`
-method:
-- The decorator itself does nothing but routes the call to
-  `ICommander` - it's a [MediatR](https://github.com/jbogard/MediatR) -
-  style abstraction used by Fusion, but a bit more advanced one.
-  You can learn more about it in [Part 9](Part09.md).
-  The decorator is needed here just to allow you to call commands
-  directly, so calling `EditAsync` has absolutely the same effect
-  as throwing the command to `ICommander.CallAsync(command, ...)`.
-- Commander triggers Fusion pipeline for Compute Service commands,
-  which runs the same command handler, but "inside" all the 
-  infrastructure (other handlers - think middlewares) needed to 
-  replay it in the invalidation mode on every other host. 
-  In particular, it:
-  - Opens command's transaction (if needed)
-  - Provides `DbContext`s associated with this transaction
-  - Log the command to the operation log on commit
-  - Notifies other hosts that operation log was updated
-  - Replay the command in the invalidation mode locally.
-- And yes, "replaying in the invalidation mode" means:
-  - Restoring "operation context" - i.e. the items stored
-    by the primary handler's flow to be used during the 
-    invalidation pass. 
-  - Running the same command handler, but inside 
-    `using (Computed.Invalidate()) { ... }` block.
+Under the hood all of this is powered by similar AOP-style
+decorators and [CommandR](Part09.md) - a [MediatR](https://github.com/jbogard/MediatR) -
+style abstraction used by Fusion to implement its command processing
+pipeline.
 
-Important remarks:
-1. Almost nothing of this is used in `v1`'s case. There are no
-   other hosts, no database, etc. - so only a very core part
-   of this pipeline (run handler normally + in the invalidation 
-   mode locally) gets triggered.
+Methods marked with `[CommandHandler]` behave very differently
+from methods marked by `[ComputeMethod]` - in fact, there
+is nothing common at all.
+The wrapper logic for command handlers does nothing but routes 
+every call to `ICommander`. This allows you to call such methods
+directly - note that if this logic won't exist, calling such a method
+directly would be a mistake, because such call won't trigger
+the whole command processing pipeline for the used command.
+
+So wrappers for `[CommandHandler]`-s declared in Compute Services
+exist to unify this: you are free to invoke such commands by either 
+throwing them to `ICommander.CallAsync(command, ...)`,
+or just calling them directly. Later you'll learn that this
+feature also enables Fusion to implement clients for APIs 
+like `ICartService`, and to route client-side commands 
+(sent to client-side `ICommander` instances) to these
+clients to execute them on server side. 
+
+Ok, but what happens when the command is processed by 
+`ICommander`? As in case with MediatR, it means triggering 
+command handler pipeline for this type of command.
+Fusion injects a number of its own middleware-like handlers for
+Compute Service commands. These handlers run your command handler 
+(the final one) in the end, but also provide all the infrastructure 
+needed to "replay" this command in the invalidation mode on
+every host. In particular, they:
+- Provide an abstraction allowing to start a transaction
+  for this command and get `DbContext`s associated
+  with this transaction.
+- Log the command to the operation log on commit
+- Notify other hosts that operation log was updated
+- Replay the command in the invalidation mode locally.
+
+Btw, "replaying the command in the invalidation mode" means:
+- Restoring the "operation items". Later I'll show you can
+  pass the information from a "normal" command handler "pass"
+  to the subsequent "invalidation pass" run. 
+  Typically you need this to properly invalidate something
+  related to what was deleted during the "normal" pass.
+- Running the same command handler, but inside 
+  `using (Computed.Invalidate()) { ... }` block.
+
+☝ The pipeline described above is called **"Operations Framework"** 
+(**OF** further) - in fact, it's just a set of handlers and services 
+for CommandR providing this multi-host invalidation pipeline for every
+Fusion's Compute Service.
+
+And a few final remarks on this:
+1. The pipeline described above is used very partially in `v1`'s 
+   case: there are no other hosts, no database, and thus no calls
+   enabling all these integrations were made when the IoC container
+   was configured. So only a very core part of this pipeline running
+   handlers normally + in the invalidation mode is used.
 2. **No, this is not how Fusion delivers changes to every remote
-   client** (e.g. Blazor WASM clients). 
+   client** (e.g. Blazor WASM running in your browser). 
    This pipeline is server-side only. 
 
 > If you want to learn all the details about this - check out 
 > [Part 8](Part08.md), [Part 9](Part09.md), and [Part 10](Part10.md) 
 > of the Tutorial 😎
+
+## Version 2: Switching to EF Core
+
+Code: [src/HelloCart/v2](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v2)
+
+> ☝ We will move WAY FASTER now - this and every following version
+> will require just about 5 minutes of your time.
+
+Here is what code inside `AppV2` constructor does:
+
+```cs
+// This is exactly the same Compute Service registration code you saw earlier
+services.AddFusion(fusion => {
+    fusion.AddComputeService<IProductService, DbProductService>();
+    fusion.AddComputeService<ICartService, DbCartService>();
+});
+
+// This also a usual way to add a pooled IDbContextFactory -
+// a preferable way of accessing DbContexts nowadays
+var appTempDir = PathEx.GetApplicationTempDirectory("", true);
+var dbPath = appTempDir & "HelloCart_v01.db";
+services.AddDbContextFactory<AppDbContext>(b => {
+    b.UseSqlite($"Data Source={dbPath}");
+    b.EnableSensitiveDataLogging();
+});
+
+// AddDbContextServices is just a convenience builder allowing
+// to omit DbContext type in misc. normal and extension methods 
+// it has
+services.AddDbContextServices<AppDbContext>(b => {
+    // This call enabled Operations Framework (OF) for AppDbContext. 
+    b.AddDbOperations((_, o) => {
+        // Here we tell operation log reader that it should fetch the
+        // tail of operation log every 5 seconds no matter what.
+        o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5);
+    });
+    // And this call tells that hosts will use a shared file
+    // to "message" each other that operation log was updated.
+    // In fact, they'll just be "touching" this file once
+    // this happens and watch for change of its modify date.
+    // You shouldn't use this mechanism in real multi-host
+    // scenario, but it works well if you just want to test
+    // multi-host invalidation on a single host by running
+    // multiple processes there.
+    b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
+});
+ClientServices = HostServices = services.BuildServiceProvider();
+```
+
+`AppV2.InitializeAsync` simply re-created the DB:
+
+```cs
+await using var dbContext = HostServices.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
+await dbContext.Database.EnsureDeletedAsync();
+await dbContext.Database.EnsureCreatedAsync();
+await base.InitializeAsync();
+```
+
+Now, if you look at `DbProductService` and `DbCartService`, you'll notice
+just a few differences between them and any regular service that
+reads/writes the DB:
+1. They are inherited from `DbServiceBase<AppDbContext>`. This type
+   is just a convenience helper providing a few protected methods
+   for services that are supposed to access the DB.
+2. One of these methods is `CreateDbContext` - you may see it's typically
+   used like this:
+    ```cs
+    await using var dbContext = CreateDbContext();
+    // ... code using dbContext
+    ```
+   By default, `CreateDbContext` returns **a read-only `DbContext` with
+   change tracking disabled**. 
+   As you might guess, this method of getting `DbContext` is supposed 
+   to be used in `[ComputeMethod]`-s, i.e. query-style methods that
+   aren't supposed to change anything or rely on change tracking.
+
+   "Read-only" means this `DbContext` "throws" on attempt to call 
+   `SaveChangesAsync`.
+3. And another one is `CreateCommandDbContextAsync`, which is used like this:
+    ```cs
+    await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
+    // ... code using dbContext
+    ```
+   Contrary to the previous method, this method is used to create
+   `DbContext` inside command handlers, and once it's called,
+   it also starts the transaction associated with the current command
+   (which is why this method returns `Task<TDbContext>`).
+   The transaction is auto-committed once your handler completes normally
+   (i.e. w/o an exception), moreover, the operation log entry
+   describing the current command will be persisted as part of this 
+   transaction.
+
+   As you might guess, the `DbContext` provided by this method is
+   **read-write and with enabled change tracking**. Moreover,
+   if you call it multiple times, you'll get different `DbContext`-s,
+   but all of them will share the same `DbConnection`, and consequently,
+   will "see" the DB through the same transaction.
+
+And that's it. So to use Fusion with EF, you must:
+- Make a couple extra calls during IoC container configuration
+  to enable Operations Framework
+- Inherit your Compute Services from `DbServiceBase<TDbContext>`
+  and rely on its `CreateDbContext` / `CreateCommandDbContextAsync`
+  to get `DbContext`-s. Alternatively, you just see what these
+  methods do and use the same code in Compute Services that
+  can't be inherited from `DbServiceBase<TDbContext>`.
+
+## Version 3: Switching to production-grade EF Core
+
+Code: [src/HelloCart/v3](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v3)
+
+The `v2` code is actually already good enough, but one small improvement
+can make it way better:
+
+```cs
+b.AddDbEntityResolver<string, DbProduct>();
+b.AddDbEntityResolver<string, DbCart>((_, options) => {
+    // Cart is always loaded together with items
+    options.QueryTransformer = carts => carts.Include(c => c.Items);
+});
+```
+
+This code registers two entity resolvers - one for `DbProduct` type,
+and another one - for `DbCart` type (`string` is the type of key of 
+these entities). 
+
+Entity resolvers are helpers grouping multiple requests to 
+find the entity by its key together and resolving all of them by
+sending a single DB query.
+
+The pseudo-code of the "main loop" of every entity resolver looks ~
+as follows:
+```cs
+while (NotDisposed()) {
+    var (tasks, keys) = GetNewEntityResolutionRequestTasks();
+    // GetEntitiesAsync sends a single DB query with "{key} in (...)" clause
+    var entities = await GetEntitiesAsync(keys); ..)
+    CompleteEntityResolutionTasks(tasks, keys, entities);
+}
+```
+
+Here is an example of how to use such resolvers:
+```cs
+public virtual async Task<Product?> FindAsync(string id, CancellationToken cancellationToken = default)
+{
+    var dbProduct = await _productResolver.TryGetAsync(id, cancellationToken);
+    if (dbProduct == null)
+        return null;
+    return new Product() { Id = dbProduct.Id, Price = dbProduct.Price };
+}
+```
+
+Guess why this important? Look at the production-grade `GetTotalAsync` code:
+```cs
+public virtual async Task<decimal> GetTotalAsync(string id, CancellationToken cancellationToken = default)
+{
+    var cart = await FindAsync(id, cancellationToken);
+    if (cart == null)
+        return 0;
+    var itemTotals = await Task.WhenAll(cart.Items.Select(async item => {
+        var product = await _products.FindAsync(item.Key, cancellationToken);
+        return item.Value * (product?.Price ?? 0M);
+    }));
+    return itemTotals.Sum();
+}
+```
+
+Contrary to the previous version, it fetches all the products **in parallel**.
+But why?
+- First, it "hopes" that Fusion will resolve most of `FindAsync` calls via
+  its `IComputed` instance cache, i.e. without hitting the DB. And why 
+  shouldn't it try to do this in parallel, if this possible?
+- But now imagine the case when Fusion's cache is empty, or it doesn't
+  store the result of `FindAsync` for every product that's in the cart.
+  This is where entity resolver used in `FindAsync` kicks in: most
+  likely it will run just 1 or 2 queries to resolve every remaining
+  product that `GetTotalAsync` throws - and moreover, since all
+  these calls "flow" through `FindAsync`, these results will be 
+  cached in Fusion's cache too!
+
+So crafting highly efficient Compute Services based on EF Core is actually 
+quite easy - if you think what's the extra code you have to write, 
+you'll find it's mainly `if (Computed.IsInvalidating()) { ... }` blocks -
+the rest is something you'd likely have otherwise at some point as well!
+
+And if you're curious how much of this "extra" a real app is expected to 
+have - check out [Board Games](https://github.com/alexyakunin/BoardGames).
+It's mentioned in its 
+[README.md](https://github.com/alexyakunin/BoardGames/blob/main/README.md)
+that this whole app has 
+[just about 35 extra lines of code](https://github.com/alexyakunin/BoardGames/search?q=IsInvalidating) 
+responsible for the invalidation!
+In other words, **Fusion brought the cost of all real-time features this app 
+has to nearly zero there**.
+
 
 // Work in progress - to be continued.

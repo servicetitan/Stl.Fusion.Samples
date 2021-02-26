@@ -36,9 +36,6 @@ namespace Samples.HelloCart.V2
                 b.EnableSensitiveDataLogging();
             });
             services.AddDbContextServices<AppDbContext>(b => {
-                services.AddSingleton(new CompletionProducer.Options() {
-                    LogLevel = LogLevel.Information,
-                });
                 b.AddDbOperations((_, o) => {
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5);
                 });
