@@ -39,9 +39,10 @@ public record Cart : IHasId<string>
 }
 ```
 
-The immutability and `IHasId<string>` implementation are totally 
-optional - use them mostly because I love the idea to show
-all the constraints explicitly.
+I use records and `IHasId<string>` here solely because it's 
+a good idea to show all the constraints explicitly in your APIs. 
+But Fusion doesn't really care about either, so both things are
+totally optional.
 
 We're also going to implement two services:
 
