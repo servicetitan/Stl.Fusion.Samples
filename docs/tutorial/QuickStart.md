@@ -1069,7 +1069,8 @@ So if you see it reacts to some change, it means that
 both Replica Service and multi-host invalidation works.
 And they really do!
 
-So now you know almost everything! The parts we didn't touch at all are:
+And congrats - this is the end of this part, and now you know almost everything! 
+The parts we didn't touch at all are:
 * [Part 3: State: IState&lt;T&gt; and Its Flavors](./Part03.md).
   The key abstraction it describes is `LiveState<T>` - 
   the type that implements "wait for change, make a delay, recompute" 
