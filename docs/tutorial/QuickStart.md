@@ -4,7 +4,7 @@
 > in a single document. If you find it doesn't do its
 > job well, please don't hesitate to reach AY on
 > our [Discord Server](https://discord.gg/EKEwv6d)
-> and tell him *everything*.
+> and tell him *everything* 😈
 
 The content below implies you can browse, build, and run
 `HelloCart` sample, so before you start reading further, 
