@@ -98,7 +98,7 @@ right?
 
 The right answer to this question is "Wrong! It's a 
 Fusion API, and every read endpoint of a Fusion API is
-capable of doing exactly this!". But before we jump to
+capable of doing exactly this!". But before we dig into
 the details, let's think how we'd implement the same 
 behavior without Fusion.
 
