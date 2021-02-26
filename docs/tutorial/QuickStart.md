@@ -1,9 +1,10 @@
 # QuickStart: Learn 80% of Fusion by walking through HelloCart sample
 
-> This part is an attempt to introduce key Fusion features 
-> in a very practical way. If you find it doesn't do its
+> This part is an attempt to introduce all key Fusion features 
+> in a single document. If you find it doesn't do its
 > job well, please don't hesitate to reach AY on
-> our [Discord Server](https://discord.gg/EKEwv6d).
+> our [Discord Server](https://discord.gg/EKEwv6d)
+> and tell him *everything*.
 
 The content below implies you can browse, build, and run
 `HelloCart` sample, so before you start reading further, 
