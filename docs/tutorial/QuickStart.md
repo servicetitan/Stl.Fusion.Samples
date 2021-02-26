@@ -1041,7 +1041,7 @@ public class AppV5 : AppV4
     public AppV5()
     {
         var hostUri = new Uri("http://localhost:7005");
-        Host = BuildHost(hostUri);
+        Host = BuildHost(hostUri); // Yes, it uses inherited BuildHost from v4!
         HostServices = Host.Services;
 
         var extraHostUri = new Uri("http://localhost:7006");
