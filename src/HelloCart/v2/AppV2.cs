@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stl.Fusion;
 using Stl.Fusion.EntityFramework;
-using Stl.Fusion.Operations.Internal;
 using Stl.IO;
 
 namespace Samples.HelloCart.V2

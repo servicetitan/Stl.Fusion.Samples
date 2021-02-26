@@ -1,9 +1,23 @@
-# HelloCart Sample Overview
+# QuickStart: Learn 80% of Fusion by walking through HelloCart sample
 
-`HelloCart` shows how to implement a simple API
-by starting from a toy (but still Fusion-based) version
-and transition to a production-ready implementation
-in a few iterations.
+> This part is an attempt to introduce key Fusion features 
+> in a very practical way. If you find it doesn't do its
+> job well, please don't hesitate to reach AY on
+> our [Discord Server](https://discord.gg/EKEwv6d).
+
+The content below implies you can browse, build, and run
+`HelloCart` sample, so before you start reading further, 
+it's highly recommended to:
+1. Clone https://github.com/servicetitan/Stl.Fusion.Samples
+2. Open `Samples.sln` in your favorite IDE.
+
+## What is HelloCart sample?
+
+It's a small console app designed to show how to implement a simple 
+Fusion API by starting from a toy version of it
+and gradually transition to its production-ready version
+that uses EF Core, can be called remotely, and can scale 
+horizontally due to multi-host invalidation.
 
 The API it implements is defined in 
 [Abstractions.cs](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/HelloCart/Abstractions.cs).
@@ -191,11 +205,10 @@ If you're not convinced yet that all if this doesn't look good,
 check out my other post covering another similar scenario:
 ["How Similar Is Fusion to SignalR?"](https://medium.com/swlh/how-similar-is-stl-fusion-to-signalr-e751c14b70c3?source=friends_link&sk=241d5293494e352f3db338d93c352249)
 
-
-## Can we do better than than?
+## Can we do better than that?
 
 Yes, and that's exactly what I'm going to talk about further.
-Let's launch `HelloCart` and see what it does:
+But first, let's launch `HelloCart` and see what it does:
 
 ![](./img/Samples-HelloCart.gif)
 
@@ -229,8 +242,8 @@ public virtual async Task InitializeAsync()
 }
 ```
 
-Once this is done, it creates a set of background tasks
-watching for changes made to every one of them:
+Then it creates a set of background tasks **watching for changes 
+made to every one of them**:
 
 ```cs
 public Task WatchAsync(CancellationToken cancellationToken = default)
@@ -243,17 +256,6 @@ public Task WatchAsync(CancellationToken cancellationToken = default)
     return Task.WhenAll(tasks);
 }
 
-public async Task WatchProductAsync(string productId, CancellationToken cancellationToken = default)
-{
-    var productService = WatchServices.GetRequiredService<IProductService>();
-    var computed = await Computed.CaptureAsync(ct => productService.FindAsync(productId, ct), cancellationToken);
-    while (true) {
-        WriteLine($"  {computed.Value}");
-        await computed.WhenInvalidatedAsync(cancellationToken);
-        computed = await computed.UpdateAsync(false, cancellationToken);
-    }
-}
-
 public async Task WatchCartTotalAsync(string cartId, CancellationToken cancellationToken = default)
 {
     var cartService = WatchServices.GetRequiredService<ICartService>();
@@ -263,6 +265,12 @@ public async Task WatchCartTotalAsync(string cartId, CancellationToken cancellat
         await computed.WhenInvalidatedAsync(cancellationToken);
         computed = await computed.UpdateAsync(false, cancellationToken);
     }
+}
+
+public async Task WatchProductAsync(string productId, CancellationToken cancellationToken = default)
+{
+    var productService = WatchServices.GetRequiredService<IProductService>();
+    // The rest is similar to the same code in WatchCartTotalAsync
 }
 ```
 
@@ -282,19 +290,34 @@ await app.ClientProductService.EditAsync(command);
 // await app.ClientServices.Commander().CallAsync(command);
 ```
 
-As you see, this call triggers "watcher" task for the product
-you change, but interestingly, for cart's total too. 
-And not just for a single cart, but for any cart that
-contains the product we modify - you may see this by
-typing `banana=X` expression ("banana" is contained
-in both carts).
+As you see, this call triggers not only the "watcher" task 
+for the product you change, **but surprisingly, for cart's 
+total as well😲**
 
-So how does this work?
+And it happens not just for a single cart, but **for any cart that
+contains the product you modify** - try typing `banana=100` expression 
+("banana" is contained in both carts) to see both carts' totals are 
+updated!
 
-Let's look at the very basic implementation (`v1`)
-of `IProductService` and `ICartService`.
+## Wait, but why this is such a big deal?
 
-## Version 1: ConcurrentDictionary-based API implementation
+We've just shown there is a way to propagate any changes 
+made to a relatively small component to a derivative 
+that uses this component. And further I'll show this is
+done completely automatically - except a relatively small
+part.
+
+So... We have a tool allowing us to recompute any 
+derivative as reaction to change in any other piece 
+of data it uses. And this is almost all you need
+to build the real-time UI, because any UI model can 
+be this derivative as well!
+
+Now let's learn how it works by starting from the
+very basic implementation (`v1`) of `IProductService` 
+and `ICartService`.
+
+## Version 1: ConcurrentDictionary-based implementation
 
 Code: [src/HelloCart/v1](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v1)
 
@@ -350,7 +373,7 @@ to depict it in symbols: 🧝=🥣+🦄
 
 Seriously, so how does it work?
 
-`AddComputeService` registers so-called Compute Service - 
+`AddComputeService` registers so-called [Compute Service](Part01.md) - 
 a singleton, which proxy type is generated in the runtime, 
 but derives from the type you provide, i.e. 
 `InMemoryProductService` / `InMemoryCartService` in above case.
@@ -702,7 +725,7 @@ And that's it. So to use Fusion with EF, you must:
   methods do and use the same code in Compute Services that
   can't be inherited from `DbServiceBase<TDbContext>`.
 
-## Version 3: Switching to production-grade EF Core
+## Version 3: Production-grade EF Core code
 
 Code: [src/HelloCart/v3](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v3)
 
@@ -790,5 +813,273 @@ responsible for the invalidation!
 In other words, **Fusion brought the cost of all real-time features this app 
 has to nearly zero there**.
 
+## Version 4: Distributed Reactive Computing
 
-// Work in progress - to be continued.
+Code: [src/HelloCart/v4](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v4)
+
+So far we've learned how to build a version of our API
+that works locally. What does it take to convert it to
+a remotely callable one?
+
+Actually, almost nothing! Here is `AppV4` constructor:
+```cs
+var baseUri = new Uri("http://localhost:7005");
+Host = BuildHost(baseUri);
+HostServices = Host.Services;
+ClientServices = BuildClientServices(baseUri);
+```
+
+So this version of app:
+- Builds a web host & exposes server-side API there
+- Builds `ClientServices` hitting this webhost
+- And if you check out how `ClientServices` are used,
+  you'll find that:
+  - `Program.cs` uses them to update products
+  - `WatchServices` = `ClientServices` by default,
+    so all the watcher tasks are using them too.
+
+> Can you spot any difference when you run the app in this mode? 
+> You can't 🙀 Update delays is the only difference you might 
+> measure, but they're still extremely tiny, because both the server
+> and the client share the same machine.
+
+All of this means that Fusion is capable of providing a
+client for any Compute Service that mimics its behavior 
+completely, including everything related to invalidation
+and dependency tracking.
+
+Such clients are called [Replica Services](Part04.md).
+They are Compute Services too - you can even cast them to 
+`IComputeService` as any other compute service. But:
+- They're auto-generated
+- The computation they run is always a web API call 
+  to the remote controller that exposes corresponding
+  Compute Service.
+- The invalidation of values they "compute" happens because
+  any web API call they make bears the information about the 
+  server-side "publication" of the underlying `IComputed`. 
+  And once this `IComputed` gets invalidated on server side, 
+  the client gets a message notifying it about the invalidation
+  via dedicated WebSocket channel.
+- Updates are normally happen via the same WebSocket channel
+  as well, so only the first call to some `(service, method, args)` 
+  is sent via HTTP. The reason?
+  ASP.NET Core provides a robust argument binding & validation 
+  pipeline, and currently Fusion relies on it to make sure
+  the client calls only what's explicitly allowed to call,
+  and sends only what's ok to deserialize on server side. 
+  So once the first call passes through, every further update
+  of the same result can be requested via WebSocket channel.
+  As you might guess, the arguments aren't sent in this case -
+  client uses `publicationId` it got from server earlier to 
+  reference the `IComputed` that has to be updated.
+
+This is a very basic description of how it works. So
+let's see what do we need to publish Compute Service first.
+We'll start from `Host` container configuration:
+
+```cs
+services.AddFusion(fusion => {
+    fusion.AddComputeService<IProductService, DbProductService>();
+    fusion.AddComputeService<ICartService, DbCartService>();
+    fusion.AddWebServer(); // This is the only new line. 
+});
+```
+
+`fusion.AddWebServer()` adds its WebSocket server middleware, `IPublisher`,
+and configures ASP.NET MVC to use JSON.NET - currently you can't
+use any other serializers with Fusion, but we'll definitely add support
+for more of them in future (`MessagePack` is the most likely next option 
+to support).
+
+Let's look at web app configuration now:
+```cs
+app.UseWebSockets(new WebSocketOptions() { // We obviously need this
+    KeepAliveInterval = TimeSpan.FromSeconds(30), // Just in case
+});
+app.UseRouting();
+app.UseEndpoints(endpoints => {
+    endpoints.MapFusionWebSocketServer(); // Straightforward, right?
+    endpoints.MapControllers(); // And this is straightforward too
+});
+```
+
+Ok, and how Fusion controller looks like?
+```cs
+[Route("api/[controller]")]
+[ApiController, JsonifyErrors]
+public class CartController : ControllerBase, ICartService
+{
+    private readonly ICartService _cartService;
+
+    public CartController(ICartService cartService) => _cartService = cartService;
+
+    // Commands
+
+    [HttpPost("edit")]
+    public Task EditAsync([FromBody] EditCommand<Cart> command, CancellationToken cancellationToken = default)
+        => _cartService.EditAsync(command, cancellationToken);
+
+    // Queries
+
+    [HttpGet("find"), Publish]
+    public Task<Cart?> FindAsync(string id, CancellationToken cancellationToken = default)
+        => _cartService.FindAsync(id, cancellationToken);
+
+    [HttpGet("getTotal"), Publish]
+    public Task<decimal> GetTotalAsync(string id, CancellationToken cancellationToken = default)
+        => _cartService.GetTotalAsync(id, cancellationToken);
+}
+```
+
+Key points on controllers:
+- `[JsonifyErrors]` allows Fusion client to deserialize similar exceptions:
+  it retains only the exception type and message, but usually this is still 
+  better than seeing a generic exception type for any error happening on 
+  server. But you're free to replace it with whatever logic you like ;)
+- For command handler endpoints, you just need to forward the call by calling
+  the underlying command handler or `ICommander.CallAsync`.
+  And typically you need to apply `[FromBody]` attribute to your
+  command type, because otherwise it has a little chance to properly
+  serialize-deserialize.
+- For compute method endpoints, you need to similarly route the call to
+  the corresponding compute method, but importantly, you also need to add
+  `[Publish]` filter. This filter does all the magic required to get
+  invalidation notifications via WebSocket channel.
+
+And that's it - i.e. it's 95% boilerplate code. Fusion doesn't auto-generate 
+these controllers only because these endpoints are absolutely normal APIs,
+and so you might want to version them, name them in special way, use
+preferred argument binding, etc.
+
+> ☝ Did I mention these endpoints are actually callable even without Fusion?
+> You can try to call them directly e.g. [here](https://fusion-samples.servicetitan.com/swagger/index.html).
+> You might need to find your own `sessionId` or `userId` first - just perform 
+> the same action [in the UI](https://fusion-samples.servicetitan.com/) 
+> and see the arguments in e.g. Network tab in Chrome DevTools.
+
+Let's switch to the client side code now. The client-side container uses
+the following configuration:
+```cs
+services.AddFusion(fusion => {
+    fusion.AddRestEaseClient(client => {
+        // Ensure HTTP clients are configured to get correct base URI
+        client.ConfigureHttpClientFactory((c, name, options) => {
+            var apiBaseUri = new Uri($"{baseUri}api/");
+            options.HttpClientActions.Add(httpClient => httpClient.BaseAddress = apiBaseUri);
+        });
+        // Ensure WebSocket channel will connect to the right endpoint
+        client.ConfigureWebSocketChannel((c, options) => { options.BaseUri = baseUri; });
+        // And finally, register actual Replica Services
+        client.AddReplicaService<IProductService, IProductClient>();
+        client.AddReplicaService<ICartService, ICartClient>();
+    });
+});
+```
+
+The beginning is straightforward. Let's look at `AddReplicaService` -
+more precisely, its generic arguments:
+- The first one is clearly the service we are going to implement -
+  it's the same `IProductService` / `ICartService` from `Abstractions.cs`
+  we've used everywhere earlier.
+- And the second one is [RestEase](https://github.com/canton7/RestEase)
+  "definition" of the client for this Replica Service. 
+  It has to be an identical interface in terms of method names and 
+  signatures, but with RestEase attributes telling how to "map" it 
+  to the controller endpoints.
+
+This is how client interface looks for `ICartService` (see `Clients.cs` file):
+```cs
+[BasePath("cart")]
+public interface ICartClient
+{
+    [Post("edit")]
+    Task EditAsync([Body] EditCommand<Cart> command, CancellationToken cancellationToken);
+    [Get("find")]
+    Task<Cart?> FindAsync(string id, CancellationToken cancellationToken);
+    [Get("getTotal")]
+    Task<decimal> GetTotalAsync(string id, CancellationToken cancellationToken);
+}
+```
+
+As you see, it's also 90% boilerplate code, and it's sole purpose
+is to tell [RestEase](https://github.com/canton7/RestEase) how to
+build a client that "matches" the controller. As you might guess,
+Fusion's Replica Services use such RestEase-generated clients
+to hit these endpionts.
+
+So where can you use such clients? Actually, everywhere!
+- In Blazor WebAssembly - obvously
+- In desktop apps - there is no Blazor, but as you might guess
+  already, Fusion's integration with Blazor is super thin,
+  and all it offers can work equally well in desktop apps too!
+- Finally, even on the server-side - nothing prevents you to e.g.
+  aggregate the data on a dedicated set of servers there,
+  but keep the results of aggregation similarly reactive to 
+  the changes in underlying data.
+
+So welcome to Distributed Reactive Computing!
+
+## Version 5: Multi-host Scenario
+
+Code: [src/HelloCart/v5](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v5)
+
+You already know that Fusion is capable to "propagate" the 
+invalidations to every host sharing the same data.
+
+Let's see what's necessary to make it work. 
+This is our full `AppV5` - there is nothing else:
+
+```cs
+public class AppV5 : AppV4
+{
+    public IHost ExtraHost { get; protected set; }
+    // We'll watch the data on Host:
+    public override IServiceProvider WatchServices => HostServices;
+
+    public AppV5()
+    {
+        var hostUri = new Uri("http://localhost:7005");
+        Host = BuildHost(hostUri);
+        HostServices = Host.Services;
+
+        var extraHostUri = new Uri("http://localhost:7006");
+        ExtraHost = BuildHost(extraHostUri);
+        // As you 
+        ClientServices = BuildClientServices(extraHostUri);
+    }
+    
+    // + InitializeAsync and DisposeAsync, but there are
+    // absolutely straightforward adjustments
+}
+```
+
+So we create an extra host here, but both hosts use 
+the same container configuration we started to use
+in `v2`. In other words, no extra is needed to 
+use multi-host invalidation - `v2` configuration
+is already tuned for it.
+
+And if you run this app, it will:
+- Use `Host.Services` to watch & display the changes
+- Use the client connecting to `ExtraHost` to make the changes.
+
+So if you see it reacts to some change, it means that
+both Replica Service and multi-host invalidation works.
+And they really do!
+
+So now you know almost everything! The parts we didn't touch at all are:
+* [Part 3: State: IState&lt;T&gt; and Its Flavors](./Part03.md).
+  The key abstraction it describes is `LiveState<T>` - 
+  the type that implements "wait for change, make a delay, recompute" 
+  loop similar to the one we manually coded here, but in more robust 
+  and convenient way.
+* [Part 6: Real-time UI in Blazor Apps](./Part06.md) - 
+  you'll learn how `LiveState<T>` is used by 
+  `LiveComponent<T>` to power real-time updates in Blazor.
+* [Part 5: Caching and Fusion on Server-Side Only](./Part05.md) -
+  read it to fully understand how Fusion actually caches `IComputed`
+  instances, and what are the levers you can use to tweak its
+  caching behavior.
+
+#### [Next: Part 0 &raquo;](./Part00.md) | [Tutorial Home](./README.md)

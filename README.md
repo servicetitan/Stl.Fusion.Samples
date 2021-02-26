@@ -24,24 +24,34 @@ Currently there are 2 app templates:
 Open `Templates.sln`, run any of `*.Host` or `*.Server` projects,
 and go to http://localhost:5005 to them in action.
 
-### 1. HelloWorld Sample
+### 1. HelloCart and HelloWorld Samples
 
-Fusion-style [HelloWorld](src/HelloWorld) shows how to create
+![](docs/img/Samples-HelloCart.gif)
+
+<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [HelloCart] 
+is a small console app designed to show how to implement a simple 
+Fusion API by starting from a toy version of it
+and gradually transition to its production-ready version
+that uses EF Core, can be called remotely, and can scale 
+horizontally due to multi-host invalidation.
+
+["QuickStart: Learn 80% of Fusion by walking through HelloCart sample"](./docs/tutorial/QuickStart.md) is the newest part of [Fusion Tutorial] that covers
+specifically this sample. Check it out!
+
+![](docs/img/Samples-HelloWorld.gif)
+
+Fusion-style [HelloWorld] shows how to create
 an incremental build simulation on Fusion. Nothing is really 
 built there, of course - the goal is to shows how Fusion
 "captures" dependencies right when you use them and runs
 cascading invalidations.
 
-Its [Program.cs](src/HelloWorld/Program.cs) is just about 60 lines long,
-but Fusion-based service doing the job there 
-([IncrementalBuilder.cs](src/HelloWorld/IncrementalBuilder.cs) - 
-that's the code you really need to look at) is even smaller.
-
-![](docs/img/Samples-HelloWorld.gif)
+If you're choosing between `HelloWorld` and `HelloCart` - 
+start from `HelloCart` first, it is 
 
 ### 2. HelloBlazorServer Sample
 
-[HelloBlazorServer](src/HelloBlazorServer) is the default Blazor Server App 
+[HelloBlazorServer] is the default Blazor Server App 
 modified to reveal some Fusion powers. Contrary to the original app:
 * It displays changes made to a *global* counter in real-time
 * Similarly, it updates weather forecasts in real-time
@@ -155,6 +165,7 @@ dotnet build
 
 | Sample | Command |
 |-|-|
+| [HelloCart] | `dotnet run -p src/HelloCart/HelloCart.csproj` |
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
 | [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5000/ |
 | [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
@@ -171,6 +182,7 @@ docker-compose build
 
 | Sample | Command |
 |-|-|
+| [HelloCart] | `docker-compose run sample_hello_cart dotnet Samples.HelloCart.dll` |
 | [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
 | [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5000/ |
 | [Blazor Samples] | `docker-compose run --service-ports sample_blazor` + open http://localhost:5005/ |
@@ -182,7 +194,7 @@ docker-compose build
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
 * Explore [Board Games](https://github.com/alexyakunin/BoardGames) -  a real-time multiplayer board gaming app built on Fusion
-* Join our [Discord Server] or [Gitter] to ask questions and track project updates.
+* Join our [Discord Server] to ask questions and track project updates.
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 
@@ -192,11 +204,13 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Fusion]: https://github.com/servicetitan/Stl.Fusion
 [Fusion repository on GitHub]: https://github.com/servicetitan/Stl.Fusion
 
+[HelloCart]: src/HelloCart
 [HelloWorld]: src/HelloWorld
 [HelloBlazorServer]: src/HelloBlazorServer
 [Blazor Samples]: src/Blazor
 [Caching]: src/Caching
 [Tutorial]: docs/tutorial/README.md
+[Fusion Tutorial]: docs/tutorial/README.md
 [Documentation Home]: https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md
 
 [Compute Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part01.md
@@ -208,5 +222,4 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
 
 [Discord Server]: https://discord.gg/EKEwv6d
-[Gitter]: https://gitter.im/Stl-Fusion/community
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
