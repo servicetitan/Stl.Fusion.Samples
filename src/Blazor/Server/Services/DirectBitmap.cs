@@ -8,7 +8,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Samples.Blazor.Server.Services
 {
-    public class DirectBitmap : IDisposable
+    public sealed class DirectBitmap : IDisposable
     {
         private int _isDisposed;
         private GCHandle _gcHandle;
@@ -31,6 +31,8 @@ namespace Samples.Blazor.Server.Services
             Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, _gcHandle.AddrOfPinnedObject());
             Image = SixLabors.ImageSharp.Image.WrapMemory(Buffer.AsMemory(), width, height);
         }
+
+        ~DirectBitmap() => Dispose();
 
         public void Dispose()
         {
