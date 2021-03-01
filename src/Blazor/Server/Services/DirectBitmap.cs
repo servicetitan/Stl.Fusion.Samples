@@ -41,6 +41,7 @@ namespace Samples.Blazor.Server.Services
             Bitmap.Dispose();
             Image.Dispose();
             _gcHandle.Free();
+            GC.SuppressFinalize(this);
         }
     }
 }
