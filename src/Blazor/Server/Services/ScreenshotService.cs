@@ -63,7 +63,7 @@ namespace Samples.Blazor.Server.Services
         {
             width = Math.Min(MaxWidth, Math.Max(MinWidth, width));
             var bitmap = await GetScreenshotAsync(cancellationToken);
-            return CreateScreenshot(bitmap, width);
+            return CreateScreenshotFromBitmap(bitmap, width);
         }
 
         [ComputeMethod(KeepAliveTime = 0.1, AutoInvalidateTime = 0.05)]
@@ -131,14 +131,14 @@ namespace Samples.Blazor.Server.Services
             return screen;
         }
 
-        private Screenshot CreateScreenshot(DirectBitmap source, int width)
+        private Screenshot CreateScreenshotFromBitmap(DirectBitmap source, int width)
         {
             var height = width * source.Height / source.Width;
             using var stream = new MemoryStream(100000);
             if (source.Width == width)
                 _jpegEncoder.Invoke(source, stream);
             else if (OSInfo.IsWindows) {
-                var target = new DirectBitmap(width, height);
+                using var target = new DirectBitmap(width, height);
                 using var gTarget = Graphics.FromImage(target.Bitmap);
                 gTarget.CompositingQuality = CompositingQuality.HighSpeed;
                 gTarget.InterpolationMode = InterpolationMode.Bilinear;
