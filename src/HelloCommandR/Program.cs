@@ -34,7 +34,7 @@ public class GreetingService
         return Task.CompletedTask;
     }
 
-    [CommandHandler(Priority = 1, IsFilter = true)] // Fake filter: >1 non-filtering handlers per command = error
+    [CommandHandler(Priority = 1, IsFilter = true)]
     public virtual async Task OnSayCommandOverrideAsync(SayCommand command, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(command.Text))
