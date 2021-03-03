@@ -28,9 +28,10 @@ public record SayCommand(string Text) : ICommand<Unit>
 public class GreetingService
 {
     [CommandHandler]
-    public virtual async Task OnSayCommandAsync(SayCommand command, CancellationToken cancellationToken = default)
+    public virtual Task OnSayCommandAsync(SayCommand command, CancellationToken cancellationToken = default)
     {
         WriteLine(command.Text);
+        return Task.CompletedTask;
     }
 
     [CommandHandler(Priority = 1, IsFilter = true)] // Fake filter: >1 non-filtering handlers per command = error
