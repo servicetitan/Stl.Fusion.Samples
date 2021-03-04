@@ -34,7 +34,6 @@ namespace Samples.Blazor.UI
             builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
 
-            host.Services.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
             await host.Services.HostedServices().StartAsync();
             await host.RunAsync();
         }

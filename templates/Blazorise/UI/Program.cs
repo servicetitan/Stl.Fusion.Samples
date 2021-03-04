@@ -30,7 +30,6 @@ namespace Templates.Blazor2.UI
             builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
 
-            host.Services.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
             host.Services.HostedServices().StartAsync();
             return host.RunAsync();
         }

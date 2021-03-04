@@ -206,7 +206,6 @@ namespace Samples.Blazor.Server
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.ApplicationServices.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
             app.UseEndpoints(endpoints => {
                 endpoints.MapBlazorHub();
                 endpoints.MapFusionWebSocketServer();
