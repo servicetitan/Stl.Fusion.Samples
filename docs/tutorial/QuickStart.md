@@ -371,7 +371,7 @@ public class AppV1 : AppBase
 }
 ```
 
-One thing is clear now: this is code that adds a magic ingredient 
+One thing is clear now: this is the code that adds a magic ingredient 
 to a pretty usual dish to give it superpowers. Sorry, can't resist
 to depict it in symbols: 🧝=🥣+🦄
 
