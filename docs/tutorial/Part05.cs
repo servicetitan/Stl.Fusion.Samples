@@ -18,9 +18,9 @@ namespace Tutorial
         public class Service1
         {
             [ComputeMethod]
-            public virtual async Task<string> GetAsync(string key)
+            public virtual async Task<string> Get(string key)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
+                WriteLine($"{nameof(Get)}({key})");
                 return key;
             }
         }
@@ -38,13 +38,13 @@ namespace Tutorial
         {
             #region Part05_Caching1
             var service = CreateServices().GetRequiredService<Service1>();
-            // var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("a"));
+            // var computed = await Computed.Capture(_ => counters.GetAsync("a"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("a"));
             GC.Collect();
             WriteLine("GC.Collect()");
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("a"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("a"));
             #endregion
         }
 
@@ -52,13 +52,13 @@ namespace Tutorial
         {
             #region Part05_Caching2
             var service = CreateServices().GetRequiredService<Service1>();
-            var computed = await Computed.CaptureAsync(_ => service.GetAsync("a"));
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("a"));
+            var computed = await Computed.Capture(_ => service.Get("a"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("a"));
             GC.Collect();
             WriteLine("GC.Collect()");
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("a"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("a"));
             #endregion
         }
 
@@ -67,17 +67,17 @@ namespace Tutorial
         public class Service2
         {
             [ComputeMethod]
-            public virtual async Task<string> GetAsync(string key)
+            public virtual async Task<string> Get(string key)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
+                WriteLine($"{nameof(Get)}({key})");
                 return key;
             }
 
             [ComputeMethod]
-            public virtual async Task<string> CombineAsync(string key1, string key2)
+            public virtual async Task<string> Combine(string key1, string key2)
             {
-                WriteLine($"{nameof(CombineAsync)}({key1}, {key2})");
-                return await GetAsync(key1) + await GetAsync(key2);
+                WriteLine($"{nameof(Combine)}({key1}, {key2})");
+                return await Get(key1) + await Get(key2);
             }
         }
         #endregion
@@ -86,17 +86,17 @@ namespace Tutorial
         {
             #region Part05_Caching3
             var service = CreateServices().GetRequiredService<Service2>();
-            var computed = await Computed.CaptureAsync(_ => service.CombineAsync("a", "b"));
+            var computed = await Computed.Capture(_ => service.Combine("a", "b"));
             WriteLine("computed = CombineAsync(a, b) completed");
-            WriteLine(await service.CombineAsync("a", "b"));
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("b"));
-            WriteLine(await service.CombineAsync("a", "c"));
+            WriteLine(await service.Combine("a", "b"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("b"));
+            WriteLine(await service.Combine("a", "c"));
             GC.Collect();
             WriteLine("GC.Collect() completed");
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("b"));
-            WriteLine(await service.CombineAsync("a", "c"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("b"));
+            WriteLine(await service.Combine("a", "c"));
             #endregion
         }
 
@@ -104,12 +104,12 @@ namespace Tutorial
         {
             #region Part05_Caching4
             var service = CreateServices().GetRequiredService<Service2>();
-            var computed = await Computed.CaptureAsync(_ => service.GetAsync("a"));
+            var computed = await Computed.Capture(_ => service.Get("a"));
             WriteLine("computed = GetAsync(a) completed");
-            WriteLine(await service.CombineAsync("a", "b"));
+            WriteLine(await service.Combine("a", "b"));
             GC.Collect();
             WriteLine("GC.Collect() completed");
-            WriteLine(await service.CombineAsync("a", "b"));
+            WriteLine(await service.Combine("a", "b"));
             #endregion
         }
 
@@ -118,17 +118,17 @@ namespace Tutorial
         public class Service3
         {
             [ComputeMethod]
-            public virtual async Task<string> GetAsync(string key)
+            public virtual async Task<string> Get(string key)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
+                WriteLine($"{nameof(Get)}({key})");
                 return key;
             }
 
             [ComputeMethod(KeepAliveTime = 0.3)] // KeepAliveTime was added
-            public virtual async Task<string> CombineAsync(string key1, string key2)
+            public virtual async Task<string> Combine(string key1, string key2)
             {
-                WriteLine($"{nameof(CombineAsync)}({key1}, {key2})");
-                return await GetAsync(key1) + await GetAsync(key2);
+                WriteLine($"{nameof(Combine)}({key1}, {key2})");
+                return await Get(key1) + await Get(key2);
             }
         }
         #endregion
@@ -137,20 +137,20 @@ namespace Tutorial
         {
             #region Part05_Caching5
             var service = CreateServices().GetRequiredService<Service3>();
-            WriteLine(await service.CombineAsync("a", "b"));
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("x"));
+            WriteLine(await service.Combine("a", "b"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("x"));
             GC.Collect();
             WriteLine("GC.Collect()");
-            WriteLine(await service.CombineAsync("a", "b"));
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("x"));
+            WriteLine(await service.Combine("a", "b"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("x"));
             await Task.Delay(1000);
             GC.Collect();
             WriteLine("Task.Delay(...) and GC.Collect()");
-            WriteLine(await service.CombineAsync("a", "b"));
-            WriteLine(await service.GetAsync("a"));
-            WriteLine(await service.GetAsync("x"));
+            WriteLine(await service.Combine("a", "b"));
+            WriteLine(await service.Get("a"));
+            WriteLine(await service.Get("x"));
             #endregion
         }
 
@@ -159,9 +159,9 @@ namespace Tutorial
         public class Service4
         {
             [ComputeMethod(KeepAliveTime = 1), Swap(0.1)]
-            public virtual async Task<string> GetAsync(string key)
+            public virtual async Task<string> Get(string key)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
+                WriteLine($"{nameof(Get)}({key})");
                 return key;
             }
         }
@@ -169,21 +169,21 @@ namespace Tutorial
         [Service(typeof(ISwapService))]
         public class DemoSwapService : SimpleSwapService
         {
-            protected override ValueTask StoreAsync(string key, string value, CancellationToken cancellationToken)
+            protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)
             {
                 WriteLine($"Swap: {key} <- {value}");
-                return base.StoreAsync(key, value, cancellationToken);
+                return base.Store(key, value, cancellationToken);
             }
 
-            protected override ValueTask<bool> RenewAsync(string key, CancellationToken cancellationToken)
+            protected override ValueTask<bool> Renew(string key, CancellationToken cancellationToken)
             {
                 WriteLine($"Swap: {key} <- [try renew]");
-                return base.RenewAsync(key, cancellationToken);
+                return base.Renew(key, cancellationToken);
             }
 
-            protected override async ValueTask<Option<string>> LoadAsync(string key, CancellationToken cancellationToken)
+            protected override async ValueTask<Option<string>> Load(string key, CancellationToken cancellationToken)
             {
-                var result = await base.LoadAsync(key, cancellationToken);
+                var result = await base.Load(key, cancellationToken);
                 WriteLine($"Swap: {key} -> {result}");
                 return result;
             }
@@ -194,15 +194,15 @@ namespace Tutorial
         {
             #region Part05_Caching6
             var service = CreateServices().GetRequiredService<Service4>();
-            WriteLine(await service.GetAsync("a"));
+            WriteLine(await service.Get("a"));
             await Task.Delay(500);
             GC.Collect();
             WriteLine("Task.Delay(500) and GC.Collect()");
-            WriteLine(await service.GetAsync("a"));
+            WriteLine(await service.Get("a"));
             await Task.Delay(1500);
             GC.Collect();
             WriteLine("Task.Delay(1500) and GC.Collect()");
-            WriteLine(await service.GetAsync("a"));
+            WriteLine(await service.Get("a"));
             #endregion
         }
     }

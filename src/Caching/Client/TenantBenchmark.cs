@@ -26,7 +26,7 @@ namespace Samples.Caching.Client
 
         public TenantBenchmark(IServiceProvider services) => Services = services;
 
-        public async Task InitAsync(CancellationToken cancellationToken = default)
+        public async Task Initialize(CancellationToken cancellationToken = default)
         {
             WriteLine($"Initializing using {InitConcurrencyLevel} workers...");
             var tenantIds = new ConcurrentQueue<string>(
@@ -35,7 +35,7 @@ namespace Samples.Caching.Client
                 var tenants = TenantServiceResolver(Services);
                 var clock = Services.GetRequiredService<IMomentClock>();
                 while (tenantIds.TryDequeue(out var tenantId)) {
-                    var tenant = await tenants.TryGetAsync(tenantId, cancellationToken).ConfigureAwait(false);
+                    var tenant = await tenants.TryGet(tenantId, cancellationToken).ConfigureAwait(false);
                     if (tenant != null)
                         continue;
                     var now = clock.Now.ToDateTime();
@@ -46,7 +46,7 @@ namespace Samples.Caching.Client
                         Name = $"Tenant-{tenantId}",
                         Version = 1,
                     };
-                    await tenants.AddOrUpdateAsync(tenant, null, cancellationToken).ConfigureAwait(false);
+                    await tenants.AddOrUpdate(tenant, null, cancellationToken).ConfigureAwait(false);
                 }
             });
             var dumpTask = Task.Run(async () => {
@@ -66,7 +66,7 @@ namespace Samples.Caching.Client
             WriteLine($"  - {"Reader #",-12}: {ConcurrencyLevel - WriteConcurrencyLevel}");
         }
 
-        protected override async Task<Dictionary<string, Counter>> BenchmarkAsync(int workerId, TimeSpan duration, CancellationToken cancellationToken)
+        protected override async Task<Dictionary<string, Counter>> Benchmark(int workerId, TimeSpan duration, CancellationToken cancellationToken)
         {
             var rnd = new Random(workerId * 347);
             var stopwatch = Stopwatch;
@@ -74,21 +74,21 @@ namespace Samples.Caching.Client
             var tenants = TenantServiceResolver(Services);
             var isWriter = workerId < WriteConcurrencyLevel;
 
-            async Task ReadAsync()
+            async Task Read()
             {
                 var tenantId = rnd.Next(0, TenantCount).ToString();
                 await tenants.GetAsync(tenantId, cancellationToken);
             }
 
-            async Task WriteAsync()
+            async Task Write()
             {
                 var tenantId = rnd.Next(0, TenantCount).ToString();
                 var tenant = await tenants.GetAsync(tenantId, cancellationToken);
                 tenant = tenant with { Name = $"Tenant-{tenant.Id}-{tenant.Version + 1}" };
-                await tenants.AddOrUpdateAsync(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
+                await tenants.AddOrUpdate(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
             }
 
-            var operationAsync = isWriter ? (Func<Task>) WriteAsync : ReadAsync;
+            var operationAsync = isWriter ? (Func<Task>) Write : Read;
 
             // The benchmarking loop
             var count = 0L;

@@ -18,10 +18,10 @@
 
         <Paragraph Margin="Margin.Is3.OnY">
             Value: <b>@accumulator</b>
-            <Button Color="Color.Warning" @onclick="ResetAsync">Reset</Button>
+            <Button Color="Color.Warning" @onclick="Reset">Reset</Button>
         </Paragraph>
 
-        <form @onsubmit="AccumulateAsync">
+        <form @onsubmit="Accumulate">
             <Addons>
                 <Addon AddonType="AddonType.Start">
                     <AddonLabel>Increment by</AddonLabel>
@@ -57,26 +57,26 @@
     protected override void OnParametersSet()
     {
         if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
-            updateDelayer.Delay = UpdateDelay;
+            updateDelayer.DelayDuration = UpdateDelay;
     }
 
     protected override void ConfigureState(LiveState<double>.Options options)
         => options.WithUpdateDelayer(UpdateDelay);
 
-    protected override Task<double> ComputeStateAsync(CancellationToken cancellationToken)
-        => SumService.GetAccumulatorAsync(cancellationToken);
+    protected override Task<double> ComputeState(CancellationToken cancellationToken)
+        => SumService.GetAccumulator(cancellationToken);
 
     // Action handlers
 
-    private async Task ResetAsync()
+    private async Task Reset()
     {
-        await SumService.ResetAsync();
-        State.CancelUpdateDelay();
+        await SumService.Reset();
+        InvalidateState();
     }
 
-    private async Task AccumulateAsync()
+    private async Task Accumulate()
     {
-        await SumService.AccumulateAsync(Locals.Value.Value);
-        State.CancelUpdateDelay();
+        await SumService.Accumulate(Locals.Value.Value);
+        InvalidateState();
     }
 }

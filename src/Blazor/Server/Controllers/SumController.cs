@@ -6,7 +6,7 @@ using Stl.Fusion.Server;
 
 namespace Samples.Blazor.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]
     public class SumController : ControllerBase, ISumService
     {
@@ -14,20 +14,20 @@ namespace Samples.Blazor.Server.Controllers
 
         public SumController(ISumService sumService) => _sumService = sumService;
 
-        [HttpPost("reset")]
-        public Task ResetAsync(CancellationToken cancellationToken)
-            => _sumService.ResetAsync(cancellationToken);
+        [HttpPost]
+        public Task Reset(CancellationToken cancellationToken)
+            => _sumService.Reset(cancellationToken);
 
-        [HttpPost("accumulate")]
-        public Task AccumulateAsync(double value, CancellationToken cancellationToken)
-            => _sumService.AccumulateAsync(value, cancellationToken);
+        [HttpPost]
+        public Task Accumulate(double value, CancellationToken cancellationToken)
+            => _sumService.Accumulate(value, cancellationToken);
 
-        [HttpGet("getAccumulator"), Publish]
-        public Task<double> GetAccumulatorAsync(CancellationToken cancellationToken)
-            => _sumService.GetAccumulatorAsync(cancellationToken);
+        [HttpGet, Publish]
+        public Task<double> GetAccumulator(CancellationToken cancellationToken)
+            => _sumService.GetAccumulator(cancellationToken);
 
-        [HttpGet("sum"), Publish]
-        public Task<double> SumAsync([FromQuery] double[] values, bool addAccumulator, CancellationToken cancellationToken)
-            => _sumService.SumAsync(values, addAccumulator, cancellationToken);
+        [HttpGet, Publish]
+        public Task<double> GetSum([FromQuery] double[] values, bool addAccumulator, CancellationToken cancellationToken)
+            => _sumService.GetSum(values, addAccumulator, cancellationToken);
     }
 }

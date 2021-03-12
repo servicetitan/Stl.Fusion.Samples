@@ -22,11 +22,11 @@ namespace Samples.Caching.Client
         protected Stopwatch Stopwatch { get; set; } = null!;
         protected Dictionary<string, Counter> Counters { get; set; } = new Dictionary<string, Counter>();
 
-        public async Task RunAsync(string title, CancellationToken cancellationToken = default)
+        public async Task Run(string title, CancellationToken cancellationToken = default)
         {
             WriteLine($"{title}:");
-            await RunAsync(WarmupDuration, cancellationToken).ConfigureAwait(false);
-            await RunAsync(Duration, cancellationToken).ConfigureAwait(false);
+            await Run(WarmupDuration, cancellationToken).ConfigureAwait(false);
+            await Run(Duration, cancellationToken).ConfigureAwait(false);
             foreach (var (key, counter) in Counters.OrderBy(p => p.Key))
                 if (counter.HasValue)
                     WriteLine($"  {key,-14}: {counter.Format(Duration)}");
@@ -39,14 +39,14 @@ namespace Samples.Caching.Client
             WriteLine($"  {"Worker #",-14}: {ConcurrencyLevel}");
         }
 
-        protected virtual async Task RunAsync(TimeSpan duration, CancellationToken cancellationToken)
+        protected virtual async Task Run(TimeSpan duration, CancellationToken cancellationToken)
         {
             Counters.Clear();
             var startTaskSource = TaskSource.New<Unit>(true);
             var tasks = Enumerable.Range(0, ConcurrencyLevel)
                 .Select(async i => {
                     await startTaskSource.Task.ConfigureAwait(false);
-                    return await BenchmarkAsync(i, duration, cancellationToken).ConfigureAwait(false);
+                    return await Benchmark(i, duration, cancellationToken).ConfigureAwait(false);
                 })
                 .ToArray();
             await Task.Delay(100, cancellationToken).ConfigureAwait(false); // Wait to make sure all the tasks are created & scheduled
@@ -67,6 +67,6 @@ namespace Samples.Caching.Client
             }
         }
 
-        protected abstract Task<Dictionary<string, Counter>> BenchmarkAsync(int workerId, TimeSpan duration, CancellationToken cancellationToken);
+        protected abstract Task<Dictionary<string, Counter>> Benchmark(int workerId, TimeSpan duration, CancellationToken cancellationToken);
     }
 }

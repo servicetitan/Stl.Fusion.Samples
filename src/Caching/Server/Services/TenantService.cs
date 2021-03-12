@@ -19,7 +19,7 @@ namespace Samples.Caching.Server.Services
         public TenantService(IServiceProvider services) : base(services)
             => IsComputeService = GetType() != typeof(TenantService);
 
-        public async Task AddOrUpdateAsync(Tenant tenant, long? version, CancellationToken cancellationToken = default)
+        public async Task AddOrUpdate(Tenant tenant, long? version, CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext().ReadWrite();
             if (version.HasValue) {
@@ -33,12 +33,12 @@ namespace Samples.Caching.Server.Services
 
             if (IsComputeService)
                 using (Computed.Invalidate()) {
-                    TryGetAsync(tenant.Id, default).Ignore();
-                    GetAllAsync(default).Ignore();
+                    TryGet(tenant.Id, default).Ignore();
+                    GetAll(default).Ignore();
                 }
         }
 
-        public async Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default)
+        public async Task Remove(string tenantId, long version, CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext().ReadWrite();
             var entry = dbContext.Tenants.Remove(new Tenant() { Id = tenantId });
@@ -47,21 +47,21 @@ namespace Samples.Caching.Server.Services
 
             if (IsComputeService)
                 using (Computed.Invalidate()) {
-                    TryGetAsync(tenantId, default).Ignore();
-                    GetAllAsync(default).Ignore();
+                    TryGet(tenantId, default).Ignore();
+                    GetAll(default).Ignore();
                 }
         }
 
         // Compute methods
 
-        public virtual async Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<Tenant[]> GetAll(CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext();
             var tenants = await dbContext.Tenants.ToArrayAsync(cancellationToken).ConfigureAwait(false);
             return tenants;
         }
 
-        public virtual async Task<Tenant?> TryGetAsync(string tenantId, CancellationToken cancellationToken = default)
+        public virtual async Task<Tenant?> TryGet(string tenantId, CancellationToken cancellationToken = default)
         {
             // var c = Computed.TryGetExisting(() => GetAllAsync(default));
             await using var dbContext = CreateDbContext();

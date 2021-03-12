@@ -61,11 +61,11 @@
     protected override void ConfigureState(LiveState<Model>.Options options)
         => options.WithUpdateDelayer(0.5);
 
-    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+    protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
         var parameter = Locals.Value;
-        var localValue = await LocalComposer.GetComposedValueAsync(parameter, Session, cancellationToken);
-        var remoteValue = await Composer.GetComposedValueAsync(parameter, Session, cancellationToken);
+        var localValue = await LocalComposer.GetComposedValue(parameter, Session, cancellationToken);
+        var remoteValue = await Composer.GetComposedValue(parameter, Session, cancellationToken);
         return new Model() {
             LocallyComposedValue = localValue,
             RemotelyComposedValue = remoteValue,

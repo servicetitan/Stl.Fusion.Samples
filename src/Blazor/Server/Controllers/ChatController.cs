@@ -7,7 +7,7 @@ using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]
     public class ChatController : ControllerBase, IChatService
     {
@@ -22,40 +22,40 @@ namespace Samples.Blazor.Server.Controllers
 
         // Commands
 
-        [HttpPost("postMessage")]
-        public Task<ChatMessage> PostMessageAsync([FromBody] IChatService.PostMessageCommand command, CancellationToken cancellationToken = default)
+        [HttpPost]
+        public Task<ChatMessage> Post([FromBody] IChatService.PostCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(_sessionResolver);
-            return _chat.PostMessageAsync(command, cancellationToken);
+            return _chat.Post(command, cancellationToken);
         }
 
         // Queries
 
-        [HttpGet("getCurrentUser"), Publish]
-        public Task<ChatUser> GetCurrentUserAsync(Session? session, CancellationToken cancellationToken = default)
+        [HttpGet, Publish]
+        public Task<ChatUser> GetCurrentUser(Session? session, CancellationToken cancellationToken = default)
         {
             session ??= _sessionResolver.Session;
-            return _chat.GetCurrentUserAsync(session, cancellationToken);
+            return _chat.GetCurrentUser(session, cancellationToken);
         }
 
-        [HttpGet("getUser"), Publish]
-        public Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
-            => _chat.GetUserAsync(id, cancellationToken);
+        [HttpGet, Publish]
+        public Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default)
+            => _chat.GetUser(id, cancellationToken);
 
-        [HttpGet("getUserCount"), Publish]
-        public Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
-            => _chat.GetUserCountAsync(cancellationToken);
+        [HttpGet, Publish]
+        public Task<long> GetUserCount(CancellationToken cancellationToken = default)
+            => _chat.GetUserCount(cancellationToken);
 
-        [HttpGet("getActiveUserCount"), Publish]
-        public Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
-            => _chat.GetActiveUserCountAsync(cancellationToken);
+        [HttpGet, Publish]
+        public Task<long> GetActiveUserCount(CancellationToken cancellationToken = default)
+            => _chat.GetActiveUserCount(cancellationToken);
 
-        [HttpGet("getChatTail"), Publish]
-        public Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
-            => _chat.GetChatTailAsync(length, cancellationToken);
+        [HttpGet, Publish]
+        public Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default)
+            => _chat.GetChatTail(length, cancellationToken);
 
-        [HttpGet("getChatPage"), Publish]
-        public Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
-            => _chat.GetChatPageAsync(minMessageId, maxMessageId, cancellationToken);
+        [HttpGet, Publish]
+        public Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
+            => _chat.GetChatPage(minMessageId, maxMessageId, cancellationToken);
     }
 }

@@ -20,9 +20,9 @@ namespace Tutorial
             private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
             [ComputeMethod]
-            public virtual async Task<int> GetAsync(string key)
+            public virtual async Task<int> Get(string key)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
+                WriteLine($"{nameof(Get)}({key})");
                 return _counters.TryGetValue(key, out var value) ? value : 0;
             }
 
@@ -31,7 +31,7 @@ namespace Tutorial
                 WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
                 using (Computed.Invalidate())
-                    GetAsync(key).Ignore();
+                    Get(key).Ignore();
             }
         }
 
@@ -95,12 +95,12 @@ namespace Tutorial
                     };
                 },
                 async (state, cancellationToken) => {
-                    var counter = await counters.GetAsync("a");
+                    var counter = await counters.Get("a");
                     return $"counters.GetAsync(a) -> {counter}";
                 });
-            WriteLine("Before state.UpdateAsync(false).");
-            await state.UpdateAsync(false); // Ensures the state gets up-to-date value
-            WriteLine("After state.UpdateAsync(false).");
+            WriteLine("Before state.Update(false).");
+            await state.Update(false); // Ensures the state gets up-to-date value
+            WriteLine("After state.Update(false).");
             counters.Increment("a");
             await Task.Delay(2000);
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");

@@ -42,22 +42,22 @@ namespace Samples.Blazor.Server.Services
 
         // Commands
 
-        public virtual async Task<ChatMessage> PostMessageAsync(
-            IChatService.PostMessageCommand command, CancellationToken cancellationToken = default)
+        public virtual async Task<ChatMessage> Post(
+            IChatService.PostCommand command, CancellationToken cancellationToken = default)
         {
             var (text, session) = command;
             var context = CommandContext.GetCurrent();
             if (Computed.IsInvalidating()) {
-                PseudoGetAnyChatTailAsync().Ignore();
+                PseudoGetAnyChatTail().Ignore();
                 return default!;
             }
 
-            text = await NormalizeTextAsync(text, cancellationToken);
-            var user = await GetCurrentUserAsync(session, cancellationToken);
+            text = await NormalizeText(text, cancellationToken);
+            var user = await GetCurrentUser(session, cancellationToken);
             if (user == null)
                 throw new InvalidOperationException("No current ChatUser. Call SetUserNameAsync to create it.");
 
-            await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
+            await using var dbContext = await CreateCommandDbContext(cancellationToken);
             var message = new ChatMessage() {
                 CreatedAt = DateTime.UtcNow,
                 UserId = user.Id,
@@ -71,14 +71,14 @@ namespace Samples.Blazor.Server.Services
         // Queries
 
         [ComputeMethod(KeepAliveTime = 61, AutoInvalidateTime = 60)]
-        public virtual async Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<long> GetUserCount(CancellationToken cancellationToken = default)
         {
             await using var dbContext = CreateDbContext();
             return await dbContext.Users.AsQueryable().LongCountAsync(cancellationToken);
         }
 
         [ComputeMethod(KeepAliveTime = 61, AutoInvalidateTime = 60)]
-        public virtual async Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<long> GetActiveUserCount(CancellationToken cancellationToken = default)
         {
             var minLastSeenAt = (Clock.Now - TimeSpan.FromMinutes(5)).ToDateTime();
             await using var dbContext = CreateDbContext();
@@ -89,21 +89,21 @@ namespace Samples.Blazor.Server.Services
                 .LongCountAsync(cancellationToken);
         }
 
-        public virtual async Task<ChatUser> GetCurrentUserAsync(Session session, CancellationToken cancellationToken = default)
+        public virtual async Task<ChatUser> GetCurrentUser(Session session, CancellationToken cancellationToken = default)
         {
-            var user = await _authService.GetUserAsync(session, cancellationToken);
+            var user = await _authService.GetUser(session, cancellationToken);
             return ToChatUser(user);
         }
 
-        public virtual async Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
+        public virtual async Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default)
         {
-            var user = await _authService.TryGetUserAsync(id.ToString(), cancellationToken);
+            var user = await _authService.TryGetUser(id.ToString(), cancellationToken);
             return ToChatUser(user ?? throw new KeyNotFoundException());
         }
 
-        public virtual async Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
+        public virtual async Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default)
         {
-            await PseudoGetAnyChatTailAsync();
+            await PseudoGetAnyChatTail();
             await using var dbContext = CreateDbContext();
 
             // Fetching messages from DB
@@ -115,41 +115,41 @@ namespace Samples.Blazor.Server.Services
 
             // Fetching users via GetUserAsync
             var userIds = messages.Select(m => m.UserId).Distinct().ToArray();
-            var userTasks = userIds.Select(id => GetUserAsync(id, cancellationToken));
+            var userTasks = userIds.Select(id => GetUser(id, cancellationToken));
             var users = await Task.WhenAll(userTasks);
 
             // Composing the end result
             return new ChatPage(messages, users.ToDictionary(u => u.Id));
         }
 
-        public virtual Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
+        public virtual Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 
         // Helpers
 
         [ComputeMethod]
-        protected virtual Task<Unit> PseudoGetAnyChatTailAsync() => TaskEx.UnitTask;
+        protected virtual Task<Unit> PseudoGetAnyChatTail() => TaskEx.UnitTask;
 
         [CommandHandler(IsFilter = true, Priority = 1)]
-        protected virtual async Task OnSignInAsync(SignInCommand command, CancellationToken cancellationToken)
+        protected virtual async Task OnSignIn(SignInCommand command, CancellationToken cancellationToken)
         {
             var context = CommandContext.GetCurrent();
-            await context.InvokeRemainingHandlersAsync(cancellationToken);
+            await context.InvokeRemainingHandlers(cancellationToken);
             if (Computed.IsInvalidating()) {
                 var isNewUser = context.Operation().Items.TryGet<bool>();
                 if (isNewUser) {
-                    GetUserCountAsync(default).Ignore();
-                    GetActiveUserCountAsync(default).Ignore();
+                    GetUserCount(default).Ignore();
+                    GetActiveUserCount(default).Ignore();
                 }
             }
         }
 
-        private async ValueTask<string> NormalizeTextAsync(
+        private async ValueTask<string> NormalizeText(
             string text, CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrEmpty(text))
                 return text;
-            var json = await _forismaticClient.GetQuoteAsync(cancellationToken: cancellationToken);
+            var json = await _forismaticClient.GetQuote(cancellationToken: cancellationToken);
             return json.Value<string>("quoteText");
         }
 

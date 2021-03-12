@@ -41,7 +41,7 @@ namespace Samples.HelloBlazorServer.Services
         [CommandHandler(Priority = 1, IsFilter = true)]
         protected virtual async Task OnChatPost(ChatService.PostCommand command, CancellationToken cancellationToken)
         {
-            await CommandContext.GetCurrent().InvokeRemainingHandlersAsync(cancellationToken);
+            await CommandContext.GetCurrent().InvokeRemainingHandlers(cancellationToken);
             if (Computed.IsInvalidating()) {
                 // We know for sure here the command has completed successfully
                 // Now we need to suppress ExecutionContext flow to ensure

@@ -15,8 +15,8 @@ var commander = services.Commander();
 
 await greetingService.OnSayCommandAsync(new SayCommand("Hello!"));
 await greetingService.OnSayCommandOverrideAsync(new SayCommand("There!"));
-await commander.CallAsync(new SayCommand("All these calls work the same way!"));
-await commander.RunAsync(new SayCommand("")); // This call won't throw an exception
+await commander.Call(new SayCommand("All these calls work the same way!"));
+await commander.Run(new SayCommand("")); // This call won't throw an exception
 
 // Types used in this example
 
@@ -42,7 +42,7 @@ public class GreetingService
         var context = CommandContext.GetCurrent();
         WriteLine($"{command.Text} (override)");
         if (command.Text.Contains("T"))
-            await context.InvokeRemainingHandlersAsync(cancellationToken);
+            await context.InvokeRemainingHandlers(cancellationToken);
     }
 
     [CommandHandler(Priority = 10, IsFilter = true)]
@@ -51,7 +51,7 @@ public class GreetingService
         var context = CommandContext.GetCurrent();
         WriteLine($"> {command}");
         try {
-            await context.InvokeRemainingHandlersAsync(cancellationToken);
+            await context.InvokeRemainingHandlers(cancellationToken);
         }
         catch (Exception e) {
             WriteLine($"! {command} -> Error: {e.Message}");

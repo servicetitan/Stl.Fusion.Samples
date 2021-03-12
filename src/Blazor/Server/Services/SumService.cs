@@ -14,13 +14,13 @@ namespace Samples.Blazor.Server.Services
         public SumService(IStateFactory stateFactory)
             => _accumulator = stateFactory.NewMutable<double>();
 
-        public Task ResetAsync(CancellationToken cancellationToken)
+        public Task Reset(CancellationToken cancellationToken)
         {
             _accumulator.Value = 0;
             return Task.CompletedTask;
         }
 
-        public Task AccumulateAsync(double value, CancellationToken cancellationToken)
+        public Task Accumulate(double value, CancellationToken cancellationToken)
         {
             _accumulator.Value += value;
             return Task.CompletedTask;
@@ -28,14 +28,14 @@ namespace Samples.Blazor.Server.Services
 
         // Compute methods
 
-        public virtual async Task<double> GetAccumulatorAsync(CancellationToken cancellationToken)
-            => await _accumulator.UseAsync(cancellationToken);
+        public virtual async Task<double> GetAccumulator(CancellationToken cancellationToken)
+            => await _accumulator.Use(cancellationToken);
 
-        public virtual async Task<double> SumAsync(double[] values, bool addAccumulator, CancellationToken cancellationToken)
+        public virtual async Task<double> GetSum(double[] values, bool addAccumulator, CancellationToken cancellationToken)
         {
             var sum = values.Sum();
             if (addAccumulator)
-                sum += await GetAccumulatorAsync(cancellationToken);
+                sum += await GetAccumulator(cancellationToken);
             return sum;
         }
     }

@@ -26,7 +26,7 @@ namespace Tutorial
             public PrintCommandHandler() => WriteLine("Creating PrintCommandHandler.");
             public void Dispose() => WriteLine("Disposing PrintCommandHandler");
 
-            public async Task<Unit> OnCommandAsync(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
+            public async Task<Unit> OnCommand(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
             {
                 WriteLine(command.Message);
                 WriteLine("Sir, yes, sir!");
@@ -46,8 +46,8 @@ namespace Tutorial
             var services = serviceBuilder.BuildServiceProvider();
 
             var commander = services.Commander(); // Same as .GetRequiredService<ICommander>()
-            await commander.CallAsync(new PrintCommand() { Message = "Are you operational?" });
-            await commander.CallAsync(new PrintCommand() { Message = "Are you operational?" });
+            await commander.Call(new PrintCommand() { Message = "Are you operational?" });
+            await commander.Call(new PrintCommand() { Message = "Are you operational?" });
             #endregion
         }
 
@@ -63,7 +63,7 @@ namespace Tutorial
             public void Dispose() => WriteLine("Disposing RecSumCommandHandler");
 
             [CommandHandler] // Note that ICommandHandler<RecSumCommand, long> support isn't needed
-            private async Task<long> RecSumAsync(
+            private async Task<long> RecSum(
                 RecSumCommand command,
                 IServiceProvider services, // Resolved via CommandContext.Services
                 ICommander commander, // Resolved via CommandContext.Services
@@ -96,7 +96,7 @@ namespace Tutorial
                     return 0;
                 var head = command.Numbers[0];
                 var tail = command.Numbers[1..];
-                var tailSum = await context.Commander.CallAsync(
+                var tailSum = await context.Commander.Call(
                     new RecSumCommand() { Numbers = tail }, false, // Try changing it to true
                     cancellationToken);
                 return head + tailSum;
@@ -115,7 +115,7 @@ namespace Tutorial
             var services = serviceBuilder.BuildServiceProvider();
 
             var commander = services.Commander(); // Same as .GetRequiredService<ICommander>()
-            WriteLine(await commander.CallAsync(new RecSumCommand() { Numbers = new [] { 1L, 2, 3 }}));
+            WriteLine(await commander.Call(new RecSumCommand() { Numbers = new [] { 1L, 2, 3 }}));
             #endregion
         }
 
@@ -140,7 +140,7 @@ namespace Tutorial
 
             // This handler is associated with ANY command (ICommand)
             // Priority = 10 means it runs earlier than any handler with the default priority 0
-            // IsFilter tells it triggers other handlers via InvokeRemainingHandlersAsync
+            // IsFilter tells it triggers other handlers via InvokeRemainingHandlers
             [CommandHandler(Priority = 10, IsFilter = true)]
             protected virtual async Task DepthTracker(ICommand command, CancellationToken cancellationToken)
             {
@@ -149,7 +149,7 @@ namespace Tutorial
                 context.Items["Depth"] = depth;
                 WriteLine($"Depth via context.Items: {depth}");
 
-                await context.InvokeRemainingHandlersAsync(cancellationToken).ConfigureAwait(false);
+                await context.InvokeRemainingHandlers(cancellationToken).ConfigureAwait(false);
             }
 
             // Another filter for RecSumCommand
@@ -158,7 +158,7 @@ namespace Tutorial
             {
                 WriteLine($"Numbers: {command.Numbers.ToDelimitedString()}");
                 var context = CommandContext.GetCurrent();
-                return context.InvokeRemainingHandlersAsync(cancellationToken);
+                return context.InvokeRemainingHandlers(cancellationToken);
             }
         }
         #endregion
@@ -175,7 +175,7 @@ namespace Tutorial
             var commander = services.Commander();
             var recSumService = services.GetRequiredService<RecSumCommandService>();
             WriteLine(recSumService.GetType());
-            WriteLine(await commander.CallAsync(new RecSumCommand() { Numbers = new [] { 1L, 2 }}));
+            WriteLine(await commander.Call(new RecSumCommand() { Numbers = new [] { 1L, 2 }}));
             WriteLine(await recSumService.RecSumAsync(new RecSumCommand() { Numbers = new [] { 3L, 4 }}));
             #endregion
         }

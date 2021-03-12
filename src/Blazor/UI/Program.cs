@@ -34,7 +34,7 @@ namespace Samples.Blazor.UI
             builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
 
-            await host.Services.HostedServices().StartAsync();
+            await host.Services.HostedServices().Start();
             await host.RunAsync();
         }
 
@@ -75,7 +75,7 @@ namespace Samples.Blazor.UI
 
             // Default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {
-                Delay = TimeSpan.FromSeconds(0.1),
+                DelayDuration = TimeSpan.FromSeconds(0.1),
             });
 
             // Other UI-related services

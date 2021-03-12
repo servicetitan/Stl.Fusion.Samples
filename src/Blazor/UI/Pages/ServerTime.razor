@@ -16,7 +16,7 @@
 
 <p>Server Time: <b>@time</b></p>
 
-<Button Color="Color.Primary" @onclick="() => State.CancelUpdateDelay()">Refresh</Button>
+<Button Color="Color.Primary" @onclick="() => InvalidateState()">Refresh</Button>
 
 @code {
     protected override void OnInitialized()
@@ -28,6 +28,6 @@
     protected override void ConfigureState(LiveState<DateTime>.Options options)
         => options.WithUpdateDelayer(0.5);
 
-    protected override Task<DateTime> ComputeStateAsync(CancellationToken cancellationToken)
-        => Time.GetTimeAsync(cancellationToken);
+    protected override Task<DateTime> ComputeState(CancellationToken cancellationToken)
+        => Time.GetTime(cancellationToken);
 }

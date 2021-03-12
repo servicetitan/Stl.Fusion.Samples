@@ -40,7 +40,7 @@ a few new features:
   an extension method to `IServiceCollection` that registers
   a runtime-generated proxy instead of the actual implementation type.
   The proxy ensures any call to such method is *still* routed via
-  `Commander.CallAsync(command)` to invoke the whole pipeline
+  `Commander.Call(command)` to invoke the whole pipeline
   for this command - i.e. all other handlers associated
   with it.
   In other words, such handlers can be invoked directly or via
@@ -71,7 +71,7 @@ public class PrintCommandHandler : ICommandHandler<PrintCommand, Unit>, IDisposa
     public PrintCommandHandler() => WriteLine("Creating PrintCommandHandler.");
     public void Dispose() => WriteLine("Disposing PrintCommandHandler");
 
-    public async Task<Unit> OnCommandAsync(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
+    public async Task<Unit> OnCommand(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
     {
         WriteLine(command.Message);
         WriteLine("Sir, yes, sir!");
@@ -91,8 +91,8 @@ var commanderBuilder = serviceBuilder.AddCommander()
 var services = serviceBuilder.BuildServiceProvider();
 
 var commander = services.Commander(); // Same as .GetRequiredService<ICommander>()
-await commander.CallAsync(new PrintCommand() { Message = "Are you operational?" });
-await commander.CallAsync(new PrintCommand() { Message = "Are you operational?" });
+await commander.Call(new PrintCommand() { Message = "Are you operational?" });
+await commander.Call(new PrintCommand() { Message = "Are you operational?" });
 ```
 
 The output:
@@ -114,7 +114,7 @@ Notice that:
   cares only about figuring out how to map commands to
   command handlers available in these services.
   That's why you have to register services separately.
-- `CallAsync` creates its own `IServiceScope` to resolve
+- `Call` creates its own `IServiceScope` to resolve
   services for every command invocation.
 
 Try changing `AddScoped` to `AddSingleton` in above example.
@@ -136,7 +136,7 @@ public class RecSumCommandHandler
     public void Dispose() => WriteLine("Disposing RecSumCommandHandler");
 
     [CommandHandler] // Note that ICommandHandler<RecSumCommand, long> support isn't needed
-    private async Task<long> RecSumAsync(
+    private async Task<long> RecSum(
         RecSumCommand command,
         IServiceProvider services, // Resolved via CommandContext.Services
         ICommander commander, // Resolved via CommandContext.Services
@@ -170,7 +170,7 @@ public class RecSumCommandHandler
             return 0;
         var head = command.Numbers[0];
         var tail = command.Numbers[1..];
-        var tailSum = await context.Commander.CallAsync(
+        var tailSum = await context.Commander.Call(
             new RecSumCommand() { Numbers = tail }, false, // Try changing it to true
             cancellationToken);
         return head + tailSum;
@@ -187,7 +187,7 @@ var commanderBuilder = serviceBuilder.AddCommander()
 var services = serviceBuilder.BuildServiceProvider();
 
 var commander = services.Commander(); // Same as .GetRequiredService<ICommander>()
-WriteLine(await commander.CallAsync(new RecSumCommand() { Numbers = new[] { 1L, 2, 3 } }));
+WriteLine(await commander.Call(new RecSumCommand() { Numbers = new[] { 1L, 2, 3 } }));
 ```
 
 The output:
@@ -270,7 +270,7 @@ exposes itself as `OutermostContext`.
 Now it's a good time to try changing `false` to `true` in this fragment above:
 
 ```cs
-var tailSum = await context.Commander.CallAsync(
+var tailSum = await context.Commander.Call(
     new RecSumCommand() { Numbers = tail }, false, // Try changing it to true
     cancellationToken);
 ```
@@ -284,16 +284,16 @@ The actual options are implemented in
 [`CommanderEx` type](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.CommandR/CommanderEx.cs)
 (`Ex` is a shortcut for `Extensions` that's used everywhere in `Stl` for such classes).
 
-- `CallAsync` is the one you should normally use.
+- `Call` is the one you should normally use.
   It "invokes" the command and returns its result.
-- `RunAsync` acts like `CallAsync`, but returns `CommandContext`
+- `Run` acts like `Call`, but returns `CommandContext`
   instead. Which is why it doesn't throw an exception
   even when one of the command handlers does - it completes
   successfully in any case.
   You can use e.g. `CommandContext.UntypedResult` to
   get the actual command completion result or exception.
 - `Start` is fire-and-forget way to start a command.
-  Similarly to `RunAsync`, it returns `CommandContext`,
+  Similarly to `Run`, it returns `CommandContext`,
   but note that it returns this context immediately,
   i.e. while the command associated with this context is still running.
   Even though `CommandContext` allows you to know when
@@ -338,7 +338,7 @@ public class RecSumCommandService
 
     // This handler is associated with ANY command (ICommand)
     // Priority = 10 means it runs earlier than any handler with the default priority 0
-    // IsFilter tells it triggers other handlers via InvokeRemainingHandlersAsync
+    // IsFilter tells it triggers other handlers via InvokeRemainingHandlers
     [CommandHandler(Priority = 10, IsFilter = true)]
     protected virtual async Task DepthTracker(ICommand command, CancellationToken cancellationToken)
     {
@@ -347,7 +347,7 @@ public class RecSumCommandService
         context.Items["Depth"] = depth;
         WriteLine($"Depth via context.Items: {depth}");
 
-        await context.InvokeRemainingHandlersAsync(cancellationToken).ConfigureAwait(false);
+        await context.InvokeRemainingHandlers(cancellationToken).ConfigureAwait(false);
     }
 
     // Another filter for RecSumCommand
@@ -356,7 +356,7 @@ public class RecSumCommandService
     {
         WriteLine($"Numbers: {command.Numbers.ToDelimitedString()}");
         var context = CommandContext.GetCurrent();
-        return context.InvokeRemainingHandlersAsync(cancellationToken);
+        return context.InvokeRemainingHandlers(cancellationToken);
     }
 }
 ```
@@ -374,7 +374,7 @@ var services = serviceBuilder.BuildServiceProvider();
 var commander = services.Commander();
 var recSumService = services.GetRequiredService<RecSumCommandService>();
 WriteLine(recSumService.GetType());
-WriteLine(await commander.CallAsync(new RecSumCommand() { Numbers = new[] { 1L, 2 } }));
+WriteLine(await commander.Call(new RecSumCommand() { Numbers = new[] { 1L, 2 } }));
 WriteLine(await recSumService.RecSumAsync(new RecSumCommand() { Numbers = new[] { 3L, 4 } }));
 ```
 
@@ -398,11 +398,10 @@ Numbers:
 7
 ```
 
-As you see, the proxy type generated for such services routes 
-**every direct invocation of a command handler** through `ICommander.CallAsync`.
+As you see, the proxy type generated for such services routes
+**every direct invocation of a command handler** through `ICommander.Call`.
 So contrary to regular handlers, you can invoke such handlers
 directly - the whole CommandR pipeline gets invoked for them anyway.
-
 
 #### [Next: Multi-Host Invalidation and CQRS with Fusion + CommandR + Operations Framework &raquo;](./Part10.md) | [Tutorial Home](./README.md)
 

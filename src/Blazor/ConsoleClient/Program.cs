@@ -17,7 +17,7 @@ var stateFactory = services.StateFactory();
 var chat = services.GetRequiredService<IChatService>();
 var seenMessageIds = new ConcurrentDictionary<long, Unit>();
 using var timeState = stateFactory.NewLive<ChatPage>(async (s, cancellationToken) => {
-    var chatPage = await chat.GetChatTailAsync(10, cancellationToken);
+    var chatPage = await chat.GetChatTail(10, cancellationToken);
     foreach (var message in chatPage.Messages) {
         if (!seenMessageIds.TryAdd(message.Id, default))
             continue;
@@ -56,7 +56,7 @@ static IServiceProvider CreateServiceProvider()
 
     // Default delay for update delayers
     services.AddSingleton(c => new UpdateDelayer.Options() {
-        Delay = TimeSpan.FromSeconds(0.1),
+        DelayDuration = TimeSpan.FromSeconds(0.1),
     });
 
     services.AddSingleton<IPluralize, Pluralizer>();

@@ -33,7 +33,9 @@ namespace Samples.HelloBlazorServer
             // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
             services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Default update delay is set to 0.5 seconds
-            services.AddSingleton(c => new UpdateDelayer.Options() { Delay = TimeSpan.FromSeconds(0.5) });
+            services.AddSingleton(c => new UpdateDelayer.Options() {
+                DelayDuration = TimeSpan.FromSeconds(0.5)
+            });
             services.AddSingleton<IPluralize>(c => new Pluralizer());
 
             // Web

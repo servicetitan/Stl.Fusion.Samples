@@ -35,9 +35,9 @@ namespace Tutorial
         public interface ICounterService
         {
             [ComputeMethod]
-            Task<int> GetAsync(string key, CancellationToken cancellationToken = default);
-            Task IncrementAsync(string key, CancellationToken cancellationToken = default);
-            Task SetOffsetAsync(int offset, CancellationToken cancellationToken = default);
+            Task<int> Get(string key, CancellationToken cancellationToken = default);
+            Task Increment(string key, CancellationToken cancellationToken = default);
+            Task SetOffset(int offset, CancellationToken cancellationToken = default);
         }
         #endregion
 
@@ -51,32 +51,32 @@ namespace Tutorial
                 => _offset = stateFactory.NewMutable<int>();
 
             [ComputeMethod] // Optional: this attribute is inherited from interface
-            public virtual async Task<int> GetAsync(string key, CancellationToken cancellationToken = default)
+            public virtual async Task<int> Get(string key, CancellationToken cancellationToken = default)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
-                var offset = await _offset.UseAsync(cancellationToken);
+                WriteLine($"{nameof(Get)}({key})");
+                var offset = await _offset.Use(cancellationToken);
                 return offset + (_counters.TryGetValue(key, out var value) ? value : 0);
             }
 
-            public Task IncrementAsync(string key, CancellationToken cancellationToken = default)
+            public Task Increment(string key, CancellationToken cancellationToken = default)
             {
-                WriteLine($"{nameof(IncrementAsync)}({key})");
+                WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
                 using (Computed.Invalidate())
-                    GetAsync(key, default).Ignore();
+                    Get(key, default).Ignore();
                 return Task.CompletedTask;
             }
 
-            public Task SetOffsetAsync(int offset, CancellationToken cancellationToken = default)
+            public Task SetOffset(int offset, CancellationToken cancellationToken = default)
             {
-                WriteLine($"{nameof(SetOffsetAsync)}({offset})");
+                WriteLine($"{nameof(SetOffset)}({offset})");
                 _offset.Value = offset;
                 return Task.CompletedTask;
             }
         }
 
         // We need Web API controller to publish the service
-        [Route("api/[controller]")]
+        [Route("api/[controller]/[action]")]
         [ApiController, JsonifyErrors]
         public class CounterController : ControllerBase
         {
@@ -88,27 +88,27 @@ namespace Tutorial
             // Publish ensures GetAsync output is published if publication was requested by the client:
             // - Publication is created
             // - Its Id is shared in response header.
-            [HttpGet("get"), Publish]
-            public Task<int> GetAsync(string key)
+            [HttpGet, Publish]
+            public Task<int> Get(string key)
             {
                 key ??= ""; // Empty value is bound to null value by default
-                WriteLine($"{GetType().Name}.{nameof(GetAsync)}({key})");
-                return Counters.GetAsync(key, HttpContext.RequestAborted);
+                WriteLine($"{GetType().Name}.{nameof(Get)}({key})");
+                return Counters.Get(key, HttpContext.RequestAborted);
             }
 
-            [HttpPost("inc")]
-            public Task IncrementAsync(string key)
+            [HttpPost]
+            public Task Increment(string key)
             {
                 key ??= ""; // Empty value is bound to null value by default
-                WriteLine($"{GetType().Name}.{nameof(IncrementAsync)}({key})");
-                return Counters.IncrementAsync(key, HttpContext.RequestAborted);
+                WriteLine($"{GetType().Name}.{nameof(Increment)}({key})");
+                return Counters.Increment(key, HttpContext.RequestAborted);
             }
 
-            [HttpPost("setOffset")]
-            public Task SetOffsetAsync(int offset)
+            [HttpPost]
+            public Task SetOffset(int offset)
             {
-                WriteLine($"{GetType().Name}.{nameof(SetOffsetAsync)}({offset})");
-                return Counters.SetOffsetAsync(offset, HttpContext.RequestAborted);
+                WriteLine($"{GetType().Name}.{nameof(SetOffset)}({offset})");
+                return Counters.SetOffset(offset, HttpContext.RequestAborted);
             }
         }
         #endregion
@@ -120,11 +120,11 @@ namespace Tutorial
         public interface ICounterServiceClient
         {
             [Get("get")]
-            Task<int> GetAsync(string key, CancellationToken cancellationToken = default);
-            [Post("inc")]
-            Task IncrementAsync(string key, CancellationToken cancellationToken = default);
+            Task<int> Get(string key, CancellationToken cancellationToken = default);
+            [Post("increment")]
+            Task Increment(string key, CancellationToken cancellationToken = default);
             [Post("setOffset")]
-            Task SetOffsetAsync(int offset, CancellationToken cancellationToken = default);
+            Task SetOffset(int offset, CancellationToken cancellationToken = default);
         }
         #endregion
     }
@@ -189,27 +189,27 @@ namespace Tutorial
             using var stopCts = new CancellationTokenSource();
             var cancellationToken = stopCts.Token;
 
-            async Task WatchAsync<T>(string name, IComputed<T> computed)
+            async Task Watch<T>(string name, IComputed<T> computed)
             {
                 for (;;) {
                     WriteLine($"{name}: {computed.Value}, {computed}");
-                    await computed.WhenInvalidatedAsync(cancellationToken);
+                    await computed.WhenInvalidated(cancellationToken);
                     WriteLine($"{name}: {computed.Value}, {computed}");
-                    computed = await computed.UpdateAsync(false, cancellationToken);
+                    computed = await computed.Update(false, cancellationToken);
                 }
             }
 
             var services = CreateClientServices();
             var counters = services.GetRequiredService<ICounterService>();
-            var aComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
-            Task.Run(() => WatchAsync(nameof(aComputed), aComputed)).Ignore();
-            var bComputed = await Computed.CaptureAsync(_ => counters.GetAsync("b"));
-            Task.Run(() => WatchAsync(nameof(bComputed), bComputed)).Ignore();
+            var aComputed = await Computed.Capture(_ => counters.Get("a"));
+            Task.Run(() => Watch(nameof(aComputed), aComputed)).Ignore();
+            var bComputed = await Computed.Capture(_ => counters.Get("b"));
+            Task.Run(() => Watch(nameof(bComputed), bComputed)).Ignore();
 
             await Task.Delay(200);
-            await counters.IncrementAsync("a");
+            await counters.Increment("a");
             await Task.Delay(200);
-            await counters.SetOffsetAsync(10);
+            await counters.SetOffset(10);
             await Task.Delay(200);
 
             stopCts.Cancel();
@@ -237,13 +237,13 @@ namespace Tutorial
                     };
                 },
                 async (state, cancellationToken) => {
-                    var counter = await counters.GetAsync("a", cancellationToken);
+                    var counter = await counters.Get("a", cancellationToken);
                     return $"counters.GetAsync(a) -> {counter}";
                 });
-            await state.UpdateAsync(false); // Ensures the state gets up-to-date value
-            await counters.IncrementAsync("a");
+            await state.Update(false); // Ensures the state gets up-to-date value
+            await counters.Increment("a");
             await Task.Delay(2000);
-            await counters.SetOffsetAsync(10);
+            await counters.SetOffset(10);
             await Task.Delay(2000);
 
             await host.StopAsync();

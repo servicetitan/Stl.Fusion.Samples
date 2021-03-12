@@ -9,7 +9,7 @@ using Templates.Blazor2.Abstractions;
 
 namespace Templates.Blazor2.Host.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]
     public class TodoController : ControllerBase, ITodoService
     {
@@ -24,34 +24,34 @@ namespace Templates.Blazor2.Host.Controllers
 
         // Commands
 
-        [HttpPost("addOrUpdate")]
-        public Task<Todo> AddOrUpdateAsync([FromBody] AddOrUpdateTodoCommand command, CancellationToken cancellationToken = default)
+        [HttpPost]
+        public Task<Todo> AddOrUpdate([FromBody] AddOrUpdateTodoCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(_sessionResolver);
-            return _todos.AddOrUpdateAsync(command, cancellationToken);
+            return _todos.AddOrUpdate(command, cancellationToken);
         }
 
-        [HttpPost("remove")]
-        public Task RemoveAsync([FromBody] RemoveTodoCommand command, CancellationToken cancellationToken = default)
+        [HttpPost]
+        public Task Remove([FromBody] RemoveTodoCommand command, CancellationToken cancellationToken = default)
         {
             command.UseDefaultSession(_sessionResolver);
-            return _todos.RemoveAsync(command, cancellationToken);
+            return _todos.Remove(command, cancellationToken);
         }
 
         // Queries
 
-        [HttpGet("find"), Publish]
-        public Task<Todo?> FindAsync(Session? session, string id, CancellationToken cancellationToken = default)
+        [HttpGet, Publish]
+        public Task<Todo?> TryGet(Session? session, string id, CancellationToken cancellationToken = default)
         {
             session ??= _sessionResolver.Session;
-            return _todos.FindAsync(session, id, cancellationToken);
+            return _todos.TryGet(session, id, cancellationToken);
         }
 
-        [HttpGet("list"), Publish]
-        public Task<Todo[]> ListAsync(Session? session, PageRef<string> pageRef, CancellationToken cancellationToken = default)
+        [HttpGet, Publish]
+        public Task<Todo[]> List(Session? session, PageRef<string> pageRef, CancellationToken cancellationToken = default)
         {
             session ??= _sessionResolver.Session;
-            return _todos.ListAsync(session, pageRef, cancellationToken);
+            return _todos.List(session, pageRef, cancellationToken);
         }
     }
 }

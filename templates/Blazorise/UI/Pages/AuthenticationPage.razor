@@ -83,14 +83,14 @@
                         <tr @key="@session.Id">
                             <td>@session.IPAddress</td>
                             <td>@session.UserAgent</td>
-                            <td>@session.Created</td>
-                            <td>@session.LastSeen</td>
+                            <td><MomentsAgoBadge Value="@session.CreatedAt"/></td>
+                            <td><MomentsAgoBadge Value="@session.LastSeenAt"/></td>
                             <td>
                                 @if (session.IsCurrent) {
                                     <span>Current</span>
                                 } else {
                                     <button type="button" class="btn btn-sm btn-danger"
-                                            @onclick="_ => ClientAuthHelper.SignOutAsync(session.Id)">Kick</button>
+                                            @onclick="_ => ClientAuthHelper.SignOut(session.Id)">Kick</button>
                                 }
                             </td>
                         </tr>
@@ -105,16 +105,16 @@
             <Authorized>
                 <Buttons Margin="Margin.Is0">
                     <Button Color="Color.Warning"
-                            @onclick="_ => ClientAuthHelper.SignOutAsync()">Sign out</Button>
+                            @onclick="_ => ClientAuthHelper.SignOut()">Sign out</Button>
                     <Button Color="Color.Danger"
-                            @onclick="_ => ClientAuthHelper.SignOutEverywhereAsync()">Sign out everywhere</Button>
+                            @onclick="_ => ClientAuthHelper.SignOutEverywhere()">Sign out everywhere</Button>
                 </Buttons>
                 @if (unusedAuthSchemas.Length != 0) {
                     <span> or add account: </span>
                     <Buttons Margin="Margin.Is0">
                         @foreach (var (name, displayName) in unusedAuthSchemas) {
                             <Button Color="Color.Primary"
-                                    @onclick="_ => ClientAuthHelper.SignInAsync(name)">@displayName</Button>
+                                    @onclick="_ => ClientAuthHelper.SignIn(name)">@displayName</Button>
                         }
                     </Buttons>
                 }
@@ -132,8 +132,8 @@
         public string Id { get; set; } = "";
         public string IPAddress { get; set; } = "";
         public string UserAgent { get; set; } = "";
-        public string Created { get; set; } = "";
-        public string LastSeen { get; set; } = "";
+        public DateTime CreatedAt { get; set; }
+        public DateTime LastSeenAt { get; set; }
         public bool IsCurrent { get; set; }
     }
 
@@ -155,7 +155,7 @@
     {
         if (firstRender) {
             // GetSchemasAsync requires JS interop, so it can be called only at this point
-            AuthSchemas = await ClientAuthHelper.GetSchemasAsync();
+            AuthSchemas = await ClientAuthHelper.GetSchemas();
             StateHasChanged();
         }
     }
@@ -163,9 +163,9 @@
     protected override void ConfigureState(LiveState<List<SessionModel>>.Options options)
         => options.InitialOutputFactory = _ => new List<SessionModel>();
 
-    protected override async Task<List<SessionModel>> ComputeStateAsync(CancellationToken cancellationToken)
+    protected override async Task<List<SessionModel>> ComputeState(CancellationToken cancellationToken)
     {
-        var sessions = await AuthService.GetUserSessionsAsync(Session, cancellationToken).ConfigureAwait(false);
+        var sessions = await AuthService.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
         var result = new List<SessionModel>();
 
         foreach (var session in sessions) {
@@ -175,8 +175,8 @@
                 IsCurrent = Session.Id == session.Id,
                 IPAddress = session.IPAddress,
                 UserAgent = $"{userAgent.Family} {userAgent.Major}.{userAgent.Minor}",
-                Created = await LiveClock.GetMomentsAgoAsync(session.CreatedAt),
-                LastSeen = await LiveClock.GetMomentsAgoAsync(session.LastSeenAt),
+                CreatedAt = session.CreatedAt,
+                LastSeenAt = session.LastSeenAt,
             };
             result.Add(model);
         }

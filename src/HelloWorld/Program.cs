@@ -42,12 +42,12 @@ Project InputProject(string prompt)
 var watchedProject = InputProject("Which project do you want to continuously rebuild?");
 Task.Run(async () => {
     WriteLine($"Watching: {watchedProject}");
-    var computed = await Computed.CaptureAsync(_ => builder.GetOrBuildAsync(watchedProject.Id, default));
+    var computed = await Computed.Capture(_ => builder.GetOrBuildAsync(watchedProject.Id, default));
     while (true) {
         WriteLine($"* Build result: {computed.Value}");
-        await computed.WhenInvalidatedAsync();
+        await computed.WhenInvalidated();
         // Computed instances are ~ immutable, so update means getting a new one
-        computed = await computed.UpdateAsync(false);
+        computed = await computed.Update(false);
     }
 }).Ignore();
 

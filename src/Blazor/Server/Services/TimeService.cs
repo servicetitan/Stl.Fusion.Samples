@@ -12,7 +12,7 @@ namespace Samples.Blazor.Server.Services
         private readonly DateTime _startTime = DateTime.UtcNow;
 
         [ComputeMethod(AutoInvalidateTime = 0.25, KeepAliveTime = 1)]
-        public virtual async Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<DateTime> GetTime(CancellationToken cancellationToken = default)
         {
             var time = DateTime.Now;
             if (time.Second % 10 == 0)
@@ -22,7 +22,7 @@ namespace Samples.Blazor.Server.Services
             return time;
         }
 
-        public virtual Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
+        public virtual Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
         {
             var computed = Computed.GetCurrent();
             Task.Delay(updatePeriod, default)

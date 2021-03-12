@@ -11,7 +11,7 @@ namespace Samples.Blazor.Server.Services
     public interface IForismaticClient
     {
         [Get("?method=getQuote&format=json")]
-        Task<JObject> GetQuoteAsync(
+        Task<JObject> GetQuote(
             [Query("lang")] string language = "en",
             CancellationToken cancellationToken = default);
     }

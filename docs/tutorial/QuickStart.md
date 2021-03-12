@@ -1,26 +1,27 @@
 # QuickStart: Learn 80% of Fusion by walking through HelloCart sample
 
-> This part is an attempt to introduce all key Fusion features 
+> This part is an attempt to introduce all key Fusion features
 > in a single document. If you find it doesn't do its
 > job well, please don't hesitate to reach AY on
 > our [Discord Server](https://discord.gg/EKEwv6d)
 > and tell him *everything* 😈
 
 The content below implies you can browse, build, and run
-[HelloCart Sample], so before you start reading further, 
+[HelloCart Sample], so before you start reading further,
 it's highly recommended to:
-1. Clone https://github.com/servicetitan/Stl.Fusion.Samples
+
+1. Clone [https://github.com/servicetitan/Stl.Fusion.Samples](https://github.com/servicetitan/Stl.Fusion.Samples)
 2. Open `Samples.sln` in your favorite IDE.
 
 ## What is HelloCart sample?
 
-It's a small console app designed to show how to implement a simple 
+It's a small console app designed to show how to implement a simple
 Fusion API by starting from a toy version of it
 and gradually transition to its production-ready version
-that uses EF Core, can be called remotely, and scales 
+that uses EF Core, can be called remotely, and scales
 horizontally relying on multi-host invalidation.
 
-The API it implements is defined in 
+The API it implements is defined in
 [Abstractions.cs](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/HelloCart/Abstractions.cs).
 
 There are two immutable model types:
@@ -39,8 +40,8 @@ public record Cart : IHasId<string>
 }
 ```
 
-I use records and `IHasId<string>` here solely because it's 
-a good idea to show all the constraints explicitly in your APIs. 
+I use records and `IHasId<string>` here solely because it's
+a good idea to show all the constraints explicitly in your APIs.
 But Fusion doesn't really care about either, so both things are
 totally optional.
 
@@ -50,19 +51,19 @@ We're also going to implement two services:
 public interface IProductService
 {
     [CommandHandler]
-    Task EditAsync(EditCommand<Product> command, CancellationToken cancellationToken = default);
+    Task Edit(EditCommand<Product> command, CancellationToken cancellationToken = default);
     [ComputeMethod]
-    Task<Product?> FindAsync(string id, CancellationToken cancellationToken = default);
+    Task<Product?> TryGet(string id, CancellationToken cancellationToken = default);
 }
 
 public interface ICartService
 {
     [CommandHandler]
-    Task EditAsync(EditCommand<Cart> command, CancellationToken cancellationToken = default);
+    Task Edit(EditCommand<Cart> command, CancellationToken cancellationToken = default);
     [ComputeMethod]
-    Task<Cart?> FindAsync(string id, CancellationToken cancellationToken = default);
+    Task<Cart?> TryGet(string id, CancellationToken cancellationToken = default);
     [ComputeMethod]
-    Task<decimal> GetTotalAsync(string id, CancellationToken cancellationToken = default);
+    Task<decimal> GetTotal(string id, CancellationToken cancellationToken = default);
 }
 ```
 
@@ -90,19 +91,20 @@ just about a single thing: **the total cost of items in
 user's cart**. We want to update this cost in real-time
 once anything impacting it changes.
 
-This is why `ICartService.GetTotalAsync` exists - this
-method is expected to return the right total. 
+This is why `ICartService.GetTotal` exists - this
+method is expected to return the right total.
 But... Looks like there is nothing in our API that could
-tell the client that total for the specific cart changes, 
+tell the client that total for the specific cart changes,
 right?
 
-The right answer to this question is "Wrong! It's a 
+The right answer to this question is "Wrong! It's a
 Fusion API, and every read endpoint of a Fusion API is
 capable of doing exactly this!". But before we dig into
-the details, let's think how we'd implement the same 
+the details, let's think how we'd implement the same
 behavior without Fusion.
 
 One possible option is:
+
 1. Add SignalR hub on server
 2. Make it broadcast every command to every client
 3. Make clients to maintain their own copies of
@@ -112,28 +114,30 @@ One possible option is:
 
 Note that point #3 already implies that you have to add
 a fair amount of code on the client side:
+
 - A very minimal implementation should at least discard
-  the commands that aren't related to the cart you're 
+  the commands that aren't related to the cart you're
   watching. Remember, server broadcasts every command,
-  so the client may see `EditCommand("apple")`, but 
+  so the client may see `EditCommand("apple")`, but
   a `Product` with `Id == "apple"` might not exist in the
   user's cart on this client, right?
 - Once the client recognizes above command as "relevant",
-  it should somehow update the cart. One option is to 
+  it should somehow update the cart. One option is to
   update it right on the client, but it requires us
-  to have a separate version of cart update logic running 
-  on the client, which isn't perfect from DRY standpoint. 
-- So if you're a big fan of DRY & minimalism, 
-  you might prefer to request a new cart directly from 
+  to have a separate version of cart update logic running
+  on the client, which isn't perfect from DRY standpoint.
+- So if you're a big fan of DRY & minimalism,
+  you might prefer to request a new cart directly from
   server once you see a command impacting it.
   On a downside, it will definitely increase the load on
   server - fetching the cart requires fetching its items,
-  products, etc... So you almost certainly need to cache 
+  products, etc... So you almost certainly need to cache
   carts there.
 
 And that's just the beginning of our problems - the implementation
 described above:
-1. Allows everyone to watch everyone else's purchases. 
+
+1. Allows everyone to watch everyone else's purchases.
    This might be fine in some countries, but... Most of
    these countries are still living in pre-internet age,
    so it's a fictional scenario even there.
@@ -143,41 +147,41 @@ described above:
    you'll see `O(ClientCount^2)` packet rate on server,
    which consequently means this implementation also won't scale.
    You absolutely need to filter commands on the server side
-   just because of this. 
+   just because of this.
 
 2. Ok, we need to filter our commands on the server side.
    Let's add an extra logic to `Edit<Product>` handler
    that finds every cart this product is added to
    and notifies every customer watching these carts.
-
+   
    Here you realize you need a pub-sub to implement
    this - i.e. your clients will have to subscribe to and
-   unsubscribe from topics like `"cart-[cartId]"` to 
-   watch for... 
+   unsubscribe from topics like `"cart-[cartId]"` to
+   watch for...
    Wait, are we still going to send `Edit<Product>` commands
-   to these topics, or we better go with a separate 
+   to these topics, or we better go with a separate
    model for these notifications? And if yes - we'll definitely
    need a separate logic to process these...
 
-3. What if your client temporarily loses its connection 
+3. What if your client temporarily loses its connection
    to server? Remember that it needs to know precise
-   cart content to properly update it on every command 
+   cart content to properly update it on every command
    or change notification.
    So you need a logic that will refresh the cart
    once reconnection happens, right?
 
-4. Most of real-time messaging APIs 
+4. Most of real-time messaging APIs
    [don't provide strong guarantees for message ordering](https://github.com/dotnet/aspnetcore/issues/9240) - especially for messages
    sent to different topics / channels, and any *real* real-time
    app uses a number of such channels. Moreover, if you send requests
    via regular HTTP API to the same server, the order of
    these responses and the order of messages you get via SignalR
-   can differ from their order on server side. 
-   In other words, you might receive `EditCommand("apple", 5)` 
+   can differ from their order on server side.
+   In other words, you might receive `EditCommand("apple", 5)`
    message first (which sets "apple" price to 5),
-   and after that get the "current" cart content, which is 
-   already an outdated now - you requested it few second ago 
-   due to reconnect, and this request was completed by 
+   and after that get the "current" cart content, which is
+   already an outdated now - you requested it few second ago
+   due to reconnect, and this request was completed by
    server before processing `EditCommand("apple", 5)` command,
    but the message describing this command somehow got
    to the client faster.
@@ -186,24 +190,24 @@ described above:
    eventually consistent (i.e. eventually the client will display
    the right cart content and the right total).
 
-5. "Real real-time app" also means you'll have multiple 
+5. "Real real-time app" also means you'll have multiple
    servers. Usually each client talks with just one of them,
    but changes may happen on any other, so your servers need
    to somehow announce these changes to their peers.
-   And if you think how to implement this, you'll quickly 
-   conclude that you need **one more flavor of the same 
+   And if you think how to implement this, you'll quickly
+   conclude that you need **one more flavor of the same
    protocol, but now for cross-server change announcements,
    and moreover, these servers have to implement reactions
    to these events too!**
 
-That's not the full list, but the gist is: 
+That's not the full list, but the gist is:
 **as usual, the problem is much more complex than it initially seems**.
 And even if we leave all the technical difficulties aside,
 the straightforward implementation of such an architecture
-makes you to violate 
-[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) and 
-[SRP](https://en.wikipedia.org/wiki/Single-responsibility_principle) 
-multiple times. 
+makes you to violate
+[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) and
+[SRP](https://en.wikipedia.org/wiki/Single-responsibility_principle)
+multiple times.
 
 If you're not convinced yet that all if this doesn't look good,
 check out my other post covering another similar scenario:
@@ -228,7 +232,7 @@ public virtual async Task InitializeAsync()
     var pCarrot = new Product { Id = "carrot", Price = 1M };
     ExistingProducts = new [] { pApple, pBanana, pCarrot };
     foreach (var product in ExistingProducts)
-        await HostProductService.EditAsync(new EditCommand<Product>(product));
+        await HostProductService.Edit(new EditCommand<Product>(product));
 
     var cart1 = new Cart() { Id = "cart:apple=1,banana=2",
         Items = ImmutableDictionary<string, decimal>.Empty
@@ -242,45 +246,47 @@ public virtual async Task InitializeAsync()
     };
     ExistingCarts = new [] { cart1, cart2 };
     foreach (var cart in ExistingCarts)
-        await HostCartService.EditAsync(new EditCommand<Cart>(cart));
+        await HostCartService.Edit(new EditCommand<Cart>(cart));
 }
 ```
 
-Then it creates a set of background tasks **watching for changes 
+Then it creates a set of background tasks **watching for changes
 made to every one of them**:
 
 ```cs
-public Task WatchAsync(CancellationToken cancellationToken = default)
+public Task Watch(CancellationToken cancellationToken = default)
 {
     var tasks = new List<Task>();
     foreach (var product in ExistingProducts)
-        tasks.Add(WatchProductAsync(product.Id, cancellationToken));
+        tasks.Add(WatchProduct(product.Id, cancellationToken));
     foreach (var cart in ExistingCarts)
-        tasks.Add(WatchCartTotalAsync(cart.Id, cancellationToken));
+        tasks.Add(WatchCartTotal(cart.Id, cancellationToken));
     return Task.WhenAll(tasks);
 }
 
-public async Task WatchCartTotalAsync(string cartId, CancellationToken cancellationToken = default)
+public async Task WatchCartTotal(string cartId, CancellationToken cancellationToken = default)
 {
     var cartService = WatchServices.GetRequiredService<ICartService>();
-    var computed = await Computed.CaptureAsync(ct => cartService.GetTotalAsync(cartId, ct), cancellationToken);
+    var computed = await Computed.Capture(
+        ct => cartService.GetTotal(cartId, ct), 
+        cancellationToken);
     while (true) {
         WriteLine($"  {cartId}: total = {computed.Value}");
-        await computed.WhenInvalidatedAsync(cancellationToken);
-        computed = await computed.UpdateAsync(false, cancellationToken);
+        await computed.WhenInvalidated(cancellationToken);
+        computed = await computed.Update(false, cancellationToken);
     }
 }
 
-public async Task WatchProductAsync(string productId, CancellationToken cancellationToken = default)
+public async Task WatchProduct(string productId, CancellationToken cancellationToken = default)
 {
     var productService = WatchServices.GetRequiredService<IProductService>();
-    // The rest is similar to the same code in WatchCartTotalAsync
+    // The rest is similar to the same code in WatchCartTotal
 }
 ```
 
-Let's postpone the discussion of above code for now. 
-The only remark I want to make at this point is that 
-`WatchAsync` is started in fire-and-forgot fashion 
+Let's postpone the discussion of above code for now.
+The only remark I want to make at this point is that
+`Watch` is started in fire-and-forgot fashion
 in [`Program.cs`, line ~50](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/HelloCart/Program.cs#L52).
 
 Finally, the looped section in `Program.cs` starts to
@@ -289,36 +295,36 @@ and sends the following command:
 
 ```cs
 var command = new EditCommand<Product>(product with { Price = price });
-await app.ClientProductService.EditAsync(command);
+await app.ClientProductService.Edit(command);
 // You can run absolutely identical action with:
-// await app.ClientServices.Commander().CallAsync(command);
+// await app.ClientServices.Commander().Call(command);
 ```
 
-As you see, this call triggers not only the "watcher" task 
-for the product you change, **but surprisingly, for cart's 
+As you see, this call triggers not only the "watcher" task
+for the product you change, **but surprisingly, for cart's
 total as well😲**
 
 And it happens not just for a single cart, but **for any cart that
-contains the product you modify** - try typing `banana=100` expression 
-("banana" is contained in both carts) to see both carts' totals are 
+contains the product you modify** - try typing `banana=100` expression
+("banana" is contained in both carts) to see both carts' totals are
 updated!
 
 ## Wait, but why this is such a big deal?
 
-We've just shown there is a way to propagate any changes 
-made to a relatively small component to a derivative 
+We've just shown there is a way to propagate any changes
+made to a relatively small component to a derivative
 that uses this component. And further I'll show this is
 done completely automatically - except a relatively small
 part.
 
-So... We have a tool allowing us to recompute any 
-derivative as reaction to change in any other piece 
+So... We have a tool allowing us to recompute any
+derivative as reaction to change in any other piece
 of data it uses. And this is almost all you need
-to build the real-time UI, because any UI model can 
+to build the real-time UI, because any UI model can
 be this derivative as well!
 
 Now let's learn how it works by starting from the
-very basic implementation (`v1`) of `IProductService` 
+very basic implementation (`v1`) of `IProductService`
 and `ICartService`.
 
 ## Version 1: ConcurrentDictionary-based implementation
@@ -329,33 +335,36 @@ Code: [src/HelloCart/v1](https://github.com/servicetitan/Stl.Fusion.Samples/tree
 > of this document, because it explains nearly all key abstractions.
 > Please be patient and read it carefully 🙏
 
-First, check out `InMemoryProductService` there. 
+First, check out `InMemoryProductService` there.
 You might notice just a few unusual things there:
-1. All of its API methods (declared in `IProductService`) are 
+
+1. All of its API methods (declared in `IProductService`) are
    marked as `virtual`
-2. `EditAsync` contains a bit unusual piece of code:
+2. `Edit` contains a bit unusual piece of code:
    ```cs
     if (Computed.IsInvalidating()) {
-        FindAsync(productId, default).Ignore();
+        TryGet(productId, default).Ignore();
         return Task.CompletedTask;
     }
    ```
 
-Everything else looks absolutely normal. 
+Everything else looks absolutely normal.
 
 The same is equally applicable to `InMemoryCartService`:
-1. All of its API methods (declared in `ICartService`) are 
+
+1. All of its API methods (declared in `ICartService`) are
    marked as `virtual`
-2. `EditAsync` contains a bit unusual piece of code:
+2. `Edit` contains a bit unusual piece of code:
    ```cs
     if (Computed.IsInvalidating()) {
-        FindAsync(cartId, default).Ignore();
+        TryGet(cartId, default).Ignore();
         return Task.CompletedTask;
     }
    ```
 
 Finally, let's look at the code that registers these
 services in IoC container:
+
 ```cs
 public class AppV1 : AppBase
 {
@@ -371,62 +380,67 @@ public class AppV1 : AppBase
 }
 ```
 
-One thing is clear now: this is the code that adds a magic ingredient 
+One thing is clear now: this is the code that adds a magical ingredient 
 to a pretty usual dish to give it superpowers. Sorry, can't resist
 to depict it in symbols: 🧝=🥣+🦄
 
 Seriously, so how does it work?
 
-`AddComputeService` registers so-called [Compute Service](Part01.md) - 
-a singleton, which proxy type is generated in the runtime, 
-but derives from the type you provide, i.e. 
+`AddComputeService` registers so-called [Compute Service](Part01.md) -
+a singleton, which proxy type is generated in the runtime,
+but derives from the type you provide, i.e.
 `InMemoryProductService` / `InMemoryCartService` in above case.
 The proxy "decorates" every method marked by
 `[ComputeMethod]` with a special wrapper:
-1. First, it computes the `key` for this call. 
+
+1. First, it computes the `key` for this call.
    It is ~ `(serviceInstance, method, arguments.ExceptCancellationToken())`
    tuple.
-2. Then it checks if the `IComputed` instance associated with 
-   the same key still exists in RAM. 
+
+2. Then it checks if the `IComputed` instance associated with
+   the same key still exists in RAM.
    `ComputedRegistry` is the underlying type that caches
-   weak references to all of `IComputed` instances and 
+   weak references to all of `IComputed` instances and
    helps to find them.
    If `IComputed` instance is found and it's still `Consistent`,
    the wrapper "strips" it by returning its `Value` -
    in other words, it returns the cached answer.
-   Note that `Value` may throw an exception - as you 
+   Note that `Value` may throw an exception - as you
    might guess, exceptions are cached the same way
    as well, though by default they auto-expire in 1 second.
+
 3. Otherwise it acquires async lock for the `key` and retries
    #2 inside this lock. You probably recognize this is
    just a
    [double-checked locking](https://en.wikipedia.org/wiki/Double-checked_locking).
+
 4. If all of this didn't help to find the cached "answer",
-   the base method (i.e. your original one) is called 
+   the base method (i.e. your original one) is called
    to *compute* it. But before the *computation* part start,
    the `IComputed` instance that's going to store its
    outcome gets temporarily exposed via `Computed.GetCurrent()`
    for the duration of the computation.
-
+   
    Why? Well, it wasn't mentioned, but once an `IComputed`
    gets "stripped" on step #2, #3, and even later on #4,
-   it's also registered as a dependency of any 
+   it's also registered as a dependency of any
    other `IComputed` that's currently exposed via
    `Computed.GetCurrent()`. **And this is how `IComputed`
    instances "learn" all the components they're "built" from.**
-
+   
    When the computation completes, the newly created
    `IComputed` gets registered in `ComputedRegistry`
    and "stripped" the same way to return its `Value`
    and possibly, become a dependency of another
    `IComputed`.
 
-The gist is: any Compute Service methods marked by 
-`[ComputeMethod]` attribute get a special behavior, 
+The gist is: any Compute Service methods marked by
+`[ComputeMethod]` attribute get a special behavior,
 which:
+
 - Caches method call results
-- Makes sure that for a given set of arguments 
-  just one computation of call result may run 
+- Makes sure that for a given set of arguments
+  just one computation of call result may run
   concurrently (due to async lock inside)
 - Finally, it builds a dependency graph of method
   computation results under the hood, where nodes
@@ -435,57 +449,60 @@ which:
 
 And even though normally you don't see these `IComputed`
 instances, there are APIs allowing you to:
+
 - "Pull" the `IComputed` that "backs" certain `[ComputeMethod]` call result
 - Invalidate it, i.e. mark it inconsistent
 - Await for its invalidation
 - Or even get the most up-to-date version of a possibly invalidated
   `IComputed` - either a cached or a newly computed one.
 
-Do you remember the code "watching" for cart changes in the 
+Do you remember the code "watching" for cart changes in the
 beginning?
 
 ```cs
-// Computed.CaptureAsync pulls the `IComputed` storing the
+// Computed.Capture pulls the `IComputed` storing the
 // result of a call to the first [ComputeMethod] made from 
 // the delegate it gets, i.e. the result of
-// cartService.GetTotalAsync(cartId, ct) in this case
-var computed = await Computed.CaptureAsync(
-    ct => cartService.GetTotalAsync(cartId, ct), cancellationToken);
+// cartService.GetTotal(cartId, ct) in this case
+var computed = await Computed.Capture(
+    ct => cartService.GetTotal(cartId, ct), cancellationToken);
 while (true) {
     WriteLine($"  {cartId}: total = {computed.Value}");
-    // IComputed.WhenInvalidatedAsync awaits for the invalidation.
+    // IComputed.WhenInvalidated awaits for the invalidation.
     // It returns immediately if 
     // (computed.State == ConsistencyState.Invalidated)
-    await computed.WhenInvalidatedAsync(cancellationToken);
+    await computed.WhenInvalidated(cancellationToken);
     // Finally, this is how you update IComputed instances.
     // As you might notice, they're almost immutable, 
     // so "update" always means creation of a new instance.
-    computed = await computed.UpdateAsync(false, cancellationToken);
+    computed = await computed.Update(false, cancellationToken);
 }
 ```
 
 Now, how these dependencies get created? Let's look at
-`InMemoryCartService.GetTotalAsync` again:
+`InMemoryCartService.GetTotal` again:
+
 ```cs
-public virtual async Task<decimal> GetTotalAsync(
+public virtual async Task<decimal> GetTotal(
     string id, CancellationToken cancellationToken = default)
 {
-    // Dependency: this.FindAsync(id)!
-    var cart = await FindAsync(id, cancellationToken);
+    // Dependency: this.TryGet(id)!
+    var cart = await TryGet(id, cancellationToken);
     if (cart == null)
         return 0;
     var total = 0M;
     foreach (var (productId, quantity) in cart.Items) {
-        // Dependency: _products.FindAsync(productId)!
-        var product = await _products.FindAsync(productId, cancellationToken);
+        // Dependency: _products.TryGet(productId)!
+        var product = await _products.TryGet(productId, cancellationToken);
         total += (product?.Price ?? 0M) * quantity;
     }
     return total;
 }
 ```
 
-As you see, any result of `GetTotalAsync(id)` becomes
+As you see, any result of `GetTotal(id)` becomes
 dependent on:
+
 - Cart content - for the cart with this `id`
 - Every product that's referenced by items in this cart.
 
@@ -493,12 +510,13 @@ dependent on:
 > `IComputed`, check out [Part 1](Part01.md) and [Part 2](Part02.md)
 > of this Tutorial later.
 
-Now it's time to demystify how `FindAsync(productId)` call result gets
+Now it's time to demystify how `TryGet(productId)` call result gets
 invalidated once a product with `productId` gets changed.
 
 Again, remember this code?
+
 ```cs
-public virtual Task EditAsync(EditCommand<Product> command, CancellationToken cancellationToken = default)
+public virtual Task Edit(EditCommand<Product> command, CancellationToken cancellationToken = default)
 {
     var (productId, product) = command;
     if (string.IsNullOrEmpty(productId))
@@ -507,7 +525,7 @@ public virtual Task EditAsync(EditCommand<Product> command, CancellationToken ca
         // This is the invalidation block.
         // Every [ComputeMethod] result you "touch" here
         // instantly becomes a 🎃 (gets invalidated)!
-        FindAsync(productId, default).Ignore();
+        TryGet(productId, default).Ignore();
         return Task.CompletedTask;
     }
 
@@ -519,42 +537,45 @@ public virtual Task EditAsync(EditCommand<Product> command, CancellationToken ca
 }
 ```
 
-And if you look into similar `EditAsync` for in `InMemoryCartService`, 
+And if you look into similar `Edit` for in `InMemoryCartService`,
 you'll find a very similar block there:
+
 ```cs
 if (Computed.IsInvalidating()) {
-    FindAsync(cartId, default).Ignore();
+    TryGet(cartId, default).Ignore();
     return Task.CompletedTask;
 }
 ```
 
 So now you have *almost* the full picture:
-- Low-level methods (the ones that don't have any 
+
+- Low-level methods (the ones that don't have any
   dependencies) are invalidated explicitly &ndash;
-  by the invalidation blocks in command handlers 
-  that may render cached results of calls to such methods 
+  by the invalidation blocks in command handlers
+  that may render cached results of calls to such methods
   inconsistent with the ground truth.
-- High-level methods like `GetTotalAsync` are invalidated
+- High-level methods like `GetTotal` are invalidated
   automatically due to invalidation of their dependencies.
-  This is why you don't see a call to `GetTotalAsync` in 
+  This is why you don't see a call to `GetTotal` in
   any of invalidation blocks.
 
-What's missing is how it happens that when you call `EditAsync`,
+What's missing is how it happens that when you call `Edit`,
 ***both** `if (Computed.IsInvalidating()) { ... }` and the code
-outside of this block runs, assuming this block contains `return` 
+outside of this block runs, assuming this block contains `return`
 statement?
 
 I'll give a brief answer here:
-- Yes, in reality any Compute Service method decorated with 
+
+- Yes, in reality any Compute Service method decorated with
   `[CommandHandler]` is called `N + 1` times, where `N` is the
   number of servers in your cluster 🙀
 - The first call is the normal one - it makes all the changes
 - `N` more calls are made inside so-called invalidation scope - i.e. inside
   `using (Computed.Invalidate()) { ... }` block, and they are reliably
-  executed on every server in your cluster, including the one 
+  executed on every server in your cluster, including the one
   where the command was originally executed.
 - Moreover, when your command (the `Task<T>` running it) completes
-  on the original server, it's guaranteed that both its normal handler 
+  on the original server, it's guaranteed that both its normal handler
   call and "the invalidation call" were completed for it locally.
 
 Under the hood all of this is powered by similar AOP-style
@@ -565,29 +586,30 @@ pipeline.
 Methods marked with `[CommandHandler]` behave very differently
 from methods marked by `[ComputeMethod]` - in fact, there
 is nothing common at all.
-The wrapper logic for command handlers does nothing but routes 
+The wrapper logic for command handlers does nothing but routes
 every call to `ICommander`. This allows you to call such methods
 directly - note that if this logic won't exist, calling such a method
 directly would be a mistake, because such call won't trigger
 the whole command processing pipeline for the used command.
 
 So wrappers for `[CommandHandler]`-s declared in Compute Services
-exist to unify this: you are free to invoke such commands by either 
-throwing them to `ICommander.CallAsync(command, ...)`,
+exist to unify this: you are free to invoke such commands by either
+throwing them to `ICommander.Call(command, ...)`,
 or just calling them directly. Later you'll learn that this
-feature also enables Fusion to implement clients for APIs 
-like `ICartService`, and to route client-side commands 
+feature also enables Fusion to implement clients for APIs
+like `ICartService`, and to route client-side commands
 (sent to client-side `ICommander` instances) to these
-clients to execute them on server side. 
+clients to execute them on server side.
 
-Ok, but what happens when the command is processed by 
-`ICommander`? As in case with MediatR, it means triggering 
+Ok, but what happens when the command is processed by
+`ICommander`? As in case with MediatR, it means triggering
 command handler pipeline for this type of command.
 Fusion injects a number of its own middleware-like handlers for
-Compute Service commands. These handlers run your command handler 
-(the final one) in the end, but also provide all the infrastructure 
+Compute Service commands. These handlers run your command handler
+(the final one) in the end, but also provide all the infrastructure
 needed to "replay" this command in the invalidation mode on
 every host. In particular, they:
+
 - Provide an abstraction allowing to start a transaction
   for this command and get `DbContext`s associated
   with this transaction.
@@ -596,31 +618,33 @@ every host. In particular, they:
 - Replay the command in the invalidation mode locally.
 
 Btw, "replaying the command in the invalidation mode" means:
+
 - Restoring the "operation items". Later I'll show you can
   pass the information from a "normal" command handler "pass"
-  to the subsequent "invalidation pass" run. 
+  to the subsequent "invalidation pass" run.
   Typically you need this to properly invalidate something
   related to what was deleted during the "normal" pass.
-- Running the same command handler, but inside 
+- Running the same command handler, but inside
   `using (Computed.Invalidate()) { ... }` block.
 
-☝ The pipeline described above is called **"Operations Framework"** 
-(**OF** further) - in fact, it's just a set of handlers and services 
+☝ The pipeline described above is called **"Operations Framework"**
+(**OF** further) - in fact, it's just a set of handlers and services
 for CommandR providing this multi-host invalidation pipeline for every
 Fusion's Compute Service.
 
 And a few final remarks on this:
-1. The pipeline described above is used very partially in `v1`'s 
+
+1. The pipeline described above is used very partially in `v1`'s
    case: there are no other hosts, no database, and thus no calls
    enabling all these integrations were made when the IoC container
    was configured. So only a very core part of this pipeline running
    handlers normally + in the invalidation mode is used.
 2. **No, this is not how Fusion delivers changes to every remote
-   client** (e.g. Blazor WASM running in your browser). 
-   This pipeline is server-side only. 
+   client** (e.g. Blazor WASM running in your browser).
+   This pipeline is server-side only.
 
-> If you want to learn all the details about this - check out 
-> [Part 8](Part08.md), [Part 9](Part09.md), and [Part 10](Part10.md) 
+> If you want to learn all the details about this - check out
+> [Part 8](Part08.md), [Part 9](Part09.md), and [Part 10](Part10.md)
 > of the Tutorial 😎
 
 ## Version 2: Switching to EF Core
@@ -683,37 +707,44 @@ await base.InitializeAsync();
 Now, if you look at `DbProductService` and `DbCartService`, you'll notice
 just a few differences between them and any regular service that
 reads/writes the DB:
+
 1. They are inherited from `DbServiceBase<AppDbContext>`. This type
    is just a convenience helper providing a few protected methods
    for services that are supposed to access the DB.
+
 2. One of these methods is `CreateDbContext` - you may see it's typically
    used like this:
-    ```cs
-    await using var dbContext = CreateDbContext();
-    // ... code using dbContext
-    ```
+   
+   ```cs
+   await using var dbContext = CreateDbContext();
+   // ... code using dbContext
+   ```
+   
    By default, `CreateDbContext` returns **a read-only `DbContext` with
-   change tracking disabled**. 
-   As you might guess, this method of getting `DbContext` is supposed 
+   change tracking disabled**.
+   As you might guess, this method of getting `DbContext` is supposed
    to be used in `[ComputeMethod]`-s, i.e. query-style methods that
    aren't supposed to change anything or rely on change tracking.
-
-   "Read-only" means this `DbContext` "throws" on attempt to call 
+   
+   "Read-only" means this `DbContext` "throws" on attempt to call
    `SaveChangesAsync`.
-3. And another one is `CreateCommandDbContextAsync`, which is used like this:
-    ```cs
-    await using var dbContext = await CreateCommandDbContextAsync(cancellationToken);
-    // ... code using dbContext
-    ```
+
+3. And another one is `CreateCommandDbContext`, which is used like this:
+   
+   ```cs
+   await using var dbContext = await CreateCommandDbContext(cancellationToken);
+   // ... code using dbContext
+   ```
+   
    Contrary to the previous method, this method is used to create
    `DbContext` inside command handlers, and once it's called,
    it also starts the transaction associated with the current command
    (which is why this method returns `Task<TDbContext>`).
    The transaction is auto-committed once your handler completes normally
    (i.e. w/o an exception), moreover, the operation log entry
-   describing the current command will be persisted as part of this 
+   describing the current command will be persisted as part of this
    transaction.
-
+   
    As you might guess, the `DbContext` provided by this method is
    **read-write and with enabled change tracking**. Moreover,
    if you call it multiple times, you'll get different `DbContext`-s,
@@ -721,10 +752,11 @@ reads/writes the DB:
    will "see" the DB through the same transaction.
 
 And that's it. So to use Fusion with EF, you must:
+
 - Make a couple extra calls during IoC container configuration
   to enable Operations Framework
 - Inherit your Compute Services from `DbServiceBase<TDbContext>`
-  and rely on its `CreateDbContext` / `CreateCommandDbContextAsync`
+  and rely on its `CreateDbContext` / `CreateCommandDbContext`
   to get `DbContext`-s. Alternatively, you just see what these
   methods do and use the same code in Compute Services that
   can't be inherited from `DbServiceBase<TDbContext>`.
@@ -745,44 +777,47 @@ b.AddDbEntityResolver<string, DbCart>((_, options) => {
 ```
 
 This code registers two entity resolvers - one for `DbProduct` type,
-and another one - for `DbCart` type (`string` is the type of key of 
-these entities). 
+and another one - for `DbCart` type (`string` is the type of key of
+these entities).
 
-Entity resolvers are helpers grouping multiple requests to 
+Entity resolvers are helpers grouping multiple requests to
 find the entity by its key together and resolving all of them by
 sending a single DB query.
 
 The pseudo-code of the "main loop" of every entity resolver looks ~
 as follows:
+
 ```cs
 while (NotDisposed()) {
     var (tasks, keys) = GetNewEntityResolutionRequestTasks();
     // GetEntitiesAsync sends a single DB query with "{key} in (...)" clause
-    var entities = await GetEntitiesAsync(keys); ..)
+    var entities = await GetEntities(keys); ..)
     CompleteEntityResolutionTasks(tasks, keys, entities);
 }
 ```
 
 Here is an example of how to use such resolvers:
+
 ```cs
-public virtual async Task<Product?> FindAsync(string id, CancellationToken cancellationToken = default)
+public virtual async Task<Product?> TryGet(string id, CancellationToken cancellationToken = default)
 {
-    var dbProduct = await _productResolver.TryGetAsync(id, cancellationToken);
+    var dbProduct = await _productResolver.TryGet(id, cancellationToken);
     if (dbProduct == null)
         return null;
     return new Product() { Id = dbProduct.Id, Price = dbProduct.Price };
 }
 ```
 
-Guess why this important? Look at the production-grade `GetTotalAsync` code:
+Guess why this important? Look at the production-grade `GetTotal` code:
+
 ```cs
-public virtual async Task<decimal> GetTotalAsync(string id, CancellationToken cancellationToken = default)
+public virtual async Task<decimal> GetTotal(string id, CancellationToken cancellationToken = default)
 {
-    var cart = await FindAsync(id, cancellationToken);
+    var cart = await TryGet(id, cancellationToken);
     if (cart == null)
         return 0;
     var itemTotals = await Task.WhenAll(cart.Items.Select(async item => {
-        var product = await _products.FindAsync(item.Key, cancellationToken);
+        var product = await _products.TryGet(item.Key, cancellationToken);
         return item.Value * (product?.Price ?? 0M);
     }));
     return itemTotals.Sum();
@@ -791,30 +826,31 @@ public virtual async Task<decimal> GetTotalAsync(string id, CancellationToken ca
 
 Contrary to the previous version, it fetches all the products **in parallel**.
 But why?
-- First, it "hopes" that Fusion will resolve most of `FindAsync` calls via
-  its `IComputed` instance cache, i.e. without hitting the DB. And why 
+
+- First, it "hopes" that Fusion will resolve most of `TryGet` calls via
+  its `IComputed` instance cache, i.e. without hitting the DB. And why
   shouldn't it try to do this in parallel, if this possible?
 - But now imagine the case when Fusion's cache is empty, or it doesn't
-  store the result of `FindAsync` for every product that's in the cart.
-  This is where entity resolver used in `FindAsync` kicks in: most
+  store the result of `TryGet` for every product that's in the cart.
+  This is where entity resolver used in `TryGet` kicks in: most
   likely it will run just 1 or 2 queries to resolve every remaining
-  product that `GetTotalAsync` throws - and moreover, since all
-  these calls "flow" through `FindAsync`, these results will be 
+  product that `GetTotal` throws - and moreover, since all
+  these calls "flow" through `TryGet`, these results will be
   cached in Fusion's cache too!
 
-So crafting highly efficient Compute Services based on EF Core is actually 
-quite easy - if you think what's the extra code you have to write, 
+So crafting highly efficient Compute Services based on EF Core is actually
+quite easy - if you think what's the extra code you have to write,
 you'll find it's mainly `if (Computed.IsInvalidating()) { ... }` blocks -
 the rest is something you'd likely have otherwise at some point as well!
 
-And if you're curious how much of this "extra" a real app is expected to 
+And if you're curious how much of this "extra" a real app is expected to
 have - check out [Board Games](https://github.com/alexyakunin/BoardGames).
-It's mentioned in its 
+It's mentioned in its
 [README.md](https://github.com/alexyakunin/BoardGames/blob/main/README.md)
-that this whole app has 
-[just about 35 extra lines of code](https://github.com/alexyakunin/BoardGames/search?q=IsInvalidating) 
+that this whole app has
+[just about 35 extra lines of code](https://github.com/alexyakunin/BoardGames/search?q=IsInvalidating)
 responsible for the invalidation!
-In other words, **Fusion brought the cost of all real-time features this app 
+In other words, **Fusion brought the cost of all real-time features this app
 has to nearly zero there**.
 
 ## Version 4: Distributed Reactive Computing
@@ -826,6 +862,7 @@ that works locally. What does it take to convert it to
 a remotely callable one?
 
 Actually, almost nothing! Here is `AppV4` constructor:
+
 ```cs
 var baseUri = new Uri("http://localhost:7005");
 Host = BuildHost(baseUri);
@@ -834,6 +871,7 @@ ClientServices = BuildClientServices(baseUri);
 ```
 
 So this version of app:
+
 - Builds a web host & exposes server-side API there
 - Builds `ClientServices` hitting this webhost
 - And if you check out how `ClientServices` are used,
@@ -842,40 +880,41 @@ So this version of app:
   - `WatchServices` = `ClientServices` by default,
     so all the watcher tasks are using them too.
 
-> Can you spot any difference when you run the app in this mode? 
-> You can't 🙀 Update delays is the only difference you might 
+> Can you spot any difference when you run the app in this mode?
+> You can't 🙀 Update delays is the only difference you might
 > measure, but they're still extremely tiny, because both the server
 > and the client share the same machine.
 
 All of this means that Fusion is capable of providing a
-client for any Compute Service that mimics its behavior 
+client for any Compute Service that mimics its behavior
 completely, including everything related to invalidation
 and dependency tracking.
 
 Such clients are called [Replica Services](Part04.md).
-They are Compute Services too - you can even cast them to 
+They are Compute Services too - you can even cast them to
 `IComputeService` as any other compute service. But:
+
 - They're auto-generated
-- The computation they run is always a web API call 
+- The computation they run is always a web API call
   to the remote controller that exposes corresponding
   Compute Service.
 - The invalidation of values they "compute" happens because
-  any web API call they make bears the information about the 
-  server-side "publication" of the underlying `IComputed`. 
-  And once this `IComputed` gets invalidated on server side, 
+  any web API call they make bears the information about the
+  server-side "publication" of the underlying `IComputed`.
+  And once this `IComputed` gets invalidated on server side,
   the client gets a message notifying it about the invalidation
   via dedicated WebSocket channel.
 - Updates are normally happen via the same WebSocket channel
-  as well, so only the first call to some `(service, method, args)` 
+  as well, so only the first call to some `(service, method, args)`
   is sent via HTTP. The reason?
-  ASP.NET Core provides a robust argument binding & validation 
+  ASP.NET Core provides a robust argument binding & validation
   pipeline, and currently Fusion relies on it to make sure
   the client calls only what's explicitly allowed to call,
-  and sends only what's ok to deserialize on server side. 
+  and sends only what's ok to deserialize on server side.
   So once the first call passes through, every further update
   of the same result can be requested via WebSocket channel.
   As you might guess, the arguments aren't sent in this case -
-  client uses `publicationId` it got from server earlier to 
+  client uses `publicationId` it got from server earlier to
   reference the `IComputed` that has to be updated.
 
 This is a very basic description of how it works. So
@@ -893,10 +932,11 @@ services.AddFusion(fusion => {
 `fusion.AddWebServer()` adds its WebSocket server middleware, `IPublisher`,
 and configures ASP.NET MVC to use JSON.NET - currently you can't
 use any other serializers with Fusion, but we'll definitely add support
-for more of them in future (`MessagePack` is the most likely next option 
+for more of them in future (`MessagePack` is the most likely next option
 to support).
 
 Let's look at web app configuration now:
+
 ```cs
 app.UseWebSockets(new WebSocketOptions() { // We obviously need this
     KeepAliveInterval = TimeSpan.FromSeconds(30), // Just in case
@@ -909,8 +949,9 @@ app.UseEndpoints(endpoints => {
 ```
 
 Ok, and how Fusion controller looks like?
+
 ```cs
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 [ApiController, JsonifyErrors]
 public class CartController : ControllerBase, ICartService
 {
@@ -920,29 +961,30 @@ public class CartController : ControllerBase, ICartService
 
     // Commands
 
-    [HttpPost("edit")]
-    public Task EditAsync([FromBody] EditCommand<Cart> command, CancellationToken cancellationToken = default)
-        => _cartService.EditAsync(command, cancellationToken);
+    [HttpPost]
+    public Task Edit([FromBody] EditCommand<Cart> command, CancellationToken cancellationToken = default)
+        => _cartService.Edit(command, cancellationToken);
 
     // Queries
 
-    [HttpGet("find"), Publish]
-    public Task<Cart?> FindAsync(string id, CancellationToken cancellationToken = default)
-        => _cartService.FindAsync(id, cancellationToken);
+    [HttpGet, Publish]
+    public Task<Cart?> TryGet(string id, CancellationToken cancellationToken = default)
+        => _cartService.TryGet(id, cancellationToken);
 
-    [HttpGet("getTotal"), Publish]
-    public Task<decimal> GetTotalAsync(string id, CancellationToken cancellationToken = default)
-        => _cartService.GetTotalAsync(id, cancellationToken);
+    [HttpGet, Publish]
+    public Task<decimal> GetTotal(string id, CancellationToken cancellationToken = default)
+        => _cartService.GetTotal(id, cancellationToken);
 }
 ```
 
 Key points on controllers:
+
 - `[JsonifyErrors]` allows Fusion client to deserialize similar exceptions:
-  it retains only the exception type and message, but usually this is still 
-  better than seeing a generic exception type for any error happening on 
+  it retains only the exception type and message, but usually this is still
+  better than seeing a generic exception type for any error happening on
   server. But you're free to replace it with whatever logic you like ;)
 - For command handler endpoints, you just need to forward the call by calling
-  the underlying command handler or `ICommander.CallAsync`.
+  the underlying command handler or `ICommander.Call`.
   And typically you need to apply `[FromBody]` attribute to your
   command type, because otherwise it has a little chance to properly
   serialize-deserialize.
@@ -951,19 +993,20 @@ Key points on controllers:
   `[Publish]` filter. This filter does all the magic required to get
   invalidation notifications via WebSocket channel.
 
-And that's it - i.e. it's 95% boilerplate code. Fusion doesn't auto-generate 
+And that's it - i.e. it's 95% boilerplate code. Fusion doesn't auto-generate
 these controllers only because these endpoints are absolutely normal APIs,
 and so you might want to version them, name them in special way, use
 preferred argument binding, etc.
 
 > ☝ Did I mention these endpoints are actually callable even without Fusion?
 > You can try to call them directly e.g. [here](https://fusion-samples.servicetitan.com/swagger/index.html).
-> You might need to find your own `sessionId` or `userId` first - just perform 
-> the same action [in the UI](https://fusion-samples.servicetitan.com/) 
+> You might need to find your own `sessionId` or `userId` first - just perform
+> the same action [in the UI](https://fusion-samples.servicetitan.com/)
 > and see the arguments in e.g. Network tab in Chrome DevTools.
 
 Let's switch to the client side code now. The client-side container uses
 the following configuration:
+
 ```cs
 services.AddFusion(fusion => {
     fusion.AddRestEaseClient(client => {
@@ -983,26 +1026,28 @@ services.AddFusion(fusion => {
 
 The beginning is straightforward. Let's look at `AddReplicaService` -
 more precisely, its generic arguments:
+
 - The first one is clearly the service we are going to implement -
   it's the same `IProductService` / `ICartService` from `Abstractions.cs`
   we've used everywhere earlier.
 - And the second one is [RestEase](https://github.com/canton7/RestEase)
-  "definition" of the client for this Replica Service. 
-  It has to be an identical interface in terms of method names and 
-  signatures, but with RestEase attributes telling how to "map" it 
+  "definition" of the client for this Replica Service.
+  It has to be an identical interface in terms of method names and
+  signatures, but with RestEase attributes telling how to "map" it
   to the controller endpoints.
 
 This is how client interface looks for `ICartService` (see `Clients.cs` file):
+
 ```cs
 [BasePath("cart")]
 public interface ICartClient
 {
     [Post("edit")]
-    Task EditAsync([Body] EditCommand<Cart> command, CancellationToken cancellationToken);
-    [Get("find")]
-    Task<Cart?> FindAsync(string id, CancellationToken cancellationToken);
+    Task Edit([Body] EditCommand<Cart> command, CancellationToken cancellationToken);
+    [Get("tryGet")]
+    Task<Cart?> TryGet(string id, CancellationToken cancellationToken);
     [Get("getTotal")]
-    Task<decimal> GetTotalAsync(string id, CancellationToken cancellationToken);
+    Task<decimal> GetTotal(string id, CancellationToken cancellationToken);
 }
 ```
 
@@ -1013,13 +1058,14 @@ Fusion's Replica Services use such RestEase-generated clients
 to hit these endpionts.
 
 So where can you use such clients? Actually, everywhere!
+
 - In Blazor WebAssembly - obvously
 - In desktop apps - there is no Blazor, but as you might guess
   already, Fusion's integration with Blazor is super thin,
   and all it offers can work equally well in desktop apps too!
 - Finally, even on the server-side - nothing prevents you to e.g.
   aggregate the data on a dedicated set of servers there,
-  but keep the results of aggregation similarly reactive to 
+  but keep the results of aggregation similarly reactive to
   the changes in underlying data.
 
 So welcome to Distributed Reactive Computing!
@@ -1028,10 +1074,10 @@ So welcome to Distributed Reactive Computing!
 
 Code: [src/HelloCart/v5](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/HelloCart/v5)
 
-You already know that Fusion is capable to "propagate" the 
+You already know that Fusion is capable to "propagate" the
 invalidations to every host sharing the same data.
 
-Let's see what's necessary to make it work. 
+Let's see what's necessary to make it work.
 This is our full `AppV5` - there is nothing else:
 
 ```cs
@@ -1058,13 +1104,14 @@ public class AppV5 : AppV4
 }
 ```
 
-So we create an extra host here, but both hosts use 
+So we create an extra host here, but both hosts use
 the same container configuration we started to use
-in `v2`. In other words, no extra is needed to 
+in `v2`. In other words, no extra is needed to
 use multi-host invalidation - `v2` configuration
 is already tuned for it.
 
 And if you run this app, it will:
+
 - Use `Host.Services` to watch & display the changes
 - Use the client connecting to `ExtraHost` to make the changes.
 
@@ -1072,15 +1119,16 @@ So if you see it reacts to some change, it means that
 both Replica Service and multi-host invalidation works.
 And they really do!
 
-And congrats - this is the end of this part, and now you know almost everything! 
+And congrats - this is the end of this part, and now you know almost everything!
 The parts we didn't touch at all are:
+
 * [Part 3: State: IState&lt;T&gt; and Its Flavors](./Part03.md).
-  The key abstraction it describes is `LiveState<T>` - 
-  the type that implements "wait for change, make a delay, recompute" 
-  loop similar to the one we manually coded here, but in more robust 
+  The key abstraction it describes is `LiveState<T>` -
+  the type that implements "wait for change, make a delay, recompute"
+  loop similar to the one we manually coded here, but in more robust
   and convenient way.
-* [Part 6: Real-time UI in Blazor Apps](./Part06.md) - 
-  you'll learn how `LiveState<T>` is used by 
+* [Part 6: Real-time UI in Blazor Apps](./Part06.md) -
+  you'll learn how `LiveState<T>` is used by
   `LiveComponent<T>` to power real-time updates in Blazor.
 * [Part 5: Caching and Fusion on Server-Side Only](./Part05.md) -
   read it to fully understand how Fusion actually caches `IComputed`

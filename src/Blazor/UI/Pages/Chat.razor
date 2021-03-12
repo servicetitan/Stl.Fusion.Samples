@@ -41,7 +41,7 @@
         @if (state.ChatUser.Name != locals.Name) {
             <Badge Color="Color.Primary">Current name: @state.ChatUser.Name</Badge>
         }
-        <form @onsubmit="SetNameAsync">
+        <form @onsubmit="SetName">
 
             <Addons>
                 <Addon AddonType="AddonType.Start">
@@ -76,7 +76,7 @@
 
 <AuthorizeView>
     <Authorized>
-        <form @onsubmit="SendMessageAsync">
+        <form @onsubmit="Post">
             <Addons>
                 <Addon AddonType="AddonType.Start">
                     <AddonLabel>Message</AddonLabel>
@@ -119,12 +119,12 @@
         public ChatPage LastPage { get; set; } = new();
     }
 
-    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+    protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
-        var userCount = await ChatService.GetUserCountAsync(cancellationToken);
-        var activeUserCount = await ChatService.GetActiveUserCountAsync(cancellationToken);
-        var chatUser = await ChatService.GetCurrentUserAsync(Session, cancellationToken);
-        var lastPage = await ChatService.GetChatTailAsync(30, cancellationToken);
+        var userCount = await ChatService.GetUserCount(cancellationToken);
+        var activeUserCount = await ChatService.GetActiveUserCount(cancellationToken);
+        var chatUser = await ChatService.GetCurrentUser(Session, cancellationToken);
+        var lastPage = await ChatService.GetChatTail(30, cancellationToken);
         if (!Locals.Value.IsNameModified)
             ResetName(chatUser.IsValid ? chatUser.Name : "");
         return new Model() {
@@ -135,7 +135,7 @@
         };
     }
 
-    private async Task SetNameAsync()
+    private async Task SetName()
     {
         ResetError();
         var locals = Locals.Value;
@@ -143,20 +143,20 @@
             var command = new EditUserCommand(Session, locals.Name ?? "");
             if (command.Name!.Length < 4)
                 throw new ApplicationException("The name should be at least 4 character long.");
-            await Commander.CallAsync(command);
+            await Commander.Call(command);
         }
         catch (Exception e) {
             SetError(e);
         }
    }
 
-    private async Task SendMessageAsync()
+    private async Task Post()
     {
         ResetError();
         try {
             if (!State.LastValue.ChatUser.IsValid)
                 throw new ApplicationException("Please sign in first.");
-            await ChatService.PostMessageAsync(new(Locals.Value.Message, Session));
+            await ChatService.Post(new(Locals.Value.Message, Session));
             Locals.Value.Message = "";
             TouchLocals();
         }

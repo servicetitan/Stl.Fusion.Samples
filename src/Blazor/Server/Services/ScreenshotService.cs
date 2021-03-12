@@ -59,15 +59,15 @@ namespace Samples.Blazor.Server.Services
             }
         }
 
-        public virtual async Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default)
+        public virtual async Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default)
         {
             width = Math.Min(MaxWidth, Math.Max(MinWidth, width));
-            var bitmap = await GetScreenshotAsync(cancellationToken);
+            var bitmap = await GetScreenshot(cancellationToken);
             return CreateScreenshotFromBitmap(bitmap, width);
         }
 
         [ComputeMethod(KeepAliveTime = 0.1, AutoInvalidateTime = 0.05)]
-        protected virtual Task<DirectBitmap> GetScreenshotAsync(CancellationToken cancellationToken = default)
+        protected virtual Task<DirectBitmap> GetScreenshot(CancellationToken cancellationToken = default)
         {
             // Captures a full-resolution screenshot; the code here is optimized
             // to produce the next screenshot in advance & instantly return the prev. one.

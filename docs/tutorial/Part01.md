@@ -57,9 +57,9 @@ public class CounterService
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
     [ComputeMethod]
-    public virtual async Task<int> GetAsync(string key)
+    public virtual async Task<int> Get(string key)
     {
-        WriteLine($"{nameof(GetAsync)}({key})");
+        WriteLine($"{nameof(Get)}({key})");
         return _counters.TryGetValue(key, out var value) ? value : 0;
     }
 
@@ -68,7 +68,7 @@ public class CounterService
         WriteLine($"{nameof(Increment)}({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
         using (Computed.Invalidate())
-            GetAsync(key).Ignore();
+            Get(key).Ignore();
     }
 }
 ```
@@ -80,8 +80,8 @@ Let's use `CounterService`:
 
 ``` cs --region Part01_UseCounterService1 --source-file Part01.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-WriteLine(await counters.GetAsync("a"));
-WriteLine(await counters.GetAsync("b"));
+WriteLine(await counters.Get("a"));
+WriteLine(await counters.Get("b"));
 ```
 
 The output should be:
@@ -97,8 +97,8 @@ It looks normal, right? But how about this:
 
 ``` cs --region Part01_UseCounterService2 --source-file Part01.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-WriteLine(await counters.GetAsync("a"));
-WriteLine(await counters.GetAsync("a"));
+WriteLine(await counters.Get("a"));
+WriteLine(await counters.Get("a"));
 ```
 
 The output looks weird now:
@@ -121,9 +121,9 @@ Let's see how it works:
 
 ``` cs --region Part01_UseCounterService3 --source-file Part01.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-WriteLine(await counters.GetAsync("a"));
+WriteLine(await counters.Get("a"));
 counters.Increment("a");
-WriteLine(await counters.GetAsync("a"));
+WriteLine(await counters.Get("a"));
 ```
 
 The output:
@@ -154,10 +154,10 @@ public class CounterSumService
     public CounterSumService(CounterService counters) => Counters = counters;
 
     [ComputeMethod]
-    public virtual async Task<int> SumAsync(string key1, string key2)
+    public virtual async Task<int> Sum(string key1, string key2)
     {
-        WriteLine($"{nameof(SumAsync)}({key1}, {key2})");
-        return await Counters.GetAsync(key1) + await Counters.GetAsync(key2);
+        WriteLine($"{nameof(Sum)}({key1}, {key2})");
+        return await Counters.Get(key1) + await Counters.Get(key2);
     }
 }
 ```
@@ -167,8 +167,8 @@ And use it:
 ``` cs --region Part01_UseCounterSumService1 --source-file Part01.cs
 var services = CreateServices();
 var counterSum = services.GetRequiredService<CounterSumService>();
-WriteLine(await counterSum.SumAsync("a", "b"));
-WriteLine(await counterSum.SumAsync("a", "b"));
+WriteLine(await counterSum.Sum("a", "b"));
+WriteLine(await counterSum.Sum("a", "b"));
 ```
 
 The output:
@@ -188,11 +188,11 @@ Another example:
 var services = CreateServices();
 var counterSum = services.GetRequiredService<CounterSumService>();
 WriteLine("Nothing is cached (yet):");
-WriteLine(await counterSum.SumAsync("a", "b"));
+WriteLine(await counterSum.Sum("a", "b"));
 WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
-WriteLine(await counterSum.SumAsync("b", "a"));
+WriteLine(await counterSum.Sum("b", "a"));
 WriteLine("Everything is cached:");
-WriteLine(await counterSum.SumAsync("a", "b"));
+WriteLine(await counterSum.Sum("a", "b"));
 ```
 
 The output:
@@ -220,9 +220,9 @@ But what about this?
 var services = CreateServices();
 var counters = services.GetRequiredService<CounterService>();
 var counterSum = services.GetRequiredService<CounterSumService>();
-WriteLine(await counterSum.SumAsync("a", "b"));
+WriteLine(await counterSum.Sum("a", "b"));
 counters.Increment("a");
-WriteLine(await counterSum.SumAsync("a", "b"));
+WriteLine(await counterSum.Sum("a", "b"));
 ```
 
 The output:
@@ -268,11 +268,11 @@ Let's create a simple service to test how Fusion handles concurrency:
 public class HelloService
 {
     [ComputeMethod]
-    public virtual async Task<string> HelloAsync(string name)
+    public virtual async Task<string> Hello(string name)
     {
-        WriteLine($"+ {nameof(HelloAsync)}({name})");
+        WriteLine($"+ {nameof(Hello)}({name})");
         await Task.Delay(1000);
-        WriteLine($"- {nameof(HelloAsync)}({name})");
+        WriteLine($"- {nameof(Hello)}({name})");
         return $"Hello, {name}!";
     }
 }
@@ -283,10 +283,10 @@ but with a 1-second delay. Let's try to run it concurrently:
 
 ``` cs --region Part01_UseHelloService1 --source-file Part01.cs
 var hello = CreateServices().GetRequiredService<HelloService>();
-var t1 = Task.Run(() => hello.HelloAsync("Alice"));
-var t2 = Task.Run(() => hello.HelloAsync("Bob"));
-var t3 = Task.Run(() => hello.HelloAsync("Bob"));
-var t4 = Task.Run(() => hello.HelloAsync("Alice"));
+var t1 = Task.Run(() => hello.Hello("Alice"));
+var t2 = Task.Run(() => hello.Hello("Bob"));
+var t3 = Task.Run(() => hello.Hello("Bob"));
+var t4 = Task.Run(() => hello.Hello("Alice"));
 await Task.WhenAll(t1, t2, t3, t4);
 WriteLine(t1.Result);
 WriteLine(t2.Result);
