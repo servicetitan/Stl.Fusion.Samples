@@ -21,7 +21,7 @@
     are updated in real-time due to changes made there.
 </Note>
 
-<StatefulComponentState Component="@this" />
+<StateOfStateBadge State="@State" />
 
 <WhenException Title="Update error:" Exception="@error"/>
 
@@ -50,12 +50,6 @@
     {
         public ComposedValue LocallyComposedValue { get; set; } = new ComposedValue();
         public ComposedValue RemotelyComposedValue { get; set; } = new ComposedValue();
-    }
-
-    protected override void OnInitialized()
-    {
-        StateHasChangedTriggers = StateEventKind.All;
-        base.OnInitialized();
     }
 
     protected override void ConfigureState(LiveState<Model>.Options options)

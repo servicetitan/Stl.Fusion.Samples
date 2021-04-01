@@ -150,7 +150,7 @@ namespace Samples.Blazor.Server.Services
             if (!string.IsNullOrEmpty(text))
                 return text;
             var json = await _forismaticClient.GetQuote(cancellationToken: cancellationToken);
-            return json.Value<string>("quoteText");
+            return json.Value<string>("quoteText")!;
         }
 
         private ChatUser ToChatUser(User? user)

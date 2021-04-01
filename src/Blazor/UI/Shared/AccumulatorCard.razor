@@ -12,7 +12,7 @@
     <CardHeader>Accumulator</CardHeader>
 
     <CardBody>
-        <StatefulComponentState Component="@this"/>
+        <StateOfStateBadge State="@State" />
 
         <WhenException Title="Update error:" Exception="@error"/>
 
@@ -47,12 +47,6 @@
     public string CssClass { get; set; } = "";
     [Parameter]
     public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
-
-    protected override void OnInitialized()
-    {
-        StateHasChangedTriggers = StateEventKind.All;
-        base.OnInitialized();
-    }
 
     protected override void OnParametersSet()
     {

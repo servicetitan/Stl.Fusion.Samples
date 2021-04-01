@@ -12,19 +12,13 @@
 
 <WhenException Title="Update error:" Exception="@error"/>
 
-<StatefulComponentState Component="@this" />
+<StateOfStateBadge State="@State" />
 
 <p>Server Time: <b>@time</b></p>
 
 <Button Color="Color.Primary" @onclick="() => InvalidateState()">Refresh</Button>
 
 @code {
-    protected override void OnInitialized()
-    {
-        StateHasChangedTriggers = StateEventKind.All;
-        base.OnInitialized();
-    }
-
     protected override void ConfigureState(LiveState<DateTime>.Options options)
         => options.WithUpdateDelayer(0.5);
 
