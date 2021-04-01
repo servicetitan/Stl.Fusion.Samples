@@ -8,13 +8,14 @@
 @inject AuthStateProvider AuthStateProvider
 
 @{
+    Debug.WriteLine("Rendering TodoPage.");
     var error = State.Error;
     var todos = State.UnsafeValue ?? Array.Empty<Todo>(); // UnsafeValue returns default if there is an Error
 }
 
 <h1>Todo List</h1>
 
-<StatefulComponentState Component="@this"/>
+<StateOfStateBadge State="@State"/>
 <Text Margin="Margin.Is1.OnY">
     Updated: <b><MomentsAgoBadge Value="LastStateUpdateTime"/></b>
 </Text>
@@ -80,12 +81,12 @@ This comment is here solely to reset the indent in VS / Rider -->
     // AuthState property below seemingly does nothing, right?
     // But try to comment out this line & sign-in + sign-out. See the error badge stays there for a while now?
     // Check your explanation on our Discord: https://discord.gg/EKEwv6d
-    [CascadingParameter] protected Task<AuthState> AuthState { get; set; } = null!;
+    [CascadingParameter]
+    protected Task<AuthState> AuthState { get; set; } = null!;
 
     protected override void OnInitialized()
     {
         CommandRunner.Component = this;
-        StateHasChangedTriggers = StateEventKind.All;
         base.OnInitialized();
     }
 
@@ -127,7 +128,6 @@ This comment is here solely to reset the indent in VS / Rider -->
     {
         var todo = new Todo("", NewTodoTitle);
         NewTodoTitle = "";
-        StateHasChanged();
         return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
     }
 }
