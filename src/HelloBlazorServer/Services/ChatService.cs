@@ -5,6 +5,8 @@ using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Stl.Async;
+using Stl.CommandR;
+using Stl.CommandR.Configuration;
 using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer.Services
@@ -12,34 +14,46 @@ namespace Samples.HelloBlazorServer.Services
     [ComputeService]
     public class ChatService
     {
+        public record PostCommand(string Name, string Message) : ICommand<Unit>
+        {
+            // Default constructor is needed for JSON deserialization
+            public PostCommand() : this(null!, null!) { }
+        }
+
         private volatile ImmutableList<(DateTime Time, string Name, string Message)> _messages =
             ImmutableList<(DateTime, string, string)>.Empty;
+        private readonly object _lock = new();
 
-        public virtual Task PostMessageAsync(string name, string message)
+        [CommandHandler]
+        public virtual Task PostMessageAsync(PostCommand command, CancellationToken cancellationToken = default)
         {
-            // Lock-free update
-            var spinWait = new SpinWait();
-            for (;;) {
-                var oldMessages = _messages;
-                var newMessages = oldMessages!.Add((DateTime.Now, name, message));
-                if (oldMessages == Interlocked.CompareExchange(ref _messages, newMessages, oldMessages))
-                    break;
-                spinWait.SpinOnce();
+            if (Computed.IsInvalidating()) {
+                GetMessageCountAsync().Ignore();
+                GetAnyTailAsync().Ignore();
+                return Task.CompletedTask;
             }
-            Computed.Invalidate(GetAnyMessagesAsync);
+
+            var (name, message) = command;
+            lock (_lock) {
+                _messages = _messages.Add((DateTime.Now, name, message));
+            }
             return Task.CompletedTask;
         }
+
+        [ComputeMethod]
+        public virtual Task<int> GetMessageCountAsync()
+            => Task.FromResult(_messages.Count);
 
         [ComputeMethod]
         public virtual async Task<(DateTime Time, string Name, string Message)[]> GetMessagesAsync(
             int count, CancellationToken cancellationToken = default)
         {
             // Fake dependency used to invalidate all GetMessagesAsync(...) independently on count argument
-            await GetAnyMessagesAsync().ConfigureAwait(false);
+            await GetAnyTailAsync();
             return _messages.TakeLast(count).ToArray();
         }
 
         [ComputeMethod]
-        protected virtual Task<Unit> GetAnyMessagesAsync() => TaskEx.UnitTask;
+        protected virtual Task<Unit> GetAnyTailAsync() => TaskEx.UnitTask;
     }
 }

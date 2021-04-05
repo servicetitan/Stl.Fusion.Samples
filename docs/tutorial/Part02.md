@@ -20,9 +20,9 @@ public class CounterService
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
     [ComputeMethod]
-    public virtual async Task<int> GetAsync(string key)
+    public virtual async Task<int> Get(string key)
     {
-        WriteLine($"{nameof(GetAsync)}({key})");
+        WriteLine($"{nameof(Get)}({key})");
         return _counters.TryGetValue(key, out var value) ? value : 0;
     }
 
@@ -30,7 +30,8 @@ public class CounterService
     {
         WriteLine($"{nameof(Increment)}({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-        Computed.Invalidate(() => GetAsync(key));
+        using (Computed.Invalidate())
+            Get(key).Ignore();
     }
 }
 
@@ -38,7 +39,7 @@ public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
     services.AddFusion();
-    services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
     return services.BuildServiceProvider();
 }
 ```
@@ -48,7 +49,7 @@ scenes for a given call:
 
 ``` cs --region Part02_CaptureComputed --source-file Part02.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+var computed = await Computed.Capture(_ => counters.Get("a"));
 WriteLine($"Computed: {computed}");
 WriteLine($"- IsConsistent(): {computed.IsConsistent()}");
 WriteLine($"- Value:          {computed.Value}");
@@ -125,7 +126,7 @@ And finally, there are a few important methods:
   instances are immutable.
   As with `IDisposable.Dispose`, you are free to call this method
   multiple times, though only the first call matters.
-* `WhenInvalidatedAsync(...)` - an extension method allowing to await
+* `WhenInvalidated(...)` - an extension method allowing to await
   for invalidation.
 * `UpdateAsync(...)` - *finds or computes* the consistent version
   of this computed instance. *Finds* means the computation will happen
@@ -136,7 +137,7 @@ And finally, there are a few important methods:
   but not necessarily, consistent*, because it could be invalidated
   either in between the computation and the moment you check its status,
   or even right during the computation.
-* `UseAsync(...)` - a shortcut for `UpdateAsync(true).Value`.
+* `Use(...)` - a shortcut for `Update(true).Value`.
   Gets the most up-to-date value of the current computed and
   makes sure that if this happens inside the computation of another
   computed value, the current `IComputed<T>` (more precisely, its
@@ -165,19 +166,19 @@ versions:
 
 ![](./img/Invalidate-Update.gif)
 
-> Earlier `IComputed<T>.UpdateAsync(...)` was called `RenewAsync`,
+> Earlier `IComputed<T>.Update(...)` was called `Renew`,
 > so as you might guess, the animation was made before this rename :)
 
 Ok, let's get back to code and see how invalidation *really* works:
 
 ``` cs --region Part02_InvalidateComputed1 --source-file Part02.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+var computed = await Computed.Capture(_ => counters.Get("a"));
 WriteLine($"computed: {computed}");
 WriteLine("computed.Invalidate()");
 computed.Invalidate();
 WriteLine($"computed: {computed}");
-var newComputed = await computed.UpdateAsync(false);
+var newComputed = await computed.Update(false);
 WriteLine($"newComputed: {newComputed}");
 ```
 
@@ -196,12 +197,13 @@ Compare the above code with this one:
 
 ``` cs --region Part02_InvalidateComputed2 --source-file Part02.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+var computed = await Computed.Capture(_ => counters.Get("a"));
 WriteLine($"computed: {computed}");
-WriteLine("Computed.Invalidate(() => counters.GetAsync(\"a\"))");
-Computed.Invalidate(() => counters.GetAsync("a")); // <- This line
+WriteLine("using (Computed.Invalidate()) counters.GetAsync(\"a\"))");
+using (Computed.Invalidate()) // <- This line
+    counters.Get("a").Ignore();
 WriteLine($"computed: {computed}");
-var newComputed = await Computed.CaptureAsync(_ => counters.GetAsync("a")); // <- This line
+var newComputed = await Computed.Capture(_ => counters.Get("a")); // <- This line
 WriteLine($"newComputed: {newComputed}");
 ```
 
@@ -220,7 +222,7 @@ The output is ~ identical. As you might guess,
 
 * `Computed.Invalidate(...)` uses `Computed.Capture` under the hood
   to capture the computed instance and invalidate it.
-* `IComputed.UpdateAsync(...)` invokes the method that was used to
+* `IComputed.Update(...)` invokes the method that was used to
   produce it and similarly captures the newly produced computed.
 
 And finally, let's see how you can "observe" the invalidation to
@@ -238,12 +240,12 @@ Task.Run(async () =>
     }
 }).Ignore();
 
-var computed = await Computed.CaptureAsync(_ => counters.GetAsync("a"));
+var computed = await Computed.Capture(_ => counters.Get("a"));
 WriteLine($"{DateTime.Now}: {computed.Value}");
 for (var i = 0; i < 5; i++)
 {
-    await computed.WhenInvalidatedAsync();
-    computed = await computed.UpdateAsync(false);
+    await computed.WhenInvalidated();
+    computed = await computed.Update(false);
     WriteLine($"{DateTime.Now}: {computed.Value}");
 }
 ```

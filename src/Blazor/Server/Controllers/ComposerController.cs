@@ -7,7 +7,7 @@ using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]
     public class ComposerController : ControllerBase, IComposerService
     {
@@ -15,11 +15,11 @@ namespace Samples.Blazor.Server.Controllers
 
         public ComposerController(IComposerService composer) => _composer = composer;
 
-        [HttpGet("get"), Publish]
-        public Task<ComposedValue> GetComposedValueAsync(string? parameter, Session session, CancellationToken cancellationToken = default)
+        [HttpGet, Publish]
+        public Task<ComposedValue> GetComposedValue(string? parameter, Session session, CancellationToken cancellationToken = default)
         {
             parameter ??= "";
-            return _composer.GetComposedValueAsync(parameter, session, cancellationToken);
+            return _composer.GetComposedValue(parameter, session, cancellationToken);
         }
     }
 }

@@ -13,51 +13,49 @@ namespace Samples.Blazor.Client
     [BasePath("time")]
     public interface ITimeClient
     {
-        [Get("get")]
-        Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default);
+        [Get("getTime")]
+        Task<DateTime> GetTime(CancellationToken cancellationToken = default);
         [Get("getUptime")]
-        Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
+        Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
     }
 
     [RestEaseReplicaService(typeof(IScreenshotService), Scope = Scopes.ClientSideOnly)]
     [BasePath("screenshot")]
     public interface IScreenshotClient
     {
-        [Get("get")]
-        Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default);
+        [Get("getScreenshot")]
+        Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default);
     }
 
     [RestEaseReplicaService(typeof(IChatService), Scope = Scopes.ClientSideOnly)]
     [BasePath("chat")]
     public interface IChatClient
     {
-        // Writers
-        [Post("createUser")]
-        Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default);
-        [Post("setUserName")]
-        Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default);
-        [Post("addMessage")]
-        Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default);
+        // Commands
+        [Post("post")]
+        Task<ChatMessage> Post([Body] IChatService.PostCommand command, CancellationToken cancellationToken = default);
 
-        // Readers
-        [Get("getUserCount")]
-        Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
-        [Get("getActiveUserCount")]
-        Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default);
+        // Queries
+        [Get("getCurrentUser")]
+        Task<ChatUser> GetCurrentUser(Session? session, CancellationToken cancellationToken = default);
         [Get("getUser")]
-        Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default);
+        Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default);
+        [Get("getUserCount")]
+        Task<long> GetUserCount(CancellationToken cancellationToken = default);
+        [Get("getActiveUserCount")]
+        Task<long> GetActiveUserCount(CancellationToken cancellationToken = default);
         [Get("getChatTail")]
-        Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default);
+        Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default);
         [Get("getChatPage")]
-        Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
+        Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
     }
 
     [RestEaseReplicaService(typeof(IComposerService), Scope = Scopes.ClientSideOnly)]
     [BasePath("composer")]
     public interface IComposerClient
     {
-        [Get("get")]
-        Task<ComposedValue> GetComposedValueAsync(string? parameter,
+        [Get("getComposedValue")]
+        Task<ComposedValue> GetComposedValue(string? parameter,
             Session session, CancellationToken cancellationToken = default);
     }
 
@@ -65,14 +63,17 @@ namespace Samples.Blazor.Client
     [BasePath("sum")]
     public interface ISumClient
     {
+        // Commands
         [Post("reset")]
-        Task ResetAsync(CancellationToken cancellationToken);
+        Task Reset(CancellationToken cancellationToken);
         [Post("accumulate")]
-        Task AccumulateAsync(double value, CancellationToken cancellationToken);
+        Task Accumulate(double value, CancellationToken cancellationToken);
+
+        // Queries
         [Get("getAccumulator")]
-        Task<double> GetAccumulatorAsync(CancellationToken cancellationToken);
-        [Get("sum")]
-        Task<double> SumAsync(double[] values, bool addAccumulator, CancellationToken cancellationToken);
+        Task<double> GetAccumulator(CancellationToken cancellationToken);
+        [Get("getSum")]
+        Task<double> GetSum(double[] values, bool addAccumulator, CancellationToken cancellationToken);
     }
     
     [RestEaseReplicaService(typeof(IBoardService), Scope = Scopes.ClientSideOnly)]

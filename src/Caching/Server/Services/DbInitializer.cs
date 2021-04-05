@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Samples.Helpers;
 using Stl.DependencyInjection;
+using Stl.Fusion.EntityFramework;
 
 namespace Samples.Caching.Server.Services
 {
@@ -13,7 +13,7 @@ namespace Samples.Caching.Server.Services
     {
         public DbInitializer(IServiceProvider services) : base(services) { }
 
-        public async Task InitializeAsync(bool recreate, CancellationToken cancellationToken = default)
+        public async Task Initialize(bool recreate, CancellationToken cancellationToken = default)
         {
             // Ensure the DB is re-created
             var dbSettings = Services.GetRequiredService<DbSettings>();

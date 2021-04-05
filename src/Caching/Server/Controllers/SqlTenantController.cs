@@ -5,7 +5,7 @@ using Samples.Caching.Common;
 
 namespace Samples.Caching.Server.Controllers
 {
-    [Route("api/sqlTenants")]
+    [Route("api/sqlTenants/[action]")]
     [ApiController]
     public class SqlTenantController : Controller, ISqlTenantService
     {
@@ -14,22 +14,22 @@ namespace Samples.Caching.Server.Controllers
         public SqlTenantController(ISqlTenantService tenants)
             => Tenants = tenants;
 
-        [HttpPost("addOrUpdate")]
-        public Task AddOrUpdateAsync([FromBody] Tenant tenant, long? version, CancellationToken cancellationToken = default)
-            => Tenants.AddOrUpdateAsync(tenant, version, cancellationToken);
+        [HttpPost]
+        public Task AddOrUpdate([FromBody] Tenant tenant, long? version, CancellationToken cancellationToken = default)
+            => Tenants.AddOrUpdate(tenant, version, cancellationToken);
 
-        [HttpPost("remove")]
-        public Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default)
-            => Tenants.RemoveAsync(tenantId, version, cancellationToken);
+        [HttpPost]
+        public Task Remove(string tenantId, long version, CancellationToken cancellationToken = default)
+            => Tenants.Remove(tenantId, version, cancellationToken);
 
         // Compute methods
 
-        [HttpGet("getAll")]
-        public Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default)
-            => Tenants.GetAllAsync(cancellationToken);
+        [HttpGet]
+        public Task<Tenant[]> GetAll(CancellationToken cancellationToken = default)
+            => Tenants.GetAll(cancellationToken);
 
-        [HttpGet("get")]
-        public Task<Tenant?> TryGetAsync(string tenantId, CancellationToken cancellationToken = default)
-            => Tenants.TryGetAsync(tenantId ?? "", cancellationToken);
+        [HttpGet]
+        public Task<Tenant?> TryGet(string tenantId, CancellationToken cancellationToken = default)
+            => Tenants.TryGet(tenantId ?? "", cancellationToken);
     }
 }

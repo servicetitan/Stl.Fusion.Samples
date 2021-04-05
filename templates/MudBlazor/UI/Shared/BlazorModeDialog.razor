@@ -5,8 +5,8 @@
 <MudDialog>
     <DialogContent>
         <MudRadioGroup @bind-SelectedOption="@IsBlazorServerSelected">
-            <MudRadio Option="True">Blazor Server</MudRadio><br/>
-            <MudRadio Option="False">Blazor WebAssembly</MudRadio>
+            <MudRadio Option="true">Blazor Server</MudRadio><br/>
+            <MudRadio Option="false">Blazor WebAssembly</MudRadio>
         </MudRadioGroup>
     </DialogContent>
     <DialogActions>
@@ -18,7 +18,7 @@
 @code {
     private static bool IsBlazorServer => OSInfo.Kind != OSKind.WebAssembly;
 
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
     private string IsBlazorServerSelected { get; set; } = IsBlazorServer.ToString();
 
     void Cancel() => MudDialog.Cancel();

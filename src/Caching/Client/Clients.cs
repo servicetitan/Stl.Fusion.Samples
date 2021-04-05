@@ -12,13 +12,13 @@ namespace Samples.Caching.Client
     public interface ITenantClient
     {
         [Post("addOrUpdate")]
-        Task AddOrUpdateAsync([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
+        Task AddOrUpdate([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
         [Post("remove")]
-        Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default);
+        Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);
         [Get("getAll")]
-        Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default);
-        [Get("get")]
-        Task<Tenant> TryGetAsync(string tenantId, CancellationToken cancellationToken = default);
+        Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
+        [Get("tryGet")]
+        Task<Tenant> TryGet(string tenantId, CancellationToken cancellationToken = default);
     }
 
     public interface IRestEaseTenantService : ITenantService { }
@@ -28,13 +28,13 @@ namespace Samples.Caching.Client
     public interface IRestEaseTenantClient
     {
         [Post("addOrUpdate")]
-        Task AddOrUpdateAsync([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
+        Task AddOrUpdate([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
         [Post("remove")]
-        Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default);
+        Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);
         [Get("getAll")]
-        Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default);
-        [Get("get")]
-        Task<Tenant> TryGetAsync(string tenantId, CancellationToken cancellationToken = default);
+        Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
+        [Get("tryGet")]
+        Task<Tenant> TryGet(string tenantId, CancellationToken cancellationToken = default);
     }
 
     [RestEaseClientService(typeof(ISqlTenantService), Scope = Program.ClientSideScope)]
@@ -42,12 +42,12 @@ namespace Samples.Caching.Client
     public interface ISqlTenantClient
     {
         [Post("addOrUpdate")]
-        Task AddOrUpdateAsync([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
+        Task AddOrUpdate([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
         [Post("remove")]
-        Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default);
+        Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);
         [Get("getAll")]
-        Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default);
-        [Get("get")]
-        Task<Tenant> TryGetAsync(string tenantId, CancellationToken cancellationToken = default);
+        Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
+        [Get("tryGet")]
+        Task<Tenant> TryGet(string tenantId, CancellationToken cancellationToken = default);
     }
 }

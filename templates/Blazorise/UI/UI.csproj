@@ -2,23 +2,24 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <RootNamespace>Templates.Blazor2.UI</RootNamespace>
     <AssemblyName>Templates.Blazor2.UI</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise" Version="0.9.2.4" />
-    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.2.4" />
-    <PackageReference Include="Blazorise.DataGrid" Version="0.9.2.4" />
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.2.4" />
-    <PackageReference Include="Blazorise.Sidebar" Version="0.9.2.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.1" PrivateAssets="all" />
+    <PackageReference Include="Blazorise" Version="0.9.3.3" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.3.3" />
+    <PackageReference Include="Blazorise.DataGrid" Version="0.9.3.3" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.3.3" />
+    <PackageReference Include="Blazorise.Sidebar" Version="0.9.3.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.4" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.7.67" />
-    <PackageReference Include="UAParser" Version="3.1.44" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="0.11.31" />
+    <PackageReference Include="UAParser" Version="3.1.46" />
   </ItemGroup>
 
   <ItemGroup>

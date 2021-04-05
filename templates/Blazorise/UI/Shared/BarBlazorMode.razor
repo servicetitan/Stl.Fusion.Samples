@@ -1,0 +1,21 @@
+@using Stl.OS
+@using System.Web
+@inject BlazorModeHelper BlazorModeHelper
+
+<BarDropdown Class="@CssClass">
+    <BarDropdownToggle>
+        Blazor Mode
+    </BarDropdownToggle>
+    <BarDropdownMenu RightAligned="true">
+        <BarDropdownItem Active="IsServerSideBlazor" Clicked="@(() => ChangeMode(true))" >Server</BarDropdownItem>
+        <BarDropdownItem Active="!IsServerSideBlazor" Clicked="@(() => ChangeMode(false))">WebAssembly</BarDropdownItem>
+    </BarDropdownMenu>
+</BarDropdown>
+
+@code {
+    [Parameter]
+    public string CssClass { get; set; } = "";
+
+    private void ChangeMode(bool isServerSideBlazor)
+        => BlazorModeHelper.ChangeMode(isServerSideBlazor);
+}

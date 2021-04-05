@@ -3,60 +3,59 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Stl.Fusion.Server;
 using Samples.Blazor.Abstractions;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]
     public class ChatController : ControllerBase, IChatService
     {
         private readonly IChatService _chat;
+        private readonly ISessionResolver _sessionResolver;
 
-        public ChatController(IChatService chat) => _chat = chat;
-
-        // Writers
-
-        [HttpPost("createUser")]
-        public Task<ChatUser> CreateUserAsync(string? name, CancellationToken cancellationToken = default)
+        public ChatController(IChatService chat, ISessionResolver sessionResolver)
         {
-            name ??= "";
-            return _chat.CreateUserAsync(name, cancellationToken);
+            _chat = chat;
+            _sessionResolver = sessionResolver;
         }
 
-        [HttpPost("setUserName")]
-        public async Task<ChatUser> SetUserNameAsync(long id, string? name, CancellationToken cancellationToken = default)
+        // Commands
+
+        [HttpPost]
+        public Task<ChatMessage> Post([FromBody] IChatService.PostCommand command, CancellationToken cancellationToken = default)
         {
-            name ??= "";
-            return await _chat.SetUserNameAsync(id, name, cancellationToken);
+            command.UseDefaultSession(_sessionResolver);
+            return _chat.Post(command, cancellationToken);
         }
 
-        [HttpPost("addMessage")]
-        public async Task<ChatMessage> AddMessageAsync(long userId, string? text, CancellationToken cancellationToken = default)
+        // Queries
+
+        [HttpGet, Publish]
+        public Task<ChatUser> GetCurrentUser(Session? session, CancellationToken cancellationToken = default)
         {
-            text ??= "";
-            return await _chat.AddMessageAsync(userId, text, cancellationToken);
+            session ??= _sessionResolver.Session;
+            return _chat.GetCurrentUser(session, cancellationToken);
         }
 
-        // Readers
+        [HttpGet, Publish]
+        public Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default)
+            => _chat.GetUser(id, cancellationToken);
 
-        [HttpGet("getUserCount"), Publish]
-        public Task<long> GetUserCountAsync(CancellationToken cancellationToken = default)
-            => _chat.GetUserCountAsync(cancellationToken);
+        [HttpGet, Publish]
+        public Task<long> GetUserCount(CancellationToken cancellationToken = default)
+            => _chat.GetUserCount(cancellationToken);
 
-        [HttpGet("getActiveUserCount"), Publish]
-        public Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default)
-            => _chat.GetActiveUserCountAsync(cancellationToken);
+        [HttpGet, Publish]
+        public Task<long> GetActiveUserCount(CancellationToken cancellationToken = default)
+            => _chat.GetActiveUserCount(cancellationToken);
 
-        [HttpGet("getUser"), Publish]
-        public Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default)
-            => _chat.GetUserAsync(id, cancellationToken);
+        [HttpGet, Publish]
+        public Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default)
+            => _chat.GetChatTail(length, cancellationToken);
 
-        [HttpGet("getChatTail"), Publish]
-        public Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default)
-            => _chat.GetChatTailAsync(length, cancellationToken);
-
-        [HttpGet("getChatPage"), Publish]
-        public Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
-            => _chat.GetChatPageAsync(minMessageId, maxMessageId, cancellationToken);
+        [HttpGet, Publish]
+        public Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
+            => _chat.GetChatPage(minMessageId, maxMessageId, cancellationToken);
     }
 }

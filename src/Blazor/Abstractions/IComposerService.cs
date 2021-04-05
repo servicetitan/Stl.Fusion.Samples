@@ -32,7 +32,7 @@ namespace Samples.Blazor.Abstractions
     public interface IComposerService
     {
         [ComputeMethod(KeepAliveTime = 1)]
-        Task<ComposedValue> GetComposedValueAsync(string parameter,
+        Task<ComposedValue> GetComposedValue(string parameter,
             Session session, CancellationToken cancellationToken = default);
     }
 

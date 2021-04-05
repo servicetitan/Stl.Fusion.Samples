@@ -8,78 +8,69 @@
     var error = State.Error;
 }
 
-<div class="@CssClass">
-    <div class="card-header">Accumulator</div>
+<Card Class="@CssClass">
+    <CardHeader>Accumulator</CardHeader>
 
-    <div class="card-body">
-        <StatefulComponentState Component="@this" />
+    <CardBody>
+        <StateOfStateBadge State="@State" />
 
-        @if (error != null) {
-            <div class="alert alert-warning" role="alert">
-                Update error: @error.Message
-            </div>
-        }
+        <WhenException Title="Update error:" Exception="@error"/>
 
-        <div class="mb-2">
+        <Paragraph Margin="Margin.Is3.OnY">
             Value: <b>@accumulator</b>
-            <button class="btn btn-warning btn-sm" @onclick="ResetAsync">Reset</button>
-        </div>
+            <Button Color="Color.Warning" @onclick="Reset">Reset</Button>
+        </Paragraph>
 
-        <form @onsubmit="AccumulateAsync">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Value</span>
-                </div>
-                <input class="form-control" @bind-value="locals.Value" />
-                <div class="input-group-append">
-                    <button type="submit" class="btn btn-success">Accumulate</button>
-                </div>
-            </div>
+        <form @onsubmit="Accumulate">
+            <Addons>
+                <Addon AddonType="AddonType.Start">
+                    <AddonLabel>Increment by</AddonLabel>
+                </Addon>
+                <TextEdit @bind-Text="@locals.ValueText" type="search" />
+                <Addon>
+                    <Button Type="@ButtonType.Submit" Color="Color.Success">Increment</Button>
+                </Addon>
+            </Addons>
         </form>
 
-    </div>
-</div>
+    </CardBody>
+</Card>
 
 @code {
     public class LocalsModel
     {
-        public double Value { get; set; } = 1;
+        public string ValueText { get; set; } = "1";
+        public double Value => double.TryParse(ValueText, out var v) ? v : 0;
     }
 
     [Parameter]
-    public string CssClass { get; set; } = "card";
+    public string CssClass { get; set; } = "";
     [Parameter]
     public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
-
-    protected override void OnInitialized()
-    {
-        StateHasChangedTriggers = StateEventKind.All;
-        base.OnInitialized();
-    }
 
     protected override void OnParametersSet()
     {
         if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
-            updateDelayer.Delay = UpdateDelay;
+            updateDelayer.DelayDuration = UpdateDelay;
     }
 
     protected override void ConfigureState(LiveState<double>.Options options)
         => options.WithUpdateDelayer(UpdateDelay);
 
-    protected override Task<double> ComputeStateAsync(CancellationToken cancellationToken)
-        => SumService.GetAccumulatorAsync(cancellationToken);
+    protected override Task<double> ComputeState(CancellationToken cancellationToken)
+        => SumService.GetAccumulator(cancellationToken);
 
     // Action handlers
 
-    private async Task ResetAsync()
+    private async Task Reset()
     {
-        await SumService.ResetAsync();
-        State.CancelUpdateDelay();
+        await SumService.Reset();
+        InvalidateState();
     }
 
-    private async Task AccumulateAsync()
+    private async Task Accumulate()
     {
-        await SumService.AccumulateAsync(Locals.Value.Value);
-        State.CancelUpdateDelay();
+        await SumService.Accumulate(Locals.Value.Value);
+        InvalidateState();
     }
 }

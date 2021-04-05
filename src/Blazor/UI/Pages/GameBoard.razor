@@ -210,23 +210,36 @@ else
         }
     }
 
-    protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+    // protected override async Task<Model> ComputeStateAsync(CancellationToken cancellationToken)
+    // {
+    //     var board = await BoardService.GetBoardAsync(Address, cancellationToken).ConfigureAwait(false);
+    //     return new Model()
+    //     {
+    //         BoardId = board.BoardId,
+    //         BoardState = board.BoardState,
+    //         IsXTurn = board.IsXTurn
+    //     };
+    // }
+    
+    protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
-        var board = await BoardService.GetBoardAsync(Address, cancellationToken).ConfigureAwait(false);
-        return new Model()
-        {
-            BoardId = board.BoardId,
-            BoardState = board.BoardState,
-            IsXTurn = board.IsXTurn
-        };
+    var board = await BoardService.GetBoardAsync(Address, cancellationToken).ConfigureAwait(false);
+    return new Model()
+    {
+        BoardId = board.BoardId,
+        BoardState = board.BoardState,
+        IsXTurn = board.IsXTurn
+    };
     }
+    
         
     protected override void ConfigureState(LiveState<Model>.Options options)
         => options.WithUpdateDelayer(0);
     
     private void UpdateLocals(Action<LocalsModel> updater)
     {
-        var clone = MemberwiseCloner.Clone(Locals.Value);
+        // var clone = MemberwiseCloner.Clone(Locals.Value);
+        var clone = MemberwiseCloner.Invoke(Locals.Value);
         updater.Invoke(clone);
         Locals.Value = clone;
     }

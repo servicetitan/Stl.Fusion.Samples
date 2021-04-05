@@ -65,25 +65,25 @@ This is literally all of its code:
 ```cs
 protected override void OnInitialized()
 {
-    State ??= StateFactory.NewLive<T>(ConfigureState, (_, ct) => ComputeStateAsync(ct), this);
+    State ??= StateFactory.NewLive<T>(ConfigureState, (_, ct) => ComputeState(ct), this);
     base.OnInitialized();
 }
 
 protected virtual void ConfigureState(LiveState<T>.Options options) { }
-protected abstract Task<T> ComputeStateAsync(CancellationToken cancellationToken);
+protected abstract Task<T> ComputeState(CancellationToken cancellationToken);
 ```
 
 As you see, it doesn't try to resolve the state via DI container, but
 constructs it using `IStateFactory` - and moreover:
 
-- It constructs a state that's computed using its own `ComputeStateAsync` method.
+- It constructs a state that's computed using its own `ComputeState` method.
   As you remember from [Part 3](./Part03.md), state computation logic is
   always "wrapped" into a compute method - in other words, the `IComputed` instance
   it produces under the hood tracks all the dependencies and gets invalidated
   once any of them does, which triggers `Invalidated` event on a state, and
   consequently, `StateChanged` event on the component. And since we're using
   `ILiveState` here, the state itself will use its `UpdateDelayer` to wait
-  a bit and recompute itself using the same `ComputeStateAsync` method.
+  a bit and recompute itself using the same `ComputeState` method.
 - This state is configured by its own `ConfigureState` method -
   in particular, you can provide its initial value, `UpdateDelayer`, etc.
 
@@ -91,7 +91,7 @@ So to have a component that automatically updates once the output of some
 Compute Service (or a set of such services) changes, all you need is to:
 
 - Inherit it from `LiveComponentBase<T>`
-- Override its `ComputeStateAsync` method
+- Override its `ComputeState` method
 - Possibly, override its `ConfigureState` method.
 
 A good example of such component is `Counter.razor` from "HelloBlazorServer" example -
@@ -100,7 +100,7 @@ Note that it already computes a complex value using two compute methods
 (`CounterService.GetCounterAsync` and `GetMomentsAgoAsync`):
 
 ```cs
-protected override async Task<string> ComputeStateAsync(CancellationToken cancellationToken)
+protected override async Task<string> ComputeState(CancellationToken cancellationToken)
 {
     var (count, changeTime) = await CounterService.GetCounterAsync().ConfigureAwait(false);
     var momentsAgo = await CounterService.GetMomentsAgoAsync(changeTime).ConfigureAwait(false);
@@ -123,9 +123,9 @@ There are a few ways to enforce `State` recomputation in such cases:
    triggered by user action, and local state changes are almost
    always triggered by user action).
 2. Wrap full local state into e.g. `IMutableState<T> Locals` and use
-   it in `ComputeStateAsync` via `var locals = await Locals.UseAsync()`.
-   As you might remember from [Part 3](./Part03.md), `Locals.UseAsync`
-   is the same as `Locals.Computed.UseAsync`, and it makes state
+   it in `ComputeState` via `var locals = await Locals.Use()`.
+   As you might remember from [Part 3](./Part03.md), `Locals.Use`
+   is the same as `Locals.Computed.Use`, and it makes state
    a dependency of what's computed now, so once `Locals` is changed,
    the recomputation of `State` will happen automatically.
    Though if you need to cancel update delay in this case, it's going

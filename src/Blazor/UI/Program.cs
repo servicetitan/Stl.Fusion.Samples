@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,17 +12,19 @@ using Microsoft.Extensions.Logging;
 using Pluralize.NET;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Client;
+using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
+using Stl.Fusion.Extensions;
 
 namespace Samples.Blazor.UI
 {
     public class Program
     {
-        public static Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             if (!OSInfo.IsWebAssembly)
                 throw new ApplicationException("This app runs only in browser.");
@@ -29,14 +34,8 @@ namespace Samples.Blazor.UI
             builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
 
-            var runTask = host.RunAsync();
-            Task.Run(async () => {
-                // We "manually" start IHostedServices here, because Blazor host doesn't do this.
-                var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
-                foreach (var hostedService in hostedServices)
-                    await hostedService.StartAsync(default);
-            });
-            return runTask;
+            await host.Services.HostedServices().Start();
+            await host.RunAsync();
         }
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
@@ -57,26 +56,35 @@ namespace Samples.Blazor.UI
                     var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
                     o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
                 });
-            var fusionAuth = fusion.AddAuthentication().AddClient().AddBlazor();
+            var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
+            services.UseAttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
             ConfigureSharedServices(services);
         }
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
+            services.AddBlazorise(options => {
+                    options.DelayTextOnKeyPress = true;
+                    options.DelayTextOnKeyPressInterval = 100;
+                })
+                .AddBootstrapProviders()
+                .AddFontAwesomeIcons();
+
             // Default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {
-                Delay = TimeSpan.FromSeconds(0.1),
+                DelayDuration = TimeSpan.FromSeconds(0.1),
             });
 
+            // Other UI-related services
             services.AddSingleton<IPluralize, Pluralizer>();
+            services.AddFusion().AddLiveClock();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }
 }

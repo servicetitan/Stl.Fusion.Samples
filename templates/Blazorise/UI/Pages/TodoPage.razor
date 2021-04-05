@@ -1,0 +1,133 @@
+@page "/todo"
+@using System.Threading
+@using Templates.Blazor2.Abstractions
+@inherits LiveComponentBase<Todo[]>
+@inject ITodoService Todos
+@inject Session Session
+@inject CommandRunner CommandRunner
+@inject AuthStateProvider AuthStateProvider
+
+@{
+    Debug.WriteLine("Rendering TodoPage.");
+    var error = State.Error;
+    var todos = State.UnsafeValue ?? Array.Empty<Todo>(); // UnsafeValue returns default if there is an Error
+}
+
+<h1>Todo List</h1>
+
+<StateOfStateBadge State="@State"/>
+<Text Margin="Margin.Is1.OnY">
+    Updated: <b><MomentsAgoBadge Value="LastStateUpdateTime"/></b>
+</Text>
+
+<AuthorizeView>
+    <NotAuthorized>
+        <SignInDropdown Why="to use this page"/>
+    </NotAuthorized>
+    <Authorized><!--
+This comment is here solely to reset the indent in VS / Rider -->
+
+<WhenException Exception="error"/>
+<WhenCommandError Exception="CommandRunner.Error"/>
+
+<Row><Column ColumnSize="ColumnSize.Is6.OnDesktop.Is12.OnTablet">
+    @foreach(var todo in todos) {
+        <Addons Margin="Margin.Is3.OnY">
+            <Addon AddonType="AddonType.Start">
+                <AddonLabel>
+                    <Blazorise.Icon Name="@(todo.IsDone ? FontAwesomeIcons.CheckSquare : FontAwesomeIcons.Square)"
+                                    @onclick="_ => InvertDone(todo)" />
+                </AddonLabel>
+            </Addon>
+            <TextEdit TextChanged="text => UpdateTitle(todo, text)" ChangeTextOnKeyPress="false"
+                      Text="@todo.Title"/>
+            <Addon AddonType="AddonType.End">
+                <Button Clicked="_ => Remove(todo)" Color="Color.Warning">
+                    <Blazorise.Icon Name="FontAwesomeIcons.Minus"/>
+                </Button>
+            </Addon>
+        </Addons>
+    }
+
+    @if (HasMore) {
+        <Button Clicked="_ => LoadMore()" Color="Color.Primary" Margin="Margin.Is3.OnY">
+            Load more <Blazorise.Icon Name="FontAwesomeIcons.AngleDoubleDown"/>
+        </Button>
+    }
+
+    <Form @onsubmit="_ => Create()" Margin="Margin.Is3.OnY" >
+        <Addons>
+            <Addon AddonType="AddonType.Start">
+                <Button Type="@ButtonType.Submit" Color="Color.Primary">
+                    <Blazorise.Icon Name="@FontAwesomeIcons.PlusSquare"/>
+                </Button>
+            </Addon>
+            <input @bind="NewTodoTitle" @bind:event="onchange" class="form-control"/>
+        </Addons>
+    </Form>
+
+</Column></Row>
+
+<!--
+ --></Authorized>
+</AuthorizeView>
+
+
+@code {
+    private int PageSize { get; set; } = 5;
+    private bool HasMore { get; set; }
+    private string NewTodoTitle { get; set; } = "";
+    private DateTime LastStateUpdateTime { get; set; } = DateTime.UtcNow;
+    // AuthState property below seemingly does nothing, right?
+    // But try to comment out this line & sign-in + sign-out. See the error badge stays there for a while now?
+    // Check your explanation on our Discord: https://discord.gg/EKEwv6d
+    [CascadingParameter]
+    protected Task<AuthState> AuthState { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        CommandRunner.Component = this;
+        base.OnInitialized();
+    }
+
+    protected override async Task<Todo[]> ComputeState(CancellationToken cancellationToken)
+    {
+        var items = await Todos.List(Session, PageSize + 1, cancellationToken);
+        HasMore = items.Length > PageSize;
+        if (HasMore)
+            items = items[0..PageSize];
+        LastStateUpdateTime = DateTime.UtcNow;
+        return items;
+    }
+
+    private void LoadMore()
+    {
+        PageSize *= 2;
+        InvalidateState();
+    }
+
+    private Task InvertDone(Todo todo)
+    {
+        todo = todo with { IsDone = !todo.IsDone };
+        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
+    }
+
+    private Task UpdateTitle(Todo todo, string title)
+    {
+        title = title.Trim();
+        if (todo.Title == title)
+            return Task.CompletedTask;
+        todo = todo with { Title = title };
+        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
+    }
+
+    private Task Remove(Todo todo)
+        => CommandRunner.Call(new RemoveTodoCommand(Session, todo.Id));
+
+    private Task Create()
+    {
+        var todo = new Todo("", NewTodoTitle);
+        NewTodoTitle = "";
+        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
+    }
+}

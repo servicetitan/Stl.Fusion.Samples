@@ -1,0 +1,20 @@
+@using System.Threading
+@using Stl.Fusion.Extensions
+@using Templates.Blazor2.Abstractions
+@inherits LiveComponentBase<string>
+@inject ILiveClock LiveClock
+
+<span class="@CssClass">@State.Value</span>
+
+@code {
+    [Parameter]
+    public string CssClass { get; set; } = "";
+
+    [Parameter]
+    public DateTime? Value { get; set; }
+    [Parameter]
+    public string None { get; set; } = "n/a";
+
+    protected override Task<string> ComputeState(CancellationToken cancellationToken)
+        => Value.HasValue ? LiveClock.GetMomentsAgo(Value.Value) : Task.FromResult(None);
+}

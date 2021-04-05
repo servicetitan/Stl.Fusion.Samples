@@ -2,13 +2,15 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Threading;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Samples.Blazor.Server.Services
 {
-    public class DirectBitmap : IDisposable
+    public sealed class DirectBitmap : IDisposable
     {
+        private int _isDisposed;
         private GCHandle _gcHandle;
         public Bitmap Bitmap { get; }
         public Image<Bgra32> Image { get; }
@@ -30,11 +32,16 @@ namespace Samples.Blazor.Server.Services
             Image = SixLabors.ImageSharp.Image.WrapMemory(Buffer.AsMemory(), width, height);
         }
 
+        ~DirectBitmap() => Dispose();
+
         public void Dispose()
         {
+            if (0 != Interlocked.Exchange(ref _isDisposed, 1))
+                return;
             Bitmap.Dispose();
             Image.Dispose();
             _gcHandle.Free();
+            GC.SuppressFinalize(this);
         }
     }
 }

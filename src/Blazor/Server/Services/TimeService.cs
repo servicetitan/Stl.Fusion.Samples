@@ -9,20 +9,20 @@ namespace Samples.Blazor.Server.Services
     [ComputeService(typeof(ITimeService))]
     public class TimeService : ITimeService
     {
-        private DateTime _startTime = DateTime.UtcNow;
+        private readonly DateTime _startTime = DateTime.UtcNow;
 
         [ComputeMethod(AutoInvalidateTime = 0.25, KeepAliveTime = 1)]
-        public virtual async Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<DateTime> GetTime(CancellationToken cancellationToken = default)
         {
             var time = DateTime.Now;
             if (time.Second % 10 == 0)
                 // This delay is here solely to let you see ServerTime page in
                 // in "Loading" / "Updating" state.
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             return time;
         }
 
-        public virtual Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
+        public virtual Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
         {
             var computed = Computed.GetCurrent();
             Task.Delay(updatePeriod, default)

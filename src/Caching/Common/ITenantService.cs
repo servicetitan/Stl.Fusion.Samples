@@ -6,14 +6,14 @@ namespace Samples.Caching.Common
 {
     public interface ITenantService
     {
-        Task AddOrUpdateAsync(Tenant tenant, long? version, CancellationToken cancellationToken = default);
-        Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default);
+        Task AddOrUpdate(Tenant tenant, long? version, CancellationToken cancellationToken = default);
+        Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);
 
         // Compute methods
         [ComputeMethod(KeepAliveTime = 10)]
-        Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 10)]
-        Task<Tenant?> TryGetAsync(string tenantId, CancellationToken cancellationToken = default);
+        Task<Tenant?> TryGet(string tenantId, CancellationToken cancellationToken = default);
     }
 
     public interface ISqlTenantService : ITenantService { }

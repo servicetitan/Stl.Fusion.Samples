@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Pluralize.NET;
 using Stl.DependencyInjection;
 using Stl.Fusion;
+using Stl.Fusion.Extensions;
 
 namespace Samples.HelloBlazorServer
 {
@@ -25,13 +26,16 @@ namespace Samples.HelloBlazorServer
         public void ConfigureServices(IServiceCollection services)
         {
             // Fusion services
-            services.AddFusion();
+            services.AddFusion(fusion => {
+                fusion.AddLiveClock(); // ILiveClock is one of built-in compute services you can use
+            });
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             // Default update delay is set to 0.5 seconds
-            services.AddSingleton(c => new UpdateDelayer.Options() { Delay = TimeSpan.FromSeconds(0.5) });
-
+            services.AddSingleton(c => new UpdateDelayer.Options() {
+                DelayDuration = TimeSpan.FromSeconds(0.5)
+            });
             services.AddSingleton<IPluralize>(c => new Pluralizer());
 
             // Web

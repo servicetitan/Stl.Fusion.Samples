@@ -1,5 +1,14 @@
 # Part 8: Scaling Fusion Services
 
+> NOTE: Nearly everything described in this section (and even more)
+> is already implemented. Sections covering CommandR
+> and Operations Framework describe this in details,
+> but it still makes sense to read this section to better
+> understand the problem they solve.
+> 
+> If you want to see it in action, check out
+> [http://boardgames.alexyakunin.com](http://boardgames.alexyakunin.com)
+
 Scaling Fusion services is actually simpler than it may seem
 at first - and mostly, you should take into account two
 key factors:
@@ -380,7 +389,7 @@ Of course, this isn't a complete set of options you have - e.g. you can
 also trade consistency for performance by delaying invalidations. But
 the main point is: **yes, Fusion-based services scale**.
 
-#### [Next: Epilogue &raquo;](./PartFF.md) | [Tutorial Home](./README.md)
+#### [Part 9: CommandR - Intro &raquo;](./Part09.md) | [Tutorial Home](./README.md)
 
 [Consistent Hashing]: https://en.wikipedia.org/wiki/Consistent_hashing
 [Rendezvous Hashing]: https://medium.com/i0exception/rendezvous-hashing-8c00e2fb58b0

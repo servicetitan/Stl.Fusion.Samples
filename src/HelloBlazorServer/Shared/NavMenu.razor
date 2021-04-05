@@ -31,12 +31,8 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    private bool IsNavMenuCollapsed { get; set; } = true;
+    private string? NavMenuCssClass => IsNavMenuCollapsed ? "collapse" : null;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+    private void ToggleNavMenu() => IsNavMenuCollapsed = !IsNavMenuCollapsed;
 }
