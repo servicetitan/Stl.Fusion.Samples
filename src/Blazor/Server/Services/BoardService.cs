@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Stl.Fusion;
 using Samples.Blazor.Abstractions;
-using Samples.Helpers;
+// using Samples.Helpers;
 using Stl.Fusion.Bridge;
+using Stl.Fusion.EntityFramework;
 
 namespace Samples.Blazor.Server.Services
 {
@@ -98,7 +99,8 @@ namespace Samples.Blazor.Server.Services
                 dbContext.Boards.Update(board);
                 await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
-            Computed.Invalidate(() => GetBoardAsync(boardId, cancellationToken));
+            // Computed.Invalidate(() => GetBoardAsync(boardId, cancellationToken));
+            Computed.Invalidate();
             return board;
         }
         
@@ -111,7 +113,8 @@ namespace Samples.Blazor.Server.Services
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             var board = boardEntry.Entity;
 
-            Computed.Invalidate(() => GetBoardAsync(boardId, cancellationToken));
+            // Computed.Invalidate(() => GetBoardAsync(boardId, cancellationToken));
+            Computed.Invalidate();
             return board;
         }
         
@@ -125,7 +128,8 @@ namespace Samples.Blazor.Server.Services
             board.IsXTurn = true;
             dbContext.Boards.Update(board);
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            Computed.Invalidate(() => GetBoardAsync(boardId, CancellationToken.None));
+            // Computed.Invalidate(() => GetBoardAsync(boardId, CancellationToken.None));
+            Computed.Invalidate();
             return board;
         }
 
@@ -194,7 +198,8 @@ namespace Samples.Blazor.Server.Services
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             res = true;
             resId = player.Id;
-            Computed.Invalidate(() => GetPlayerCountWithoutCloneAsync(boardId, cancellationToken));
+            // Computed.Invalidate(() => GetPlayerCountWithoutCloneAsync(boardId, cancellationToken));
+            Computed.Invalidate();
             return (res, resId);
         }
 
@@ -213,8 +218,10 @@ namespace Samples.Blazor.Server.Services
             });
             var clone = cloneEntry.Entity;
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            Computed.Invalidate(() => GetPlayerAsync(clone.Id, CancellationToken.None));
-            Computed.Invalidate(() => GetPlayerCountWithoutCloneAsync(boardId, CancellationToken.None));
+            // Computed.Invalidate(() => GetPlayerAsync(clone.Id, CancellationToken.None));
+            Computed.Invalidate();
+            // Computed.Invalidate(() => GetPlayerCountWithoutCloneAsync(boardId, CancellationToken.None));
+            // Computed.Invalidate();
             return clone;
         }
         

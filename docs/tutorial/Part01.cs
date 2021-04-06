@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Stl.Async;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using static System.Console;
@@ -16,7 +17,7 @@ namespace Tutorial
         {
             var services = new ServiceCollection();
             services.AddFusion();
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             return services.BuildServiceProvider();
         }
         #endregion
@@ -28,9 +29,9 @@ namespace Tutorial
             private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
             [ComputeMethod]
-            public virtual async Task<int> GetAsync(string key)
+            public virtual async Task<int> Get(string key)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
+                WriteLine($"{nameof(Get)}({key})");
                 return _counters.TryGetValue(key, out var value) ? value : 0;
             }
 
@@ -38,7 +39,8 @@ namespace Tutorial
             {
                 WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-                Computed.Invalidate(() => GetAsync(key));
+                using (Computed.Invalidate())
+                    Get(key).Ignore();
             }
         }
         #endregion
@@ -47,8 +49,8 @@ namespace Tutorial
         {
             #region Part01_UseCounterService1
             var counters = CreateServices().GetRequiredService<CounterService>();
-            WriteLine(await counters.GetAsync("a"));
-            WriteLine(await counters.GetAsync("b"));
+            WriteLine(await counters.Get("a"));
+            WriteLine(await counters.Get("b"));
             #endregion
         }
 
@@ -56,8 +58,8 @@ namespace Tutorial
         {
             #region Part01_UseCounterService2
             var counters = CreateServices().GetRequiredService<CounterService>();
-            WriteLine(await counters.GetAsync("a"));
-            WriteLine(await counters.GetAsync("a"));
+            WriteLine(await counters.Get("a"));
+            WriteLine(await counters.Get("a"));
             #endregion
         }
 
@@ -65,9 +67,9 @@ namespace Tutorial
         {
             #region Part01_UseCounterService3
             var counters = CreateServices().GetRequiredService<CounterService>();
-            WriteLine(await counters.GetAsync("a"));
+            WriteLine(await counters.Get("a"));
             counters.Increment("a");
-            WriteLine(await counters.GetAsync("a"));
+            WriteLine(await counters.Get("a"));
             #endregion
         }
 
@@ -80,10 +82,10 @@ namespace Tutorial
             public CounterSumService(CounterService counters) => Counters = counters;
 
             [ComputeMethod]
-            public virtual async Task<int> SumAsync(string key1, string key2)
+            public virtual async Task<int> Sum(string key1, string key2)
             {
-                WriteLine($"{nameof(SumAsync)}({key1}, {key2})");
-                return await Counters.GetAsync(key1) + await Counters.GetAsync(key2);
+                WriteLine($"{nameof(Sum)}({key1}, {key2})");
+                return await Counters.Get(key1) + await Counters.Get(key2);
             }
         }
         #endregion
@@ -93,8 +95,8 @@ namespace Tutorial
             #region Part01_UseCounterSumService1
             var services = CreateServices();
             var counterSum = services.GetRequiredService<CounterSumService>();
-            WriteLine(await counterSum.SumAsync("a", "b"));
-            WriteLine(await counterSum.SumAsync("a", "b"));
+            WriteLine(await counterSum.Sum("a", "b"));
+            WriteLine(await counterSum.Sum("a", "b"));
             #endregion
         }
 
@@ -104,11 +106,11 @@ namespace Tutorial
             var services = CreateServices();
             var counterSum = services.GetRequiredService<CounterSumService>();
             WriteLine("Nothing is cached (yet):");
-            WriteLine(await counterSum.SumAsync("a", "b"));
+            WriteLine(await counterSum.Sum("a", "b"));
             WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
-            WriteLine(await counterSum.SumAsync("b", "a"));
+            WriteLine(await counterSum.Sum("b", "a"));
             WriteLine("Everything is cached:");
-            WriteLine(await counterSum.SumAsync("a", "b"));
+            WriteLine(await counterSum.Sum("a", "b"));
             #endregion
         }
 
@@ -118,9 +120,9 @@ namespace Tutorial
             var services = CreateServices();
             var counters = services.GetRequiredService<CounterService>();
             var counterSum = services.GetRequiredService<CounterSumService>();
-            WriteLine(await counterSum.SumAsync("a", "b"));
+            WriteLine(await counterSum.Sum("a", "b"));
             counters.Increment("a");
-            WriteLine(await counterSum.SumAsync("a", "b"));
+            WriteLine(await counterSum.Sum("a", "b"));
             #endregion
         }
 
@@ -129,11 +131,11 @@ namespace Tutorial
         public class HelloService
         {
             [ComputeMethod]
-            public virtual async Task<string> HelloAsync(string name)
+            public virtual async Task<string> Hello(string name)
             {
-                WriteLine($"+ {nameof(HelloAsync)}({name})");
+                WriteLine($"+ {nameof(Hello)}({name})");
                 await Task.Delay(1000);
-                WriteLine($"- {nameof(HelloAsync)}({name})");
+                WriteLine($"- {nameof(Hello)}({name})");
                 return $"Hello, {name}!";
             }
         }
@@ -143,10 +145,10 @@ namespace Tutorial
         {
             #region Part01_UseHelloService1
             var hello = CreateServices().GetRequiredService<HelloService>();
-            var t1 = Task.Run(() => hello.HelloAsync("Alice"));
-            var t2 = Task.Run(() => hello.HelloAsync("Bob"));
-            var t3 = Task.Run(() => hello.HelloAsync("Bob"));
-            var t4 = Task.Run(() => hello.HelloAsync("Alice"));
+            var t1 = Task.Run(() => hello.Hello("Alice"));
+            var t2 = Task.Run(() => hello.Hello("Bob"));
+            var t3 = Task.Run(() => hello.Hello("Bob"));
+            var t4 = Task.Run(() => hello.Hello("Alice"));
             await Task.WhenAll(t1, t2, t3, t4);
             WriteLine(t1.Result);
             WriteLine(t2.Result);

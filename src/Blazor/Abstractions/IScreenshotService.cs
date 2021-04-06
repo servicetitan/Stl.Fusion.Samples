@@ -31,6 +31,6 @@ namespace Samples.Blazor.Abstractions
     public interface IScreenshotService
     {
         [ComputeMethod(KeepAliveTime = 0.1)]
-        Task<Screenshot> GetScreenshotAsync(int width, CancellationToken cancellationToken = default);
+        Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default);
     }
 }

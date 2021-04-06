@@ -21,28 +21,41 @@
     to <code>LiveComponent.State</code>, so they don't interfere with any
     other component or logic.
 </p>
-<p>
+
+<Note>
     Open <a href="@Navigator.Uri" target="_blank">this page</a> or
     <a href="/composition" target="_blank">Composition example</a>
     in another window to see is updated in real time.
-</p>
+</Note>
 
-<div class="input-group pb-3 pl-3 col-2">
-    <div class="input-group-prepend">
-        <span class="input-group-text">Update Delay</span>
-    </div>
-    <input class="form-control" @bind-value="UpdateDelay" @bind-value:event="oninput" />
-</div>
+<Row Margin="Margin.Is3.OnY">
+    <Column ColumnSize="ColumnSize.Is6">
+        <Addons>
+            <Addon AddonType="AddonType.Start">
+                <AddonLabel>Update delay</AddonLabel>
+            </Addon>
+            <TextEdit @bind-Text="@UpdateDelayText"/>
+        </Addons>
+    </Column>
+</Row>
 
-<div class="col-6 pb-3">
-    <AccumulatorCard UpdateDelay="@UpdateDelayTimeSpan" />
-</div>
-<div class="d-flex">
-    <div class="col-6"><SumCard Title="Sum 1" UpdateDelay="@UpdateDelayTimeSpan"/></div>
-    <div class="col-6"><SumCard Title="Sum 2" UpdateDelay="@UpdateDelayTimeSpan"/></div>
-</div>
+<Row Margin="Margin.Is3.OnY">
+    <Column ColumnSize="ColumnSize.Is6">
+        <AccumulatorCard UpdateDelay="@UpdateDelay" />
+    </Column>
+</Row>
+
+<Row Margin="Margin.Is3.OnY">
+    <Column ColumnSize="ColumnSize.Is6">
+        <SumCard Title="Sum 1" UpdateDelay="@UpdateDelay"/>
+    </Column>
+    <Column ColumnSize="ColumnSize.Is6">
+        <SumCard Title="Sum 2" UpdateDelay="@UpdateDelay"/>
+    </Column>
+</Row>
 
 @code {
-    private double UpdateDelay { get; set; } = 1;
-    private TimeSpan UpdateDelayTimeSpan => TimeSpan.FromSeconds(Math.Max(0, UpdateDelay));
+    private string UpdateDelayText { get; set; } = "1";
+    private TimeSpan UpdateDelay => TimeSpan.FromSeconds(
+        Math.Max(0, double.TryParse(UpdateDelayText, out var v) ? v : 1));
 }

@@ -30,14 +30,14 @@ namespace Samples.Caching.Client
             CancelKeyPress += (s, ea) => cts.Cancel();
             var cancellationToken = cts.Token;
 
-            var localServices = await CreateLocalServiceProviderAsync(cancellationToken);
-            await localServices.GetRequiredService<ServiceChecker>().WaitForServicesAsync(cancellationToken);
-            await localServices.GetRequiredService<DbInitializer>().InitializeAsync(true, cancellationToken);
+            var localServices = await CreateLocalServiceProvider(cancellationToken);
+            await localServices.GetRequiredService<ServiceChecker>().WaitForServices(cancellationToken);
+            await localServices.GetRequiredService<DbInitializer>().Initialize(true, cancellationToken);
 
             var benchmark = new TenantBenchmark(localServices) {
                 TimeCheckOperationIndexMask = 7
             };
-            await benchmark.InitAsync(cancellationToken);
+            await benchmark.Initialize(cancellationToken);
 
             benchmark.Services = localServices;
             benchmark.ConcurrencyLevel = HardwareInfo.ProcessorCount - 2;
@@ -45,23 +45,23 @@ namespace Samples.Caching.Client
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
             WriteLine();
             WriteLine("Local services:");
-            await benchmark.RunAsync("Fusion's Compute Service [-> EF Core -> SQL Server]", cancellationToken);
+            await benchmark.Run("Fusion's Compute Service [-> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("Regular Service [-> EF Core -> SQL Server]", cancellationToken);
+            await benchmark.Run("Regular Service [-> EF Core -> SQL Server]", cancellationToken);
 
             WriteLine();
             WriteLine("Remote services:");
-            var remoteServices = await CreateRemoteServiceProviderAsync(cancellationToken);
+            var remoteServices = await CreateRemoteServiceProvider(cancellationToken);
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-            await benchmark.RunAsync("Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
+            await benchmark.Run("Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<IRestEaseTenantService>();
-            await benchmark.RunAsync("RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
+            await benchmark.Run("RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
-            await benchmark.RunAsync("RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]", cancellationToken);
+            await benchmark.Run("RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]", cancellationToken);
         }
 
-        public static Task<IServiceProvider> CreateRemoteServiceProviderAsync(CancellationToken cancellationToken)
+        public static Task<IServiceProvider> CreateRemoteServiceProvider(CancellationToken cancellationToken)
         {
             var services = new ServiceCollection();
             var cfg = Host.CreateDefaultBuilder().Build().Services.GetRequiredService<IConfiguration>();
@@ -76,14 +76,13 @@ namespace Samples.Caching.Client
                 var clientSettings = c.GetRequiredService<ClientSettings>();
                 options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
             });
-            services.AttributeBased()
+            services.UseAttributeScanner()
                 .AddServicesFrom(Assembly.GetExecutingAssembly())
-                .SetScope(ClientSideScope)
-                .AddServicesFrom(Assembly.GetExecutingAssembly());
+                .WithScope(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
             return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
         }
 
-        public static Task<IServiceProvider> CreateLocalServiceProviderAsync(CancellationToken cancellationToken)
+        public static Task<IServiceProvider> CreateLocalServiceProvider(CancellationToken cancellationToken)
         {
             var host = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration((ctx, builder) => {
@@ -101,7 +100,7 @@ namespace Samples.Caching.Client
                         options.ValidateOnBuild = true;
                     })
                     .ConfigureServices((ctx, services) => {
-                        services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+                        services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
                     })
                     .UseStartup<Startup>())
                 .Build();

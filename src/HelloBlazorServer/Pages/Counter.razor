@@ -1,8 +1,9 @@
 ﻿@page "/counter"
 @using System.Threading
+@using Stl.Fusion.Extensions
 @inherits LiveComponentBase<string>
 @inject CounterService CounterService
-@inject TimeService TimeService
+@inject ILiveClock LiveClock
 @inject NavigationManager Navigator
 
 @{
@@ -21,23 +22,22 @@
 
 <p>Count: @state</p>
 
-<button class="btn btn-primary" @onclick="IncrementAsync">Increment</button>
+<button class="btn btn-primary" @onclick="Increment">Increment</button>
 
 @code {
-    protected override async Task<string> ComputeStateAsync(CancellationToken cancellationToken)
+    protected override async Task<string> ComputeState(CancellationToken cancellationToken)
     {
-        var (count, changeTime) = await CounterService.GetCounterAsync().ConfigureAwait(false);
-        var momentsAgo = await TimeService.GetMomentsAgoAsync(changeTime).ConfigureAwait(false);
+        var (count, changeTime) = await CounterService.Get();
+        var momentsAgo = await LiveClock.GetMomentsAgo(changeTime);
         return $"{count}, changed {momentsAgo}";
     }
 
-    private async Task IncrementAsync()
+    private async Task Increment()
     {
-        await CounterService.IncrementCounterAsync();
-        // The next call just improves UX: it cancels active update delay.
-        // You can comment it out & see everything still works, though the
-        // counter updates with 0.5s delay.
+        await CounterService.Increment();
+        // The next call improves UX by invalidating State and cancelling update delay on it.
+        // You can comment it out & see everything still works, though the counter updates with 0.5s delay.
         // The default update delay is set to 0.5s in Startup.cs (~ line 33).
-        State.CancelUpdateDelay();
+        InvalidateState();
     }
 }

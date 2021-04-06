@@ -44,6 +44,6 @@
     protected override void ConfigureLocals(MutableState<DateTime>.Options options)
         => options.InitialOutputFactory = _ => DateTime.Today;
 
-    protected override Task<WeatherForecast[]> ComputeStateAsync(CancellationToken cancellationToken)
+    protected override Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
         => ForecastService.GetForecastAsync(Locals.Value, cancellationToken);
 }

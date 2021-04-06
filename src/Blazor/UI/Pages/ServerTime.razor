@@ -10,28 +10,18 @@
 
 <h1>Server Time</h1>
 
-<StatefulComponentState Component="@this" />
+<WhenException Title="Update error:" Exception="@error"/>
 
-@if (error != null) {
-    <div class="alert alert-warning" role="alert">
-        Update error: @error.Message
-    </div>
-}
+<StateOfStateBadge State="@State" />
 
-<p>Server Time: @time</p>
+<p>Server Time: <b>@time</b></p>
 
-<button class="btn btn-primary" @onclick="() => State.CancelUpdateDelay()">Refresh</button>
+<Button Color="Color.Primary" @onclick="() => InvalidateState()">Refresh</Button>
 
 @code {
-    protected override void OnInitialized()
-    {
-        StateHasChangedTriggers = StateEventKind.All;
-        base.OnInitialized();
-    }
-
     protected override void ConfigureState(LiveState<DateTime>.Options options)
         => options.WithUpdateDelayer(0.5);
 
-    protected override Task<DateTime> ComputeStateAsync(CancellationToken cancellationToken)
-        => Time.GetTimeAsync(cancellationToken);
+    protected override Task<DateTime> ComputeState(CancellationToken cancellationToken)
+        => Time.GetTime(cancellationToken);
 }

@@ -8,14 +8,14 @@
 
 <MudLayout>
     <MudAppBar Elevation="25">
-        <MudIconButton Icon="@Icons.Material.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
         <MudText Typo="Typo.h5" Class="ml-3">Fusion+MudBlazor Template</MudText>
         <MudAppBarSpacer/>
         <MudTooltip Text="Toggle light/dark theme">
-            <MudIconButton Icon="@Icons.Material.Brightness4" Color="Color.Inherit" OnClick="@ThemeToggle" />
+            <MudIconButton Icon="@Icons.Material.Filled.Brightness4" Color="Color.Inherit" OnClick="@ThemeToggle" />
         </MudTooltip>
         <MudTooltip Text="Change Blazor mode">
-            <MudIconButton Icon="@Icons.Material.Settings" Color="Color.Inherit" OnClick="@ChangeBlazorMode" />
+            <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" OnClick="@ChangeBlazorMode" />
         </MudTooltip>
     </MudAppBar>
     <MudDrawer @bind-Open="@IsDrawerOpen" Elevation="25" Clipped="true">

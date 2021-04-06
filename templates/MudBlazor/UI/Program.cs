@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MudBlazor;
 using MudBlazor.Services;
 using Pluralize.NET;
 using Stl.Fusion;
@@ -59,19 +58,17 @@ namespace Templates.Blazor3.UI
                     var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
                     o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
                 });
-            var fusionAuth = fusion.AddAuthentication().AddClient().AddBlazor();
+            var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeScanner(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
             ConfigureSharedServices(services);
         }
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
-            services.AddMudBlazorDialog();
-            services.AddMudBlazorSnackbar();
-            services.AddMudBlazorResizeListener();
+            services.AddMudServices();
 
             // Default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {
@@ -82,7 +79,7 @@ namespace Templates.Blazor3.UI
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.AttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }
 }

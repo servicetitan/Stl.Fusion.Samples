@@ -1,29 +1,26 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Samples.Blazor.Abstractions;
-using Samples.Helpers;
+using Stl.Fusion.EntityFramework.Authentication;
+using Stl.Fusion.EntityFramework.Operations;
 
 namespace Samples.Blazor.Server.Services
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : DbContext, IDataProtectionKeyContext
     {
-        public DbSet<ChatUser> ChatUsers { get; protected set; } = null!;
         public DbSet<ChatMessage> ChatMessages { get; protected set; } = null!;
         public DbSet<Board> Boards { get; protected set; } = null!;
         public DbSet<Player> Players { get; protected set; } = null!;
 
-        public AppDbContext(DbContextOptions options) : base(options)
-            => this.DisableChangeTracking();
+        // Stl.Fusion.EntityFramework tables
+        public DbSet<DbOperation> Operations { get; protected set; } = null!;
+        public DbSet<DbSessionInfo> Sessions { get; protected set; } = null!;
+        public DbSet<DbUser> Users { get; protected set; } = null!;
+        public DbSet<DbUserIdentity> UserIdentities { get; protected set; } = null!;
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+        // Data protection key storage
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; protected set; } = null!;
 
-            var user = modelBuilder.Entity<ChatUser>();
-            user.HasIndex(u => u.Name);
-
-            var message = modelBuilder.Entity<ChatMessage>();
-            message.HasIndex(m => m.UserId);
-            message.HasIndex(m => m.CreatedAt);
-        }
+        public AppDbContext(DbContextOptions options) : base(options) { }
     }
 }

@@ -41,6 +41,7 @@ code of Fusion samples.
 
 Without further ado:
 
+* <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [QuickStart: Learn 80% of Fusion by walking through HelloCart sample](./QuickStart.md)
 * [Part 0: NuGet packages](./Part00.md)
 * [Part 1: Compute Services](./Part01.md)
 * [Part 2: Computed Values: IComputed&lt;T&gt;](./Part02.md)
@@ -50,16 +51,17 @@ Without further ado:
 * [Part 6: Real-time UI in Blazor Apps](./Part06.md)
 * [Part 7: Real-time UI in JS / React Apps](./Part07.md)
 * [Part 8: Scaling Fusion Services](./Part08.md)
+* <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [Part 9: CommandR](./Part09.md)
+* <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [Part 10: Multi-Host Invalidation and CQRS with Operations Framework](./Part10.md)
 * [Epilogue](./PartFF.md)
 
 Check out the
 [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
 as well - it provides a high-level description of Fusion abstractions.
 
-Join our [Discord Server] or [Gitter] to ask questions and track project updates.
+Join our [Discord Server] to ask questions and track project updates.
 
 [Discord Server]: https://discord.gg/EKEwv6d
-[Gitter]: https://gitter.im/Stl-Fusion/community
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
 [Try .NET]: https://github.com/dotnet/try/blob/master/DotNetTryLocal.md
 [Docker]: https://www.docker.com/

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>Templates.Blazor2.Services</RootNamespace>
     <AssemblyName>Templates.Blazor2.Services</AssemblyName>
@@ -10,6 +11,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="0.11.31" />
   </ItemGroup>
 
 </Project>

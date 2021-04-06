@@ -1,5 +1,1 @@
-(function() {
-
-window.App = {};
-
-})();
+// Must be JS module

@@ -6,7 +6,7 @@ using Stl.Fusion.Server;
 
 namespace Samples.Caching.Server.Controllers
 {
-    [Route("api/tenants")]
+    [Route("api/tenants/[action]")]
     [ApiController, JsonifyErrors]
     public class TenantController : ControllerBase, ITenantService
     {
@@ -15,22 +15,22 @@ namespace Samples.Caching.Server.Controllers
         public TenantController(ITenantService tenants)
             => Tenants = tenants;
 
-        [HttpPost("addOrUpdate")]
-        public Task AddOrUpdateAsync([FromBody] Tenant tenant, long? version, CancellationToken cancellationToken = default)
-            => Tenants.AddOrUpdateAsync(tenant, version, cancellationToken);
+        [HttpPost]
+        public Task AddOrUpdate([FromBody] Tenant tenant, long? version, CancellationToken cancellationToken = default)
+            => Tenants.AddOrUpdate(tenant, version, cancellationToken);
 
-        [HttpPost("remove")]
-        public Task RemoveAsync(string tenantId, long version, CancellationToken cancellationToken = default)
-            => Tenants.RemoveAsync(tenantId, version, cancellationToken);
+        [HttpPost]
+        public Task Remove(string tenantId, long version, CancellationToken cancellationToken = default)
+            => Tenants.Remove(tenantId, version, cancellationToken);
 
         // Compute methods
 
-        [HttpGet("getAll"), Publish]
-        public Task<Tenant[]> GetAllAsync(CancellationToken cancellationToken = default)
-            => Tenants.GetAllAsync(cancellationToken);
+        [HttpGet, Publish]
+        public Task<Tenant[]> GetAll(CancellationToken cancellationToken = default)
+            => Tenants.GetAll(cancellationToken);
 
-        [HttpGet("get"), Publish]
-        public Task<Tenant?> TryGetAsync(string tenantId, CancellationToken cancellationToken = default)
-            => Tenants.TryGetAsync(tenantId ?? "", cancellationToken);
+        [HttpGet, Publish]
+        public Task<Tenant?> TryGet(string tenantId, CancellationToken cancellationToken = default)
+            => Tenants.TryGet(tenantId ?? "", cancellationToken);
     }
 }

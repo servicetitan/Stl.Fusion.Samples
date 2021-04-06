@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Stl.Async;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using static System.Console;
@@ -19,9 +20,9 @@ namespace Tutorial
             private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
             [ComputeMethod]
-            public virtual async Task<int> GetAsync(string key)
+            public virtual async Task<int> Get(string key)
             {
-                WriteLine($"{nameof(GetAsync)}({key})");
+                WriteLine($"{nameof(Get)}({key})");
                 return _counters.TryGetValue(key, out var value) ? value : 0;
             }
 
@@ -29,7 +30,8 @@ namespace Tutorial
             {
                 WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-                Computed.Invalidate(() => GetAsync(key));
+                using (Computed.Invalidate())
+                    Get(key).Ignore();
             }
         }
 
@@ -37,7 +39,7 @@ namespace Tutorial
         {
             var services = new ServiceCollection();
             services.AddFusion();
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             return services.BuildServiceProvider();
         }
 
@@ -47,7 +49,7 @@ namespace Tutorial
         {
             #region Part03_MutableState
             var services = CreateServices();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             var state = stateFactory.NewMutable<int>(1);
             var computed = state.Computed;
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
@@ -61,7 +63,7 @@ namespace Tutorial
         {
             #region Part03_MutableStateError
             var services = CreateServices();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             var state = stateFactory.NewMutable<int>();
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
             WriteLine("Setting state.Error.");
@@ -81,7 +83,7 @@ namespace Tutorial
             #region Part03_LiveState
             var services = CreateServices();
             var counters = services.GetRequiredService<CounterService>();
-            var stateFactory = services.GetStateFactory();
+            var stateFactory = services.StateFactory();
             WriteLine("Creating state.");
             using var state = stateFactory.NewLive<string>(
                 options => {
@@ -93,12 +95,12 @@ namespace Tutorial
                     };
                 },
                 async (state, cancellationToken) => {
-                    var counter = await counters.GetAsync("a");
+                    var counter = await counters.Get("a");
                     return $"counters.GetAsync(a) -> {counter}";
                 });
-            WriteLine("Before state.UpdateAsync(false).");
-            await state.UpdateAsync(false); // Ensures the state gets up-to-date value
-            WriteLine("After state.UpdateAsync(false).");
+            WriteLine("Before state.Update(false).");
+            await state.Update(false); // Ensures the state gets up-to-date value
+            WriteLine("After state.Update(false).");
             counters.Increment("a");
             await Task.Delay(2000);
             WriteLine($"Value: {state.Value}, Computed: {state.Computed}");

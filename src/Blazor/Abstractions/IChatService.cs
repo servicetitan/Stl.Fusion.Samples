@@ -5,9 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Stl;
+using Stl.CommandR.Configuration;
 using Stl.Fusion;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Abstractions
 {
@@ -17,12 +20,8 @@ namespace Samples.Blazor.Abstractions
         public long Id { get; set; }
     }
 
-    public class ChatUser : LongKeyedEntity
-    {
-        [Required, MaxLength(120)]
-        public string Name { get; set; } = "";
-    }
-
+    [Index(nameof(UserId))]
+    [Index(nameof(CreatedAt))]
     public class ChatMessage : LongKeyedEntity
     {
         public long UserId { get; set; }
@@ -55,23 +54,40 @@ namespace Samples.Blazor.Abstractions
         }
     }
 
+    // Not an entity!
+    public class ChatUser : LongKeyedEntity
+    {
+        public static ChatUser None => new() { Id = -1, Name = "No user found" };
+
+        [Required, MaxLength(120)]
+        public string Name { get; set; } = "";
+        public bool IsValid => Id >= 0;
+    }
+
     public interface IChatService
     {
-        // Writers
-        Task<ChatUser> CreateUserAsync(string name, CancellationToken cancellationToken = default);
-        Task<ChatUser> SetUserNameAsync(long id, string name, CancellationToken cancellationToken = default);
-        Task<ChatMessage> AddMessageAsync(long userId, string text, CancellationToken cancellationToken = default);
+        public record PostCommand(string Text, Session Session) : ISessionCommand<ChatMessage>
+        {
+            // Default constructor is needed for JSON deserialization
+            public PostCommand() : this(null!, Session.Null) { }
+        }
 
-        // Readers
-        [ComputeMethod(KeepAliveTime = 10)]
-        Task<long> GetUserCountAsync(CancellationToken cancellationToken = default);
-        [ComputeMethod(KeepAliveTime = 10)]
-        Task<long> GetActiveUserCountAsync(CancellationToken cancellationToken = default);
+        // Commands
+        [CommandHandler]
+        Task<ChatMessage> Post(PostCommand command, CancellationToken cancellationToken = default);
+
+        // Queries
+        [ComputeMethod(KeepAliveTime = 11)]
+        Task<ChatUser> GetCurrentUser(Session session, CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 1)]
-        Task<ChatUser> GetUserAsync(long id, CancellationToken cancellationToken = default);
-        [ComputeMethod(KeepAliveTime = 10)]
-        Task<ChatPage> GetChatTailAsync(int length, CancellationToken cancellationToken = default);
+        Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 61)]
+        Task<long> GetUserCount(CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 61)]
+        Task<long> GetActiveUserCount(CancellationToken cancellationToken = default);
+        [ComputeMethod(KeepAliveTime = 11)]
+        Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 1)]
-        Task<ChatPage> GetChatPageAsync(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
+        Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
     }
 }

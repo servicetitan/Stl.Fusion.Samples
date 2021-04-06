@@ -1,5 +1,4 @@
-using System;
-using System.Threading;
+﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Samples.Blazor.Abstractions;
 using Stl;
@@ -21,7 +20,7 @@ namespace Samples.Blazor.UI.Services
         public ILiveState<AuthState> AuthState => AuthStateProvider.State;
         // Own properties
         public ILiveState<User> User { get; }
-        public IMutableState<ChatUser?> ChatUser { get; }
+        // public IMutableState<ChatUser?> ChatUser { get; }
         public IMutableState<Board?> Board { get; }
 
         public ClientState(AuthStateProvider authStateProvider, IStateFactory stateFactory)
@@ -32,10 +31,10 @@ namespace Samples.Blazor.UI.Services
             User = stateFactory.NewLive<User>(
                 o => o.WithUpdateDelayer(0, 1),
                 async (_, cancellationToken) => {
-                    var authState = await AuthState.UseAsync(cancellationToken).ConfigureAwait(false);
+                    var authState = await AuthState.Use(cancellationToken).ConfigureAwait(false);
                     return authState.User;
                 });
-            ChatUser = stateFactory.NewMutable(Result.Value<ChatUser?>(null));
+            // ChatUser = stateFactory.NewMutable(Result.Value<ChatUser?>(null));
             Board = stateFactory.NewMutable(Result.Value<Board?>(null));
         }
 

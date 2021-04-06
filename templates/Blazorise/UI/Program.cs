@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Blazorise;
@@ -7,14 +6,13 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Pluralize.NET;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
+using Stl.Fusion.Extensions;
 
 namespace Templates.Blazor2.UI
 {
@@ -32,15 +30,8 @@ namespace Templates.Blazor2.UI
             builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
 
-            host.Services.UseBootstrapProviders().UseFontAwesomeIcons(); // Blazorise
-            var runTask = host.RunAsync();
-            Task.Run(async () => {
-                // We "manually" start IHostedServices here, because Blazor host doesn't do this.
-                var hostedServices = host.Services.GetRequiredService<IEnumerable<IHostedService>>();
-                foreach (var hostedService in hostedServices)
-                    await hostedService.StartAsync(default);
-            });
-            return runTask;
+            host.Services.HostedServices().Start();
+            return host.RunAsync();
         }
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
@@ -50,41 +41,45 @@ namespace Templates.Blazor2.UI
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
 
-            var fusion = services.AddFusion();
-            var fusionClient = fusion.AddRestEaseClient(
-                (c, o) => {
-                    o.BaseUri = baseUri;
-                    o.MessageLogLevel = LogLevel.Information;
-                }).ConfigureHttpClientFactory(
-                (c, name, o) => {
-                    var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-                    var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-                    o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-                });
-            var fusionAuth = fusion.AddAuthentication().AddClient().AddBlazor();
+            services.AddFusion(fusion => {
+                fusion.AddRestEaseClient(
+                    (c, o) => {
+                        o.BaseUri = baseUri;
+                        o.MessageLogLevel = LogLevel.Information;
+                    }).ConfigureHttpClientFactory(
+                    (c, name, o) => {
+                        var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
+                        var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
+                        o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
+                    });
+               fusion.AddAuthentication(fusionAuth => {
+                   fusionAuth.AddRestEaseClient().AddBlazor();
+               });
+            });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
             ConfigureSharedServices(services);
         }
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
-            services.AddBlazorise(options => options.ChangeTextOnKeyPress = true)
-                .AddBootstrapProviders()
-                .AddFontAwesomeIcons();
+            services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
 
             // Default delay for update delayers
             services.AddSingleton(c => new UpdateDelayer.Options() {
-                Delay = TimeSpan.FromSeconds(0.1),
+                DelayDuration = TimeSpan.FromSeconds(0.1),
             });
 
-            services.AddSingleton<IPluralize, Pluralizer>();
+            // Extensions
+            services.AddFusion(fusion => {
+                fusion.AddLiveClock();
+            });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
         }
     }
 }

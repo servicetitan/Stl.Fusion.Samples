@@ -31,15 +31,15 @@ namespace Samples.Caching.Client
             ServerBinDir = Path.GetFullPath(Path.Combine(cachingSampleDir, $"Server/{binCfgPart}/net5.0/"));
         }
 
-        public async Task WaitForServicesAsync(CancellationToken cancellationToken)
+        public async Task WaitForServices(CancellationToken cancellationToken)
         {
-            await WaitForServiceAsync("SQL Server", DbSettings.ServerHost, DbSettings.ServerPort,
+            await WaitForService("SQL Server", DbSettings.ServerHost, DbSettings.ServerPort,
                 "docker-compose up -d db", cancellationToken);
-            await WaitForServiceAsync("Samples.Caching.Server", ClientSettings.ServerHost, ClientSettings.ServerPort,
+            await WaitForService("Samples.Caching.Server", ClientSettings.ServerHost, ClientSettings.ServerPort,
                 "", cancellationToken);
         }
 
-        private async Task WaitForServiceAsync(string name, string ipAddress, int port, string command, CancellationToken cancellationToken)
+        private async Task WaitForService(string name, string ipAddress, int port, string command, CancellationToken cancellationToken)
         {
             var helpDisplayed = false;
             while (!IsPortOpen(ipAddress, port)) {

@@ -117,9 +117,9 @@ public class CounterService
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
     [ComputeMethod]
-    public virtual async Task<int> GetAsync(string key)
+    public virtual async Task<int> Get(string key)
     {
-        WriteLine($"{nameof(GetAsync)}({key})");
+        WriteLine($"{nameof(Get)}({key})");
         return _counters.TryGetValue(key, out var value) ? value : 0;
     }
 
@@ -127,7 +127,8 @@ public class CounterService
     {
         WriteLine($"{nameof(Increment)}({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-        Computed.Invalidate(() => GetAsync(key));
+        using (Computed.Invalidate())
+            Get(key).Ignore();
     }
 }
 
@@ -135,7 +136,7 @@ public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
     services.AddFusion();
-    services.AttributeBased().AddServicesFrom(Assembly.GetExecutingAssembly());
+    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
     return services.BuildServiceProvider();
 }
 ```
@@ -144,7 +145,7 @@ Here is how you use `MutableState<T>`:
 
 ``` cs --region Part03_MutableState --source-file Part03.cs
 var services = CreateServices();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
 var state = stateFactory.NewMutable<int>(1);
 var computed = state.Computed;
 WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
@@ -170,7 +171,7 @@ Let's look at error handling example:
 
 ``` cs --region Part03_MutableStateError --source-file Part03.cs
 var services = CreateServices();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
 var state = stateFactory.NewMutable<int>();
 WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
 WriteLine("Setting state.Error.");
@@ -210,7 +211,7 @@ Let's play with `ILiveState<T>` now:
 ``` cs --region Part03_LiveState --source-file Part03.cs
 var services = CreateServices();
 var counters = services.GetRequiredService<CounterService>();
-var stateFactory = services.GetStateFactory();
+var stateFactory = services.StateFactory();
 WriteLine("Creating state.");
             using var state = stateFactory.NewLive<string>(
                 options =>
@@ -225,12 +226,12 @@ WriteLine("Creating state.");
                 },
                 async (state, cancellationToken) =>
                 {
-                    var counter = await counters.GetAsync("a");
+                    var counter = await counters.Get("a");
                     return $"counters.GetAsync(a) -> {counter}";
                 });
-WriteLine("Before state.UpdateAsync(false).");
-await state.UpdateAsync(false); // Ensures the state gets up-to-date value
-WriteLine("After state.UpdateAsync(false).");
+WriteLine("Before state.Update(false).");
+await state.Update(false); // Ensures the state gets up-to-date value
+WriteLine("After state.Update(false).");
 counters.Increment("a");
 await Task.Delay(2000);
 WriteLine($"Value: {state.Value}, Computed: {state.Computed}");
@@ -244,11 +245,11 @@ The output:
 Creating state.
 10/2/2020 6:26:04 AM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Consistent)
 10/2/2020 6:26:04 AM: Invalidated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Invalidated)
-Before state.UpdateAsync(false).
+Before state.Update(false).
 10/2/2020 6:26:04 AM: Updating, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Invalidated)
 GetAsync(a)
 10/2/2020 6:26:04 AM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Consistent)
-After state.UpdateAsync(false).
+After state.Update(false).
 Increment(a)
 10/2/2020 6:26:04 AM: Invalidated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
 10/2/2020 6:26:05 AM: Updating, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
@@ -263,7 +264,7 @@ Some observations:
   (the first "Updated: ..." output)
 * This value gets invalidated immediately (i.e. while
   `stateFactory.NewLive<T>(...)` runs)
-* `aCounterState.UpdateAsync(false)` triggers its update.
+* `aCounterState.Update(false)` triggers its update.
   Interestingly, though, that this update will anyway happen
   immediately by default - the very first update delay is
   always zero. You can check this by replacing the line

@@ -8,8 +8,8 @@ namespace Samples.Blazor.Abstractions
     public interface ITimeService
     {
         [ComputeMethod(KeepAliveTime = 1)]
-        Task<DateTime> GetTimeAsync(CancellationToken cancellationToken = default);
+        Task<DateTime> GetTime(CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 60)]
-        Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
+        Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
     }
 }

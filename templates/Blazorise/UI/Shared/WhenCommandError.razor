@@ -1,0 +1,9 @@
+
+@if (Exception != null) {
+    <Error @key="@Exception" Title="Action failed!">@Exception.Message</Error>
+}
+
+@code {
+    [Parameter]
+    public Exception? Exception { get; set; }
+}

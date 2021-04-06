@@ -7,7 +7,7 @@ using Samples.Blazor.Abstractions;
 
 namespace Samples.Blazor.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]
     public class TimeController : ControllerBase, ITimeService
     {
@@ -15,12 +15,12 @@ namespace Samples.Blazor.Server.Controllers
 
         public TimeController(ITimeService time) => _time = time;
 
-        [HttpGet("get"), Publish]
-        public Task<DateTime> GetTimeAsync(CancellationToken cancellationToken)
-            => _time.GetTimeAsync(cancellationToken);
+        [HttpGet, Publish]
+        public Task<DateTime> GetTime(CancellationToken cancellationToken)
+            => _time.GetTime(cancellationToken);
 
-        [HttpGet("getUptime"), Publish]
-        public Task<TimeSpan> GetUptimeAsync(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
-            => _time.GetUptimeAsync(updatePeriod, cancellationToken);
+        [HttpGet, Publish]
+        public Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
+            => _time.GetUptime(updatePeriod, cancellationToken);
     }
 }

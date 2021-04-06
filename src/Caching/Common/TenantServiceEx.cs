@@ -9,7 +9,7 @@ namespace Samples.Caching.Common
         public static async Task<Tenant> GetAsync(this ITenantService tenants,
             string tenantId, CancellationToken cancellationToken = default)
         {
-            var tenant = await tenants.TryGetAsync(tenantId, cancellationToken).ConfigureAwait(false);
+            var tenant = await tenants.TryGet(tenantId, cancellationToken).ConfigureAwait(false);
             return tenant ?? throw new KeyNotFoundException();
         }
     }

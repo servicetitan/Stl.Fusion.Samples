@@ -21,6 +21,10 @@ services:
     build: 
       context: .
       target: sample_hello_world
+  sample_hello_cart:
+    build: 
+      context: .
+      target: sample_hello_cart
   sample_hello_blazor_server:
     build: 
       context: .
@@ -78,4 +82,5 @@ services:
     ports:
      - "80:80"
     environment:
-      ASPNETCORE_URLS: "http://0.0.0.0:80"
+      ASPNETCORE_URLS: "http://*:80"
+      Server__AssumeHttps: "true"
