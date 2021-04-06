@@ -72,7 +72,7 @@ namespace Samples.HelloCart
             while (true) {
                 WriteLine($"  {computed.Value}");
                 await computed.WhenInvalidated(cancellationToken);
-                computed = await computed.Update(false, cancellationToken);
+                computed = await computed.Update(cancellationToken);
             }
         }
 
@@ -83,7 +83,7 @@ namespace Samples.HelloCart
             while (true) {
                 WriteLine($"  {cartId}: total = {computed.Value}");
                 await computed.WhenInvalidated(cancellationToken);
-                computed = await computed.Update(false, cancellationToken);
+                computed = await computed.Update(cancellationToken);
             }
         }
     }

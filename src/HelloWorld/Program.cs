@@ -47,7 +47,7 @@ Task.Run(async () => {
         WriteLine($"* Build result: {computed.Value}");
         await computed.WhenInvalidated();
         // Computed instances are ~ immutable, so update means getting a new one
-        computed = await computed.Update(false);
+        computed = await computed.Update();
     }
 }).Ignore();
 

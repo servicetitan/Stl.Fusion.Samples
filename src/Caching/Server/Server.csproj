@@ -16,8 +16,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.4" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.11.31" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="0.11.31" />
+    <PackageReference Include="Stl.Fusion.Server" Version="0.11.36" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="0.11.36" />
   </ItemGroup>
 
   <ItemGroup>
