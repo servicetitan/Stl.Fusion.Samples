@@ -178,7 +178,7 @@ WriteLine($"computed: {computed}");
 WriteLine("computed.Invalidate()");
 computed.Invalidate();
 WriteLine($"computed: {computed}");
-var newComputed = await computed.Update(false);
+var newComputed = await computed.Update();
 WriteLine($"newComputed: {newComputed}");
 ```
 
@@ -245,7 +245,7 @@ WriteLine($"{DateTime.Now}: {computed.Value}");
 for (var i = 0; i < 5; i++)
 {
     await computed.WhenInvalidated();
-    computed = await computed.Update(false);
+    computed = await computed.Update();
     WriteLine($"{DateTime.Now}: {computed.Value}");
 }
 ```

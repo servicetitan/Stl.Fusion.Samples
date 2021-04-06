@@ -195,7 +195,7 @@ namespace Tutorial
                     WriteLine($"{name}: {computed.Value}, {computed}");
                     await computed.WhenInvalidated(cancellationToken);
                     WriteLine($"{name}: {computed.Value}, {computed}");
-                    computed = await computed.Update(false, cancellationToken);
+                    computed = await computed.Update(cancellationToken);
                 }
             }
 
@@ -240,7 +240,7 @@ namespace Tutorial
                     var counter = await counters.Get("a", cancellationToken);
                     return $"counters.GetAsync(a) -> {counter}";
                 });
-            await state.Update(false); // Ensures the state gets up-to-date value
+            await state.Update(); // Ensures the state gets up-to-date value
             await counters.Increment("a");
             await Task.Delay(2000);
             await counters.SetOffset(10);

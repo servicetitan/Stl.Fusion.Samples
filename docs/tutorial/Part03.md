@@ -230,7 +230,7 @@ WriteLine("Creating state.");
                     return $"counters.GetAsync(a) -> {counter}";
                 });
 WriteLine("Before state.Update(false).");
-await state.Update(false); // Ensures the state gets up-to-date value
+await state.Update(); // Ensures the state gets up-to-date value
 WriteLine("After state.Update(false).");
 counters.Increment("a");
 await Task.Delay(2000);
