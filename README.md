@@ -12,17 +12,14 @@ Welcome to a collection of [Fusion] samples!
 
 ### 0. Solution Templates
 
-Sorry, we don't provide `dotnet new`-based templates yet, but the ones
-you can copy & modify can be found in the [`templates` folder](./templates).
-
-Currently there are 2 app templates:
-- [Blazorise](https://blazorise.com/)-based app template
-- [MudBlazor](https://mudblazor.com/)-based app template (it uses an older Fusion version now, so we don't recommend to use it yet)
+We don't provide `dotnet new`-based templates yet, but you can find
+template solutions to copy in [`templates/*` folders](./templates).
 
 ![](docs/img/Samples-Template.gif)
 
-Open `Templates.sln`, run any of `*.Host` or `*.Server` projects,
-and go to http://localhost:5005 to them in action.
+Templates are also included into `Samples.sln`, so you can
+try any of them by opening this solution & running one of 
+template `.csproj` files.
 
 ### 1. HelloCart and HelloWorld Samples
 

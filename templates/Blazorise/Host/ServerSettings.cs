@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Stl.DependencyInjection;
 
-namespace Templates.Blazor2.Host
+namespace Templates.Blazor1.Host
 {
     [Settings("Server")]
     public class ServerSettings

@@ -6,7 +6,7 @@ using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
 
-namespace Templates.Blazor2.Abstractions
+namespace Templates.Blazor1.Abstractions
 {
     public record Todo(string Id, string Title, bool IsDone = false)
     {

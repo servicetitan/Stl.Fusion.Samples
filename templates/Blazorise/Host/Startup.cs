@@ -16,7 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Templates.Blazor2.Services;
+using Templates.Blazor1.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Blazor;
@@ -30,7 +30,7 @@ using Microsoft.EntityFrameworkCore;
 using Stl.Fusion.EntityFramework;
 using Stl.IO;
 
-namespace Templates.Blazor2.Host
+namespace Templates.Blazor1.Host
 {
     public class Startup
     {
@@ -138,7 +138,7 @@ namespace Templates.Blazor2.Host
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "Templates.Blazor2 API", Version = "v1"
+                    Title = "Templates.Blazor1 API", Version = "v1"
                 });
             });
         }
