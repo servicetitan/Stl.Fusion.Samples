@@ -7,7 +7,7 @@
 @inject NavigationManager Navigator
 
 @{
-    var state = State.LastValue ?? Array.Empty<(string, string, string)>();
+    var state = State.LatestNonErrorValue ?? Array.Empty<(string, string, string)>();
     var error = State.Error;
 }
 

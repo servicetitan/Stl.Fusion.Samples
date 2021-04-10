@@ -10,7 +10,7 @@
 @{
     Debug.WriteLine("Rendering TodoPage.");
     var error = State.Error;
-    var todos = State.UnsafeValue ?? Array.Empty<Todo>(); // UnsafeValue returns default if there is an Error
+    var todos = State.LatestNonErrorValue ?? Array.Empty<Todo>();
 }
 
 <h1>Todo List</h1>

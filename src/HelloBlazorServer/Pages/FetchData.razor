@@ -4,7 +4,7 @@
 @inject WeatherForecastService ForecastService
 
 @{
-    var state = State.LastValue ?? Array.Empty<WeatherForecast>();
+    var state = State.ValueOrDefault ?? Array.Empty<WeatherForecast>();
     var error = State.Error;
 }
 

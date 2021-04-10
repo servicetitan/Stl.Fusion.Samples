@@ -4,7 +4,7 @@
 @inject ITimeService Time
 
 @{
-    var time = State.LastValue.Format();
+    var time = State.LatestNonErrorValue.Format();
     var error = State.Error;
 }
 

@@ -35,16 +35,16 @@ horizontally relying on multi-host invalidation.
 ["QuickStart: Learn 80% of Fusion by walking through HelloCart sample"](./docs/tutorial/QuickStart.md) is the newest part of [Fusion Tutorial] that covers
 specifically this sample. Check it out!
 
-![](docs/img/Samples-HelloWorld.gif)
-
-Fusion-style [HelloWorld] shows how to create
+And [HelloWorld] shows how to create
 an incremental build simulation on Fusion. Nothing is really 
 built there, of course - the goal is to shows how Fusion
 "captures" dependencies right when you use them and runs
 cascading invalidations.
 
 If you're choosing between `HelloWorld` and `HelloCart` - 
-start from `HelloCart` first, it is 
+play with `HelloCart` first. It is also a sample covered
+in [QuickStart part](docs/tutorial/QuickStart.md) 
+of the [Fusion Tutorial].
 
 ### 2. HelloBlazorServer Sample
 

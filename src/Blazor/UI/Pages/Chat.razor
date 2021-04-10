@@ -10,7 +10,7 @@
 
 @{
     var locals = Locals.Value;
-    var state = State.LastValue;
+    var state = State.LatestNonErrorValue;
     var lastPage = state.LastPage;
     var error = State.Error;
 }
@@ -154,7 +154,7 @@
     {
         ResetError();
         try {
-            if (!State.LastValue.ChatUser.IsValid)
+            if (State.ValueOrDefault?.ChatUser?.IsValid != true)
                 throw new ApplicationException("Please sign in first.");
             await ChatService.Post(new(Locals.Value.Message, Session));
             Locals.Value.Message = "";

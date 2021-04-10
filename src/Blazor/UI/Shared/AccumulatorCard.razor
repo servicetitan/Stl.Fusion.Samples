@@ -3,7 +3,7 @@
 @inject ISumService SumService
 
 @{
-    var accumulator = State.LastValue;
+    var accumulator = State.LatestNonErrorValue;
     var locals = Locals.Value;
     var error = State.Error;
 }

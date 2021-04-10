@@ -74,7 +74,8 @@ namespace Tutorial
             catch (ApplicationException) {
                 WriteLine($"Error: {state.Error.GetType()}, Computed: {state.Computed}");
             }
-            WriteLine($"LastValue: {state.LastValue}, LastValueComputed: {state.LastValueComputed}");
+            WriteLine($"LatestNonErrorValue: {state.LatestNonErrorValue}");
+            WriteLine($"Snapshot.LatestNonErrorComputed: {state.Snapshot.LatestNonErrorComputed}");
             #endregion
         }
 
