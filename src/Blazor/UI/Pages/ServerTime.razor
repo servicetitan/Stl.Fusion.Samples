@@ -1,6 +1,6 @@
 @page "/serverTime"
 @using System.Threading
-@inherits LiveComponentBase<DateTime>
+@inherits ComputedStateComponent<DateTime>
 @inject ITimeService Time
 
 @{
@@ -16,11 +16,12 @@
 
 <p>Server Time: <b>@time</b></p>
 
-<Button Color="Color.Primary" @onclick="() => InvalidateState()">Refresh</Button>
+<Button Color="Color.Primary" @onclick="() => State.Invalidate()">State.Invalidate()</Button>
+<Button Color="Color.Primary" @onclick="() => State.Recompute()">State.Recompute()</Button>
 
 @code {
-    protected override void ConfigureState(LiveState<DateTime>.Options options)
-        => options.WithUpdateDelayer(0.5);
+    protected override void ConfigureState(ComputedState<DateTime>.Options options)
+        => options.UpdateDelayer = new UpdateDelayer(0.5);
 
     protected override Task<DateTime> ComputeState(CancellationToken cancellationToken)
         => Time.GetTime(cancellationToken);

@@ -1,9 +1,9 @@
 ﻿@page "/counter"
 @using System.Threading
 @using Stl.Fusion.Extensions
-@inherits LiveComponentBase<string>
+@inherits ComputedStateComponent<string>
 @inject CounterService CounterService
-@inject ILiveClock LiveClock
+@inject IFusionTime Time
 @inject NavigationManager Navigator
 
 @{
@@ -28,16 +28,13 @@
     protected override async Task<string> ComputeState(CancellationToken cancellationToken)
     {
         var (count, changeTime) = await CounterService.Get();
-        var momentsAgo = await LiveClock.GetMomentsAgo(changeTime);
+        var momentsAgo = await Time.GetMomentsAgo(changeTime);
         return $"{count}, changed {momentsAgo}";
     }
 
     private async Task Increment()
     {
         await CounterService.Increment();
-        // The next call improves UX by invalidating State and cancelling update delay on it.
-        // You can comment it out & see everything still works, though the counter updates with 0.5s delay.
-        // The default update delay is set to 0.5s in Startup.cs (~ line 33).
-        InvalidateState();
+        await State.ApplyUserCausedUpdate(); // This just shortens the update delay; try commenting out this line
     }
 }

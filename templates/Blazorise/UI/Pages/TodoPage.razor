@@ -1,7 +1,7 @@
 @page "/todo"
 @using System.Threading
 @using Templates.Blazor1.Abstractions
-@inherits LiveComponentBase<Todo[]>
+@inherits ComputedStateComponent<Todo[]>
 @inject ITodoService Todos
 @inject Session Session
 @inject CommandRunner CommandRunner
@@ -103,7 +103,7 @@ This comment is here solely to reset the indent in VS / Rider -->
     private void LoadMore()
     {
         PageSize *= 2;
-        InvalidateState();
+        State.Recompute();
     }
 
     private Task InvertDone(Todo todo)

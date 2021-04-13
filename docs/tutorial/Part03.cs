@@ -86,9 +86,11 @@ namespace Tutorial
             var counters = services.GetRequiredService<CounterService>();
             var stateFactory = services.StateFactory();
             WriteLine("Creating state.");
-            using var state = stateFactory.NewLive<string>(
+            using var state = stateFactory.NewComputed<string>(
                 options => {
-                    options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
+                    options.UpdateDelayer = new UpdateDelayer() {
+                        UpdateDelayDuration = TimeSpan.FromSeconds(1), // 1 second update delay
+                    };
                     options.EventConfigurator += state1 => {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
                         state1.AddEventHandler(StateEventKind.All,

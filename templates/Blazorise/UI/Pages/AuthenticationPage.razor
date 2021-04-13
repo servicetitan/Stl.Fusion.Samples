@@ -3,11 +3,11 @@
 @using UAParser
 @using System.Collections.Concurrent
 @using Stl.Fusion.Extensions
-@inherits LiveComponentBase<List<AuthenticationPage.SessionModel>>
+@inherits ComputedStateComponent<List<AuthenticationPage.SessionModel>>
 @inject Session Session
 @inject IAuthService AuthService
 @inject ClientAuthHelper ClientAuthHelper
-@inject ILiveClock LiveClock
+@inject IFusionTime LiveClock
 @inject NavigationManager Navigator
 
 @{
@@ -160,7 +160,7 @@
         }
     }
 
-    protected override void ConfigureState(LiveState<List<SessionModel>>.Options options)
+    protected override void ConfigureState(ComputedState<List<SessionModel>>.Options options)
         => options.InitialOutputFactory = _ => new List<SessionModel>();
 
     protected override async Task<List<SessionModel>> ComputeState(CancellationToken cancellationToken)

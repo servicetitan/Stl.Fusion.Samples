@@ -65,16 +65,13 @@ namespace Templates.Blazor1.UI
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
+            // Blazorise
             services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
-
-            // Default delay for update delayers
-            services.AddSingleton(c => new UpdateDelayer.Options() {
-                DelayDuration = TimeSpan.FromSeconds(0.1),
-            });
-
-            // Extensions
+            // Default update delayer
+            services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
+            // Other UI-related services
             services.AddFusion(fusion => {
-                fusion.AddLiveClock();
+                fusion.AddFusionTime();
             });
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:

@@ -9,12 +9,12 @@ There are a few "flavors" of the `IState` - the most important ones are:
   and the update delay is controlled by `UpdateDelayer` provided to it.
 
 You can use these abstractions directly in your Blazor components, but
-usually it's more convenient to use `LiveComponentBase<T>` and
+usually it's more convenient to use `ComputedStateComponent<T>` and
 `LiveCompontentBase<T, TLocals>` from `Stl.Fusion.Blazor` NuGet package.
 I'll describe how they work further, but since the classes
 are tiny, the link to their source code might explain it even better:
 
-- [LiveComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/LiveComponentBase.cs)
+- [ComputedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs)
 - Its base type - [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs)
 
 #### StatefulComponentBase&lt;T&gt;
@@ -56,7 +56,7 @@ Finally, it also disposes the state once the component gets disposed -
 unless its `OwnsState` property is set to `false`. And that's nearly all
 it does.
 
-#### LiveComponentBase&lt;T&gt;
+#### ComputedStateComponent&lt;T&gt;
 
 This class tweaks a behavior of `StatefulComponentBase` to deal `ILiveState<T>`.
 
@@ -90,7 +90,7 @@ constructs it using `IStateFactory` - and moreover:
 So to have a component that automatically updates once the output of some
 Compute Service (or a set of such services) changes, all you need is to:
 
-- Inherit it from `LiveComponentBase<T>`
+- Inherit it from `ComputedStateComponent<T>`
 - Override its `ComputeState` method
 - Possibly, override its `ConfigureState` method.
 
@@ -108,7 +108,7 @@ protected override async Task<string> ComputeState(CancellationToken cancellatio
 }
 ```
 
-#### LiveComponentBase&lt;T, TLocals&gt;
+#### ComputedStateComponent&lt;T, TLocals&gt;
 
 It's pretty common for live components to have its own (local) state
 (e.g. a text entered into a few form fields)
@@ -130,9 +130,9 @@ There are a few ways to enforce `State` recomputation in such cases:
    the recomputation of `State` will happen automatically.
    Though if you need to cancel update delay in this case, it's going
    to be a bit more complex.
-3. And finally, you can use `LiveComponentBase<T, TLocals>`, which
+3. And finally, you can use `ComputedStateComponent<T, TLocals>`, which
    takes the best of these two options and implements this :)
-   Check out [its source code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/LiveComponentBase.cs#L23) -
+   Check out [its source code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs#L23) -
    it is about 15 LOC long and everything is absolutely straightforward there.
 
 ## Real-time UI in Server-Side Blazor apps
@@ -140,8 +140,8 @@ There are a few ways to enforce `State` recomputation in such cases:
 As you might guess, all you need is to:
 
 - Add your Compute Services to `IServiceProvider` used by ASP.NET Core
-- Inherit your own components from `LiveComponentBase<T>` or
-  `LiveComponentBase<T, TLocals>`, or just use `ILiveState<T>`
+- Inherit your own components from `ComputedStateComponent<T>` or
+  `ComputedStateComponent<T, TLocals>`, or just use `ILiveState<T>`
   and / or `IMutableState<T>` there directly to ensure `StateHasChanged`
   is called once the state gets recomputed.
 

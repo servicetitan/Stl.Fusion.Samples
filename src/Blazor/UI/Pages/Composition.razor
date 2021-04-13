@@ -1,6 +1,6 @@
 @page "/composition"
 @using System.Threading
-@inherits LiveComponentBase<Composition.Model, string>
+@inherits MixedStateComponent<Composition.Model, string>
 @inject ILocalComposerService LocalComposer;
 @inject IComposerService Composer;
 @inject Session Session;
@@ -29,7 +29,7 @@
     <Addon AddonType="AddonType.Start">
         <AddonLabel>Parameter</AddonLabel>
     </Addon>
-    <TextEdit @bind-Text="@Locals.Value" Placeholder="Type something here" type="search" />
+    <TextEdit @bind-Text="@MutableState.Value" Placeholder="Type something here" type="search" />
 </Addons>
 
 <Row Margin="Margin.Is3.OnY">
@@ -52,12 +52,12 @@
         public ComposedValue RemotelyComposedValue { get; set; } = new ComposedValue();
     }
 
-    protected override void ConfigureState(LiveState<Model>.Options options)
-        => options.WithUpdateDelayer(0.5);
+    protected override void ConfigureState(ComputedState<Model>.Options options)
+        => options.UpdateDelayer = new UpdateDelayer(0.5);
 
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
-        var parameter = Locals.Value;
+        var parameter = MutableState.Value;
         var localValue = await LocalComposer.GetComposedValue(parameter, Session, cancellationToken);
         var remoteValue = await Composer.GetComposedValue(parameter, Session, cancellationToken);
         return new Model() {

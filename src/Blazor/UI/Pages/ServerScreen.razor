@@ -1,7 +1,7 @@
 @page "/serverScreen"
 @using System.Threading
 @using System.Globalization
-@inherits LiveComponentBase<Screenshot>
+@inherits ComputedStateComponent<Screenshot>
 @inject IScreenshotService ScreenshotService
 
 @{
@@ -33,8 +33,8 @@
     protected override async Task OnInitializedAsync()
         => await State.Update(); // An example showing how to load the State before the first render
 
-    protected override void ConfigureState(LiveState<Screenshot>.Options options)
-        => options.WithUpdateDelayer(0); // We need zero update delay here
+    protected override void ConfigureState(ComputedState<Screenshot>.Options options)
+        => options.UpdateDelayer = UpdateDelayer.ZeroUpdateDelay;
 
     protected override Task<Screenshot> ComputeState(CancellationToken cancellationToken)
         => ScreenshotService.GetScreenshot(ActualWidth, cancellationToken);

@@ -10,13 +10,14 @@ using Samples.Blazor.Client;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Client;
+using Stl.Fusion.Extensions;
 using static System.Console;
 
 var services = CreateServiceProvider();
 var stateFactory = services.StateFactory();
 var chat = services.GetRequiredService<IChatService>();
 var seenMessageIds = new ConcurrentDictionary<long, Unit>();
-using var timeState = stateFactory.NewLive<ChatPage>(async (s, cancellationToken) => {
+using var timeState = stateFactory.NewComputed<ChatPage>(async (s, cancellationToken) => {
     var chatPage = await chat.GetChatTail(10, cancellationToken);
     foreach (var message in chatPage.Messages) {
         if (!seenMessageIds.TryAdd(message.Id, default))
@@ -54,12 +55,8 @@ static IServiceProvider CreateServiceProvider()
         });
     var fusionAuth = fusion.AddAuthentication().AddRestEaseClient();
 
-    // Default delay for update delayers
-    services.AddSingleton(c => new UpdateDelayer.Options() {
-        DelayDuration = TimeSpan.FromSeconds(0.1),
-    });
-
-    services.AddSingleton<IPluralize, Pluralizer>();
+    // Default update delay is set to 0.1s
+    services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
 
     // This method registers services marked with any of ServiceAttributeBase descendants, including:
     // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]

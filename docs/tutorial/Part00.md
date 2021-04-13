@@ -45,7 +45,7 @@ The full list of Fusion packages:
   instances on the client that "mirror" their server-side counterparts.
 * [Stl.Fusion.Blazor](https://www.nuget.org/packages/Stl.Fusion.Blazor/) - depends on `Stl.Fusion.Client`.
   Implements handy Blazor components. Currently there is `StatefulCompontentBase<TState>`
-  and its 2 descendants: `LiveComponentBase<T>` and `LiveComponentBase<T, TLocals>`.
+  and its 2 descendants: `ComputedStateComponent<T>` and `ComputedStateComponent<T, TLocals>`.
 * [Stl.Fusion.EntityFramework](https://www.nuget.org/packages/Stl.Fusion.EntityFramework/) - depends on `Stl.Fusion`.
   Contains [EF Core](https://docs.microsoft.com/en-us/ef/) - based implementation of
   Fusion authentication, operation persistence, `IKeyValueStore`, etc.
