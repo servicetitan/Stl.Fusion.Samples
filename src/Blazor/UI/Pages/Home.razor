@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using Stl
 
 <Jumbotron>
     <JumbotronTitle>Welcome!</JumbotronTitle>
@@ -14,6 +15,10 @@
     <Paragraph>
         Choose the mode to use:<br/>
         <BlazorModeSwitch/>
+    </Paragraph>
+
+    <Paragraph>
+        Stl.Fusion.dll version: <code>@(typeof(IComputed).Assembly.GetName().Version)</code>
     </Paragraph>
 
     <hr class="my-4">
