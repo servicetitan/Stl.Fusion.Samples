@@ -26,6 +26,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /samples
 COPY ["src/", "src/"]
+COPY ["templates/", "templates/"]
 COPY ["docs/", "docs/"]
 COPY Samples.sln .
 RUN dotnet build -c:Debug
