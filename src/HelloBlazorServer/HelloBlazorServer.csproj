@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Blazor" Version="0.14.1" />
-    <PackageReference Include="Stl.Fusion.Server" Version="0.14.1" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="1.0.1" />
+    <PackageReference Include="Stl.Fusion.Server" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
