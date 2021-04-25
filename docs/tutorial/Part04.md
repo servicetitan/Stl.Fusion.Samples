@@ -59,6 +59,8 @@ processes the call + invalidates & updates the value later:
 
 [<img src="./img/WebApi-Fusion.jpg" width="600"/>](./img/WebApi-Fusion.jpg)
 
+*\* Step 6 does not actually happen. We use WebSockets, so we don't need to send a confirmation.*
+
 Gantt chart for this process could look as follows:
 
 [<img src="./img/ComputedReplica-Gantt.jpg" width="600"/>](./img/ComputedReplica-Gantt.jpg)
