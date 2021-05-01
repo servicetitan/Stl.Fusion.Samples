@@ -45,7 +45,8 @@ namespace Templates.Blazor1.UI
                 fusion.AddRestEaseClient(
                     (c, o) => {
                         o.BaseUri = baseUri;
-                        o.MessageLogLevel = LogLevel.Information;
+                        o.IsLoggingEnabled = true;
+                        o.IsMessageLoggingEnabled = false;
                     }).ConfigureHttpClientFactory(
                     (c, name, o) => {
                         var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");

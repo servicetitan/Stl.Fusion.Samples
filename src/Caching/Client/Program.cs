@@ -71,7 +71,7 @@ namespace Samples.Caching.Client
             var fusionClient = fusion.AddRestEaseClient((c, options) => {
                 var clientSettings = c.GetRequiredService<ClientSettings>();
                 options.BaseUri = clientSettings.BaseUri;
-                options.MessageLogLevel = null;
+                options.IsLoggingEnabled = false;
             }).ConfigureHttpClientFactory((c, name, options) => {
                 var clientSettings = c.GetRequiredService<ClientSettings>();
                 options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
