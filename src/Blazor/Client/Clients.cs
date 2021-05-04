@@ -75,38 +75,4 @@ namespace Samples.Blazor.Client
         [Get("getSum")]
         Task<double> GetSum(double[] values, bool addAccumulator, CancellationToken cancellationToken);
     }
-    
-    [RestEaseReplicaService(typeof(IBoardService), Scope = Scopes.ClientSideOnly)]
-    [BasePath("board")]
-    public interface IBoardClient
-    {
-        // GET
-        [Get("getPlayerCount")]
-        Task<long> GetPlayerCountAsync(string boardId, CancellationToken cancellationToken = default);
-        [Get("getPlayerCountWithoutClone")]
-        Task<long> GetPlayerCountWithoutCloneAsync(string boardId, CancellationToken cancellationToken = default);
-        [Get("getPlayer")]
-        Task<Player> GetPlayerAsync(long id, CancellationToken cancellationToken = default);
-        [Get("getPlayerBySession")]
-        Task<Player> GetPlayerBySessionAsync(string sessionId, CancellationToken cancellationToken = default);
-        [Get("getBoardState")]
-        Task<Board> GetBoardStateAsync(string boardId, CancellationToken cancellationToken = default);
-        [Get("getBoardPlayers")]
-        Task<Board> GetBoardPlayersAsync(string boardId, CancellationToken cancellationToken = default);
-        [Get("getBoard")]
-        Task<Board> GetBoardAsync(string boardId, CancellationToken cancellationToken = default);
-        
-        // POST
-        [Post("changeBoardState")]
-        Task<Board> ChangeBoardStateAsync(string boardId, int squareIndex, bool turnX, CancellationToken cancellationToken = default);
-        [Post("createBoard")]
-        Task<Board> CreateBoardAsync(string boardId, CancellationToken cancellationToken = default);
-        [Post("clearBoard")]
-        Task<Board> ClearBoardAsync(string boardId, CancellationToken cancellationToken = default);
-        [Post("createPlayer")]        
-        Task<(bool, long)> CreatePlayerAsync(string boardId, string sessionId, bool isXPlayer, CancellationToken cancellationToken = default);
-        [Post("createPlayerClone")]
-        Task<Player> CreatePlayerCloneAsync(long id, string boardId, CancellationToken cancellationToken = default);
-
-    }
 }
