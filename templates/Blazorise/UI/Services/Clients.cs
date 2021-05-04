@@ -5,9 +5,9 @@ using RestEase;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Client;
 using Stl.Fusion.Extensions;
-using Templates.Blazor2.Abstractions;
+using Templates.Blazor1.Abstractions;
 
-namespace Templates.Blazor2.UI.Services
+namespace Templates.Blazor1.UI.Services
 {
     [RestEaseReplicaService(typeof(ITodoService), Scope = Program.ClientSideScope)]
     [BasePath("todo")]

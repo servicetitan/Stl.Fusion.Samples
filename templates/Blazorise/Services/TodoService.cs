@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
-using Templates.Blazor2.Abstractions;
+using Templates.Blazor1.Abstractions;
 
-namespace Templates.Blazor2.Services
+namespace Templates.Blazor1.Services
 {
     [ComputeService(typeof(ITodoService))]
     public class TodoService : ITodoService
@@ -66,8 +66,8 @@ namespace Templates.Blazor2.Services
             user.MustBeAuthenticated();
 
             var keyPrefix = GetTodoKeyPrefix(user);
-            var keys = await _keyValueStore.ListKeysByPrefix(keyPrefix, pageRef, cancellationToken);
-            var tasks = keys.Select(key => _keyValueStore.TryGet<Todo>(key, cancellationToken));
+            var keySuffixes = await _keyValueStore.ListKeySuffixes(keyPrefix, pageRef, cancellationToken);
+            var tasks = keySuffixes.Select(suffix => _keyValueStore.TryGet<Todo>(keyPrefix + suffix, cancellationToken));
             var todoOpts = await Task.WhenAll(tasks);
             return todoOpts.Where(todo => todo.HasValue).Select(todo => todo.Value).ToArray();
         }
@@ -78,6 +78,6 @@ namespace Templates.Blazor2.Services
             => $"{GetTodoKeyPrefix(user)}/{id}";
 
         private string GetTodoKeyPrefix(User user)
-            => $"todo/{user.Id}/items";
+            => $"@user/{user.Id}/todo/items";
     }
 }
