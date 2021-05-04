@@ -1,5 +1,5 @@
 @using System.Threading
-@inherits MixedStateComponent<double, SumCard.LocalsModel>
+@inherits MixedStateComponent<double, SumCard.LocalModel>
 @inject ISumService SumService
 
 @{
@@ -37,7 +37,7 @@
 </Card>
 
 @code {
-    public class LocalsModel
+    public class LocalModel
     {
         public double ValueA { get; set; }
         public double ValueB { get; set; }
