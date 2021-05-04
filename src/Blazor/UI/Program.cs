@@ -49,7 +49,8 @@ namespace Samples.Blazor.UI
             var fusionClient = fusion.AddRestEaseClient(
                 (c, o) => {
                     o.BaseUri = baseUri;
-                    o.MessageLogLevel = LogLevel.Information;
+                    o.IsLoggingEnabled = true;
+                    o.IsMessageLoggingEnabled = false;
                 }).ConfigureHttpClientFactory(
                 (c, name, o) => {
                     var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
@@ -66,21 +67,12 @@ namespace Samples.Blazor.UI
 
         public static void ConfigureSharedServices(IServiceCollection services)
         {
-            services.AddBlazorise(options => {
-                    options.DelayTextOnKeyPress = true;
-                    options.DelayTextOnKeyPressInterval = 100;
-                })
-                .AddBootstrapProviders()
-                .AddFontAwesomeIcons();
-
-            // Default delay for update delayers
-            services.AddSingleton(c => new UpdateDelayer.Options() {
-                DelayDuration = TimeSpan.FromSeconds(0.1),
-            });
-
+            // Blazorise
+            services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
+            // Default update delayer
+            services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
             // Other UI-related services
-            services.AddSingleton<IPluralize, Pluralizer>();
-            services.AddFusion().AddLiveClock();
+            services.AddFusion().AddFusionTime();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.

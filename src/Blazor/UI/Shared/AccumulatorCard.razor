@@ -1,10 +1,11 @@
 @using System.Threading
-@inherits LiveComponentBase<double, AccumulatorCard.LocalsModel>
+@using System.Reflection
+@inherits MixedStateComponent<double, AccumulatorCard.LocalsModel>
 @inject ISumService SumService
 
 @{
-    var accumulator = State.LastValue;
-    var locals = Locals.Value;
+    var accumulator = State.LatestNonErrorValue;
+    var locals = MutableState.Value;
     var error = State.Error;
 }
 
@@ -49,13 +50,10 @@
     public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     protected override void OnParametersSet()
-    {
-        if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
-            updateDelayer.DelayDuration = UpdateDelay;
-    }
+        => State.UpdateDelayer = new UpdateDelayer(UpdateDelay);
 
-    protected override void ConfigureState(LiveState<double>.Options options)
-        => options.WithUpdateDelayer(UpdateDelay);
+    protected override void ConfigureState(ComputedState<double>.Options options)
+        => options.UpdateDelayer = new UpdateDelayer(UpdateDelay);
 
     protected override Task<double> ComputeState(CancellationToken cancellationToken)
         => SumService.GetAccumulator(cancellationToken);
@@ -65,12 +63,12 @@
     private async Task Reset()
     {
         await SumService.Reset();
-        InvalidateState();
+        await State.ApplyUserCausedUpdate();
     }
 
     private async Task Accumulate()
     {
-        await SumService.Accumulate(Locals.Value.Value);
-        InvalidateState();
+        await SumService.Accumulate(MutableState.Value.Value);
+        await State.ApplyUserCausedUpdate();
     }
 }

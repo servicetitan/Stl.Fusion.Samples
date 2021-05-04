@@ -74,7 +74,8 @@ namespace Tutorial
             catch (ApplicationException) {
                 WriteLine($"Error: {state.Error.GetType()}, Computed: {state.Computed}");
             }
-            WriteLine($"LastValue: {state.LastValue}, LastValueComputed: {state.LastValueComputed}");
+            WriteLine($"LatestNonErrorValue: {state.LatestNonErrorValue}");
+            WriteLine($"Snapshot.LatestNonErrorComputed: {state.Snapshot.LatestNonErrorComputed}");
             #endregion
         }
 
@@ -85,9 +86,9 @@ namespace Tutorial
             var counters = services.GetRequiredService<CounterService>();
             var stateFactory = services.StateFactory();
             WriteLine("Creating state.");
-            using var state = stateFactory.NewLive<string>(
+            using var state = stateFactory.NewComputed<string>(
                 options => {
-                    options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
+                    options.UpdateDelayer = new UpdateDelayer(1.0); // 1 second update delay
                     options.EventConfigurator += state1 => {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
                         state1.AddEventHandler(StateEventKind.All,

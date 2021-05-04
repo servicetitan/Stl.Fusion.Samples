@@ -1,8 +1,8 @@
 @using System.Threading
 @using Stl.Fusion.Extensions
 @using Templates.Blazor1.Abstractions
-@inherits LiveComponentBase<string>
-@inject ILiveClock LiveClock
+@inherits ComputedStateComponent<string>
+@inject IFusionTime LiveClock
 
 <span class="@CssClass">@State.Value</span>
 

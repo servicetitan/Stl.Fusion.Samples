@@ -1095,7 +1095,6 @@ public class AppV5 : AppV4
 
         var extraHostUri = new Uri("http://localhost:7006");
         ExtraHost = BuildHost(extraHostUri);
-        // As you 
         ClientServices = BuildClientServices(extraHostUri);
     }
     

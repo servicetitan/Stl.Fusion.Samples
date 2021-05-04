@@ -38,7 +38,7 @@ public static IServiceProvider CreateServices()
 }
 ```
 
-`IServiceCollection.AttributeBased().AddServicesFrom(...)` finds every type
+`IServiceCollection.UseAttributeScanner().AddServicesFrom(...)` finds every type
 decorated with `Stl.DependencyInjection.ServiceAttributeBase`
 descendant and runs `[attribute].Register(type)` method on it to
 register a service based on the current type.

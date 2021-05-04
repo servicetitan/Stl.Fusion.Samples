@@ -1,10 +1,10 @@
 ﻿@page "/fetchdata"
 @using System.Threading
-@inherits LiveComponentBase<WeatherForecast[], DateTime>
-@inject WeatherForecastService ForecastService
+@inherits MixedStateComponent<WeatherForecast[], DateTime>
+@inject WeatherForecastService WeatherForecast
 
 @{
-    var state = State.LastValue ?? Array.Empty<WeatherForecast>();
+    var state = State.ValueOrDefault ?? Array.Empty<WeatherForecast>();
     var error = State.Error;
 }
 
@@ -41,9 +41,9 @@
 </table>
 
 @code {
-    protected override void ConfigureLocals(MutableState<DateTime>.Options options)
+    protected override void ConfigureMutableState(MutableState<DateTime>.Options options)
         => options.InitialOutputFactory = _ => DateTime.Today;
 
     protected override Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
-        => ForecastService.GetForecastAsync(Locals.Value, cancellationToken);
+        => WeatherForecast.GetForecastAsync(MutableState.Value, cancellationToken);
 }

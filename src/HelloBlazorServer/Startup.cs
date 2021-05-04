@@ -26,17 +26,13 @@ namespace Samples.HelloBlazorServer
         public void ConfigureServices(IServiceCollection services)
         {
             // Fusion services
+            services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.5));
             services.AddFusion(fusion => {
-                fusion.AddLiveClock(); // ILiveClock is one of built-in compute services you can use
+                fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
             });
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
             services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
-            // Default update delay is set to 0.5 seconds
-            services.AddSingleton(c => new UpdateDelayer.Options() {
-                DelayDuration = TimeSpan.FromSeconds(0.5)
-            });
-            services.AddSingleton<IPluralize>(c => new Pluralizer());
 
             // Web
             services.AddRazorPages();

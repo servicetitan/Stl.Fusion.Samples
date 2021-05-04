@@ -2,15 +2,15 @@
 @using System.Threading
 @using Stl.CommandR
 @using Stl.Fusion.Authentication.Commands
-@inherits LiveComponentBase<Chat.Model, Chat.LocalsModel>
+@inherits MixedStateComponent<Chat.Model, Chat.LocalsModel>
 @inject Session Session
 @inject ICommander Commander
 @inject IChatService ChatService
 @inject NavigationManager Navigator
 
 @{
-    var locals = Locals.Value;
-    var state = State.LastValue;
+    var locals = MutableState.Value;
+    var state = State.LatestNonErrorValue;
     var lastPage = state.LastPage;
     var error = State.Error;
 }
@@ -101,6 +101,8 @@
         public string Name {
             get => _name;
             set {
+                if (_name == value)
+                    return;
                 _name = value;
                 IsNameModified = true;
             }
@@ -119,13 +121,22 @@
         public ChatPage LastPage { get; set; } = new();
     }
 
+    protected override void OnInitialized()
+    {
+        // Mutable state content is updated implicitly via bind-* here,
+        // and since such a change doesn't trigger State recompute + StateHasChanged(),
+        // we enable this feat. to make it happen on event.
+        EnableStateHasChangedCallAfterEvent = true;
+        base.OnInitialized();
+    }
+
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
         var userCount = await ChatService.GetUserCount(cancellationToken);
         var activeUserCount = await ChatService.GetActiveUserCount(cancellationToken);
         var chatUser = await ChatService.GetCurrentUser(Session, cancellationToken);
         var lastPage = await ChatService.GetChatTail(30, cancellationToken);
-        if (!Locals.Value.IsNameModified)
+        if (!MutableState.Value.IsNameModified)
             ResetName(chatUser.IsValid ? chatUser.Name : "");
         return new Model() {
             UserCount = userCount,
@@ -138,7 +149,7 @@
     private async Task SetName()
     {
         ResetError();
-        var locals = Locals.Value;
+        var locals = MutableState.Value;
         try {
             var command = new EditUserCommand(Session, locals.Name ?? "");
             if (command.Name!.Length < 4)
@@ -154,11 +165,11 @@
     {
         ResetError();
         try {
-            if (!State.LastValue.ChatUser.IsValid)
+            if (State.ValueOrDefault?.ChatUser?.IsValid != true)
                 throw new ApplicationException("Please sign in first.");
-            await ChatService.Post(new(Locals.Value.Message, Session));
-            Locals.Value.Message = "";
-            TouchLocals();
+            await ChatService.Post(new(MutableState.Value.Message, Session));
+            MutableState.Value.Message = "";
+            MutableState.Invalidate();
         }
         catch (Exception e) {
             SetError(e);
@@ -172,19 +183,16 @@
 
     private void ResetName(string name)
     {
-        Locals.Value.Name = name;
-        Locals.Value.IsNameModified = false;
-        TouchLocals();
+        MutableState.Value.Name = name;
+        MutableState.Value.IsNameModified = false;
+        MutableState.Invalidate();
     }
 
     private void SetError(Exception? error)
     {
-        Locals.Value.Error = error;
-        TouchLocals();
+        MutableState.Value.Error = error;
+        MutableState.Invalidate();
     }
-
-    private void TouchLocals()
-        => Locals.Set(Locals.AsResult());
 }
 @code {
 }

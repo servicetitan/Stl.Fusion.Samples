@@ -1,13 +1,14 @@
 ﻿@page "/simpleChat"
 @using System.Threading
+@using Stl.Async
 @using Stl.Fusion.Extensions
-@inherits LiveComponentBase<(string Name, string Message, string Time)[]>
-@inject ChatService ChatService
-@inject ILiveClock LiveClock
+@inherits ComputedStateComponent<(string Name, string Message, string Time)[]>
+@inject ChatService Chat
+@inject IFusionTime Time
 @inject NavigationManager Navigator
 
 @{
-    var state = State.LastValue ?? Array.Empty<(string, string, string)>();
+    var state = State.LatestNonErrorValue ?? Array.Empty<(string, string, string)>();
     var error = State.Error;
 }
 
@@ -60,10 +61,10 @@
 
     protected override async Task<(string Name, string Message, string Time)[]> ComputeState(CancellationToken cancellationToken)
     {
-        var messages = await ChatService.GetMessagesAsync(20, cancellationToken);
+        var messages = await Chat.GetMessagesAsync(20, cancellationToken);
         var result = new List<(string Name, string Message, string Time)>();
         foreach (var message in messages) {
-            var momentsAgo = await LiveClock.GetMomentsAgo(message.Time);
+            var momentsAgo = await Time.GetMomentsAgo(message.Time);
             result.Add((message.Name, message.Message, momentsAgo));
         }
         return result.ToArray();
@@ -73,8 +74,8 @@
     {
         if (Message == "")
             return;
-        await ChatService.PostMessageAsync(new(Name, Message));
+        await Chat.PostMessageAsync(new(Name, Message));
         Message = "";
-        InvalidateState();
+        await State.ApplyUserCausedUpdate();
     }
 }

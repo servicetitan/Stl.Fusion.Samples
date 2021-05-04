@@ -184,7 +184,8 @@ catch (ApplicationException)
 {
     WriteLine($"Error: {state.Error.GetType()}, Computed: {state.Computed}");
 }
-WriteLine($"LastValue: {state.LastValue}, LastValueComputed: {state.LastValueComputed}");
+WriteLine($"LatestNonErrorValue: {state.LatestNonErrorValue}");
+WriteLine($"Snapshot.LatestNonErrorComputed: {state.Snapshot.LatestNonErrorComputed}");
 ```
 
 The output:
@@ -193,7 +194,8 @@ The output:
 Value: 0, Computed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Consistent)
 Setting state.Error.
 Error: System.ApplicationException, Computed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqej, State: Consistent)
-LastValue: 0, LastValueComputed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Invalidated)
+LatestNonErrorValue: 0
+Snapshot.LatestNonErrorComputed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Invalidated)
 ```
 
 As you see, `Value` property throws an exception here &ndash;
@@ -213,10 +215,10 @@ var services = CreateServices();
 var counters = services.GetRequiredService<CounterService>();
 var stateFactory = services.StateFactory();
 WriteLine("Creating state.");
-            using var state = stateFactory.NewLive<string>(
+            using var state = stateFactory.NewComputed<string>(
                 options =>
                 {
-                    options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
+                    options.UpdateDelayer = new UpdateDelayer(1.0); // 1 second update delay
                     options.EventConfigurator += state1 =>
                     {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated

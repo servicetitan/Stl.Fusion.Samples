@@ -1,10 +1,10 @@
 @using System.Threading
-@inherits LiveComponentBase<double, SumCard.LocalsModel>
+@inherits MixedStateComponent<double, SumCard.LocalsModel>
 @inject ISumService SumService
 
 @{
-    var sum = State.LastValue;
-    var locals = Locals.Value;
+    var sum = State.LatestNonErrorValue;
+    var locals = MutableState.Value;
     var error = State.Error;
 }
 
@@ -51,22 +51,19 @@
     public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     protected override void OnParametersSet()
-    {
-        if (State?.UpdateDelayer is UpdateDelayer updateDelayer)
-            updateDelayer.DelayDuration = UpdateDelay;
-    }
+        => State.UpdateDelayer = new UpdateDelayer(UpdateDelay);
 
-    protected override void ConfigureState(LiveState<double>.Options options)
-        => options.WithUpdateDelayer(UpdateDelay);
+    protected override void ConfigureState(ComputedState<double>.Options options)
+        => options.UpdateDelayer = new UpdateDelayer(UpdateDelay);
 
     protected override async Task<double> ComputeState(CancellationToken cancellationToken)
     {
-        var locals = Locals.Value;
+        var locals = MutableState.Value;
         var values = new[] { locals.ValueA, locals.ValueB };
         return await SumService.GetSum(values, true, cancellationToken);
     }
 
     // Action handlers
 
-    private void Apply() => Locals.Invalidate();
+    private void Apply() => MutableState.Invalidate();
 }

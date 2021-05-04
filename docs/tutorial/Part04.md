@@ -59,6 +59,8 @@ processes the call + invalidates & updates the value later:
 
 [<img src="./img/WebApi-Fusion.jpg" width="600"/>](./img/WebApi-Fusion.jpg)
 
+*\* Step 6 does not actually happen. We use WebSockets, so we don't need to send a confirmation.*
+
 Gantt chart for this process could look as follows:
 
 [<img src="./img/ComputedReplica-Gantt.jpg" width="600"/>](./img/ComputedReplica-Gantt.jpg)
@@ -318,10 +320,10 @@ WriteLine("Host started.");
 var services = CreateClientServices();
 var counters = services.GetRequiredService<ICounterService>();
 var stateFactory = services.StateFactory();
-            using var state = stateFactory.NewLive<string>(
+            using var state = stateFactory.NewComputed<string>(
                 options =>
                 {
-                    options.WithUpdateDelayer(TimeSpan.FromSeconds(1)); // 1 second update delay
+                    options.UpdateDelayer = new UpdateDelayer(1.0); // 1 second update delay
                     options.EventConfigurator += state1 =>
                     {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
