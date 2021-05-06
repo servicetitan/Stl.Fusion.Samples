@@ -111,7 +111,6 @@ Time to write some code! We'll be using the same "stub"
 with `CounterService` and `CreateServices` here:
 
 ``` cs --editable false --region Part03_CounterService --source-file Part03.cs
-[ComputeService] // You don't need this attribute if you manually register such services
 public class CounterService
 {
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
@@ -135,8 +134,7 @@ public class CounterService
 public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
-    services.AddFusion();
-    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+    services.AddFusion().AddComputeService<CounterService>();
     return services.BuildServiceProvider();
 }
 ```

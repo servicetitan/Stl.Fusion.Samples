@@ -13,10 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using RestEase;
-using Stl;
 using Stl.Async;
 using Stl.Fusion;
-using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 using static System.Console;
@@ -140,11 +138,12 @@ namespace Tutorial
             builder.ConfigureLogging(logging =>
                 logging.ClearProviders().SetMinimumLevel(LogLevel.Information).AddDebug());
             builder.ConfigureServices((b, services) => {
-                services.AddFusion(f => {
-                    f.AddWebServer();
-                    f.AddComputeService<ICounterService, CounterService>();
-                });
+                var fusion = services.AddFusion();
+                fusion.AddWebServer();
+                // Registering Compute Service
+                fusion.AddComputeService<ICounterService, CounterService>();
                 services.AddRouting();
+                // And its controller
                 services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
             });
             builder.ConfigureWebHost(b => {
@@ -174,6 +173,7 @@ namespace Tutorial
             });
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient((c, options) => options.BaseUri = baseUri);
+            // Registering replica service
             fusionClient.AddReplicaService<ICounterService, ICounterServiceClient>();
             return services.BuildServiceProvider();
         }

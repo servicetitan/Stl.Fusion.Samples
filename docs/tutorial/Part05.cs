@@ -14,7 +14,6 @@ namespace Tutorial
     public static class Part05
     {
         #region Part05_Service1
-        [ComputeService] // You don't need this attribute if you manually register such services
         public class Service1
         {
             [ComputeMethod]
@@ -28,7 +27,11 @@ namespace Tutorial
         public static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddFusion();
+            services.AddFusion()
+                .AddComputeService<Service1>()
+                .AddComputeService<Service2>() // We'll use Service2 & other services later
+                .AddComputeService<Service3>()
+                .AddComputeService<Service4>();
             services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             return services.BuildServiceProvider();
         }
@@ -63,7 +66,6 @@ namespace Tutorial
         }
 
         #region Part05_Service2
-        [ComputeService]
         public class Service2
         {
             [ComputeMethod]
@@ -114,7 +116,6 @@ namespace Tutorial
         }
 
         #region Part05_Service3
-        [ComputeService]
         public class Service3
         {
             [ComputeMethod]
@@ -155,7 +156,6 @@ namespace Tutorial
         }
 
         #region Part05_Service4
-        [ComputeService]
         public class Service4
         {
             [ComputeMethod(KeepAliveTime = 1), Swap(0.1)]
