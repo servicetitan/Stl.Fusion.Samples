@@ -30,9 +30,10 @@ namespace Samples.HelloBlazorServer
             services.AddFusion(fusion => {
                 fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
             });
+            //**
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
 
             // Web
             services.AddRazorPages();

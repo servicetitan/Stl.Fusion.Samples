@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RestEase;
+using Stl.Fusion;
 using Stl.Fusion.Client;
 
 namespace Samples.Blazor.Server.Services

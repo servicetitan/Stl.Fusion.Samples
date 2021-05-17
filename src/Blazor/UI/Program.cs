@@ -12,7 +12,9 @@ using Microsoft.Extensions.Logging;
 using Pluralize.NET;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Client;
+using Samples.Blazor.UI.Services;
 using Stl.Async;
+using Stl.CommandR.Interception;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
@@ -61,7 +63,14 @@ namespace Samples.Blazor.UI
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            services.UseAttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+            // services.UseAttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+            fusion.AddFusionTime();
+            fusionClient.AddReplicaService<ITimeService, ITimeClient>();
+            fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
+            fusionClient.AddReplicaService<IChatService, IChatClient>();
+            fusionClient.AddReplicaService<IComposerService, IComposerClient>();
+            fusionClient.AddReplicaService<ISumService, ISumClient>();
+
             ConfigureSharedServices(services);
         }
 
@@ -71,12 +80,23 @@ namespace Samples.Blazor.UI
             services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
             // Default update delayer
             services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
+            //**
             // Other UI-related services
-            services.AddFusion().AddFusionTime();
+            var fusion = services.AddFusion();
+            fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
+            var fusionClient = fusion.AddRestEaseClient();
+            fusion.AddFusionTime();
+            fusionClient.AddReplicaService<ITimeService, ITimeClient>();
+            fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
+            fusionClient.AddReplicaService<IChatService, IChatClient>();
+            fusionClient.AddReplicaService<IComposerService, IComposerClient>();
+            fusionClient.AddReplicaService<ISumService, ISumClient>();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            //**
+            // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            //**
         }
     }
 }

@@ -59,9 +59,16 @@ static IServiceProvider CreateServiceProvider()
 
     // This method registers services marked with any of ServiceAttributeBase descendants, including:
     // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-    services.UseAttributeScanner()
-        .AddServicesFrom(Assembly.GetExecutingAssembly())
-        .WithScope(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+    //**
+    // services.UseAttributeScanner()
+        // .WithScope(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+    //**
+    fusion.AddFusionTime();
+    fusionClient.AddReplicaService<ITimeService, ITimeClient>();
+    fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
+    fusionClient.AddReplicaService<IChatService, IChatClient>();
+    fusionClient.AddReplicaService<IComposerService, IComposerClient>();
+    fusionClient.AddReplicaService<ISumService, ISumClient>();
 
     return services.BuildServiceProvider();
 }

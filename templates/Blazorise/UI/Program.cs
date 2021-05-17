@@ -6,13 +6,17 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Stl.Collections;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
+using Templates.Blazor1.Abstractions;
+using Templates.Blazor1.UI.Services;
 
 namespace Templates.Blazor1.UI
 {
@@ -41,26 +45,23 @@ namespace Templates.Blazor1.UI
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
 
-            services.AddFusion(fusion => {
-                fusion.AddRestEaseClient(
-                    (c, o) => {
-                        o.BaseUri = baseUri;
-                        o.IsLoggingEnabled = true;
-                        o.IsMessageLoggingEnabled = false;
-                    }).ConfigureHttpClientFactory(
-                    (c, name, o) => {
-                        var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-                        var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-                        o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-                    });
-               fusion.AddAuthentication(fusionAuth => {
-                   fusionAuth.AddRestEaseClient().AddBlazor();
-               });
+            var fusion = services.AddFusion();
+            var fusionClient = fusion.AddRestEaseClient(
+                (c, o) => {
+                    o.BaseUri = baseUri;
+                    o.IsLoggingEnabled = true;
+                    o.IsMessageLoggingEnabled = false;
+                }).ConfigureHttpClientFactory(
+                (c, name, o) => {
+                    var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
+                    var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
+                    o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
+                });
+            fusion.AddAuthentication(fusionAuth => {
+                fusionAuth.AddRestEaseClient().AddBlazor();
             });
 
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.UseAttributeScanner(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
+            fusionClient.AddReplicaService<ITodoService, ITodoClient>();
             ConfigureSharedServices(services);
         }
 
@@ -71,13 +72,20 @@ namespace Templates.Blazor1.UI
             // Default update delayer
             services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
             // Other UI-related services
-            services.AddFusion(fusion => {
-                fusion.AddFusionTime();
-            });
+            // services.AddFusion(fusion => {
+            //     fusion.AddFusionTime();
+            // });
+            var fusion = services.AddFusion();
+            var fusionClient = fusion.AddRestEaseClient();
+            
+            fusion.AddFusionTime();
+            fusionClient.AddReplicaService<ITodoService, ITodoClient>();
 
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            //**
+            // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            //**
         }
     }
 }

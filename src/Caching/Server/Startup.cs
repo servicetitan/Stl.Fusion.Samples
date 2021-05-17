@@ -12,6 +12,7 @@ using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
+using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 
 namespace Samples.Caching.Server
@@ -56,9 +57,12 @@ namespace Samples.Caching.Server
             });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
+            var fusionClient = fusion.AddRestEaseClient();
+            //**
             // This method registers services marked with any of ServiceAttributeBase descendants, including:
             // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            //**
 
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());

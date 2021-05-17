@@ -9,7 +9,6 @@ using Templates.Blazor1.Abstractions;
 
 namespace Templates.Blazor1.UI.Services
 {
-    [RestEaseReplicaService(typeof(ITodoService), Scope = Program.ClientSideScope)]
     [BasePath("todo")]
     public interface ITodoClient
     {

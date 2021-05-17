@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +16,7 @@ using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Client;
+using Stl.Fusion.Server.Controllers;
 using Stl.OS;
 using static System.Console;
 
@@ -76,9 +78,11 @@ namespace Samples.Caching.Client
                 var clientSettings = c.GetRequiredService<ClientSettings>();
                 options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
             });
-            services.UseAttributeScanner()
-                .AddServicesFrom(Assembly.GetExecutingAssembly())
-                .WithScope(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
+            //**
+            // services.UseAttributeScanner()
+                // .AddServicesFrom(Assembly.GetExecutingAssembly())
+                // .WithScope(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
+                
             return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
         }
 
@@ -100,7 +104,9 @@ namespace Samples.Caching.Client
                         options.ValidateOnBuild = true;
                     })
                     .ConfigureServices((ctx, services) => {
-                        services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+                        //**
+                        // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+                        //**
                     })
                     .UseStartup<Startup>())
                 .Build();
