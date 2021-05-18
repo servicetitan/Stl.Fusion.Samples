@@ -9,7 +9,7 @@ namespace Samples.Blazor.Server.Services
     public class AppDbContext : DbContext, IDataProtectionKeyContext
     {
         public DbSet<ChatMessage> ChatMessages { get; protected set; } = null!;
-        
+
         // Stl.Fusion.EntityFramework tables
         public DbSet<DbOperation> Operations { get; protected set; } = null!;
         public DbSet<DbSessionInfo> Sessions { get; protected set; } = null!;

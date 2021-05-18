@@ -17,21 +17,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Templates.Blazor1.Services;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
-using Blazorise.Bootstrap;
-using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
 using Stl.Fusion.EntityFramework;
-using Stl.Fusion.Extensions;
 using Stl.IO;
 using Templates.Blazor1.Abstractions;
-using Templates.Blazor1.UI.Services;
 
 namespace Templates.Blazor1.Host
 {

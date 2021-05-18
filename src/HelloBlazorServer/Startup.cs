@@ -1,12 +1,8 @@
-using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Pluralize.NET;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Extensions;
 

@@ -9,7 +9,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Samples.Caching.Server.Services;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;

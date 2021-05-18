@@ -1,9 +1,7 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
 using Stl.Fusion.Authentication;
-using Stl.Fusion.Client;
 using Stl.Fusion.Extensions;
 using Templates.Blazor1.Abstractions;
 

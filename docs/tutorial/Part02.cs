@@ -34,7 +34,7 @@ namespace Tutorial
                     Get(key).Ignore();
             }
         }
-        
+
         public static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();

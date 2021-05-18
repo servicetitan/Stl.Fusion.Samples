@@ -7,19 +7,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-// using Microsoft.AspNetCore.Builder;
-// using Microsoft.AspNetCore.Hosting;
-// using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using RestEase;
-using Stl;
 using Stl.Async;
 using Stl.Fusion;
-using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 using static System.Console;
@@ -79,7 +74,7 @@ namespace Tutorial
         }
 
         // We need Web API controller to publish the service
-        [Microsoft.AspNetCore.Components.Route("api/[controller]/[action]")]
+        [Route("api/[controller]/[action]")]
         [ApiController, JsonifyErrors]
         public class CounterController : ControllerBase
         {

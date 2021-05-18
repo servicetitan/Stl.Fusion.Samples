@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
 using Samples.Blazor.Abstractions;
 using Stl.Fusion.Authentication;
-using Stl.Fusion.Client;
 
 namespace Samples.Blazor.Client
 {
