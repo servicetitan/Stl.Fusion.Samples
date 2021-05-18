@@ -61,9 +61,6 @@ namespace Samples.Blazor.UI
                 });
             var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            // services.UseAttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
             fusion.AddFusionTime();
             fusionClient.AddReplicaService<ITimeService, ITimeClient>();
             fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
@@ -80,7 +77,6 @@ namespace Samples.Blazor.UI
             services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
             // Default update delayer
             services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
-            //**
             // Other UI-related services
             var fusion = services.AddFusion();
             fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
@@ -91,12 +87,6 @@ namespace Samples.Blazor.UI
             fusionClient.AddReplicaService<IChatService, IChatClient>();
             fusionClient.AddReplicaService<IComposerService, IComposerClient>();
             fusionClient.AddReplicaService<ISumService, ISumClient>();
-
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            //**
-            // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
-            //**
         }
     }
 }

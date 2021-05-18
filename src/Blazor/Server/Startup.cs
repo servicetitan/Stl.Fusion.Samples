@@ -69,18 +69,12 @@ namespace Samples.Blazor.Server
 
             // Creating Log and HostSettings as early as possible
 #pragma warning disable ASP0000
-            //**
-            // var tmpServices = services
-                // .UseAttributeScanner(s => s.AddService<ServerSettings>())
-                // .BuildServiceProvider();
-
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient();
             fusionClient.AddReplicaService<IForismaticClient>();
             fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
             fusion.AddComputeService<ServerSettings>();
             var tmpServices = services.BuildServiceProvider();
-            //**
 
 #pragma warning restore ASP0000
             Log = tmpServices.GetRequiredService<ILogger<Startup>>();
@@ -108,17 +102,11 @@ namespace Samples.Blazor.Server
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
             services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
-            // var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
-            // var fusionClient = fusion.AddRestEaseClient();
             var fusionAuth = fusion.AddAuthentication().AddServer(
                 signInControllerOptionsBuilder: (_, options) => {
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
                 });
-            //**
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
 
             fusion.AddComputeService<ITimeService, TimeService>();
             fusion.AddComputeService<ISumService, SumService>();
@@ -126,7 +114,6 @@ namespace Samples.Blazor.Server
             fusion.AddComputeService<IScreenshotService, ScreenshotService>();
             fusion.AddComputeService<IChatService, ChatService>();
 
-            //**
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 

@@ -72,20 +72,11 @@ namespace Templates.Blazor1.UI
             // Default update delayer
             services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
             // Other UI-related services
-            // services.AddFusion(fusion => {
-            //     fusion.AddFusionTime();
-            // });
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient();
             
             fusion.AddFusionTime();
             fusionClient.AddReplicaService<ITodoService, ITodoClient>();
-
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            //**
-            // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
-            //**
         }
     }
 }

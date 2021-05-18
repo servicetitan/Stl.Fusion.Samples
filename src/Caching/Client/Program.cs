@@ -78,11 +78,6 @@ namespace Samples.Caching.Client
                 var clientSettings = c.GetRequiredService<ClientSettings>();
                 options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
             });
-            //**
-            // services.UseAttributeScanner()
-                // .AddServicesFrom(Assembly.GetExecutingAssembly())
-                // .WithScope(ClientSideScope).AddServicesFrom(Assembly.GetExecutingAssembly());
-                
             return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
         }
 
@@ -104,9 +99,6 @@ namespace Samples.Caching.Client
                         options.ValidateOnBuild = true;
                     })
                     .ConfigureServices((ctx, services) => {
-                        //**
-                        // services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
-                        //**
                     })
                     .UseStartup<Startup>())
                 .Build();

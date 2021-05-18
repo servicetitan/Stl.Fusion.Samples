@@ -57,12 +57,6 @@ static IServiceProvider CreateServiceProvider()
     // Default update delay is set to 0.1s
     services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
 
-    // This method registers services marked with any of ServiceAttributeBase descendants, including:
-    // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-    //**
-    // services.UseAttributeScanner()
-        // .WithScope(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
-    //**
     fusion.AddFusionTime();
     fusionClient.AddReplicaService<ITimeService, ITimeClient>();
     fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
