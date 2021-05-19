@@ -32,26 +32,17 @@ But first, let's create a helper method allowing us to create an
 public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
-    services.AddFusion();
-    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+    var fusion = services.AddFusion();
+    fusion.AddComputeService<CounterService>();
+    fusion.AddComputeService<CounterSumService>(); // We'll be using it later
+    fusion.AddComputeService<HelloService>();      // We'll be using it later
     return services.BuildServiceProvider();
 }
 ```
 
-`IServiceCollection.UseAttributeScanner().AddServicesFrom(...)` finds every type
-decorated with `Stl.DependencyInjection.ServiceAttributeBase`
-descendant and runs `[attribute].Register(type)` method on it to
-register a service based on the current type.
-
-As you might guess, `ServiceAttributeBase` is an abstract class, the actual
-registration process is implemented by its descendants (you can
-declare them too); in this specific case the registration is performed
-by [[ComputeService] attribute](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/ComputeServiceAttribute.cs).
-
 Now we're ready to declare our first Compute Service:
 
 ``` cs --editable false --region Part01_CounterService --source-file Part01.cs
-[ComputeService] // You don't need this attribute if you manually register such services
 public class CounterService
 {
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
@@ -146,7 +137,6 @@ it was printed just for the first call.
 Now let's add another Compute Service:
 
 ``` cs --editable false --region Part01_CounterSumService --source-file Part01.cs
-[ComputeService] // You don't need this attribute if you manually register such services
 public class CounterSumService
 {
     public CounterService Counters { get; }
@@ -264,7 +254,6 @@ To close this section, let's look at the last property closer.
 Let's create a simple service to test how Fusion handles concurrency:
 
 ``` cs --editable false --region Part01_HelloService --source-file Part01.cs
-[ComputeService] // You don't need this attribute if you manually register such services
 public class HelloService
 {
     [ComputeMethod]

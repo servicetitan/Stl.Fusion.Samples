@@ -14,7 +14,6 @@ We're going to use the same `CounterService` and `CreateServices` helper
 as in Part 1:
 
 ``` cs --editable false --region Part02_CounterService --source-file Part02.cs
-[ComputeService] // You don't need this attribute if you manually register such services
 public class CounterService
 {
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
@@ -38,8 +37,8 @@ public class CounterService
 public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
-    services.AddFusion();
-    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+    var fusion = services.AddFusion();
+    fusion.AddComputeService<CounterService>();
     return services.BuildServiceProvider();
 }
 ```
@@ -93,7 +92,7 @@ Overall, its key properties include:
   * `IResult<T>` describes an object that stores the result of computation
     of type `T`, which is either a `Value` of `T`, or an `Error`
     (of `Exception` type). The interface itself provides a number of
-    convenience methods (such as `ValueOr(...)`, `IsValue(out var value)`, etc.),
+    convenience methods (such as `IsValue(out var value)`, etc.),
     and there are a few extension methods for it as well.
   * `Result<T>` is its struct-based implementation that's frequently used
     to store the actual result. `IComputed<T>.Output` is the property
@@ -128,7 +127,7 @@ And finally, there are a few important methods:
   multiple times, though only the first call matters.
 * `WhenInvalidated(...)` - an extension method allowing to await
   for invalidation.
-* `UpdateAsync(...)` - *finds or computes* the consistent version
+* `Update(...)` - *finds or computes* the consistent version
   of this computed instance. *Finds* means the computation will happen
   if and only if there is no cached consistent instance in
   `ComputedRegistry` (~ a cache tracking the most up-to-date version of
@@ -137,29 +136,51 @@ And finally, there are a few important methods:
   but not necessarily, consistent*, because it could be invalidated
   either in between the computation and the moment you check its status,
   or even right during the computation.
-* `Use(...)` - a shortcut for `Update(true).Value`.
-  Gets the most up-to-date value of the current computed and
+* `Use(...)` -gets the most up-to-date value of the current computed and
   makes sure that if this happens inside the computation of another
-  computed value, the current `IComputed<T>` (more precisely, its
-  most recent version) gets listed as a dependency of this "outer"
-  computed.
+  computed value, the current `IComputed<T>` gets listed as a dependency
+  of this "outer"  computed.
 
-A diagram to help remembering all of this:
+A bit of code to help remembering this:
 
-[<img src="./img/IComputed-Class.jpg" width="300"/>](./img/IComputed-Class.jpg)
+```cs
+interface IResult<T> {
+  T ValueOrDefault { get; } // Never throws an error
+  T Value { get; } // Throws Error when HasError
+  Exception? Error { get; }
+  bool HasValue { get; } // Error == null
+  bool HasError { get; } // Error != null
+
+  void Deconstruct(out T value, out Exception? error);
+  bool IsValue(out T value);
+  bool IsValue(out T value, out Exception error);
+  
+  Result<T> AsResult();  // Result<T> is a struct implementing IResult<T>
+  Result<TOther> Cast<TOther>();
+}
+
+// CancellationToken argument is removed everywhere for simplicity
+interface IComputed<T> : IResult<T> {
+  ConsistencyState ConsistencyState { get; } 
+  
+  event Action Invalidated; // Event, triggered on the invalidation
+  Task WhenInvalidated(); // Async way to await for the invalidation
+  void Invalidate();
+  Task<IComputed<T>> Update(); // Notice it returns a new instance!
+  Task<T> Use();
+}
+```
 
 A diagram showing how `ConsistencyState` transition works:
 
-[<img src="./img/ConsistencyState.jpg" width="300"/>](./img/ConsistencyState.jpg)
-
+<img src="./diagrams/consistency-state/transitions.dio.svg" width="300" />
 Since every `IComputed<T>` is *almost immutable*, a new instance of
 `IComputed` gets created on recomputation if the most recent one is
 already invalidated at this point (otherwise there is no reason to
 recompute). Here is how 3 computations (of the same value) look
 on a Gantt chart:
 
-![](./img/Computed-Gantt.jpg)
-
+<img src="./diagrams/consistency-state/instances.dio.svg" />
 An ugly visualization showing how multiple `IComputed<T>`
 instances get invalidated and eventually replaced with their consistent
 versions:

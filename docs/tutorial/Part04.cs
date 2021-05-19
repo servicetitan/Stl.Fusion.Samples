@@ -138,11 +138,12 @@ namespace Tutorial
             builder.ConfigureLogging(logging =>
                 logging.ClearProviders().SetMinimumLevel(LogLevel.Information).AddDebug());
             builder.ConfigureServices((b, services) => {
-                services.AddFusion(f => {
-                    f.AddWebServer();
-                    f.AddComputeService<ICounterService, CounterService>();
-                });
+                var fusion = services.AddFusion();
+                fusion.AddWebServer();
+                // Registering Compute Service
+                fusion.AddComputeService<ICounterService, CounterService>();
                 services.AddRouting();
+                // And its controller
                 services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
             });
             builder.ConfigureWebHost(b => {
@@ -172,6 +173,7 @@ namespace Tutorial
             });
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient((c, options) => options.BaseUri = baseUri);
+            // Registering replica service
             fusionClient.AddReplicaService<ICounterService, ICounterServiceClient>();
             return services.BuildServiceProvider();
         }
