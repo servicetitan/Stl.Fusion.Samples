@@ -17,18 +17,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Templates.Blazor1.Services;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
-using Blazorise.Bootstrap;
-using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
 using Stl.Fusion.EntityFramework;
 using Stl.IO;
+using Templates.Blazor1.Abstractions;
 
 namespace Templates.Blazor1.Host
 {
@@ -47,10 +45,11 @@ namespace Templates.Blazor1.Host
         public void ConfigureServices(IServiceCollection services)
         {
             #pragma warning disable ASP0000
-            var serverSettings = services
-                .UseAttributeScanner(s => s.AddService<ServerSettings>())
-                .BuildServiceProvider()
-                .GetRequiredService<ServerSettings>();
+            var fusion = services.AddFusion();
+            var fusionServer = fusion.AddWebServer();
+            var fusionClient = fusion.AddRestEaseClient();
+            fusion.AddComputeService<ServerSettings>();
+            var serverSettings = fusion.Services.BuildServiceProvider().GetRequiredService<ServerSettings>();
             #pragma warning restore ASP0000
 
             services.AddResponseCompression(opts => {
@@ -89,21 +88,14 @@ namespace Templates.Blazor1.Host
                 b.AddKeyValueStore();
             });
 
-            // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = serverSettings.PublisherId });
-            var fusion = services.AddFusion();
-            var fusionServer = fusion.AddWebServer();
-            var fusionClient = fusion.AddRestEaseClient();
             var fusionAuth = fusion.AddAuthentication().AddServer(
                 signInControllerOptionsBuilder: (_, options) => {
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
                 });
 
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-            services.UseAttributeScanner()
-                .AddServicesFrom(typeof(TodoService).Assembly)
-                .AddServicesFrom(Assembly.GetExecutingAssembly());
+            fusion.AddComputeService<ITodoService, TodoService>();
+            
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 

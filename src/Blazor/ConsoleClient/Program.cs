@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reactive;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pluralize.NET;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Client;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.Extensions;
@@ -57,11 +54,12 @@ static IServiceProvider CreateServiceProvider()
     // Default update delay is set to 0.1s
     services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
 
-    // This method registers services marked with any of ServiceAttributeBase descendants, including:
-    // [Service], [ComputeService], [RestEaseReplicaService], [LiveStateUpdater]
-    services.UseAttributeScanner()
-        .AddServicesFrom(Assembly.GetExecutingAssembly())
-        .WithScope(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+    fusion.AddFusionTime();
+    fusionClient.AddReplicaService<ITimeService, ITimeClient>();
+    fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
+    fusionClient.AddReplicaService<IChatService, IChatClient>();
+    fusionClient.AddReplicaService<IComposerService, IComposerClient>();
+    fusionClient.AddReplicaService<ISumService, ISumClient>();
 
     return services.BuildServiceProvider();
 }

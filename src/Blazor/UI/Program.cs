@@ -1,18 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Pluralize.NET;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Client;
-using Stl.Async;
+using Samples.Blazor.UI.Services;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
@@ -59,9 +55,13 @@ namespace Samples.Blazor.UI
                 });
             var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            services.UseAttributeScanner(Scopes.ClientSideOnly).AddServicesFrom(typeof(ITimeClient).Assembly);
+            fusion.AddFusionTime();
+            fusionClient.AddReplicaService<ITimeService, ITimeClient>();
+            fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
+            fusionClient.AddReplicaService<IChatService, IChatClient>();
+            fusionClient.AddReplicaService<IComposerService, IComposerClient>();
+            fusionClient.AddReplicaService<ISumService, ISumClient>();
+
             ConfigureSharedServices(services);
         }
 
@@ -72,11 +72,15 @@ namespace Samples.Blazor.UI
             // Default update delayer
             services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
             // Other UI-related services
-            services.AddFusion().AddFusionTime();
-
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            var fusion = services.AddFusion();
+            fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
+            var fusionClient = fusion.AddRestEaseClient();
+            fusion.AddFusionTime();
+            fusionClient.AddReplicaService<ITimeService, ITimeClient>();
+            fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
+            fusionClient.AddReplicaService<IChatService, IChatClient>();
+            fusionClient.AddReplicaService<IComposerService, IComposerClient>();
+            fusionClient.AddReplicaService<ISumService, ISumClient>();
         }
     }
 }

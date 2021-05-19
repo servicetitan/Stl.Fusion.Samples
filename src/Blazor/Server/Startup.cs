@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Blazorise.Bootstrap;
-using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Builder;
@@ -22,7 +20,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Server.Services;
-using Stl.DependencyInjection;
+using Samples.Blazor.UI.Services;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
@@ -64,9 +62,13 @@ namespace Samples.Blazor.Server
 
             // Creating Log and HostSettings as early as possible
 #pragma warning disable ASP0000
-            var tmpServices = services
-                .UseAttributeScanner(s => s.AddService<ServerSettings>())
-                .BuildServiceProvider();
+            var fusion = services.AddFusion();
+            var fusionClient = fusion.AddRestEaseClient();
+            fusionClient.AddReplicaService<IForismaticClient>();
+            fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
+            fusion.AddComputeService<ServerSettings>();
+            var tmpServices = services.BuildServiceProvider();
+
 #pragma warning restore ASP0000
             Log = tmpServices.GetRequiredService<ILogger<Startup>>();
             ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
@@ -93,16 +95,18 @@ namespace Samples.Blazor.Server
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
             services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
-            var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
-            var fusionClient = fusion.AddRestEaseClient();
             var fusionAuth = fusion.AddAuthentication().AddServer(
                 signInControllerOptionsBuilder: (_, options) => {
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
                 });
-            // This method registers services marked with any of ServiceAttributeBase descendants, including:
-            // [Service], [ComputeService], [CommandService], [RestEaseReplicaService], etc.
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+
+            fusion.AddComputeService<ITimeService, TimeService>();
+            fusion.AddComputeService<ISumService, SumService>();
+            fusion.AddComputeService<IComposerService, ComposerService>();
+            fusion.AddComputeService<IScreenshotService, ScreenshotService>();
+            fusion.AddComputeService<IChatService, ChatService>();
+
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 

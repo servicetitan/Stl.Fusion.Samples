@@ -1,15 +1,12 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
 using Stl.Fusion.Authentication;
-using Stl.Fusion.Client;
 using Stl.Fusion.Extensions;
 using Templates.Blazor1.Abstractions;
 
 namespace Templates.Blazor1.UI.Services
 {
-    [RestEaseReplicaService(typeof(ITodoService), Scope = Program.ClientSideScope)]
     [BasePath("todo")]
     public interface ITodoClient
     {
