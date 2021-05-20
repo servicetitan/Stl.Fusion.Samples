@@ -1,6 +1,6 @@
 @using System.Threading
 @using System.Reflection
-@inherits MixedStateComponent<double, AccumulatorCard.LocalsModel>
+@inherits MixedStateComponent<double, AccumulatorCard.LocalModel>
 @inject ISumService SumService
 
 @{
@@ -38,7 +38,7 @@
 </Card>
 
 @code {
-    public class LocalsModel
+    public class LocalModel
     {
         public string ValueText { get; set; } = "1";
         public double Value => double.TryParse(ValueText, out var v) ? v : 0;

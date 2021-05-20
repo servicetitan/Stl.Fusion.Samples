@@ -8,7 +8,7 @@ using Stl.Fusion.Authentication;
 namespace Samples.Blazor.Client
 {
     [BasePath("time")]
-    public interface ITimeClient
+    public interface ITimeClientDef
     {
         [Get("getTime")]
         Task<DateTime> GetTime(CancellationToken cancellationToken = default);
@@ -17,14 +17,14 @@ namespace Samples.Blazor.Client
     }
 
     [BasePath("screenshot")]
-    public interface IScreenshotClient
+    public interface IScreenshotClientDef
     {
         [Get("getScreenshot")]
         Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default);
     }
 
     [BasePath("chat")]
-    public interface IChatClient
+    public interface IChatClientDef
     {
         // Commands
         [Post("post")]
@@ -46,7 +46,7 @@ namespace Samples.Blazor.Client
     }
 
     [BasePath("composer")]
-    public interface IComposerClient
+    public interface IComposerClientDef
     {
         [Get("getComposedValue")]
         Task<ComposedValue> GetComposedValue(string? parameter,
@@ -54,7 +54,7 @@ namespace Samples.Blazor.Client
     }
     
     [BasePath("sum")]
-    public interface ISumClient
+    public interface ISumClientDef
     {
         // Commands
         [Post("reset")]

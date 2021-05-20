@@ -11,7 +11,6 @@ using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer.Services
 {
-    [ComputeService]
     public class ChatService
     {
         public record PostCommand(string Name, string Message) : ICommand<Unit>

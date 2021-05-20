@@ -5,14 +5,11 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Samples.Caching.Server;
-using Stl.DependencyInjection;
 using static System.Console;
 
 namespace Samples.Caching.Client
 {
-    [Service]
     public class ServiceChecker
     {
         public string SamplesDir { get; set; }

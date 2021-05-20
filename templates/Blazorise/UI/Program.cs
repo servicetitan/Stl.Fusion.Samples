@@ -19,8 +19,6 @@ namespace Templates.Blazor1.UI
 {
     public class Program
     {
-        public const string ClientSideScope = nameof(ClientSideScope);
-
         public static Task Main(string[] args)
         {
             if (OSInfo.Kind != OSKind.WebAssembly)
@@ -42,6 +40,7 @@ namespace Templates.Blazor1.UI
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
 
+            // Fusion
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient(
                 (c, o) => {
@@ -54,10 +53,11 @@ namespace Templates.Blazor1.UI
                     var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
                     o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
                 });
-            fusion.AddAuthentication(fusionAuth => {
-                fusionAuth.AddRestEaseClient().AddBlazor();
-            });
-            fusionClient.AddReplicaService<ITodoService, ITodoClient>();
+            var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
+
+            // Fusion services
+            fusionClient.AddReplicaService<ITodoService, ITodoClientDef>();
+
             ConfigureSharedServices(services);
         }
 
@@ -65,13 +65,13 @@ namespace Templates.Blazor1.UI
         {
             // Blazorise
             services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
-            // Default update delayer
-            services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
+
             // Other UI-related services
             var fusion = services.AddFusion();
-            var fusionClient = fusion.AddRestEaseClient();
             fusion.AddFusionTime();
-            fusionClient.AddReplicaService<ITodoService, ITodoClient>();
+
+            // Default update delay is 0.1s
+            services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
         }
     }
 }

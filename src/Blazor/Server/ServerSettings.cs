@@ -1,10 +1,8 @@
 using System;
 using System.Text;
-using Stl.DependencyInjection;
 
 namespace Samples.Blazor.Server
 {
-    [Settings("Server")]
     public class ServerSettings
     {
         public bool AssumeHttps { get; set; } = false;

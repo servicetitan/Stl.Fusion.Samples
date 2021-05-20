@@ -3,12 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Stl.DependencyInjection;
 using Stl.Fusion.EntityFramework;
 
 namespace Samples.Caching.Server.Services
 {
-    [Service]
     public class DbInitializer : DbServiceBase<AppDbContext>
     {
         public DbInitializer(IServiceProvider services) : base(services) { }

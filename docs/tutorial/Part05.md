@@ -46,7 +46,6 @@ and returns the same value as its input. We'll be using it to
 find out when `IComputed` instances are actually reused.
 
 ``` cs --editable false --region Part05_Service1 --source-file Part05.cs
-[ComputeService] // You don't need this attribute if you manually register such services
 public class Service1
 {
     [ComputeMethod]
@@ -60,8 +59,12 @@ public class Service1
 public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
-    services.AddFusion();
-    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+    services.AddSingleton<ISwapService, DemoSwapService>();
+    services.AddFusion()
+        .AddComputeService<Service1>()
+        .AddComputeService<Service2>() // We'll use Service2 & other services later
+        .AddComputeService<Service3>()
+        .AddComputeService<Service4>();
     return services.BuildServiceProvider();
 }
 ```
@@ -136,7 +139,6 @@ a computed for its output to ensure its dependencies
 are cached too? Let's test this:
 
 ``` cs --editable false --region Part05_Service2 --source-file Part05.cs
-[ComputeService]
 public class Service2
 {
     [ComputeMethod]
@@ -287,7 +289,6 @@ Let's look at how they work.
 Let's just add `KeepAliveTime` to the service we were using previously:
 
 ``` cs --editable false --region Part05_Service3 --source-file Part05.cs
-[ComputeService]
 public class Service3
 {
     [ComputeMethod]
@@ -388,7 +389,6 @@ A few tips on how to use it:
 Let's jump straight to the example:
 
 ``` cs --editable false --region Part05_Service4 --source-file Part05.cs
-[ComputeService]
 public class Service4
 {
     [ComputeMethod(KeepAliveTime = 1), Swap(0.1)]
@@ -399,7 +399,6 @@ public class Service4
     }
 }
 
-[Service(typeof(ISwapService))]
 public class DemoSwapService : SimpleSwapService
 {
     protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Concurrent;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl.Async;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using static System.Console;
 
@@ -16,14 +14,15 @@ namespace Tutorial
         public static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddFusion();
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
+            var fusion = services.AddFusion();
+            fusion.AddComputeService<CounterService>();
+            fusion.AddComputeService<CounterSumService>(); // We'll be using it later
+            fusion.AddComputeService<HelloService>();      // We'll be using it later
             return services.BuildServiceProvider();
         }
         #endregion
 
         #region Part01_CounterService
-        [ComputeService] // You don't need this attribute if you manually register such services
         public class CounterService
         {
             private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
@@ -74,7 +73,6 @@ namespace Tutorial
         }
 
         #region Part01_CounterSumService
-        [ComputeService] // You don't need this attribute if you manually register such services
         public class CounterSumService
         {
             public CounterService Counters { get; }
@@ -127,7 +125,6 @@ namespace Tutorial
         }
 
         #region Part01_HelloService
-        [ComputeService] // You don't need this attribute if you manually register such services
         public class HelloService
         {
             [ComputeMethod]

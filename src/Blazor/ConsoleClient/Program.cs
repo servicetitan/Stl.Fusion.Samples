@@ -39,6 +39,7 @@ static IServiceProvider CreateServiceProvider()
     var baseUri = new Uri("http://localhost:5005");
     var apiBaseUri = new Uri($"{baseUri}api/");
 
+    // Fusion
     var fusion = services.AddFusion();
     var fusionClient = fusion.AddRestEaseClient(
         (c, o) => {
@@ -51,15 +52,16 @@ static IServiceProvider CreateServiceProvider()
         });
     var fusionAuth = fusion.AddAuthentication().AddRestEaseClient();
 
-    // Default update delay is set to 0.1s
-    services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
-
+    // Fusion services
     fusion.AddFusionTime();
-    fusionClient.AddReplicaService<ITimeService, ITimeClient>();
-    fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
-    fusionClient.AddReplicaService<IChatService, IChatClient>();
-    fusionClient.AddReplicaService<IComposerService, IComposerClient>();
-    fusionClient.AddReplicaService<ISumService, ISumClient>();
+    fusionClient.AddReplicaService<ITimeService, ITimeClientDef>();
+    fusionClient.AddReplicaService<IScreenshotService, IScreenshotClientDef>();
+    fusionClient.AddReplicaService<IChatService, IChatClientDef>();
+    fusionClient.AddReplicaService<IComposerService, IComposerClientDef>();
+    fusionClient.AddReplicaService<ISumService, ISumClientDef>();
+
+    // Default update delay is 0.1s
+    services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
 
     return services.BuildServiceProvider();
 }

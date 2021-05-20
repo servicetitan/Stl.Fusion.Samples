@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Samples.Caching.Common;
 using Samples.Caching.Server;
 using Samples.Caching.Server.Services;
+using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
@@ -19,8 +20,6 @@ namespace Samples.Caching.Client
 {
     class Program
     {
-        public const string ClientSideScope = nameof(ClientSideScope);
-
         static async Task Main(string[] args)
         {
             using var cts = new CancellationTokenSource();
@@ -52,7 +51,7 @@ namespace Samples.Caching.Client
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
             await benchmark.Run("Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
-            benchmark.TenantServiceResolver = c => c.GetRequiredService<IRestEaseTenantService>();
+            benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantServiceClient>();
             await benchmark.Run("RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
             await benchmark.Run("RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]", cancellationToken);
@@ -63,16 +62,19 @@ namespace Samples.Caching.Client
             var services = new ServiceCollection();
             var cfg = Host.CreateDefaultBuilder().Build().Services.GetRequiredService<IConfiguration>();
             services.AddSingleton(cfg);
+            services.AddSettings<ClientSettings>("Client");
+            var clientSettings = services.BuildServiceProvider().GetRequiredService<ClientSettings>();
 
             var fusion = services.AddFusion();
-            var fusionClient = fusion.AddRestEaseClient((c, options) => {
-                var clientSettings = c.GetRequiredService<ClientSettings>();
+            var fusionClient = fusion.AddRestEaseClient((_, options) => {
                 options.BaseUri = clientSettings.BaseUri;
                 options.IsLoggingEnabled = false;
-            }).ConfigureHttpClientFactory((c, name, options) => {
-                var clientSettings = c.GetRequiredService<ClientSettings>();
+            }).ConfigureHttpClientFactory((_, name, options) => {
                 options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
             });
+            fusionClient.AddReplicaService<ITenantService, ITenantClientDef>();
+            fusionClient.AddClientService<ITenantServiceClient, ITenantClientDef>();
+            fusionClient.AddClientService<ISqlTenantService, ISqlTenantClientDef>();
             return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
         }
 
@@ -94,6 +96,8 @@ namespace Samples.Caching.Client
                         options.ValidateOnBuild = true;
                     })
                     .ConfigureServices((ctx, services) => {
+                        services.AddSettings<ClientSettings>("Client");
+                        services.AddSingleton<ServiceChecker>();
                     })
                     .UseStartup<Startup>())
                 .Build();

@@ -8,7 +8,7 @@ using Templates.Blazor1.Abstractions;
 namespace Templates.Blazor1.UI.Services
 {
     [BasePath("todo")]
-    public interface ITodoClient
+    public interface ITodoClientDef
     {
         [Post("addOrUpdate")]
         Task<Todo> AddOrUpdate([Body] AddOrUpdateTodoCommand command, CancellationToken cancellationToken = default);

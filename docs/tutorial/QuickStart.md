@@ -1018,8 +1018,8 @@ services.AddFusion(fusion => {
         // Ensure WebSocket channel will connect to the right endpoint
         client.ConfigureWebSocketChannel((c, options) => { options.BaseUri = baseUri; });
         // And finally, register actual Replica Services
-        client.AddReplicaService<IProductService, IProductClient>();
-        client.AddReplicaService<ICartService, ICartClient>();
+        client.AddReplicaService<IProductService, IProductClientDef>();
+        client.AddReplicaService<ICartService, ICartClientDef>();
     });
 });
 ```
@@ -1040,7 +1040,7 @@ This is how client interface looks for `ICartService` (see `Clients.cs` file):
 
 ```cs
 [BasePath("cart")]
-public interface ICartClient
+public interface ICartClientDef
 {
     [Post("edit")]
     Task Edit([Body] EditCommand<Cart> command, CancellationToken cancellationToken);
