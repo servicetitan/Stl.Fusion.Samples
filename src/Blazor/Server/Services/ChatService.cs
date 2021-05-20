@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Stl.Async;
 using Stl.Fusion;
-using Stl.Fusion.Bridge;
 using Samples.Blazor.Abstractions;
 using Stl.CommandR;
 using Stl.CommandR.Configuration;
@@ -20,7 +19,6 @@ using Stl.Fusion.Operations;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputeService(typeof(IChatService))]
     public class ChatService : DbServiceBase<AppDbContext>, IChatService
     {
         private readonly ILogger _log;

@@ -4,13 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Stl.Fusion;
 using Samples.Blazor.Abstractions;
 using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.UI.Services
 {
-    [ComputeService(typeof(ILocalComposerService))]
     public class LocalComposerService : ILocalComposerService
     {
         protected ILogger Log { get; }
