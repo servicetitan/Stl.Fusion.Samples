@@ -57,11 +57,11 @@ namespace Samples.Blazor.UI
             var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
             // Fusion services
-            fusionClient.AddReplicaService<ITimeService, ITimeClient>();
-            fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
-            fusionClient.AddReplicaService<IChatService, IChatClient>();
-            fusionClient.AddReplicaService<IComposerService, IComposerClient>();
-            fusionClient.AddReplicaService<ISumService, ISumClient>();
+            fusionClient.AddReplicaService<ITimeService, ITimeClientDef>();
+            fusionClient.AddReplicaService<IScreenshotService, IScreenshotClientDef>();
+            fusionClient.AddReplicaService<IChatService, IChatClientDef>();
+            fusionClient.AddReplicaService<IComposerService, IComposerClientDef>();
+            fusionClient.AddReplicaService<ISumService, ISumClientDef>();
 
             ConfigureSharedServices(services);
         }

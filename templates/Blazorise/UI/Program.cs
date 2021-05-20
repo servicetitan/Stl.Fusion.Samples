@@ -56,7 +56,7 @@ namespace Templates.Blazor1.UI
             var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
             // Fusion services
-            fusionClient.AddReplicaService<ITodoService, ITodoClient>();
+            fusionClient.AddReplicaService<ITodoService, ITodoClientDef>();
 
             ConfigureSharedServices(services);
         }

@@ -89,8 +89,8 @@ namespace Samples.HelloCart.V4
                         options.HttpClientActions.Add(httpClient => httpClient.BaseAddress = apiBaseUri);
                     });
                     client.ConfigureWebSocketChannel((c, options) => { options.BaseUri = baseUri; });
-                    client.AddReplicaService<IProductService, IProductClient>();
-                    client.AddReplicaService<ICartService, ICartClient>();
+                    client.AddReplicaService<IProductService, IProductClientDef>();
+                    client.AddReplicaService<ICartService, ICartClientDef>();
                 });
             });
             return services.BuildServiceProvider();

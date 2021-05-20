@@ -54,11 +54,11 @@ static IServiceProvider CreateServiceProvider()
 
     // Fusion services
     fusion.AddFusionTime();
-    fusionClient.AddReplicaService<ITimeService, ITimeClient>();
-    fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
-    fusionClient.AddReplicaService<IChatService, IChatClient>();
-    fusionClient.AddReplicaService<IComposerService, IComposerClient>();
-    fusionClient.AddReplicaService<ISumService, ISumClient>();
+    fusionClient.AddReplicaService<ITimeService, ITimeClientDef>();
+    fusionClient.AddReplicaService<IScreenshotService, IScreenshotClientDef>();
+    fusionClient.AddReplicaService<IChatService, IChatClientDef>();
+    fusionClient.AddReplicaService<IComposerService, IComposerClientDef>();
+    fusionClient.AddReplicaService<ISumService, ISumClientDef>();
 
     // Default update delay is 0.1s
     services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.1));

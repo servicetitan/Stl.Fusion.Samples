@@ -291,7 +291,7 @@ All you need is to:
   [Part 4](./Part04.md) explains how to achieve that, but overall,
   you need to implement this interface on Compute Service, the
   controller "exporting" it, and register its client via
-  `fusionClient.AddReplicaService<IClientDef, IService>()` call.
+  `fusionClient.AddReplicaService<IService, IClientDef>()` call.
 - Ensure the server can host Blazor components from the client
   in SSB mode. You need to host Blazor hub + a bit  
   [tweaked _Host.cshtml](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Server/Pages/_Host.cshtml)
