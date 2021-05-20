@@ -173,14 +173,16 @@ interface IComputed<T> : IResult<T> {
 
 A diagram showing how `ConsistencyState` transition works:
 
-<img src="./diagrams/consistency-state/transitions.dio.svg" width="300" />
+![](./diagrams/consistency-state/transitions.dio.svg)
+
 Since every `IComputed<T>` is *almost immutable*, a new instance of
 `IComputed` gets created on recomputation if the most recent one is
 already invalidated at this point (otherwise there is no reason to
 recompute). Here is how 3 computations (of the same value) look
 on a Gantt chart:
 
-<img src="./diagrams/consistency-state/instances.dio.svg" />
+![](./diagrams/consistency-state/instances.dio.svg)
+
 An ugly visualization showing how multiple `IComputed<T>`
 instances get invalidated and eventually replaced with their consistent
 versions:

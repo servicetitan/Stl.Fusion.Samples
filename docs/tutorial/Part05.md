@@ -59,12 +59,12 @@ public class Service1
 public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
+    services.AddSingleton<ISwapService, DemoSwapService>();
     services.AddFusion()
         .AddComputeService<Service1>()
         .AddComputeService<Service2>() // We'll use Service2 & other services later
         .AddComputeService<Service3>()
         .AddComputeService<Service4>();
-    services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
     return services.BuildServiceProvider();
 }
 ```
@@ -399,7 +399,6 @@ public class Service4
     }
 }
 
-[Service(typeof(ISwapService))]
 public class DemoSwapService : SimpleSwapService
 {
     protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)
