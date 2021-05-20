@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Samples.HelloBlazorServer.Services;
+using Stl.CommandR;
 using Stl.Fusion;
 using Stl.Fusion.Extensions;
 
@@ -24,6 +26,13 @@ namespace Samples.HelloBlazorServer
             // Fusion services
             var fusion = services.AddFusion();
             fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
+            fusion.AddComputeService<CounterService>();
+            fusion.AddComputeService<ChatService>();
+            fusion.AddComputeService<ChatBotService>();
+            fusion.AddComputeService<WeatherForecastService>();
+
+            // This is just to make sure ChatBotService.StartAsync is called on startup
+            services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
 
             // Default update delay is 0.5s
             services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.5));

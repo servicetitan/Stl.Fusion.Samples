@@ -7,7 +7,6 @@ using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer.Services
 {
-    [ComputeService]
     public class WeatherForecastService
     {
         private static readonly string[] Summaries = {

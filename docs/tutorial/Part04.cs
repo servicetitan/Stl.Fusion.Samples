@@ -112,10 +112,10 @@ namespace Tutorial
         #endregion
 
         #region Part04_ClientServices
-        // ICounterServiceClient tells how ICounterService methods map to HTTP methods.
+        // ICounterClientDef tells how ICounterService methods map to HTTP methods.
         // As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
         [BasePath("counter")]
-        public interface ICounterServiceClient
+        public interface ICounterClientDef
         {
             [Get("get")]
             Task<int> Get(string key, CancellationToken cancellationToken = default);
@@ -174,7 +174,7 @@ namespace Tutorial
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient((c, options) => options.BaseUri = baseUri);
             // Registering replica service
-            fusionClient.AddReplicaService<ICounterService, ICounterServiceClient>();
+            fusionClient.AddReplicaService<ICounterService, ICounterClientDef>();
             return services.BuildServiceProvider();
         }
         #endregion

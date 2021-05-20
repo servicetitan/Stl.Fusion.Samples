@@ -4,14 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Samples.Caching.Common;
 using Stl.Async;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.EntityFramework;
 
 namespace Samples.Caching.Server.Services
 {
-    [ComputeService(typeof(ITenantService))]
-    [Service(typeof(ISqlTenantService))]
     public class TenantService : DbServiceBase<AppDbContext>, ISqlTenantService
     {
         private bool IsComputeService { get; }

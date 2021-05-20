@@ -19,8 +19,6 @@ namespace Templates.Blazor1.UI
 {
     public class Program
     {
-        public const string ClientSideScope = nameof(ClientSideScope);
-
         public static Task Main(string[] args)
         {
             if (OSInfo.Kind != OSKind.WebAssembly)

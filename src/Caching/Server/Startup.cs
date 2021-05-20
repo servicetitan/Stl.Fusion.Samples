@@ -71,6 +71,10 @@ namespace Samples.Caching.Server
             // Fusion services
             fusion.AddComputeService<ITenantService, TenantService>();
 
+            // Other services
+            services.AddSingleton<DbInitializer>();
+            services.AddSingleton<ISqlTenantService, TenantService>(); // Non-Fusion version of ITenantService
+
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
         }

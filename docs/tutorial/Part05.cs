@@ -1,10 +1,8 @@
 using System;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl;
-using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Swapping;
 using static System.Console;
@@ -27,12 +25,12 @@ namespace Tutorial
         public static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
+            services.AddSingleton<ISwapService, DemoSwapService>();
             services.AddFusion()
                 .AddComputeService<Service1>()
                 .AddComputeService<Service2>() // We'll use Service2 & other services later
                 .AddComputeService<Service3>()
                 .AddComputeService<Service4>();
-            services.UseAttributeScanner().AddServicesFrom(Assembly.GetExecutingAssembly());
             return services.BuildServiceProvider();
         }
         #endregion
@@ -166,7 +164,6 @@ namespace Tutorial
             }
         }
 
-        [Service(typeof(ISwapService))]
         public class DemoSwapService : SimpleSwapService
         {
             protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)

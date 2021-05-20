@@ -20,7 +20,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Server.Services;
-using Samples.Blazor.UI.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;

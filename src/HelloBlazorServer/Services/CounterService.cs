@@ -1,11 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Stl.Async;
 using Stl.Fusion;
 
 namespace Samples.HelloBlazorServer.Services
 {
-    [ComputeService]
     public class CounterService
     {
         private readonly object _lock = new object();

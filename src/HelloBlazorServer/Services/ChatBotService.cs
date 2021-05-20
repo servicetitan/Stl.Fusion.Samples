@@ -7,13 +7,10 @@ using Microsoft.Extensions.Hosting;
 using Stl.Async;
 using Stl.CommandR;
 using Stl.CommandR.Configuration;
-using Stl.DependencyInjection;
 using Stl.Fusion;
-using Stl.Fusion.Operations;
 
 namespace Samples.HelloBlazorServer.Services
 {
-    [CommandService, AddHostedService]
     public class ChatBotService : IHostedService
     {
         private static string Morpheus = "M0rpheus";

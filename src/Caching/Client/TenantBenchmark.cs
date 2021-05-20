@@ -1,20 +1,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Samples.Caching.Common;
-using Stl.DependencyInjection;
 using Stl.OS;
 using Stl.Time;
 using static System.Console;
 
 namespace Samples.Caching.Client
 {
-    [Service]
     public class TenantBenchmark : BenchmarkBase
     {
         public int InitConcurrencyLevel { get; set; } = HardwareInfo.ProcessorCount;

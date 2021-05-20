@@ -20,8 +20,6 @@ namespace Samples.Caching.Client
 {
     class Program
     {
-        public const string ClientSideScope = nameof(ClientSideScope);
-
         static async Task Main(string[] args)
         {
             using var cts = new CancellationTokenSource();
@@ -53,7 +51,7 @@ namespace Samples.Caching.Client
             benchmark.Services = remoteServices;
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
             await benchmark.Run("Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
-            benchmark.TenantServiceResolver = c => c.GetRequiredService<IRestEaseTenantService>();
+            benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantServiceClient>();
             await benchmark.Run("RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
             benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
             await benchmark.Run("RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]", cancellationToken);
@@ -74,6 +72,9 @@ namespace Samples.Caching.Client
             }).ConfigureHttpClientFactory((_, name, options) => {
                 options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
             });
+            fusionClient.AddReplicaService<ITenantService, ITenantClientDef>();
+            fusionClient.AddClientService<ITenantServiceClient, ITenantClientDef>();
+            fusionClient.AddClientService<ISqlTenantService, ISqlTenantClientDef>();
             return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
         }
 
@@ -95,6 +96,8 @@ namespace Samples.Caching.Client
                         options.ValidateOnBuild = true;
                     })
                     .ConfigureServices((ctx, services) => {
+                        services.AddSettings<ClientSettings>("Client");
+                        services.AddSingleton<ServiceChecker>();
                     })
                     .UseStartup<Startup>())
                 .Build();
