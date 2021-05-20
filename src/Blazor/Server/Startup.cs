@@ -21,6 +21,7 @@ using Microsoft.OpenApi.Models;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Server.Services;
 using Samples.Blazor.UI.Services;
+using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
@@ -60,15 +61,10 @@ namespace Samples.Blazor.Server
                 }
             });
 
-            // Creating Log and HostSettings as early as possible
+            // Creating Log and ServerSettings as early as possible
+            services.AddSettings<ServerSettings>("Server");
 #pragma warning disable ASP0000
-            var fusion = services.AddFusion();
-            var fusionClient = fusion.AddRestEaseClient();
-            fusionClient.AddReplicaService<IForismaticClient>();
-            fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
-            fusion.AddComputeService<ServerSettings>();
             var tmpServices = services.BuildServiceProvider();
-
 #pragma warning restore ASP0000
             Log = tmpServices.GetRequiredService<ILogger<Startup>>();
             ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
@@ -92,28 +88,33 @@ namespace Samples.Blazor.Server
                 b.AddDbAuthentication();
             });
 
-            // Fusion services
-            services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
-            services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
+            // Fusion
+            var fusion = services.AddFusion();
+            var fusionClient = fusion.AddRestEaseClient();
             var fusionServer = fusion.AddWebServer();
             var fusionAuth = fusion.AddAuthentication().AddServer(
                 signInControllerOptionsBuilder: (_, options) => {
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
                 });
+            services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
+            services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
 
+            // Fusion services
+            fusionClient.AddClientService<IForismaticClient>();
             fusion.AddComputeService<ITimeService, TimeService>();
             fusion.AddComputeService<ISumService, SumService>();
             fusion.AddComputeService<IComposerService, ComposerService>();
             fusion.AddComputeService<IScreenshotService, ScreenshotService>();
             fusion.AddComputeService<IChatService, ChatService>();
 
-            // Registering shared services from the client
+            // Shared UI services
             UI.Program.ConfigureSharedServices(services);
 
             // Data protection
             services.AddScoped(c => c.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
             services.AddDataProtection().PersistKeysToDbContext<AppDbContext>();
 
+            // ASP.NET Core authentication providers
             services.AddAuthentication(options => {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie(options => {

@@ -1,8 +1,5 @@
-using Stl.DependencyInjection;
-
 namespace Samples.Caching.Server
 {
-    [Settings("DB")]
     public class DbSettings
     {
         public string ServerHost { get; set; } = "127.0.0.1";

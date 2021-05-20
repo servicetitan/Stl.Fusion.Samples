@@ -41,6 +41,7 @@ namespace Samples.Blazor.UI
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
 
+            // Fusion
             var fusion = services.AddFusion();
             var fusionClient = fusion.AddRestEaseClient(
                 (c, o) => {
@@ -55,7 +56,7 @@ namespace Samples.Blazor.UI
                 });
             var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
-            fusion.AddFusionTime();
+            // Fusion services
             fusionClient.AddReplicaService<ITimeService, ITimeClient>();
             fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
             fusionClient.AddReplicaService<IChatService, IChatClient>();
@@ -69,18 +70,14 @@ namespace Samples.Blazor.UI
         {
             // Blazorise
             services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
-            // Default update delayer
-            services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
-            // Other UI-related services
+
+            // Fusion services
             var fusion = services.AddFusion();
-            fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
-            var fusionClient = fusion.AddRestEaseClient();
             fusion.AddFusionTime();
-            fusionClient.AddReplicaService<ITimeService, ITimeClient>();
-            fusionClient.AddReplicaService<IScreenshotService, IScreenshotClient>();
-            fusionClient.AddReplicaService<IChatService, IChatClient>();
-            fusionClient.AddReplicaService<IComposerService, IComposerClient>();
-            fusionClient.AddReplicaService<ISumService, ISumClient>();
+            fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
+
+            // Default update delay is 0.1s
+            services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
         }
     }
 }

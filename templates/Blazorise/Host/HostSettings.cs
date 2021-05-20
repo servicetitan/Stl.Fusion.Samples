@@ -1,11 +1,9 @@
 using System;
 using System.Text;
-using Stl.DependencyInjection;
 
 namespace Templates.Blazor1.Host
 {
-    [Settings("Server")]
-    public class ServerSettings
+    public class HostSettings
     {
         public bool UseInMemoryAuthService { get; set; } = false;
         public string PublisherId { get; set; } = "p";

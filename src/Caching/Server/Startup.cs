@@ -8,7 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
+using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
@@ -20,6 +22,8 @@ namespace Samples.Caching.Server
     {
         private IConfiguration Cfg { get; }
         private IWebHostEnvironment Env { get; }
+        private ServerSettings ServerSettings { get; set; } = null!;
+        private DbSettings DbSettings { get; set; } = null!;
         private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
 
         public Startup(IConfiguration cfg, IWebHostEnvironment environment)
@@ -38,25 +42,34 @@ namespace Samples.Caching.Server
                 logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
             });
 
+            // Creating Log, HostSettings, and DbSettings as early as possible
+            services.AddSettings<ServerSettings>("Server");
+            services.AddSettings<DbSettings>("DB");
+#pragma warning disable ASP0000
+            var tmpServices = services.BuildServiceProvider();
+#pragma warning restore ASP0000
+            Log = tmpServices.GetRequiredService<ILogger<Startup>>();
+            ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
+            DbSettings = tmpServices.GetRequiredService<DbSettings>();
+
             // DbContext & related services
             services.AddPooledDbContextFactory<AppDbContext>((c, builder) => {
-                var dbSettings = c.GetRequiredService<DbSettings>();
                 var connectionString =
-                    $"Server={dbSettings.ServerHost},{dbSettings.ServerPort}; " +
-                    $"Database={dbSettings.DatabaseName}; " +
+                    $"Server={DbSettings.ServerHost},{DbSettings.ServerPort}; " +
+                    $"Database={DbSettings.DatabaseName}; " +
                     $"User Id=sa; Password=Fusion.0.to.1; " +
                     $"MultipleActiveResultSets=True; ";
                 builder.UseSqlServer(connectionString, sqlServer => { });
             }, 512);
 
-            // Fusion services
-            services.AddSingleton(c => {
-                var serverSettings = c.GetRequiredService<ServerSettings>();
-                return new Publisher.Options() {Id = serverSettings.PublisherId};
-            });
+            // Fusion
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
             var fusionClient = fusion.AddRestEaseClient();
+            services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
+
+            // Fusion services
+            fusion.AddComputeService<ITenantService, TenantService>();
 
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());

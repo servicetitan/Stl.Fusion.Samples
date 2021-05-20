@@ -22,10 +22,11 @@ namespace Samples.HelloBlazorServer
         public void ConfigureServices(IServiceCollection services)
         {
             // Fusion services
-            services.AddSingleton<IUpdateDelayer>(_ => new UpdateDelayer(0.5));
-            services.AddFusion(fusion => {
-                fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
-            });
+            var fusion = services.AddFusion();
+            fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
+
+            // Default update delay is 0.5s
+            services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.5));
 
             // Web
             services.AddRazorPages();

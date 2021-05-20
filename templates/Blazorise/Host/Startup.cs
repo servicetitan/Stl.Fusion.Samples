@@ -24,6 +24,7 @@ using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
+using Stl.DependencyInjection;
 using Stl.Fusion.EntityFramework;
 using Stl.IO;
 using Templates.Blazor1.Abstractions;
@@ -34,6 +35,7 @@ namespace Templates.Blazor1.Host
     {
         private IConfiguration Cfg { get; }
         private IWebHostEnvironment Env { get; }
+        private HostSettings HostSettings { get; set; } = null!;
         private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
 
         public Startup(IConfiguration cfg, IWebHostEnvironment environment)
@@ -44,18 +46,6 @@ namespace Templates.Blazor1.Host
 
         public void ConfigureServices(IServiceCollection services)
         {
-            #pragma warning disable ASP0000
-            var fusion = services.AddFusion();
-            var fusionServer = fusion.AddWebServer();
-            var fusionClient = fusion.AddRestEaseClient();
-            fusion.AddComputeService<ServerSettings>();
-            var serverSettings = fusion.Services.BuildServiceProvider().GetRequiredService<ServerSettings>();
-            #pragma warning restore ASP0000
-
-            services.AddResponseCompression(opts => {
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    new[] { "application/octet-stream" });
-            });
             // Logging
             services.AddLogging(logging => {
                 logging.ClearProviders();
@@ -66,6 +56,14 @@ namespace Templates.Blazor1.Host
                     logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
                 }
             });
+
+            // Creating Log and HostSettings as early as possible
+            services.AddSettings<HostSettings>("Host");
+#pragma warning disable ASP0000
+            var tmpServices = services.BuildServiceProvider();
+#pragma warning restore ASP0000
+            Log = tmpServices.GetRequiredService<ILogger<Startup>>();
+            HostSettings = tmpServices.GetRequiredService<HostSettings>();
 
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
@@ -83,22 +81,28 @@ namespace Templates.Blazor1.Host
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
                 });
                 b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
-                if (!serverSettings.UseInMemoryAuthService)
+                if (!HostSettings.UseInMemoryAuthService)
                     b.AddDbAuthentication();
                 b.AddKeyValueStore();
             });
 
-            services.AddSingleton(new Publisher.Options() { Id = serverSettings.PublisherId });
+            // Fusion
+            var fusion = services.AddFusion();
+            var fusionServer = fusion.AddWebServer();
+            var fusionClient = fusion.AddRestEaseClient();
             var fusionAuth = fusion.AddAuthentication().AddServer(
                 signInControllerOptionsBuilder: (_, options) => {
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
                 });
+            services.AddSingleton(new Publisher.Options() { Id = HostSettings.PublisherId });
 
+            // Fusion services
             fusion.AddComputeService<ITodoService, TodoService>();
-            
+
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);
 
+            // ASP.NET Core authentication providers
             services.AddAuthentication(options => {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie(options => {
@@ -107,15 +111,15 @@ namespace Templates.Blazor1.Host
                 if (Env.IsDevelopment())
                     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
             }).AddMicrosoftAccount(options => {
-                options.ClientId = serverSettings.MicrosoftAccountClientId;
-                options.ClientSecret = serverSettings.MicrosoftAccountClientSecret;
+                options.ClientId = HostSettings.MicrosoftAccountClientId;
+                options.ClientSecret = HostSettings.MicrosoftAccountClientSecret;
                 // That's for personal account authentication flow
                 options.AuthorizationEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
                 options.TokenEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
                 options.CorrelationCookie.SameSite = SameSiteMode.Lax;
             }).AddGitHub(options => {
-                options.ClientId = serverSettings.GitHubClientId;
-                options.ClientSecret = serverSettings.GitHubClientSecret;
+                options.ClientId = HostSettings.GitHubClientId;
+                options.ClientSecret = HostSettings.GitHubClientSecret;
                 options.Scope.Add("read:user");
                 options.Scope.Add("user:email");
                 options.CorrelationCookie.SameSite = SameSiteMode.Lax;
