@@ -5,19 +5,20 @@ It's an abstraction that "tracks" the most current version of some `IComputed<T>
 There are a few "flavors" of the `IState` - the most important ones are:
 
 * `IMutableState<T>` - in fact, a variable exposed as `IState<T>`
-* `ILiveState<T>` - a state that auto-updates once it becomes inconsistent,
+* `IComputedState<T>` - a state that auto-updates once it becomes inconsistent,
   and the update delay is controlled by `UpdateDelayer` provided to it.
 
 You can use these abstractions directly in your Blazor components, but
-usually it's more convenient to use `ComputedStateComponent<T>` and
-`LiveCompontentBase<T, TLocals>` from `Stl.Fusion.Blazor` NuGet package.
+usually it's more convenient to use `ComputedStateComponent<TState>` and
+`MixedStateComponent<TState, TMutableState>` from `Stl.Fusion.Blazor` NuGet package.
 I'll describe how they work further, but since the classes
 are tiny, the link to their source code might explain it even better:
 
+- [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs) (common base type)
 - [ComputedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs)
-- Its base type - [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs)
+- [MixedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs) (inherits from `ComputedStateComponent<TState>`).
 
-#### StatefulComponentBase&lt;T&gt;
+## StatefulComponentBase&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs))
 
 Any `StatefulComponentBase` has `State` property, which can be
 any `IState`.
@@ -30,9 +31,13 @@ own event handler (`StateChanged` delegate - don't confuse it with Blazor's
 ```cs
 protected override void OnInitialized()
 {
-    State ??= ServiceProvider.GetRequiredService<TState>();
+    // ReSharper disable once ConstantNullCoalescingCondition
+    State ??= CreateState();
     UntypedState.AddEventHandler(StateEventKind.All, StateChanged);
 }
+
+protected virtual TState CreateState()
+    => Services.GetRequiredService<TState>();
 ```
 
 And this is how the default `StateChanged` handler looks:
@@ -42,10 +47,11 @@ protected StateEventKind StateHasChangedTriggers { get; set; } = StateEventKind.
 
 protected StatefulComponentBase()
 {
-    StateChanged = (state, eventKind) => InvokeAsync(() => {
-        if ((eventKind & StateHasChangedTriggers) != 0)
-            StateHasChanged();
-    });
+    StateChanged = (_, eventKind) => {
+        if ((eventKind & StateHasChangedTriggers) == 0)
+            return;
+        this.StateHasChangedAsync();
+    };
 }
 ```
 
@@ -56,24 +62,55 @@ Finally, it also disposes the state once the component gets disposed -
 unless its `OwnsState` property is set to `false`. And that's nearly all
 it does.
 
-#### ComputedStateComponent&lt;T&gt;
+## ComputedStateComponent&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs))
 
-This class tweaks a behavior of `StatefulComponentBase` to deal `ILiveState<T>`.
+This class tweaks a behavior of `StatefulComponentBase` to deal `IComputedState<T>`.
 
 This is literally all of its code:
 
 ```cs
-protected override void OnInitialized()
+public abstract class ComputedStateComponent<TState> : StatefulComponentBase<IComputedState<TState>>
 {
-    State ??= StateFactory.NewLive<T>(ConfigureState, (_, ct) => ComputeState(ct), this);
-    base.OnInitialized();
-}
+    protected ComputedStateComponentOptions Options { get; set; } =
+        ComputedStateComponentOptions.SynchronizeComputeState
+        | ComputedStateComponentOptions.RecomputeOnParametersSet;
 
-protected virtual void ConfigureState(LiveState<T>.Options options) { }
-protected abstract Task<T> ComputeState(CancellationToken cancellationToken);
+    // Typically State depends on component parameters, so...
+    protected override void OnParametersSet()
+    {
+        if (0 != (Options & ComputedStateComponentOptions.RecomputeOnParametersSet))
+            State.Recompute();
+    }
+
+    protected override IComputedState<TState> CreateState()
+        => 0 != (Options & ComputedStateComponentOptions.SynchronizeComputeState)
+            ? StateFactory.NewComputed<TState>(ConfigureState,
+                async (_, ct) => {
+                    // Synchronizes ComputeState call as per:
+                    // https://github.com/servicetitan/Stl.Fusion/issues/202
+                    var ts = TaskSource.New<TState>(false);
+                    await InvokeAsync(async () => {
+                        try {
+                            ts.TrySetResult(await ComputeState(ct));
+                        }
+                        catch (OperationCanceledException) {
+                            ts.TrySetCanceled();
+                        }
+                        catch (Exception e) {
+                            ts.TrySetException(e);
+                        }
+                    });
+                    return await ts.Task.ConfigureAwait(false);
+                })
+            : StateFactory.NewComputed<TState>(ConfigureState,
+                (_, ct) => ComputeState(ct));
+
+    protected virtual void ConfigureState(ComputedState<TState>.Options options) { }
+    protected abstract Task<TState> ComputeState(CancellationToken cancellationToken);
+}
 ```
 
-As you see, it doesn't try to resolve the state via DI container, but
+It doesn't try to resolve the state via DI container, but
 constructs it using `IStateFactory` - and moreover:
 
 - It constructs a state that's computed using its own `ComputeState` method.
@@ -82,10 +119,17 @@ constructs it using `IStateFactory` - and moreover:
   it produces under the hood tracks all the dependencies and gets invalidated
   once any of them does, which triggers `Invalidated` event on a state, and
   consequently, `StateChanged` event on the component. And since we're using
-  `ILiveState` here, the state itself will use its `UpdateDelayer` to wait
+  `IComputedState` here, the state itself will use its `UpdateDelayer` to wait
   a bit and recompute itself using the same `ComputeState` method.
 - This state is configured by its own `ConfigureState` method -
   in particular, you can provide its initial value, `UpdateDelayer`, etc.
+- By default:
+  - Change of component parameters triggers state recomputation
+  - `ComputeState` call is synchronized (i.e. executed via Blazor's
+    `InvokeAsync`), so it's safe to access and modify component fields
+    there
+  - You can disable any of these options in component constructor
+    or `InitializeAsync`.
 
 So to have a component that automatically updates once the output of some
 Compute Service (or a set of such services) changes, all you need is to:
@@ -102,48 +146,53 @@ Note that it already computes a complex value using two compute methods
 ```cs
 protected override async Task<string> ComputeState(CancellationToken cancellationToken)
 {
-    var (count, changeTime) = await CounterService.GetCounterAsync().ConfigureAwait(false);
-    var momentsAgo = await CounterService.GetMomentsAgoAsync(changeTime).ConfigureAwait(false);
+    var (count, changeTime) = await CounterService.Get();
+    var momentsAgo = await Time.GetMomentsAgo(changeTime);
     return $"{count}, changed {momentsAgo}";
 }
 ```
 
-#### ComputedStateComponent&lt;T, TLocals&gt;
+## MixedStateComponent&lt;T, TLocals&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs))
 
-It's pretty common for live components to have its own (local) state
+It's pretty common for UI components to have its own (local) state
 (e.g. a text entered into a few form fields)
 and compute their `State` using some values from this local state -
-in other words, to have their `State` dependent on its local values.
+in other words, to have their `State` dependent on its local state.
 
 There are a few ways to enforce `State` recomputation in such cases:
 
-1. Just call `State.Invalidate()`. You may follow it with
-   `State.CancelUpdateDelay()` to trigger the recomputation
-   immediately (this is usually desirable for any change
-   triggered by user action, and local state changes are almost
-   always triggered by user action).
-2. Wrap full local state into e.g. `IMutableState<T> Locals` and use
-   it in `ComputeState` via `var locals = await Locals.Use()`.
-   As you might remember from [Part 3](./Part03.md), `Locals.Use`
-   is the same as `Locals.Computed.Use`, and it makes state
-   a dependency of what's computed now, so once `Locals` is changed,
+1. If all you use is component parameters, `State` recomputation
+   will happen automatically if `ComputedStateComponentOptions.RecomputeOnParametersSet` option is on (and that's the default).
+2. You may also use component fields and call `State.Recompute()`
+   to trigger its invalidation and recomputation w/o an update delay.
+   `State.Invalidate()` will work as well, but in this case the
+   recomputation will happen with usual update delay.
+3. Wrap full local state into e.g. `IMutableState<T> MutableState` and use
+   it in `ComputeState` via `var locals = await MutableState.Use()`.
+   As you might remember from [Part 3](./Part03.md), `MutableState.Use`
+   is the same as `MutableState.Computed.Use`, and it makes state
+   a dependency of what's computed now, so once `MutableState` gets changed,
    the recomputation of `State` will happen automatically.
-   Though if you need to cancel update delay in this case, it's going
-   to be a bit more complex.
-3. And finally, you can use `ComputedStateComponent<T, TLocals>`, which
-   takes the best of these two options and implements this :)
-   Check out [its source code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs#L23) -
-   it is about 15 LOC long and everything is absolutely straightforward there.
+   Though if you need to nullify the update delay in this case,
+   it's going to be a bit more complex.
+
+`MixedStateComponent<TState, TMutableState>` is a built-in implementation
+of option 3:
+
+- It assumes that `State` always depends on `MutableState`, so
+  you don't have to call `MutableState.Use()` inside `ComputeState`
+- Moreover, it calls `State.Recompute()` on `MutableState` changes,
+  so there is no update delay for this chain.
+
+Check out [its 30 lines of code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs) to see how it works.
 
 ## Real-time UI in Server-Side Blazor apps
 
 As you might guess, all you need is to:
 
 - Add your Compute Services to `IServiceProvider` used by ASP.NET Core
-- Inherit your own components from `ComputedStateComponent<T>` or
-  `ComputedStateComponent<T, TLocals>`, or just use `ILiveState<T>`
-  and / or `IMutableState<T>` there directly to ensure `StateHasChanged`
-  is called once the state gets recomputed.
+- Inherit your own components from `ComputedStateComponent<TState>` or
+  `MixedStateComponent<TState, TMutableState>`.
 
 Your server-side web host configuration should include at least these parts:
 
@@ -152,10 +201,6 @@ public void ConfigureServices(IServiceCollection services)
 {
     // Fusion services
     var fusion = services.AddFusion();
-    services.AddSingleton(c => new UpdateDelayer.Options() {
-        // Default update delayer options 
-        Delay = TimeSpan.FromSeconds(0.1),
-    });
 
     // Web
     services.AddRazorPages();
@@ -173,7 +218,6 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         endpoints.MapFallbackToPage("/_Host");
     });
 }
-
 ```
 
 ## Real-time UI in Blazor WebAssembly apps
@@ -240,17 +284,10 @@ public static Task Main(string[] args)
     ConfigureServices(builder.Services, builder);
     builder.RootComponents.Add<App>("app");
     var host = builder.Build();
-    var runTask = host.RunAsync();
-    
     // Blazor host doesn't start IHostedService-s by default,
     // so let's start them "manually" here
-    Task.Run(async () => {
-        var hostedServices = host.Services.GetService<IEnumerable<IHostedService>>();
-        foreach (var hostedService in hostedServices)
-            await hostedService.StartAsync(default);
-    });
-
-    return runTask;
+    host.Services.HostedServices().Start();
+    return host.RunAsync();
 }
 
 public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
@@ -272,10 +309,6 @@ public static void ConfigureServices(IServiceCollection services, WebAssemblyHos
             var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
             o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
         });
-    services.AddSingleton(c => new UpdateDelayer.Options() {
-        // Default update delayer options 
-        Delay = TimeSpan.FromSeconds(0.1),
-    });
 }
 ```
 
@@ -293,7 +326,7 @@ All you need is to:
   controller "exporting" it, and register its client via
   `fusionClient.AddReplicaService<IService, IClientDef>()` call.
 - Ensure the server can host Blazor components from the client
-  in SSB mode. You need to host Blazor hub + a bit  
+  in SSB mode. You need to host Blazor hub + a bit
   [tweaked _Host.cshtml](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Server/Pages/_Host.cshtml)
   capable of serving the HTML of the Blazor app for both modes.
 - Configure server to resolve any `IComputeService` to

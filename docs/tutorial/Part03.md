@@ -1,6 +1,6 @@
 # Part 3: State: IState&lt;T&gt; and Its flavors
 
-Video covering this part:
+Video covering this part (a bit outdated due to API changes):
 
 [<img src="./img/Part3-Screenshot.jpg" width="200"/>](https://youtu.be/9maSiI29kvI)
 
@@ -25,9 +25,9 @@ Ok, probably it's not quite clear what I just said, but remember that:
   state, there can be only one `Consistent` version of a computed value corresponding to the same computation at any given moment.
   Every other version (in fact, the older one) will be `Inconsistent`.
 
-So `IState<T>` is what "tracks" the most up-to-date version. There are a few flavors of it behaving slightly differently:
+So `IState<T>` is what "tracks" the most up-to-date version. There are two implementations of `IState<T>`:
 
-- `IMutableState<T>` is, in fact, a variable that got `IComputed<T>` envelope.
+- `IMutableState<T>` is, in fact, a variable with `IComputed<T>` envelope.
   It's `Computed` property returns always-consistent computed, which gets
   replaced once the `IMutableState.Value` (or `Error`, etc.) is set;
   the old computed gets invalidated.
@@ -35,27 +35,17 @@ So `IState<T>` is what "tracks" the most up-to-date version. There are a few fla
   to make its output dependent on it, or similarly use it in other
   computed state. But describing client-side state of UI components (e.g.
   a value entered into a search box) is its most frequent use case.
-- `IComputedState<T>` is ~ the opposite of mutable state, i.e. a state
-  that's computed rather than set externally. There is an abstract base
-  class corresponding to this interface, but all non-abstract
-  implementations of it also implement...
-- `ILiveState<T>` - a computed state that triggers its own recomputation
+- `IComputedState<T>` - a computed state that triggers its own recomputation
   (update) after the invalidation. And if you think what are the "levers"
   it might have, you'll quickly conclude the only option it needs to control
   is a delay between the invalidation and the update. And that's exactly
   what it offers - its `UpdateDelayer` property references `IUpdateDelayer`,
   which implements the delay. Moreover, any `IUpdateDelayer` also supports
   cancellation of any active delays.
-- Finally, there is `ILiveState<T, TLocals>` - a convenience interface
-  inheriting from `ILiveState<T>`, but also having `Locals` property of
-  `IMutableState<TLocals>` type. In other words, that's a live state
-  that's always "dependent" on its `Locals` variable, so once it changes,
-  the live state gets invalidated (and by default, gets updated immediately,
-  if it's due to `Locals` update).
 
 Let's summarize all of this in a single table:
 
-![](./img/IState-Features.jpg)
+![](./diagrams/state/states-table.dio.svg)
 
 And finally, states have a few extra properties:
 
@@ -75,21 +65,18 @@ And finally, states have a few extra properties:
   - Doing the same via `Snapshot.Computed` property ensures
     this can't happen.
 - Both `IState<T>` and `IStateSnapshot<T>` expose
-  `LastValue` and `LastValueComputed` properties - they
+  `LatestNonErrorValue` and `LatestNonErrorValueComputed` properties - they
   allow to access the last valid `Value` and its `IComputed<T>`
   exposed by the state. In other words, when state exposes
-  an `Error`, `LastValue` still exposes the previous `Value`.
+  an `Error`, `LatestNonErrorValue` still exposes the previous `Value`.
   This feature is quite handy when you need to access both
   the last "correct" value (to e.g. bind it to the UI)
   and the newly observed `Error` (to display it separately).
 
-The diagram describing all of this:
+The interface diagram for `IState<T>` and its "friends"
+(arrows with no label show inheritance):
 
-![](./img/IState-Classes.jpg)
-
-> Note that `<T>` absents on the diagram due to limitations of
-> [Mermaid.js](https://mermaid-js.github.io/mermaid/#/),
-> even though in reality all these interfaces have this parameter.
+![](./diagrams/state/states-classes.dio.svg)
 
 ## Constructing States
 
@@ -200,13 +187,13 @@ As you see, `Value` property throws an exception here &ndash;
 as per `IResult<T>` contract, it re-throws an exception stored
 in `Error`.
 
-The last "valid" value is still available via `LastValue` property;
+The last "valid" value is still available via `LatestNonErrorValue` property;
 similarly, the last "valid" computed instance is still available
-via `LastValueComputed`.
+via `LatestNonErrorValueComputed`.
 
-## Live State
+## Computed State
 
-Let's play with `ILiveState<T>` now:
+Let's play with `IComputedState<T>` now:
 
 ``` cs --region Part03_LiveState --source-file Part03.cs
 var services = CreateServices();
@@ -260,7 +247,7 @@ Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1
 
 Some observations:
 
-* New `ILiveState<T>` initially gets a default value
+* New `IComputedState<T>` initially gets a default value
   (the first "Updated: ..." output)
 * This value gets invalidated immediately (i.e. while
   `stateFactory.NewLive<T>(...)` runs)
