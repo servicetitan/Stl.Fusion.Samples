@@ -7,13 +7,15 @@ All Fusion packages are
 
 Your should reference:
 
-* [Stl.Fusion.Server](https://www.nuget.org/packages/Stl.Fusion.Server/) &ndash; from server-side assemblies
-* [Stl.Fusion.Client](https://www.nuget.org/packages/Stl.Fusion.Client/) &ndash; from client-side assemblies;
-  Blazor clients may reference [Stl.Fusion.Blazor](https://www.nuget.org/packages/Stl.Fusion.Blazor/) instead
-* [Stl.Fusion](https://www.nuget.org/packages/Stl.Fusion/) &ndash; from shared assemblies,
+* `Stl.Fusion.Server` &ndash; from server-side assemblies
+  * If you use .NET Framework 4.X, reference `Stl.Fusion.Server.NetFx` instead
+* `Stl.Fusion.Client` &ndash; from client-side assemblies;
+  * Blazor clients may reference `Stl.Fusion.Blazor` instead,
+    which references `Stl.Fusion.Client`
+* `Stl.Fusion` &ndash; from shared assemblies,
   i.e. the ones to be used on both sides.
-* [Stl.Fusion.EntityFramework](https://www.nuget.org/packages/Stl.Fusion.EntityFramework/) &ndash; from server-side assemblies,
-  if you plan to use [EF Core](https://docs.microsoft.com/en-us/ef/). Most likely you'll need some of helper types it provides.
+* `Stl.Fusion.EntityFramework` &ndash; from server-side assemblies,
+  if you plan to use [EF Core](https://docs.microsoft.com/en-us/ef/).
 
 The full list of Fusion packages:
 
@@ -38,6 +40,8 @@ The full list of Fusion packages:
   It implements server-side WebSocket endpoint allowing client-side counterpart to communicate
   with Fusion `Publisher`. In addition, it provides a base class for fusion API controllers
   (`FusionController`) and a few extension methods helping to register all of that in your web app.
+* [Stl.Fusion.Server.NetFx](https://www.nuget.org/packages/Stl.Fusion.Server.NetFx/) -
+  .NET Framework 4.X version of `Stl.Fusion.Server`.
 * [Stl.Fusion.Client](https://www.nuget.org/packages/Stl.Fusion.Client/) - depends on `Stl.Fusion` and `Stl.Net`.
   Implements a client-side WebSocket communication channel and
   [RestEase](https://github.com/canton7/RestEase) - based API client builder compatible with
