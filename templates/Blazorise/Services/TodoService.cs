@@ -9,7 +9,6 @@ using Templates.Blazor1.Abstractions;
 
 namespace Templates.Blazor1.Services
 {
-    [ComputeService(typeof(ITodoService))]
     public class TodoService : ITodoService
     {
         private readonly IKeyValueStore _keyValueStore;

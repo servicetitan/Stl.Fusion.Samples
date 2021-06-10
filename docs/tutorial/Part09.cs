@@ -21,16 +21,15 @@ namespace Tutorial
         }
 
         // Interface-based command handler
-        public class PrintCommandHandler : ICommandHandler<PrintCommand, Unit>, IDisposable
+        public class PrintCommandHandler : ICommandHandler<PrintCommand>, IDisposable
         {
             public PrintCommandHandler() => WriteLine("Creating PrintCommandHandler.");
             public void Dispose() => WriteLine("Disposing PrintCommandHandler");
 
-            public async Task<Unit> OnCommand(PrintCommand command, CommandContext<Unit> context, CancellationToken cancellationToken)
+            public async Task OnCommand(PrintCommand command, CommandContext context, CancellationToken cancellationToken)
             {
                 WriteLine(command.Message);
                 WriteLine("Sir, yes, sir!");
-                return default;
             }
         }
         #endregion

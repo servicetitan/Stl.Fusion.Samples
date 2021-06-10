@@ -7,8 +7,8 @@
 | `IMediatR.Send(command, cancellationToken)` | `ICommander.CallAsync(command, cancellationToken)`
 | `IRequest<TResult>` | `ICommand<TResult>`
 | `IRequest` | `ICommand<Unit>`
-| `IRequestHandler<TCommand, TResult>` | `ICommandHandler<TCommand, TResult>`
-| `IRequestHandler<TCommand, Unit>` | `ICommandHandler<TCommand, Unit>`
+| `IRequestHandler<TCommand, TResult>` | `ICommandHandler<TCommand>` - the result type is "encoded" in `TCommand` (which implements `ICommand<TResult>`) anyway
+| `IRequestHandler<TCommand, Unit>` | `ICommandHandler<TCommand>`
 | `RequestHandler<TCommand, Unit>` (synchronous) | No synchronous handlers: sorry, IMO they don't add enough value to justify having an extra set of interfaces for them
 | `INotification` | No special type for notifications: any command is allowed to have N filtering handlers, so all you need is to declare all of them but one as filters
 | Pipeline behaviors (`IPipelineBehavior<TRequest, TResponse>` & other types) | No special types for pipeline behaviors: any filtering handler is a pipeline behavior

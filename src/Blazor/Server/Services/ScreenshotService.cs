@@ -24,7 +24,6 @@ using Point = SixLabors.ImageSharp.Point;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputeService(typeof(IScreenshotService))]
     public class ScreenshotService : IScreenshotService
     {
         private const int MinWidth = 8;

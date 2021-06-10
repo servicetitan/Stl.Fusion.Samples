@@ -6,7 +6,6 @@ using Stl.Fusion;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputeService(typeof(ISumService))]
     public class SumService : ISumService
     {
         private readonly IMutableState<double> _accumulator;

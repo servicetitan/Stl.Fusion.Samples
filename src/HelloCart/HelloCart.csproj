@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.5" />
-    <PackageReference Include="Stl.Fusion.Client" Version="1.0.25" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="1.0.25" />
-    <PackageReference Include="Stl.Fusion.Server" Version="1.0.25" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.6" />
+    <PackageReference Include="Stl.Fusion.Client" Version="1.2.1" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="1.2.1" />
+    <PackageReference Include="Stl.Fusion.Server" Version="1.2.1" />
   </ItemGroup>
 </Project>

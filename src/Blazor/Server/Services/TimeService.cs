@@ -6,7 +6,6 @@ using Samples.Blazor.Abstractions;
 
 namespace Samples.Blazor.Server.Services
 {
-    [ComputeService(typeof(ITimeService))]
     public class TimeService : ITimeService
     {
         private readonly DateTime _startTime = DateTime.UtcNow;
