@@ -16,16 +16,16 @@
     [Parameter]
     public string CssClass { get; set; } = "";
 
-    enum BlazorModes
+    enum BlazorMode
     {
         Server,
         WASM
     }
 
-    private BlazorModes Mode = BlazorModeHelper.IsServerSideBlazor ? BlazorModes.Server : BlazorModes.WASM;
+    private BlazorMode Mode = BlazorModeHelper.IsServerSideBlazor ? BlazorMode.Server : BlazorMode.WASM;
 
     private void ChangeDropdownTitle()
-        => Mode = BlazorModeHelper.IsServerSideBlazor ? BlazorModes.Server : BlazorModes.WASM;
+        => Mode = BlazorModeHelper.IsServerSideBlazor ? BlazorMode.Server : BlazorMode.WASM;
 
     private void ChangeMode(bool isServerSideBlazor)
     {
