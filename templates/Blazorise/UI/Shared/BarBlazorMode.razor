@@ -7,29 +7,29 @@
         Blazor @Mode.ToString()
     </BarDropdownToggle>
     <BarDropdownMenu RightAligned="true">
-        <BarDropdownItem Active="IsServerSideBlazor" Clicked="@(() => ChangeMode(true))" >Server</BarDropdownItem>
-        <BarDropdownItem Active="!IsServerSideBlazor" Clicked="@(() => ChangeMode(false))">WebAssembly</BarDropdownItem>
+        <BarDropdownItem Active="IsServerSideBlazor" Clicked="@(() => ChangeMode(BlazorMode.Server))" >Server</BarDropdownItem>
+        <BarDropdownItem Active="!IsServerSideBlazor" Clicked="@(() => ChangeMode(BlazorMode.WASM))">WebAssembly</BarDropdownItem>
     </BarDropdownMenu>
 </BarDropdown>
 
 @code {
-    [Parameter]
-    public string CssClass { get; set; } = "";
-
     enum BlazorMode
     {
         Server,
         WASM
     }
 
+    [Parameter]
+    public string CssClass { get; set; } = "";
+
     private BlazorMode Mode = BlazorModeHelper.IsServerSideBlazor ? BlazorMode.Server : BlazorMode.WASM;
 
     private void ChangeDropdownTitle()
         => Mode = BlazorModeHelper.IsServerSideBlazor ? BlazorMode.Server : BlazorMode.WASM;
-
-    private void ChangeMode(bool isServerSideBlazor)
+    
+    private void ChangeMode(BlazorMode mode)
     {
-        BlazorModeHelper.ChangeMode(isServerSideBlazor);
+        BlazorModeHelper.ChangeMode(mode == BlazorMode.Server);
         ChangeDropdownTitle();
     }
 }
