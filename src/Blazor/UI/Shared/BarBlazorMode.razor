@@ -4,7 +4,7 @@
 
 <BarDropdown Class="@CssClass">
     <BarDropdownToggle Color="Color.Primary">
-        Blazor Mode
+        @DropdownTitle(isServerSideBlazor)
     </BarDropdownToggle>
     <BarDropdownMenu>
         <BarDropdownItem Active="IsServerSideBlazor" Clicked="@(() => ChangeMode(true))" >Server</BarDropdownItem>
@@ -16,6 +16,14 @@
     [Parameter]
     public string CssClass { get; set; } = "";
 
+    private bool isServerSideBlazor = BlazorModeHelper.IsServerSideBlazor;
+
+    private string DropdownTitle(bool isServerSideBlazor)
+        => isServerSideBlazor ? "Blazor Server" : "Blazor WASM";
+    
     private void ChangeMode(bool isServerSideBlazor)
-        => BlazorModeHelper.ChangeMode(isServerSideBlazor);
+    {
+        BlazorModeHelper.ChangeMode(isServerSideBlazor);
+        DropdownTitle(isServerSideBlazor);
+    }
 }
