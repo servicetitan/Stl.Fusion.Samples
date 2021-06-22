@@ -26,13 +26,6 @@
     </Content>
   </ItemGroup>
 
-<!--  <ItemGroup>-->
-<!--    <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css" />-->
-<!--    <_ContentIncludedByDefault Remove="wwwroot\css\bootstrap\bootstrap.min.css.map" />-->
-<!--    <_ContentIncludedByDefault Remove="Shared\MainLayout.razor" />-->
-<!--    <_ContentIncludedByDefault Remove="Shared\NavMenu.razor" />-->
-<!--  </ItemGroup>-->
-
   <ItemGroup>
     <ProjectReference Include="..\UI\UI.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
