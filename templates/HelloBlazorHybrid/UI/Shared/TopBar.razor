@@ -1,0 +1,21 @@
+@using System.Threading
+
+<Bar
+    Breakpoint="Breakpoint.Desktop"
+    Padding="Padding.Is1.Is3.FromRight"
+    Background="Background.Light"
+    ThemeContrast="ThemeContrast.Light">
+    <BarBrand>
+        <BarItem>
+            <BarLink Title="Home" To="/" Match="@Match.All" Class="link-unstyled">Fusion+Blazor Sample</BarLink>
+        </BarItem>
+    </BarBrand>
+    
+    <BarMenu>
+        <BarEnd>
+            <BarItem>
+                <BarBlazorMode/>
+            </BarItem>
+        </BarEnd>
+    </BarMenu>
+</Bar>

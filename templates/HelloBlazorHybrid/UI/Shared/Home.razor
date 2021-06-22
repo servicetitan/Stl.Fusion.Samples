@@ -1,0 +1,33 @@
+﻿@page "/"
+
+<Jumbotron>
+    <JumbotronTitle>Welcome!</JumbotronTitle>
+    <Paragraph>
+        This is HelloBlazorHybrid sample showing how to use Fusion with Server-Side Blazor and WASM.
+    </Paragraph>
+    
+    <Paragraph>
+        Choose the mode to use:<br/>
+        <BlazorModeSwitch/>
+    </Paragraph>
+    
+    <Paragraph>
+        Stl.Fusion.dll version: <code>@(typeof(IComputed).Assembly.GetName().Version)</code>
+    </Paragraph>
+    
+    <hr class="my-4">
+    
+    <Paragraph>
+        <Button Color="Color.Primary" Size="Size.Large"
+                To="https://forms.gle/TpGkmTZttukhDMRB6"
+                Type="ButtonType.Link"
+                Target="Target.Blank">
+            Share the feedback
+        </Button>
+    </Paragraph>
+
+    <Note Title="Note:">
+        you can also trigger actions in this sample via its
+        <a href="/swagger" target="_blank">web API</a>.
+    </Note>
+</Jumbotron>

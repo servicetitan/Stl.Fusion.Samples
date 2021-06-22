@@ -1,0 +1,81 @@
+﻿@page "/simpleChat"
+@using System.Threading
+@using HelloBlazorHybrid.Abstractions
+@using Stl.Fusion.Extensions
+@inherits ComputedStateComponent<(string Name, string Message, string Time)[]>
+@inject IChatService Chat
+@inject IFusionTime Time
+@inject NavigationManager Navigator
+
+@{
+    var state = State.LatestNonErrorValue ?? Array.Empty<(string, string, string)>();
+    var error = State.Error;
+}
+
+<h1>Simple Chat</h1>
+
+<div class="alert alert-primary">
+    Open this page in <a href="@Navigator.Uri" target="_blank">another window</a> to see it updates in sync.
+</div>
+@if (error != null) {
+    <div class="alert alert-warning" role="alert">Update error: @error.Message</div>
+}
+
+<table class="table table-sm table-striped">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Message</th>
+        <th scope="col">Time</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach (var (name, message, time) in state) {
+            <tr>
+                <td style="width: 15%; max-width: 20%">@name</td>
+                <td style="width: auto; min-width: 60%">@message</td>
+                <td style="width: 15%; max-width: 20%">@time</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form @onsubmit="@Post">
+<div class="input-group pb-3">
+<div class="input-group-prepend">
+    <input class="form-control" @bind-value="@Name" @bind-value:event="oninput" placeholder="Name" />
+</div>
+<input class="form-control" @bind-value="@Message" @bind-value:event="oninput" placeholder="Message" />
+<div class="input-group-append">
+    <button type="submit" class="btn btn-primary">Post</button>
+</div>
+</div>
+</form>
+
+@code {
+    private string Name { get; set; } = "Neo";
+    private string Message { get; set; } = "Red, please.";
+
+    protected override async Task OnInitializedAsync()
+        => await State.Update();
+    
+    protected override async Task<(string Name, string Message, string Time)[]> ComputeState(CancellationToken cancellationToken)
+    {
+        var messages = await Chat.GetMessagesAsync(20, cancellationToken);
+        var result = new List<(string Name, string Message, string Time)>();
+        foreach (var message in messages) {
+            var momentsAgo = await Time.GetMomentsAgo(message.Time);
+            result.Add((message.Name, message.Message, momentsAgo));
+        }
+        return result.ToArray();
+    }
+
+    private async Task Post()
+    {
+        if (Message == "")
+            return;
+        await Chat.PostMessageAsync(new(Name, Message));
+        Message = "";
+        await State.ApplyUserCausedUpdate();
+    }
+}

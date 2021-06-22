@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+<PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <RootNamespace>HelloBlazorHybrid.UI</RootNamespace>
+        <AssemblyName>HelloBlazorHybrid.UI</AssemblyName>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Blazorise" Version="0.9.3.7" />
+        <PackageReference Include="Blazorise.Bootstrap" Version="0.9.3.7" />
+        <PackageReference Include="Blazorise.DataGrid" Version="0.9.3.7" />
+        <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.3.7" />
+        <PackageReference Include="Blazorise.Sidebar" Version="0.9.3.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.6" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
+        <PackageReference Include="Pluralize.NET" Version="1.0.2" />
+        <PackageReference Include="Stl.Fusion.Blazor" Version="1.2.1" />
+        <PackageReference Include="UAParser" Version="3.1.47" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
+      <ProjectReference Include="..\Services\Services.csproj" />
+    </ItemGroup>
+
+</Project>
