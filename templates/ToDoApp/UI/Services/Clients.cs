@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using RestEase;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
-using Templates.Blazor1.Abstractions;
+using Templates.ToDoApp.Abstractions;
 
-namespace Templates.Blazor1.UI.Services
+namespace Templates.ToDoApp.UI.Services
 {
     [BasePath("todo")]
     public interface ITodoClientDef

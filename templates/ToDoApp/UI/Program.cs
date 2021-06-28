@@ -12,10 +12,10 @@ using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
-using Templates.Blazor1.Abstractions;
-using Templates.Blazor1.UI.Services;
+using Templates.ToDoApp.Abstractions;
+using Templates.ToDoApp.UI.Services;
 
-namespace Templates.Blazor1.UI
+namespace Templates.ToDoApp.UI
 {
     public class Program
     {

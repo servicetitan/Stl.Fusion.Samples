@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace Templates.Blazor1.Host
+namespace Templates.ToDoApp.Host
 {
     public class HostSettings
     {

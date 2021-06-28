@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Templates.Blazor1.Host;
-using Templates.Blazor1.Services;
+using Templates.ToDoApp.Host;
+using Templates.ToDoApp.Services;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureHostConfiguration(builder => {

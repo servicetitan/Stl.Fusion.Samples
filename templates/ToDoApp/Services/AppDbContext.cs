@@ -3,7 +3,7 @@ using Stl.Fusion.EntityFramework.Authentication;
 using Stl.Fusion.EntityFramework.Extensions;
 using Stl.Fusion.EntityFramework.Operations;
 
-namespace Templates.Blazor1.Services
+namespace Templates.ToDoApp.Services
 {
     public class AppDbContext : DbContext
     {

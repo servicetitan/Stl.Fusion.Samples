@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
-using Templates.Blazor1.Abstractions;
+using Templates.ToDoApp.Abstractions;
 
-namespace Templates.Blazor1.Services
+namespace Templates.ToDoApp.Services
 {
     public class TodoService : ITodoService
     {

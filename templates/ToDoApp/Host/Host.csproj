@@ -3,8 +3,8 @@
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>Templates.Blazor1.Host</RootNamespace>
-    <AssemblyName>Templates.Blazor1.Host</AssemblyName>
+    <RootNamespace>Templates.ToDoApp.Host</RootNamespace>
+    <AssemblyName>Templates.ToDoApp.Host</AssemblyName>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 

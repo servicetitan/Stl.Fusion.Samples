@@ -6,8 +6,8 @@
     <LangVersion>latest</LangVersion>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <OutputType>Library</OutputType>
-    <RootNamespace>Templates.Blazor1.Abstractions</RootNamespace>
-    <AssemblyName>Templates.Blazor1.Abstractions</AssemblyName>
+    <RootNamespace>Templates.ToDoApp.Abstractions</RootNamespace>
+    <AssemblyName>Templates.ToDoApp.Abstractions</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <OutputType>Library</OutputType>
-    <RootNamespace>Templates.Blazor1.Services</RootNamespace>
-    <AssemblyName>Templates.Blazor1.Services</AssemblyName>
+    <RootNamespace>Templates.ToDoApp.Services</RootNamespace>
+    <AssemblyName>Templates.ToDoApp.Services</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
