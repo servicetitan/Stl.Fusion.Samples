@@ -44,6 +44,9 @@
         @(closeWindowFlowName) completed, you can close this window.
     </div>
 } else if (!isServerSideBlazor) {
+    <app>
+        @(await Html.RenderComponentAsync<App>(RenderMode.WebAssembly, new { SessionId = sessionId }))
+    </app>
     <app id="app">
         <div class="position-absolute h-100 w-100 absolute-center">
             <div class="text-primary">
