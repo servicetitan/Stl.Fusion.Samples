@@ -12,6 +12,11 @@ namespace Templates.ToDoApp.Abstractions
     {
         public Todo() : this("", "") { }
     }
+    
+    public record TodoSummary(int Count, int DoneCount)
+    {
+        public TodoSummary() : this(0, 0) { }
+    }
 
     public record AddOrUpdateTodoCommand(Session Session, Todo Item) : ISessionCommand<Todo>
     {
@@ -34,5 +39,7 @@ namespace Templates.ToDoApp.Abstractions
         Task<Todo?> TryGet(Session session, string id, CancellationToken cancellationToken = default);
         [ComputeMethod]
         Task<Todo[]> List(Session session, PageRef<string> pageRef, CancellationToken cancellationToken = default);
+        [ComputeMethod]
+        Task<TodoSummary> GetSummary(Session session, CancellationToken cancellationToken = default);
     }
 }

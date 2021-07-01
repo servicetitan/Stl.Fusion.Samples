@@ -1,20 +1,18 @@
-@using System.Threading
 @using Stl.Fusion.Extensions
-@using Templates.ToDoApp.Abstractions
+@using System.Threading
 @inherits ComputedStateComponent<string>
-@inject IFusionTime LiveClock
+@inject IFusionTime _fusionTime
 
 <span class="@CssClass">@State.Value</span>
 
 @code {
     [Parameter]
     public string CssClass { get; set; } = "";
-
     [Parameter]
     public DateTime? Value { get; set; }
     [Parameter]
     public string None { get; set; } = "n/a";
 
     protected override Task<string> ComputeState(CancellationToken cancellationToken)
-        => Value.HasValue ? LiveClock.GetMomentsAgo(Value.Value) : Task.FromResult(None);
+        => Value.HasValue ? _fusionTime.GetMomentsAgo(Value.Value) : Task.FromResult(None);
 }

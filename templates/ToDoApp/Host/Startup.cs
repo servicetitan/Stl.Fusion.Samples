@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
 using Stl.DependencyInjection;
 using Stl.Fusion.EntityFramework;
+using Stl.Fusion.Extensions;
 using Stl.IO;
 using Templates.ToDoApp.Abstractions;
 
@@ -96,6 +97,7 @@ namespace Templates.ToDoApp.Host
 
             // Fusion services
             fusion.AddComputeService<ITodoService, TodoService>();
+            fusion.AddSandboxedKeyValueStore();
 
             // Registering shared services from the client
             UI.Program.ConfigureSharedServices(services);

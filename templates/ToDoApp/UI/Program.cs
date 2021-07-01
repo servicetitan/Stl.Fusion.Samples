@@ -13,7 +13,7 @@ using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
 using Templates.ToDoApp.Abstractions;
-using Templates.ToDoApp.UI.Services;
+using Templates.ToDoApp.Abstractions.Clients;
 
 namespace Templates.ToDoApp.UI
 {
@@ -36,6 +36,7 @@ namespace Templates.ToDoApp.UI
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
         {
             builder.Logging.SetMinimumLevel(LogLevel.Warning);
+            builder.Logging.AddFilter(typeof(App).Namespace, LogLevel.Information);
 
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
@@ -70,8 +71,8 @@ namespace Templates.ToDoApp.UI
             var fusion = services.AddFusion();
             fusion.AddFusionTime();
 
-            // Default update delay is 0.1s
-            services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
+            // Default update delay is 0.5s
+            services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.5));
         }
     }
 }

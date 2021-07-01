@@ -1,77 +1,68 @@
 @page "/todo"
-@using System.Threading
 @using Templates.ToDoApp.Abstractions
+@using System.Threading
 @inherits ComputedStateComponent<Todo[]>
 @inject ITodoService Todos
 @inject Session Session
 @inject CommandRunner CommandRunner
-@inject AuthStateProvider AuthStateProvider
+@inject ILogger<TodoPage> Log
 
 @{
-    Debug.WriteLine("Rendering TodoPage.");
+    Log.LogInformation("Rendering, State.Computed.Version = {Version}", State.Computed.Version);
     var error = State.Error;
-    var todos = State.LatestNonErrorValue ?? Array.Empty<Todo>();
+    var todos = State.ValueOrDefault ?? Array.Empty<Todo>(); // ValueOrDefault returns default if there is an Error
 }
 
 <h1>Todo List</h1>
 
-<StateOfStateBadge State="@State"/>
+<StateOfStateBadge State="@State" />
 <Text Margin="Margin.Is1.OnY">
-    Updated: <b><MomentsAgoBadge Value="LastStateUpdateTime"/></b>
+    Updated: <b><MomentsAgoBadge Value="LastStateUpdateTime" /></b>
+</Text>
+<Text Margin="Margin.Is1.OnY">
+    Call:
+    <Button Color="Color.Danger" Size="Size.Small" Clicked="_ => StateHasChanged()">StateHasChanged()</Button>
+    <Button Color="Color.Danger" Size="Size.Small" Clicked="_ => State.Invalidate()">State.Invalidate()</Button>
+    <Button Color="Color.Danger" Size="Size.Small" Clicked="_ => State.Recompute()">State.Recompute()</Button>
 </Text>
 
 <AuthorizeView>
     <NotAuthorized>
-        <SignInDropdown Why="to use this page"/>
+        <SignInDropdown Why="to use this page" />
     </NotAuthorized>
-    <Authorized><!--
-This comment is here solely to reset the indent in VS / Rider -->
+    <Authorized>
+        <WhenException Exception="error" />
+        <WhenCommandError Exception="CommandRunner.Error" />
+        <Row>
+            <Column ColumnSize="ColumnSize.Is6.OnDesktop.Is12.OnTablet">
+                <Paragraph>
+                    <TodoSummaryBadge/>
+                </Paragraph>
 
-<WhenException Exception="error"/>
-<WhenCommandError Exception="CommandRunner.Error"/>
+                @foreach (var todo in todos) {
+                    <TodoItemView @key="@todo.Id" Value="@todo" CommandRunner="@CommandRunner"/>
+                }
 
-<Row><Column ColumnSize="ColumnSize.Is6.OnDesktop.Is12.OnTablet">
-    @foreach(var todo in todos) {
-        <Addons Margin="Margin.Is3.OnY">
-            <Addon AddonType="AddonType.Start">
-                <AddonLabel>
-                    <Blazorise.Icon Name="@(todo.IsDone ? FontAwesomeIcons.CheckSquare : FontAwesomeIcons.Square)"
-                                    @onclick="_ => InvertDone(todo)" />
-                </AddonLabel>
-            </Addon>
-            <TextEdit TextChanged="text => UpdateTitle(todo, text)" ChangeTextOnKeyPress="false"
-                      Text="@todo.Title"/>
-            <Addon AddonType="AddonType.End">
-                <Button Clicked="_ => Remove(todo)" Color="Color.Warning">
-                    <Blazorise.Icon Name="FontAwesomeIcons.Minus"/>
-                </Button>
-            </Addon>
-        </Addons>
-    }
+                @if (HasMore) {
+                    <Button Clicked="_ => LoadMore()" Color="Color.Primary" Margin="Margin.Is3.OnY">
+                        Load @PageSize more <Blazorise.Icon Name="FontAwesomeIcons.AngleDoubleDown"/>
+                    </Button>
+                }
 
-    @if (HasMore) {
-        <Button Clicked="_ => LoadMore()" Color="Color.Primary" Margin="Margin.Is3.OnY">
-            Load more <Blazorise.Icon Name="FontAwesomeIcons.AngleDoubleDown"/>
-        </Button>
-    }
-
-    <Form @onsubmit="_ => Create()" Margin="Margin.Is3.OnY" >
-        <Addons>
-            <Addon AddonType="AddonType.Start">
-                <Button Type="@ButtonType.Submit" Color="Color.Primary">
-                    <Blazorise.Icon Name="@FontAwesomeIcons.PlusSquare"/>
-                </Button>
-            </Addon>
-            <input @bind="NewTodoTitle" @bind:event="onchange" class="form-control"/>
-        </Addons>
-    </Form>
-
-</Column></Row>
-
-<!--
- --></Authorized>
+                <Form @onsubmit="Create" Margin="Margin.Is3.OnY">
+                    <Addons>
+                        <Addon AddonType="AddonType.Start">
+                            <Button Type="@ButtonType.Submit" Color="Color.Primary">
+                                <Blazorise.Icon Name="@FontAwesomeIcons.PlusSquare"/>
+                            </Button>
+                        </Addon>
+                        <input @bind="NewTodoTitle" @bind:event="onchange" class="form-control"/>
+                    </Addons>
+                </Form>
+            </Column>
+        </Row>
+    </Authorized>
 </AuthorizeView>
-
 
 @code {
     private int PageSize { get; set; } = 5;
@@ -79,10 +70,10 @@ This comment is here solely to reset the indent in VS / Rider -->
     private string NewTodoTitle { get; set; } = "";
     private DateTime LastStateUpdateTime { get; set; } = DateTime.UtcNow;
     // AuthState property below seemingly does nothing, right?
-    // But try to comment out this line & sign-in + sign-out. See the error badge stays there for a while now?
+    // But try to comment out this line & sign-in + sign-out.
+    // See the error badge stays there for a while now?
     // Check your explanation on our Discord: https://discord.gg/EKEwv6d
-    [CascadingParameter]
-    protected Task<AuthState> AuthState { get; set; } = null!;
+    [CascadingParameter] protected Task<AuthState> AuthState { get; set; } = null!;
 
     protected override void OnInitialized()
     {
@@ -106,28 +97,10 @@ This comment is here solely to reset the indent in VS / Rider -->
         State.Recompute();
     }
 
-    private Task InvertDone(Todo todo)
-    {
-        todo = todo with { IsDone = !todo.IsDone };
-        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
-    }
-
-    private Task UpdateTitle(Todo todo, string title)
-    {
-        title = title.Trim();
-        if (todo.Title == title)
-            return Task.CompletedTask;
-        todo = todo with { Title = title };
-        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
-    }
-
-    private Task Remove(Todo todo)
-        => CommandRunner.Call(new RemoveTodoCommand(Session, todo.Id));
-
-    private Task Create()
+    private void Create()
     {
         var todo = new Todo("", NewTodoTitle);
         NewTodoTitle = "";
-        return CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
+        CommandRunner.Call(new AddOrUpdateTodoCommand(Session, todo));
     }
 }

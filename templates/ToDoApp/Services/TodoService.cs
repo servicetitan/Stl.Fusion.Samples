@@ -11,13 +11,13 @@ namespace Templates.ToDoApp.Services
 {
     public class TodoService : ITodoService
     {
-        private readonly IKeyValueStore _keyValueStore;
-        private readonly IServerSideAuthService _auth;
+        private readonly ISandboxedKeyValueStore _store;
+        private readonly IAuthService _authService;
 
-        public TodoService(IKeyValueStore keyValueStore, IServerSideAuthService auth)
+        public TodoService(ISandboxedKeyValueStore keyValueStore, IAuthService auth)
         {
-            _keyValueStore = keyValueStore;
-            _auth = auth;
+            _store = keyValueStore;
+            _authService = auth;
         }
 
         // Commands
@@ -26,13 +26,26 @@ namespace Templates.ToDoApp.Services
         {
             if (Computed.IsInvalidating()) return default!;
             var (session, todo) = command;
-            var user = await _auth.GetUser(session, cancellationToken);
+            var user = await _authService.GetUser(session, cancellationToken);
             user.MustBeAuthenticated();
 
+            Todo? oldTodo = null;
+            if (string.IsNullOrWhiteSpace(todo.Title))
+                return null;
             if (string.IsNullOrEmpty(todo.Id))
                 todo = todo with { Id = Ulid.NewUlid().ToString() };
+            else
+                oldTodo = await TryGet(session, todo.Id, cancellationToken);
+
             var key = GetTodoKey(user, todo.Id);
-            await _keyValueStore.Set(key, todo, cancellationToken);
+            await _store.Set(session, key, todo, cancellationToken);
+            if (oldTodo?.IsDone != todo.IsDone) {
+                var doneKey = GetDoneKey(user, todo.Id);
+                if (todo.IsDone)
+                    await _store.Set(session, doneKey, true, cancellationToken);
+                else
+                    await _store.Remove(session, doneKey, cancellationToken);
+            }
             return todo;
         }
 
@@ -40,43 +53,59 @@ namespace Templates.ToDoApp.Services
         {
             if (Computed.IsInvalidating()) return;
             var (session, id) = command;
-            var user = await _auth.GetUser(session, cancellationToken);
+            var user = await _authService.GetUser(session, cancellationToken);
             user.MustBeAuthenticated();
 
             var key = GetTodoKey(user, id);
-            await _keyValueStore.Remove(key, cancellationToken);
+            var doneKey = GetDoneKey(user, id);
+            await _store.Remove(session, key, cancellationToken);
+            await _store.Remove(session, doneKey, cancellationToken);
         }
 
         // Queries
 
         public virtual async Task<Todo?> TryGet(Session session, string id, CancellationToken cancellationToken = default)
         {
-            var user = await _auth.GetUser(session, cancellationToken);
+            var user = await _authService.GetUser(session, cancellationToken);
             user.MustBeAuthenticated();
 
             var key = GetTodoKey(user, id);
-            var todoOpt = await _keyValueStore.TryGet<Todo>(key, cancellationToken);
+            var todoOpt = await _store.TryGet<Todo>(session, key, cancellationToken);
             return todoOpt.IsSome(out var todo) ? todo : null;
         }
 
         public virtual async Task<Todo[]> List(Session session, PageRef<string> pageRef, CancellationToken cancellationToken = default)
         {
-            var user = await _auth.GetUser(session, cancellationToken);
+            var user = await _authService.GetUser(session, cancellationToken);
             user.MustBeAuthenticated();
 
             var keyPrefix = GetTodoKeyPrefix(user);
-            var keySuffixes = await _keyValueStore.ListKeySuffixes(keyPrefix, pageRef, cancellationToken);
-            var tasks = keySuffixes.Select(suffix => _keyValueStore.TryGet<Todo>(keyPrefix + suffix, cancellationToken));
+            var keySuffixes = await _store.ListKeySuffixes(session, keyPrefix, pageRef, cancellationToken);
+            var tasks = keySuffixes.Select(suffix => _store.TryGet<Todo>(session, keyPrefix + suffix, cancellationToken));
             var todoOpts = await Task.WhenAll(tasks);
             return todoOpts.Where(todo => todo.HasValue).Select(todo => todo.Value).ToArray();
+        }
+        
+        public virtual async Task<TodoSummary> GetSummary(Session session, CancellationToken cancellationToken = default)
+        {
+            var user = await _authService.GetUser(session, cancellationToken);
+            user.MustBeAuthenticated();
+
+            var count = await _store.Count(session, GetTodoKeyPrefix(user), cancellationToken);
+            var doneCount = await _store.Count(session, GetDoneKeyPrefix(user), cancellationToken);
+            return new TodoSummary(count, doneCount);
         }
 
         // Private methods
 
         private string GetTodoKey(User user, string id)
             => $"{GetTodoKeyPrefix(user)}/{id}";
+        private string GetDoneKey(User user, string id)
+            => $"{GetDoneKeyPrefix(user)}/{id}";
 
         private string GetTodoKeyPrefix(User user)
             => $"@user/{user.Id}/todo/items";
+        private string GetDoneKeyPrefix(User user)
+            => $"@user/{user.Id}/todo/done";
     }
 }
