@@ -1,10 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using HelloBlazorHybrid.Abstractions;
 using Microsoft.AspNetCore.Mvc;
+using Samples.HelloBlazorHybrid.Abstractions;
 using Stl.Fusion.Server;
 
-namespace HelloBlazorHybrid.Server.Controllers
+namespace Samples.HelloBlazorHybrid.Server.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]

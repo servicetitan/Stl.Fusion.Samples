@@ -1,6 +1,6 @@
 using System;
 
-namespace HelloBlazorHybrid.Abstractions
+namespace Samples.HelloBlazorHybrid.Abstractions
 {
     public class WeatherForecast
     {

@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using HelloBlazorHybrid.Abstractions;
-using HelloBlazorHybrid.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
@@ -15,22 +13,19 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Stl.DependencyInjection;
+using Samples.HelloBlazorHybrid.Abstractions;
+using Samples.HelloBlazorHybrid.Services;
 using Stl.Fusion;
-using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
-using Stl.Fusion.Bridge;
-using Stl.Fusion.Client;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.Server;
 
-namespace HelloBlazorHybrid.Server
+namespace Samples.HelloBlazorHybrid.Server
 {
     public class Startup
     {
         private IConfiguration Cfg { get; }
         private IWebHostEnvironment Env { get; }
-        private ServerSettings ServerSettings { get; set; } = null!;
         private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
 
         public Startup(IConfiguration cfg, IWebHostEnvironment environment)
@@ -49,39 +44,32 @@ namespace HelloBlazorHybrid.Server
                 if (Env.IsDevelopment()) {
                     logging.AddFilter("Microsoft", LogLevel.Warning);
                     logging.AddFilter("Microsoft.AspNetCore.Hosting", LogLevel.Information);
-                    logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
                     logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
                 }
             });
 
-            // Creating Log and ServerSettings as early as possible
-            services.AddSettings<ServerSettings>("Server");
-            
 #pragma warning disable ASP0000
             var tmpServices = services.BuildServiceProvider();
 #pragma warning restore ASP0000
             Log = tmpServices.GetRequiredService<ILogger<Startup>>();
-            ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
 
             // Fusion
-            var fusion = services.AddFusion().AddFusionTime();
-            var fusionClient = fusion.AddRestEaseClient();
+            var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
-            services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
-            services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
+            fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
             services.AddScoped<BlazorModeHelper>();
-            
+
             // Fusion services
             fusion.AddComputeService<ICounterService, CounterService>();
             fusion.AddComputeService<IWeatherForecastService, WeatherForecastService>();
             fusion.AddComputeService<IChatService, ChatService>();
             fusion.AddComputeService<ChatBotService>();
-            
+            // This is just to make sure ChatBotService.StartAsync is called on startup
             services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
 
             // Shared UI services
             UI.Program.ConfigureSharedServices(services);
-            
+
             // Web
             services.Configure<ForwardedHeadersOptions>(options => {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -91,7 +79,7 @@ namespace HelloBlazorHybrid.Server
             services.AddRouting();
             services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
             services.AddServerSideBlazor(o => o.DetailedErrors = true);
-            
+
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
@@ -102,14 +90,6 @@ namespace HelloBlazorHybrid.Server
 
         public void Configure(IApplicationBuilder app, ILogger<Startup> log)
         {
-            if (ServerSettings.AssumeHttps) {
-                Log.LogInformation("AssumeHttps on");
-                app.Use((context, next) => {
-                    context.Request.Scheme = "https";
-                    return next();
-                });
-            }
-
             // This server serves static content from Blazor Client,
             // and since we don't copy it to local wwwroot,
             // we need to find Client's wwwroot in bin/(Debug/Release) folder

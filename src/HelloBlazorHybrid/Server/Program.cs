@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration.Memory;
-using HelloBlazorHybrid.Server;
+using Samples.HelloBlazorHybrid.Server;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureHostConfiguration(builder => {

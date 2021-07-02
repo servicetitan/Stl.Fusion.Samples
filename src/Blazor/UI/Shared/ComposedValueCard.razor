@@ -1,6 +1,3 @@
-@using Pluralize.NET
-@inject IPluralize Pluralize
-
 <Card Class="@CssClass">
     <CardHeader>@Title</CardHeader>
     <CardBody>
@@ -15,7 +12,7 @@
                 @{
                     var uptime = (int) Source.Uptime.TotalSeconds;
                 }
-                <td>@Pluralize.Format("second", uptime, true)</td>
+                <td>@(uptime)s</td>
             </tr>
             <tr>
                 <td>Acc.+Parameter:</td>

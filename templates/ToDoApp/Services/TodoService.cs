@@ -5,19 +5,19 @@ using System.Threading.Tasks;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
-using Templates.ToDoApp.Abstractions;
+using Templates.TodoApp.Abstractions;
 
-namespace Templates.ToDoApp.Services
+namespace Templates.TodoApp.Services
 {
     public class TodoService : ITodoService
     {
         private readonly ISandboxedKeyValueStore _store;
         private readonly IAuthService _authService;
 
-        public TodoService(ISandboxedKeyValueStore keyValueStore, IAuthService auth)
+        public TodoService(ISandboxedKeyValueStore store, IAuthService authService)
         {
-            _store = keyValueStore;
-            _authService = auth;
+            _store = store;
+            _authService = authService;
         }
 
         // Commands
@@ -30,8 +30,6 @@ namespace Templates.ToDoApp.Services
             user.MustBeAuthenticated();
 
             Todo? oldTodo = null;
-            if (string.IsNullOrWhiteSpace(todo.Title))
-                return null;
             if (string.IsNullOrEmpty(todo.Id))
                 todo = todo with { Id = Ulid.NewUlid().ToString() };
             else
@@ -85,7 +83,7 @@ namespace Templates.ToDoApp.Services
             var todoOpts = await Task.WhenAll(tasks);
             return todoOpts.Where(todo => todo.HasValue).Select(todo => todo.Value).ToArray();
         }
-        
+
         public virtual async Task<TodoSummary> GetSummary(Session session, CancellationToken cancellationToken = default)
         {
             var user = await _authService.GetUser(session, cancellationToken);

@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.Server;
-using Templates.ToDoApp.Abstractions;
+using Templates.TodoApp.Abstractions;
 
-namespace Templates.ToDoApp.Host.Controllers
+namespace Templates.TodoApp.Host.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController, JsonifyErrors]
@@ -53,7 +53,7 @@ namespace Templates.ToDoApp.Host.Controllers
             session ??= _sessionResolver.Session;
             return _todos.List(session, pageRef, cancellationToken);
         }
-        
+
         [HttpGet, Publish]
         public Task<TodoSummary> GetSummary(Session? session, CancellationToken cancellationToken = default)
         {

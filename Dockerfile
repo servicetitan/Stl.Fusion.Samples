@@ -45,6 +45,11 @@ FROM build as sample_hello_blazor_server
 WORKDIR /samples/src/HelloBlazorServer
 ENTRYPOINT ["dotnet", "bin/Debug/net5.0/Samples.HelloBlazorServer.dll"]
 
+# Create HelloBlazorHybrid sample image
+FROM build as sample_hello_blazor_hybrid
+WORKDIR /samples/src/HelloBlazorHybrid/Server
+ENTRYPOINT ["dotnet", "bin/Debug/net5.0/Samples.HelloBlazorHybrid.Server.dll"]
+
 # Create Blazor sample image
 FROM build as sample_blazor
 WORKDIR /samples/src/Blazor/Server

@@ -12,10 +12,10 @@ using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
-using Templates.ToDoApp.Abstractions;
-using Templates.ToDoApp.Abstractions.Clients;
+using Templates.TodoApp.Abstractions;
+using Templates.TodoApp.Abstractions.Clients;
 
-namespace Templates.ToDoApp.UI
+namespace Templates.TodoApp.UI
 {
     public class Program
     {
@@ -26,9 +26,7 @@ namespace Templates.ToDoApp.UI
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             ConfigureServices(builder.Services, builder);
-            builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
-
             host.Services.HostedServices().Start();
             return host.RunAsync();
         }
@@ -41,22 +39,20 @@ namespace Templates.ToDoApp.UI
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");
 
-            // Fusion
-            var fusion = services.AddFusion();
-            var fusionClient = fusion.AddRestEaseClient(
-                (c, o) => {
-                    o.BaseUri = baseUri;
-                    o.IsLoggingEnabled = true;
-                    o.IsMessageLoggingEnabled = false;
-                }).ConfigureHttpClientFactory(
-                (c, name, o) => {
-                    var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-                    var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-                    o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-                });
-            var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
-
             // Fusion services
+            var fusion = services.AddFusion();
+            var fusionClient = fusion.AddRestEaseClient((_, o) => {
+                o.BaseUri = baseUri;
+                o.IsLoggingEnabled = true;
+                o.IsMessageLoggingEnabled = false;
+            });
+            fusionClient.ConfigureHttpClientFactory((c, name, o) => {
+                var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
+                var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
+                o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
+            });
+            fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
+
             fusionClient.AddReplicaService<ITodoService, ITodoClientDef>();
 
             ConfigureSharedServices(services);

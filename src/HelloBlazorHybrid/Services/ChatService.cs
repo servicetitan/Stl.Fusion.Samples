@@ -8,7 +8,7 @@ using Stl.Async;
 using Stl.CommandR.Configuration;
 using Stl.Fusion;
 
-namespace HelloBlazorHybrid.Abstractions
+namespace Samples.HelloBlazorHybrid.Abstractions
 {
     public class ChatService : IChatService
     {

@@ -3,11 +3,10 @@ using System.Threading.Tasks;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
-using HelloBlazorHybrid.Abstractions;
-using HelloBlazorHybrid.UI.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Samples.HelloBlazorHybrid.Abstractions;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
@@ -15,7 +14,7 @@ using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
 
-namespace HelloBlazorHybrid.UI
+namespace Samples.HelloBlazorHybrid.UI
 {
     public class Program
     {
@@ -53,11 +52,11 @@ namespace HelloBlazorHybrid.UI
                     o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
                 });
             services.AddSingleton<BlazorModeHelper>();
-            
-            //Fusion services
-            fusionClient.AddReplicaService<ICounterService, ICounterClient>();
-            fusionClient.AddReplicaService<IWeatherForecastService, IWeatherForecastClient>();
-            fusionClient.AddReplicaService<IChatService, IChatClient>();
+
+            // Fusion service clients
+            fusionClient.AddReplicaService<ICounterService, ICounterClientDef>();
+            fusionClient.AddReplicaService<IWeatherForecastService, IWeatherForecastClientDef>();
+            fusionClient.AddReplicaService<IChatService, IChatClientDef>();
 
             ConfigureSharedServices(services);
         }

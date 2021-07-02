@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Stl.Fusion;
 
-namespace HelloBlazorHybrid.Abstractions
+namespace Samples.HelloBlazorHybrid.Abstractions
 {
     public interface ICounterService
     {

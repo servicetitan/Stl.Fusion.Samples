@@ -14,7 +14,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
-using Templates.ToDoApp.Services;
+using Templates.TodoApp.Services;
+using Stl.DependencyInjection;
 using Stl.Fusion;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
@@ -22,13 +23,13 @@ using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
-using Stl.DependencyInjection;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Extensions;
 using Stl.IO;
-using Templates.ToDoApp.Abstractions;
+using Templates.TodoApp.Abstractions;
+using Templates.TodoApp.UI;
 
-namespace Templates.ToDoApp.Host
+namespace Templates.TodoApp.Host
 {
     public class Startup
     {
@@ -49,26 +50,30 @@ namespace Templates.ToDoApp.Host
             services.AddLogging(logging => {
                 logging.ClearProviders();
                 logging.AddConsole();
-                logging.SetMinimumLevel(LogLevel.Information);
+                logging.SetMinimumLevel(LogLevel.Warning);
                 if (Env.IsDevelopment()) {
+                    logging.AddFilter(typeof(App).Namespace, LogLevel.Information);
+                    logging.AddFilter("Microsoft.AspNetCore.Hosting", LogLevel.Information);
                     logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
                     logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
                 }
             });
 
-            // Creating Log and HostSettings as early as possible
-            services.AddSettings<HostSettings>("Host");
-#pragma warning disable ASP0000
-            var tmpServices = services.BuildServiceProvider();
-#pragma warning restore ASP0000
-            Log = tmpServices.GetRequiredService<ILogger<Startup>>();
-            HostSettings = tmpServices.GetRequiredService<HostSettings>();
+            services.AddSettings<HostSettings>();
+            #pragma warning disable ASP0000
+            HostSettings = services.BuildServiceProvider().GetRequiredService<HostSettings>();
+            #pragma warning restore ASP0000
 
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
             services.AddDbContextFactory<AppDbContext>(builder => {
-                builder.UseSqlite($"Data Source={dbPath}", sqlite => { });
+                if (!string.IsNullOrEmpty(HostSettings.UseSqlServer))
+                    builder.UseSqlServer(HostSettings.UseSqlServer);
+                else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql))
+                    builder.UseNpgsql(HostSettings.UsePostgreSql);
+                else
+                    builder.UseSqlite($"Data Source={dbPath}");
                 if (Env.IsDevelopment())
                     builder.EnableSensitiveDataLogging();
             });
@@ -79,28 +84,30 @@ namespace Templates.ToDoApp.Host
                     // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
                 });
-                b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
+                var operationLogChangeAlertPath = dbPath + "_changed";
+                b.AddFileBasedDbOperationLogChangeTracking(operationLogChangeAlertPath);
                 if (!HostSettings.UseInMemoryAuthService)
                     b.AddDbAuthentication();
                 b.AddKeyValueStore();
             });
 
-            // Fusion
+            // Fusion services
+            services.AddSingleton(new Publisher.Options() { Id = HostSettings.PublisherId });
             var fusion = services.AddFusion();
             var fusionServer = fusion.AddWebServer();
             var fusionClient = fusion.AddRestEaseClient();
             var fusionAuth = fusion.AddAuthentication().AddServer(
                 signInControllerOptionsBuilder: (_, options) => {
                     options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
+                },
+                authHelperOptionsBuilder: (_, options) => {
+                    options.NameClaimKeys = Array.Empty<string>();
                 });
-            services.AddSingleton(new Publisher.Options() { Id = HostSettings.PublisherId });
-
-            // Fusion services
             fusion.AddComputeService<ITodoService, TodoService>();
             fusion.AddSandboxedKeyValueStore();
 
-            // Registering shared services from the client
-            UI.Program.ConfigureSharedServices(services);
+            // Shared services
+            Program.ConfigureSharedServices(services);
 
             // ASP.NET Core authentication providers
             services.AddAuthentication(options => {
@@ -134,7 +141,7 @@ namespace Templates.ToDoApp.Host
             // Swagger & debug tools
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo {
-                    Title = "Templates.ToDoApp API", Version = "v1"
+                    Title = "Templates.TodoApp API", Version = "v1"
                 });
             });
         }

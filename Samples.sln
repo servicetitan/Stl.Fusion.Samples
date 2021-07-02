@@ -36,7 +36,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloCommandR", "src\HelloC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{A0720149-962C-4F9E-A128-9EF0846D5393}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToDoApp", "ToDoApp", "{073BAF33-E1DA-4285-B19B-F81887226006}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoApp", "TodoApp", "{073BAF33-E1DA-4285-B19B-F81887226006}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelloBlazorHybrid", "HelloBlazorHybrid", "{ABFD1214-E544-44FC-A46E-7EE97AB1C20C}"
 EndProject
@@ -48,15 +48,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "src\HelloBlazor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "src\HelloBlazorHybrid\UI\UI.csproj", "{E315EAF4-CB2E-45E3-B2BC-B441496D00EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "templates\ToDoApp\Abstractions\Abstractions.csproj", "{CD93D545-2A82-4516-97D4-8199E8CB1F08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "templates\TodoApp\Abstractions\Abstractions.csproj", "{CD93D545-2A82-4516-97D4-8199E8CB1F08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host", "templates\ToDoApp\Host\Host.csproj", "{B46D36D6-55D6-415D-96C6-09ED35F2F81B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host", "templates\TodoApp\Host\Host.csproj", "{B46D36D6-55D6-415D-96C6-09ED35F2F81B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "templates\ToDoApp\Services\Services.csproj", "{98DCD971-C0DF-431F-835C-E5D0DF687EED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "templates\TodoApp\Services\Services.csproj", "{98DCD971-C0DF-431F-835C-E5D0DF687EED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "templates\ToDoApp\UI\UI.csproj", "{E588BED4-BCB1-42EB-919C-86BEE9B65DEF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "templates\TodoApp\UI\UI.csproj", "{E588BED4-BCB1-42EB-919C-86BEE9B65DEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClient", "templates\ToDoApp\ConsoleClient\ConsoleClient.csproj", "{737D73AF-F2FE-4C46-A99A-F7B3A884BAD4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClient", "templates\TodoApp\ConsoleClient\ConsoleClient.csproj", "{737D73AF-F2FE-4C46-A99A-F7B3A884BAD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

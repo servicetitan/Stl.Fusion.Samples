@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Client;
-using Templates.ToDoApp.Abstractions;
-using Templates.ToDoApp.Abstractions.Clients;
+using Templates.TodoApp.Abstractions;
+using Templates.TodoApp.Abstractions.Clients;
 using static System.Console;
 
 Write("Enter SessionId to use: ");

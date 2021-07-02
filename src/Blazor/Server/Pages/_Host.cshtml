@@ -42,21 +42,11 @@
     <div class="alert alert-primary">
         @(closeWindowFlowName) completed, you can close this window.
     </div>
-} else if (!isServerSideBlazor) {
-    <app id="app">Loading...</app>
-
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-
-    <partial name="Blazorise.Body" />
-    <script type="module" src="./js/app.js"></script>
-    <script src="_framework/blazor.webassembly.js"></script>
 } else {
-    <app>
-        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered, new { SessionId = sessionId }))
+    <app id="app">
+        @(await Html.RenderComponentAsync<App>(
+            isServerSideBlazor ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
+            new { SessionId = sessionId }))
     </app>
 
     <div id="blazor-error-ui">
@@ -72,7 +62,7 @@
 
     <partial name="Blazorise.Body" />
     <script type="module" src="./js/app.js"></script>
-    <script src="_framework/blazor.server.js"></script>
+    <script src="_framework/blazor.@(isServerSideBlazor ? "server" : "webassembly").js"></script>
 }
 </body>
 </html>

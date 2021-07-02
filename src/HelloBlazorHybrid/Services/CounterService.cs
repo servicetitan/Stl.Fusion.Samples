@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
-using HelloBlazorHybrid.Abstractions;
+using Samples.HelloBlazorHybrid.Abstractions;
 using Stl.Fusion;
 
-namespace HelloBlazorHybrid.Services
+namespace Samples.HelloBlazorHybrid.Services
 {
     public class CounterService : ICounterService
     {

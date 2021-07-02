@@ -3,12 +3,11 @@ using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using RestEase;
-using HelloBlazorHybrid.Abstractions;
 
-namespace HelloBlazorHybrid.UI.Services
+namespace Samples.HelloBlazorHybrid.Abstractions
 {
     [BasePath("counter")]
-    public interface ICounterClient
+    public interface ICounterClientDef
     {
         [Post("increment")]
         Task Increment(CancellationToken cancellationToken = default);
@@ -18,18 +17,18 @@ namespace HelloBlazorHybrid.UI.Services
     }
 
     [BasePath("weatherForecast")]
-    public interface IWeatherForecastClient
+    public interface IWeatherForecastClientDef
     {
         [Get("getForecast")]
         Task<WeatherForecast[]> GetForecastAsync(DateTime startDate, CancellationToken cancellationToken = default);
     }
 
     [BasePath("chat")]
-    public interface IChatClient
+    public interface IChatClientDef
     {
         [Post("postMessage")]
         Task PostMessageAsync([Body] IChatService.PostCommand command, CancellationToken cancellationToken = default);
-        
+
         [Get("getMessageCount")]
         Task<int> GetMessageCountAsync();
 

@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Templates.ToDoApp.Host;
-using Templates.ToDoApp.Services;
+using Templates.TodoApp.Host;
+using Templates.TodoApp.Services;
 
 var host = Host.CreateDefaultBuilder()
     .ConfigureHostConfiguration(builder => {
@@ -29,7 +29,7 @@ var host = Host.CreateDefaultBuilder()
 // Ensure the DB is created
 var dbContextFactory = host.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
 await using var dbContext = dbContextFactory.CreateDbContext();
-await dbContext.Database.EnsureDeletedAsync();
+// await dbContext.Database.EnsureDeletedAsync();
 await dbContext.Database.EnsureCreatedAsync();
 
 await host.RunAsync();

@@ -46,7 +46,7 @@ play with `HelloCart` first. It is also a sample covered
 in [QuickStart part](docs/tutorial/QuickStart.md) 
 of the [Fusion Tutorial].
 
-### 2. HelloBlazorServer Sample
+### 2. HelloBlazorServer and HelloBlazorHybrid Samples
 
 [HelloBlazorServer] is the default Blazor Server App 
 modified to reveal some Fusion powers. Contrary to the original app:
@@ -61,6 +61,9 @@ If you're curious how big is the difference between the code of
 these samples and a similar code without any real-time
 features, 
 [check out this part of Fusion README.md](https://github.com/servicetitan/Stl.Fusion#enough-talk---lets-fight-show-me-the-code).
+
+[HelloBlazorHybrid] is the same sample, but modified to support both
+Blazor Server and Blazor WebAssembly modes.
 
 ### 3. Blazor Samples
 
@@ -164,7 +167,8 @@ dotnet build
 |-|-|
 | [HelloCart] | `dotnet run -p src/HelloCart/HelloCart.csproj` |
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
-| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5000/ |
+| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5005/ |
+| [HelloBlazorHybrid] |  `dotnet run --project src/HelloBlazorHybrid/Server/Server.csproj` + open http://localhost:5005/ |
 | [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
 | [Caching] | `Run-Sample-Caching.cmd`. See [Run-Sample-Caching.cmd](Run-Sample-Caching.cmd) to run this sample on Unix. |
 | [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
@@ -181,7 +185,8 @@ docker-compose build
 |-|-|
 | [HelloCart] | `docker-compose run sample_hello_cart dotnet Samples.HelloCart.dll` |
 | [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
-| [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5000/ |
+| [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5005/ |
+| [HelloBlazorHybrid] | `docker-compose run --service-ports sample_hello_blazor_hybrid` + open http://localhost:5005/ |
 | [Blazor Samples] | `docker-compose run --service-ports sample_blazor` + open http://localhost:5005/ |
 | [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
 | [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
@@ -204,6 +209,7 @@ please help us to make it better by completing [Fusion Feedback Form]
 [HelloCart]: src/HelloCart
 [HelloWorld]: src/HelloWorld
 [HelloBlazorServer]: src/HelloBlazorServer
+[HelloBlazorHybrid]: src/HelloBlazorHybrid
 [Blazor Samples]: src/Blazor
 [Caching]: src/Caching
 [Tutorial]: docs/tutorial/README.md

@@ -1,29 +1,37 @@
 @using Stl.OS
 @using System.Web
+@using System.Reflection
 @inject BlazorModeHelper BlazorModeHelper
+@inject IJSRuntime JSRuntime
 
 <BarDropdown Class="@CssClass">
-    <BarDropdownToggle Color="Color.Primary">
-        @DropdownTitle(isServerSideBlazor)
-    </BarDropdownToggle>
-    <BarDropdownMenu>
-        <BarDropdownItem Active="IsServerSideBlazor" Clicked="@(() => ChangeMode(true))" >Server</BarDropdownItem>
-        <BarDropdownItem Active="!IsServerSideBlazor" Clicked="@(() => ChangeMode(false))">WebAssembly</BarDropdownItem>
+    <BarDropdownToggle>@(_isPrerendering ? "Loading..." : GetModeName(_isServerSideBlazor))</BarDropdownToggle>
+    <BarDropdownMenu RightAligned="true">
+        @foreach(var mode in new [] {true, false}) {
+            <BarDropdownItem Clicked="@(() => BlazorModeHelper.ChangeMode(mode))">@GetModeName(mode)</BarDropdownItem>
+        }
     </BarDropdownMenu>
 </BarDropdown>
 
 @code {
+    private bool _isPrerendering;
+    private bool _isServerSideBlazor = BlazorModeHelper.IsServerSideBlazor;
+
     [Parameter]
     public string CssClass { get; set; } = "";
 
-    private bool isServerSideBlazor = BlazorModeHelper.IsServerSideBlazor;
-
-    private string DropdownTitle(bool isServerSideBlazor)
-        => isServerSideBlazor ? "Blazor Server" : "Blazor WASM";
-    
-    private void ChangeMode(bool isServerSideBlazor)
+    protected override void OnInitialized()
     {
-        BlazorModeHelper.ChangeMode(isServerSideBlazor);
-        DropdownTitle(isServerSideBlazor);
+        var jsRuntimeType = JSRuntime.GetType();
+        if (jsRuntimeType.Name != "RemoteJSRuntime") {
+            _isPrerendering = false;
+            return;
+        }
+        var fClientProxy = jsRuntimeType.GetField("_clientProxy", BindingFlags.Instance | BindingFlags.NonPublic);
+        var clientProxy = fClientProxy?.GetValue(JSRuntime);
+        _isPrerendering = fClientProxy != null && clientProxy == null;
     }
+
+    private string GetModeName(bool isServerSideBlazor)
+        => isServerSideBlazor ? "Blazor Server" : "Blazor WASM";
 }

@@ -6,7 +6,7 @@ using Stl.CommandR;
 using Stl.CommandR.Configuration;
 using Stl.Fusion;
 
-namespace HelloBlazorHybrid.Abstractions
+namespace Samples.HelloBlazorHybrid.Abstractions
 {
     public interface IChatService
     {

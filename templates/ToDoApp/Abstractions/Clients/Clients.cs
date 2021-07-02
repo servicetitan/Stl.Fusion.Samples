@@ -4,7 +4,7 @@ using RestEase;
 using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
 
-namespace Templates.ToDoApp.Abstractions.Clients
+namespace Templates.TodoApp.Abstractions.Clients
 {
     [BasePath("todo")]
     public interface ITodoClientDef
@@ -20,6 +20,5 @@ namespace Templates.ToDoApp.Abstractions.Clients
         Task<Todo[]> List(Session session, PageRef<string> pageRef, CancellationToken cancellationToken = default);
         [Get(nameof(GetSummary))]
         Task<TodoSummary> GetSummary(Session session, CancellationToken cancellationToken = default);
-
     }
 }

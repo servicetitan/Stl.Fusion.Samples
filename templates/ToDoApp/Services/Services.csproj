@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
     <OutputType>Library</OutputType>
-    <RootNamespace>Templates.ToDoApp.Services</RootNamespace>
-    <AssemblyName>Templates.ToDoApp.Services</AssemblyName>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Templates.TodoApp.Services</RootNamespace>
+    <AssemblyName>Templates.TodoApp.Services</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="1.2.1" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="1.3.11" />
   </ItemGroup>
 
 </Project>

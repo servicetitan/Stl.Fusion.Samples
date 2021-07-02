@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Samples.HelloBlazorHybrid.Abstractions;
 using Stl.Async;
 using Stl.CommandR;
 using Stl.CommandR.Configuration;
 using Stl.Fusion;
 
-namespace HelloBlazorHybrid.Abstractions
+namespace Samples.HelloBlazorHybrid.Services
 {
     public class ChatBotService : IHostedService
     {
@@ -49,7 +50,7 @@ namespace HelloBlazorHybrid.Abstractions
             }
         }
 
-        protected virtual async Task Reaction(IChatService.PostCommand command, CancellationToken cancellationToken)
+        private async Task Reaction(IChatService.PostCommand command, CancellationToken cancellationToken)
         {
             var messageCount = await _chatService.GetMessageCountAsync();
             switch (messageCount) {

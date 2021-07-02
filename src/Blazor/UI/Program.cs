@@ -27,9 +27,7 @@ namespace Samples.Blazor.UI
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             ConfigureServices(builder.Services, builder);
-            builder.RootComponents.Add<App>("#app");
             var host = builder.Build();
-
             await host.Services.HostedServices().Start();
             await host.RunAsync();
         }

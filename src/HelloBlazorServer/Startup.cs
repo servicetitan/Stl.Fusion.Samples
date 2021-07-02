@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Samples.HelloBlazorServer.Services;
-using Stl.CommandR;
 using Stl.Fusion;
 using Stl.Fusion.Extensions;
 
@@ -12,25 +13,42 @@ namespace Samples.HelloBlazorServer
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private IConfiguration Cfg { get; }
+        private IWebHostEnvironment Env { get; }
+        private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
+
+        public Startup(IConfiguration cfg, IWebHostEnvironment environment)
         {
-            Configuration = configuration;
+            Cfg = cfg;
+            Env = environment;
         }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // Logging
+            services.AddLogging(logging => {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Information);
+                if (Env.IsDevelopment()) {
+                    logging.AddFilter("Microsoft", LogLevel.Warning);
+                    logging.AddFilter("Microsoft.AspNetCore.Hosting", LogLevel.Information);
+                    logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
+                }
+            });
+
+#pragma warning disable ASP0000
+            var tmpServices = services.BuildServiceProvider();
+#pragma warning restore ASP0000
+            Log = tmpServices.GetRequiredService<ILogger<Startup>>();
+
             // Fusion services
             var fusion = services.AddFusion();
             fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
             fusion.AddComputeService<CounterService>();
+            fusion.AddComputeService<WeatherForecastService>();
             fusion.AddComputeService<ChatService>();
             fusion.AddComputeService<ChatBotService>();
-            fusion.AddComputeService<WeatherForecastService>();
-
             // This is just to make sure ChatBotService.StartAsync is called on startup
             services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
 
@@ -45,12 +63,10 @@ namespace Samples.HelloBlazorServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
+            if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
+            else {
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
@@ -58,9 +74,7 @@ namespace Samples.HelloBlazorServer
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
