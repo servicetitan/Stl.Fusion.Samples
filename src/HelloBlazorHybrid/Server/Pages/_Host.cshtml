@@ -1,0 +1,54 @@
+﻿@page "/"
+@namespace HelloBlazorHybrid.Server.Pages
+@using HelloBlazorHybrid.UI
+@using Stl.Fusion.Server.Controllers
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject ServerSettings ServerSettings
+@{
+    var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HelloBlazorHybrid</title>
+    <base href="~/" />
+    <link href="css/app.css" rel="stylesheet" />
+
+    <partial name="Blazorise.Head" />
+</head>
+
+<body>
+@if (!isServerSideBlazor) {
+    <app>
+        @(await Html.RenderComponentAsync<App>(RenderMode.WebAssembly))
+    </app>
+
+    <partial name="Blazorise.Body" />
+    <script type="module" src="./js/app.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+} else {
+    <app>
+        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
+    </app>
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <partial name="Blazorise.Body" />
+    <script type="module" src="./js/app.js"></script>
+    <script src="_framework/blazor.server.js"></script>
+}
+</body>
+</html>

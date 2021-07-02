@@ -1,0 +1,50 @@
+﻿@page "/fetchdata"
+@using System.Threading
+@using HelloBlazorHybrid.Abstractions
+@inherits MixedStateComponent<HelloBlazorHybrid.Abstractions.WeatherForecast[], DateTime>
+@inject IWeatherForecastService WeatherForecast
+
+@{
+    var state = State.ValueOrDefault ?? Array.Empty<WeatherForecast>();
+    var error = State.Error;
+}
+
+<h1>Weather forecast</h1>
+
+@if (error != null) {
+    <div class="alert alert-warning" role="alert">
+        Update error: @error.Message
+    </div>
+}
+
+<p>This component demonstrates fetching data from a service.</p>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Temp. (C)</th>
+        <th>Temp. (F)</th>
+        <th>Summary</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var forecast in state)
+    {
+        <tr>
+            <td>@forecast.Date.ToShortDateString()</td>
+            <td>@forecast.TemperatureC</td>
+            <td>@forecast.TemperatureF</td>
+            <td>@forecast.Summary</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    protected override void ConfigureMutableState(MutableState<DateTime>.Options options)
+        => options.InitialOutputFactory = _ => DateTime.Today;
+
+    protected override async Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
+        => await WeatherForecast.GetForecastAsync(MutableState.Value, cancellationToken);
+}

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>Templates.ToDoApp.ConsoleClient</RootNamespace>
+        <AssemblyName>Templates.ToDoApp.ConsoleClient</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Stl.Fusion.Client" Version="1.2.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\UI\UI.csproj" />
+    </ItemGroup>
+
+</Project>

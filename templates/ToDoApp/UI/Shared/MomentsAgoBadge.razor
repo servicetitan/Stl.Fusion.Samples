@@ -1,0 +1,18 @@
+@using Stl.Fusion.Extensions
+@using System.Threading
+@inherits ComputedStateComponent<string>
+@inject IFusionTime _fusionTime
+
+<span class="@CssClass">@State.Value</span>
+
+@code {
+    [Parameter]
+    public string CssClass { get; set; } = "";
+    [Parameter]
+    public DateTime? Value { get; set; }
+    [Parameter]
+    public string None { get; set; } = "n/a";
+
+    protected override Task<string> ComputeState(CancellationToken cancellationToken)
+        => Value.HasValue ? _fusionTime.GetMomentsAgo(Value.Value) : Task.FromResult(None);
+}

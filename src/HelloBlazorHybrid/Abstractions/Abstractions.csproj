@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <AssemblyName>HelloBlazorHybrid.Abstractions</AssemblyName>
+        <RootNamespace>HelloBlazorHybrid.Abstractions</RootNamespace>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Stl.Fusion.Client" Version="1.2.1" />
+    </ItemGroup>
+
+</Project>

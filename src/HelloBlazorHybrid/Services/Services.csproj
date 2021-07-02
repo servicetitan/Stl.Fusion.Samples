@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <OutputType>Library</OutputType>
+        <RootNamespace>HelloBlazorHybrid.Services</RootNamespace>
+        <AssemblyName>HelloBlazorHybrid.Services</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Stl.Fusion.EntityFramework" Version="1.2.1" />
+    </ItemGroup>
+
+</Project>
