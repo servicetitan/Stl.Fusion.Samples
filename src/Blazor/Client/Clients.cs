@@ -13,7 +13,7 @@ namespace Samples.Blazor.Client
         [Get("getTime")]
         Task<DateTime> GetTime(CancellationToken cancellationToken = default);
         [Get("getUptime")]
-        Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
+        Task<double> GetUptime(double updatePeriod, CancellationToken cancellationToken = default);
     }
 
     [BasePath("screenshot")]
@@ -52,7 +52,7 @@ namespace Samples.Blazor.Client
         Task<ComposedValue> GetComposedValue(string? parameter,
             Session session, CancellationToken cancellationToken = default);
     }
-    
+
     [BasePath("sum")]
     public interface ISumClientDef
     {

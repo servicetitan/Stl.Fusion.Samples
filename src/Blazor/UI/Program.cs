@@ -34,7 +34,7 @@ namespace Samples.Blazor.UI
 
         public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
         {
-            builder.Logging.SetMinimumLevel(LogLevel.Warning);
+            builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
             var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
             var apiBaseUri = new Uri($"{baseUri}api/");

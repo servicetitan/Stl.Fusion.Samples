@@ -1,7 +1,7 @@
 using System;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Stl.Fusion;
 using Stl.Fusion.Authentication;
 
@@ -10,7 +10,7 @@ namespace Samples.Blazor.Abstractions
     public class ComposedValue
     {
         public string Parameter { get; } = "";
-        public TimeSpan Uptime { get; set; }
+        public double Uptime { get; set; }
         public double? Sum { get; set; }
         public string LastChatMessage { get; } = "";
         public User User { get; } = new User("");
@@ -18,7 +18,7 @@ namespace Samples.Blazor.Abstractions
 
         public ComposedValue() { }
         [JsonConstructor]
-        public ComposedValue(string parameter, TimeSpan uptime, double? sum, string lastChatMessage, User user, long activeUserCount)
+        public ComposedValue(string parameter, double uptime, double? sum, string lastChatMessage, User user, long activeUserCount)
         {
             Parameter = parameter;
             Uptime = uptime;

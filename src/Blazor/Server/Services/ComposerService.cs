@@ -35,7 +35,7 @@ namespace Samples.Blazor.Server.Services
             string parameter, Session session, CancellationToken cancellationToken)
         {
             var chatTail = await ChatService.GetChatTail(1, cancellationToken);
-            var uptime = await TimeService.GetUptime(TimeSpan.FromSeconds(10), cancellationToken);
+            var uptime = await TimeService.GetUptime(10, cancellationToken);
             var sum = (double?) null;
             if (double.TryParse(parameter, out var value))
                 sum = await SumService.GetSum(new [] { value }, true, cancellationToken);

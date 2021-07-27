@@ -10,6 +10,6 @@ namespace Samples.Blazor.Abstractions
         [ComputeMethod(KeepAliveTime = 1)]
         Task<DateTime> GetTime(CancellationToken cancellationToken = default);
         [ComputeMethod(KeepAliveTime = 60)]
-        Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default);
+        Task<double> GetUptime(double updatePeriod, CancellationToken cancellationToken = default);
     }
 }

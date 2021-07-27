@@ -21,12 +21,12 @@ namespace Samples.Blazor.Server.Services
             return time;
         }
 
-        public virtual Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
+        public virtual Task<double> GetUptime(double updatePeriod, CancellationToken cancellationToken = default)
         {
             var computed = Computed.GetCurrent();
-            Task.Delay(updatePeriod, default)
+            Task.Delay(TimeSpan.FromSeconds(updatePeriod), default)
                 .ContinueWith(_ => computed!.Invalidate(), CancellationToken.None);
-            return Task.FromResult(DateTime.UtcNow - _startTime);
+            return Task.FromResult((DateTime.UtcNow - _startTime).TotalSeconds);
         }
     }
 }

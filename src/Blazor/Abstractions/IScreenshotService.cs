@@ -1,6 +1,6 @@
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Stl.Fusion;
 
 namespace Samples.Blazor.Abstractions

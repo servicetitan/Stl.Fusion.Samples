@@ -20,7 +20,7 @@ namespace Samples.Blazor.Server.Controllers
             => _time.GetTime(cancellationToken);
 
         [HttpGet, Publish]
-        public Task<TimeSpan> GetUptime(TimeSpan updatePeriod, CancellationToken cancellationToken = default)
+        public Task<double> GetUptime(double updatePeriod, CancellationToken cancellationToken = default)
             => _time.GetUptime(updatePeriod, cancellationToken);
     }
 }
