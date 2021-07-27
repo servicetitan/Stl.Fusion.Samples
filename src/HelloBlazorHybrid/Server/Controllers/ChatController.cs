@@ -23,10 +23,9 @@ namespace Samples.HelloBlazorHybrid.Server.Controllers
         [HttpGet, Publish]
         public Task<Unit> GetAnyTailAsync()
             => _chat.GetAnyTailAsync();
-        
+
         [HttpGet, Publish]
-        public Task<(DateTime Time, string Name, string Message)[]> GetMessagesAsync(int count,
-            CancellationToken cancellationToken = default)
+        public Task<IChatService.Message[]> GetMessagesAsync(int count, CancellationToken cancellationToken = default)
             => _chat.GetMessagesAsync(count, cancellationToken);
 
         [HttpPost]

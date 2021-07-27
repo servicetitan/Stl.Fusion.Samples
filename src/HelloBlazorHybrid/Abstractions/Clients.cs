@@ -33,8 +33,7 @@ namespace Samples.HelloBlazorHybrid.Abstractions
         Task<int> GetMessageCountAsync();
 
         [Get("getMessages")]
-        Task<(DateTime Time, string Name, string Message)[]> GetMessagesAsync(int count,
-            CancellationToken cancellationToken = default);
+        Task<IChatService.Message[]> GetMessagesAsync(int count, CancellationToken cancellationToken = default);
 
         [Get("getAnyTail")]
         Task<Unit> GetAnyTailAsync();

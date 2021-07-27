@@ -10,10 +10,16 @@ namespace Samples.HelloBlazorHybrid.Abstractions
 {
     public interface IChatService
     {
-        public record PostCommand(string Name, string Message) : ICommand<Unit>
+        public record PostCommand(string Name, string Text) : ICommand<Unit>
         {
             // Default constructor is needed for JSON deserialization
             public PostCommand() : this(null!, null!) { }
+        }
+
+        public record Message(DateTime Time, string Name, string Text)
+        {
+            // Default constructor is needed for JSON deserialization
+            public Message() : this(default, null!, null!) { }
         }
 
         [CommandHandler]
@@ -23,8 +29,7 @@ namespace Samples.HelloBlazorHybrid.Abstractions
         Task<int> GetMessageCountAsync();
 
         [ComputeMethod]
-        Task<(DateTime Time, string Name, string Message)[]> GetMessagesAsync(
-            int count, CancellationToken cancellationToken = default);
+        Task<Message[]> GetMessagesAsync(int count, CancellationToken cancellationToken = default);
 
         [ComputeMethod]
         Task<Unit> GetAnyTailAsync();

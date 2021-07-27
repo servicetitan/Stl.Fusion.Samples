@@ -12,11 +12,10 @@ namespace Samples.HelloBlazorHybrid.Abstractions
 {
     public class ChatService : IChatService
     {
-        private volatile ImmutableList<(DateTime Time, string Name, string Message)> _messages =
-            ImmutableList<(DateTime, string, string)>.Empty;
-        
+        private volatile ImmutableList<IChatService.Message> _messages = ImmutableList<IChatService.Message>.Empty;
+
         private readonly object _lock = new();
-        
+
         [CommandHandler]
         public virtual Task PostMessageAsync(IChatService.PostCommand command, CancellationToken cancellationToken = default)
         {
@@ -28,7 +27,7 @@ namespace Samples.HelloBlazorHybrid.Abstractions
 
             var (name, message) = command;
             lock (_lock) {
-                _messages = _messages.Add((DateTime.Now, name, message));
+                _messages = _messages.Add(new(DateTime.Now, name, message));
             }
             return Task.CompletedTask;
         }
@@ -38,7 +37,7 @@ namespace Samples.HelloBlazorHybrid.Abstractions
             => Task.FromResult(_messages.Count);
 
         [ComputeMethod]
-        public virtual async Task<(DateTime Time, string Name, string Message)[]> GetMessagesAsync(
+        public virtual async Task<IChatService.Message[]> GetMessagesAsync(
             int count, CancellationToken cancellationToken = default)
         {
             // Fake dependency used to invalidate all GetMessagesAsync(...) independently on count argument
