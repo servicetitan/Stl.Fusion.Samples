@@ -42,7 +42,14 @@ namespace Samples.Blazor.Server.Services
             var lastChatMessage = chatTail.Messages.SingleOrDefault()?.Text ?? "(no messages)";
             var user = await AuthService.GetUser(session, cancellationToken);
             var activeUserCount = await ChatService.GetActiveUserCount(cancellationToken);
-            return new ComposedValue($"{parameter} - server", uptime, sum, lastChatMessage, user, activeUserCount);
+            return new ComposedValue() {
+                Parameter = $"{parameter} - server",
+                Uptime = uptime,
+                Sum = sum,
+                LastChatMessage = lastChatMessage,
+                User = user,
+                ActiveUserCount = activeUserCount
+            };
         }
     }
 }

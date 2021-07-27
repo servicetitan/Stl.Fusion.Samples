@@ -7,26 +7,14 @@ using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Abstractions
 {
-    public class ComposedValue
+    public record ComposedValue
     {
-        public string Parameter { get; } = "";
-        public double Uptime { get; set; }
-        public double? Sum { get; set; }
-        public string LastChatMessage { get; } = "";
-        public User User { get; } = new User("");
-        public long ActiveUserCount { get; }
-
-        public ComposedValue() { }
-        [JsonConstructor]
-        public ComposedValue(string parameter, double uptime, double? sum, string lastChatMessage, User user, long activeUserCount)
-        {
-            Parameter = parameter;
-            Uptime = uptime;
-            Sum = sum;
-            LastChatMessage = lastChatMessage;
-            User = user;
-            ActiveUserCount = activeUserCount;
-        }
+        public string Parameter { get; init; } = "";
+        public double Uptime { get; init; }
+        public double? Sum { get; init; }
+        public string LastChatMessage { get; init; } = "";
+        public User? User { get; init; }
+        public long ActiveUserCount { get; init; }
     }
 
     public interface IComposerService
