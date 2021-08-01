@@ -35,6 +35,5 @@
     private async Task Increment()
     {
         await CounterService.Increment();
-        await State.ApplyUserCausedUpdate(); // This just shortens the update delay; try commenting out this line
     }
 }

@@ -17,6 +17,7 @@ using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
+using Stl.Fusion.UI;
 using static System.Console;
 
 namespace Tutorial
@@ -229,7 +230,7 @@ namespace Tutorial
             var stateFactory = services.StateFactory();
             using var state = stateFactory.NewComputed<string>(
                 options => {
-                    options.UpdateDelayer = new UpdateDelayer(1.0); // 1 second update delay
+                    options.UpdateDelayer = new UpdateDelayer(UICommandTracker.None, 1.0); // 1 second update delay
                     options.EventConfigurator += state1 => {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
                         state1.AddEventHandler(StateEventKind.All,

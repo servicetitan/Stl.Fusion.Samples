@@ -76,6 +76,5 @@
             return;
         await Chat.PostMessageAsync(new(Name, Message));
         Message = "";
-        await State.ApplyUserCausedUpdate();
     }
 }

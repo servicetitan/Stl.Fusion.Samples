@@ -1,6 +1,5 @@
 ﻿@page "/simpleChat"
 @using System.Threading
-@using Stl.Async
 @using Stl.Fusion.Extensions
 @inherits ComputedStateComponent<(string Name, string Message, string Time)[]>
 @inject ChatService Chat
@@ -76,6 +75,5 @@
             return;
         await Chat.PostMessageAsync(new(Name, Message));
         Message = "";
-        await State.ApplyUserCausedUpdate();
     }
 }

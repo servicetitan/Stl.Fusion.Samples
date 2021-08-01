@@ -11,7 +11,7 @@
 
 <h1>Server Screen</h1>
 
-<WhenException Title="Update error:" Exception="@error"/>
+<WhenUpdateError Exception="@error"/>
 
 <Addons>
     <Addon AddonType="AddonType.Start"><AddonLabel>Screenshot width (in pixels):</AddonLabel></Addon>
@@ -34,7 +34,7 @@
         => await State.Update(); // An example showing how to load the State before the first render
 
     protected override void ConfigureState(ComputedState<Screenshot>.Options options)
-        => options.UpdateDelayer = UpdateDelayer.ZeroUpdateDelay;
+        => options.UpdateDelayer = UpdateDelayer.ZeroDelay;
 
     protected override Task<Screenshot> ComputeState(CancellationToken cancellationToken)
         => ScreenshotService.GetScreenshot(ActualWidth, cancellationToken);

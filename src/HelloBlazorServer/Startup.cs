@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Samples.HelloBlazorServer.Services;
 using Stl.Fusion;
 using Stl.Fusion.Extensions;
+using Stl.Fusion.UI;
 
 namespace Samples.HelloBlazorServer
 {
@@ -52,8 +53,8 @@ namespace Samples.HelloBlazorServer
             // This is just to make sure ChatBotService.StartAsync is called on startup
             services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
 
-            // Default update delay is 0.5s
-            services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.5));
+            // Default update delay is set to min.
+            services.AddTransient<IUpdateDelayer>(_ => UpdateDelayer.MinDelay);
 
             // Web
             services.AddRazorPages();

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Stl.Async;
 using Stl.Fusion;
+using Stl.Fusion.UI;
 using static System.Console;
 
 namespace Tutorial
@@ -83,7 +84,7 @@ namespace Tutorial
             WriteLine("Creating state.");
             using var state = stateFactory.NewComputed<string>(
                 options => {
-                    options.UpdateDelayer = new UpdateDelayer(1.0); // 1 second update delay
+                    options.UpdateDelayer = new UpdateDelayer(UICommandTracker.None, 1.0); // 1 second update delay
                     options.EventConfigurator += state1 => {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
                         state1.AddEventHandler(StateEventKind.All,

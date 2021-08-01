@@ -67,11 +67,11 @@ namespace Samples.HelloBlazorHybrid.UI
             services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
 
             // Other UI-related services
-            var fusion = services.AddFusion();
+            var fusion = services.AddFusion().AddBlazorUIServices();
             fusion.AddFusionTime();
 
-            // Default update delay is 0.1s
-            services.AddTransient<IUpdateDelayer>(_ => new UpdateDelayer(0.1));
+            // Default update delay is set to min.
+            services.AddTransient<IUpdateDelayer>(_ => UpdateDelayer.MinDelay);
         }
     }
 }

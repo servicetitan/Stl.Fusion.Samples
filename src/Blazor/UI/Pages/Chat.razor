@@ -1,12 +1,12 @@
 @page "/chat"
 @using System.Threading
-@using Stl.CommandR
 @using Stl.Fusion.Authentication.Commands
 @inherits MixedStateComponent<Chat.Model, Chat.LocalsModel>
 @inject Session Session
-@inject ICommander Commander
 @inject IChatService ChatService
+@inject UICommandRunner CommandRunner
 @inject NavigationManager Navigator
+@inject ILogger<Chat> Log
 
 @{
     var locals = MutableState.Value;
@@ -33,8 +33,7 @@
     in another window to see everything is updated in sync in real time.
 </Note>
 
-<WhenException Title="Action failed:" Exception="@locals.Error"/>
-<WhenException Title="Update error:" Exception="@error"/>
+<WhenUpdateError Exception="@error"/>
 
 <AuthorizeView>
     <Authorized>
@@ -110,7 +109,6 @@
 
         public bool IsNameModified { get; set; }
         public string Message { get; set; } = "";
-        public Exception? Error { get; set; }
     }
 
     public class Model
@@ -148,49 +146,38 @@
 
     private async Task SetName()
     {
-        ResetError();
         var locals = MutableState.Value;
+        var command = new EditUserCommand(Session, locals.Name ?? "");
         try {
-            var command = new EditUserCommand(Session, locals.Name ?? "");
-            if (command.Name!.Length < 4)
-                throw new ApplicationException("The name should be at least 4 character long.");
-            await Commander.Call(command);
+            await CommandRunner.Run(new LocalCommand(() => {
+                if (command.Name!.Length < 4)
+                    throw new ApplicationException("The name should be at least 4 character long.");
+            }), true);
+            await CommandRunner.Run(command, true);
         }
         catch (Exception e) {
-            SetError(e);
+            Log.LogError(e, "Error!");
         }
    }
 
     private async Task Post()
     {
-        ResetError();
         try {
-            if (State.ValueOrDefault?.ChatUser?.IsValid != true)
-                throw new ApplicationException("Please sign in first.");
-            await ChatService.Post(new(MutableState.Value.Message, Session));
+            await CommandRunner.Run(new IChatService.PostCommand(MutableState.Value.Message, Session), true);
             MutableState.Value.Message = "";
             MutableState.Invalidate();
         }
         catch (Exception e) {
-            SetError(e);
+            Log.LogError(e, "Error!");
         }
     }
 
     // Convenience shortcuts
 
-    private void ResetError()
-        => SetError(null);
-
     private void ResetName(string name)
     {
         MutableState.Value.Name = name;
         MutableState.Value.IsNameModified = false;
-        MutableState.Invalidate();
-    }
-
-    private void SetError(Exception? error)
-    {
-        MutableState.Value.Error = error;
         MutableState.Invalidate();
     }
 }

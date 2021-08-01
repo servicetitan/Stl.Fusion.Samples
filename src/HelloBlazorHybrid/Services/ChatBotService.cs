@@ -62,7 +62,7 @@ namespace Samples.HelloBlazorHybrid.Services
                 break;
             default:
                 var messages = await _chatService.GetMessagesAsync(1, cancellationToken);
-                var (time, name, message) = messages.SingleOrDefault();
+                var (time, name, message) = messages.SingleOrDefault()!;
                 name ??= "";
                 if (name == "" || BotNames.Contains(name))
                     break;

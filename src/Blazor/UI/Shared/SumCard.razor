@@ -51,10 +51,10 @@
     public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     protected override void OnParametersSet()
-        => State.UpdateDelayer = new UpdateDelayer(UpdateDelay);
+        => State.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay);
 
     protected override void ConfigureState(ComputedState<double>.Options options)
-        => options.UpdateDelayer = new UpdateDelayer(UpdateDelay);
+        => options.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay);
 
     protected override async Task<double> ComputeState(CancellationToken cancellationToken)
     {
@@ -65,5 +65,6 @@
 
     // Action handlers
 
-    private void Apply() => MutableState.Invalidate();
+    private void Apply()
+        => MutableState.Invalidate();
 }

@@ -23,7 +23,7 @@
 
 <StateOfStateBadge State="@State" />
 
-<WhenException Title="Update error:" Exception="@error"/>
+<WhenUpdateError Exception="@error"/>
 
 <Addons>
     <Addon AddonType="AddonType.Start">
@@ -53,7 +53,7 @@
     }
 
     protected override void ConfigureState(ComputedState<Model>.Options options)
-        => options.UpdateDelayer = new UpdateDelayer(0.5);
+        => options.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), 0.5);
 
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {

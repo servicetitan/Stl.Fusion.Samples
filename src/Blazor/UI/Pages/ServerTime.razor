@@ -10,7 +10,7 @@
 
 <h1>Server Time</h1>
 
-<WhenException Title="Update error:" Exception="@error"/>
+<WhenUpdateError Exception="@error"/>
 
 <StateOfStateBadge State="@State" />
 
@@ -21,7 +21,7 @@
 
 @code {
     protected override void ConfigureState(ComputedState<DateTime>.Options options)
-        => options.UpdateDelayer = new UpdateDelayer(0.5);
+        => options.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), 0.5);
 
     protected override Task<DateTime> ComputeState(CancellationToken cancellationToken)
         => Time.GetTime(cancellationToken);

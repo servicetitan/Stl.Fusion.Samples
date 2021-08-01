@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +54,7 @@ namespace Samples.Blazor.Server.Services
             text = await NormalizeText(text, cancellationToken);
             var user = await GetCurrentUser(session, cancellationToken);
             if (user == null)
-                throw new InvalidOperationException("No current ChatUser. Call SetUserNameAsync to create it.");
+                throw new AuthenticationException("Please sign in first.");
 
             await using var dbContext = await CreateCommandDbContext(cancellationToken);
             var message = new ChatMessage() {
