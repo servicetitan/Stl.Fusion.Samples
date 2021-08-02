@@ -50,13 +50,13 @@ public class CounterService
     [ComputeMethod]
     public virtual async Task<int> Get(string key)
     {
-        WriteLine($"{nameof(Get)}({key})");
+        WriteLine($"Get ({key})");
         return _counters.TryGetValue(key, out var value) ? value : 0;
     }
 
     public void Increment(string key)
     {
-        WriteLine($"{nameof(Increment)}({key})");
+        WriteLine($"Increment ({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
         using (Computed.Invalidate())
             Get(key).Ignore();
@@ -64,7 +64,7 @@ public class CounterService
 }
 ```
 
-For now, please ignore the fact `GetAsync` is declared as asynchronous method,
+For now, please ignore the fact `Get` is declared as asynchronous method,
 even though it isn't truly asynchronous - later I'll explain why it's reasonable.
 
 Let's use `CounterService`:
@@ -78,9 +78,9 @@ WriteLine(await counters.Get("b"));
 The output should be:
 
 ```text
-GetAsync(a)
+Get(a)
 0
-GetAsync(b)
+Get(b)
 0
 ```
 
@@ -95,12 +95,12 @@ WriteLine(await counters.Get("a"));
 The output looks weird now:
 
 ```text
-GetAsync(a)
+Get(a)
 0
 0
 ```
 
-So why "GetAsync(a)" wasn't printed twice here? The answer is:
+So why "Get(a)" wasn't printed twice here? The answer is:
 
 * You may think *any compute method automatically caches its output*.
 * The cache key is `(MethodInfo, this, argument1, argument2, ...)`
@@ -120,16 +120,16 @@ WriteLine(await counters.Get("a"));
 The output:
 
 ```text
-GetAsync(a)
+Get(a)
 0
 Increment(a)
-GetAsync(a)
+Get(a)
 1
 ```
 
 Check out `CounterService.Increment` source code above - it calls
 `Computed.Invalidate`, which evicts the entry. This explains why
-in this example "GetAsync(a)" is printed twice, even though previously
+in this example "Get(a)" is printed twice, even though previously
 it was printed just for the first call.
 
 ## Dependencies
@@ -146,7 +146,7 @@ public class CounterSumService
     [ComputeMethod]
     public virtual async Task<int> Sum(string key1, string key2)
     {
-        WriteLine($"{nameof(Sum)}({key1}, {key2})");
+        WriteLine($"Sum({key1}, {key2})");
         return await Counters.Get(key1) + await Counters.Get(key2);
     }
 }
@@ -164,9 +164,9 @@ WriteLine(await counterSum.Sum("a", "b"));
 The output:
 
 ```text
-SumAsync(a, b)
-GetAsync(a)
-GetAsync(b)
+Sum(a, b)
+Get(a)
+Get(b)
 0
 ```
 
@@ -179,7 +179,7 @@ var services = CreateServices();
 var counterSum = services.GetRequiredService<CounterSumService>();
 WriteLine("Nothing is cached (yet):");
 WriteLine(await counterSum.Sum("a", "b"));
-WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
+WriteLine("Only Get(a) and Get(b) outputs are cached:");
 WriteLine(await counterSum.Sum("b", "a"));
 WriteLine("Everything is cached:");
 WriteLine(await counterSum.Sum("a", "b"));
@@ -189,12 +189,12 @@ The output:
 
 ```text
 Nothing is cached (yet):
-SumAsync(a, b)
-GetAsync(a)
-GetAsync(b)
+Sum(a, b)
+Get(a)
+Get(b)
 0
-Only GetAsync(a) and GetAsync(b) results are cached:
-SumAsync(b, a)
+Only Get(a) and Get(b) results are cached:
+Sum(b, a)
 0
 Everything is cached:
 0
@@ -218,18 +218,18 @@ WriteLine(await counterSum.Sum("a", "b"));
 The output:
 
 ```text
-SumAsync(a, b)
-GetAsync(a)
-GetAsync(b)
+Sum(a, b)
+Get(a)
+Get(b)
 0
 Increment(a)
-SumAsync(a, b)
-GetAsync(a)
+Sum(a, b)
+Get(a)
 1
 ```
 
-This is quite unusual, right? *Somehow* `SumAsync("a", "b")` figured out that
-it has to refresh `GetAsync("a")` result first, because it was invalidated
+This is quite unusual, right? *Somehow* `Sum("a", "b")` figured out that
+it has to refresh `Get("a")` result first, because it was invalidated
 due to increment. But how?
 
 In reality, every compute method either gets a cached output, or builds
@@ -259,15 +259,15 @@ public class HelloService
     [ComputeMethod]
     public virtual async Task<string> Hello(string name)
     {
-        WriteLine($"+ {nameof(Hello)}({name})");
+        WriteLine($"+ Hello({name})");
         await Task.Delay(1000);
-        WriteLine($"- {nameof(Hello)}({name})");
+        WriteLine($"- Hello({name})");
         return $"Hello, {name}!";
     }
 }
 ```
 
-As you see, `HelloAsync` method simply returns a formatted "Hello, X!" message,
+As you see, `Hello` method simply returns a formatted "Hello, X!" message,
 but with a 1-second delay. Let's try to run it concurrently:
 
 ``` cs --region Part01_UseHelloService1 --source-file Part01.cs
@@ -286,10 +286,10 @@ WriteLine(t4.Result);
 The output:
 
 ```text
-+ HelloAsync(Bob)
-+ HelloAsync(Alice)
-- HelloAsync(Bob)
-- HelloAsync(Alice)
++ Hello(Bob)
++ Hello(Alice)
+- Hello(Bob)
+- Hello(Alice)
 Hello, Alice!
 Hello, Bob!
 Hello, Bob!
@@ -297,7 +297,7 @@ Hello, Alice!
 ```
 
 As you see, even though all 4 values were computed, there were just
-2 `HelloAsync` evaluations (for distinct arguments only), and moreover,
+2 `Hello` evaluations (for distinct arguments only), and moreover,
 these two evaluations were running concurrently with each other.
 
 This is an expected behavior: even though nothing is cached in the
@@ -305,8 +305,8 @@ beginning, there is no reason to run more than one computation
 for e.g. "Bob" argument concurrently, since all of them are supposed
 to produce the same result. This is exactly what Fusion ensures.
 
-And on contrary, it's totally reasonable to let `HelloAsync("Alice")`
-computation to run concurrently with `HelloAsync("Bob")`, because they
+And on contrary, it's totally reasonable to let `Hello("Alice")`
+computation to run concurrently with `Hello("Bob")`, because they
 might produce different output, and if they were launched concurrently,
 `HelloService` is designed to support this.
 
