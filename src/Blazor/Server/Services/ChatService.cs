@@ -38,7 +38,6 @@ namespace Samples.Blazor.Server.Services
             _forismaticClient = forismaticClient;
         }
 
-
         // Commands
 
         public virtual async Task<ChatMessage> Post(
