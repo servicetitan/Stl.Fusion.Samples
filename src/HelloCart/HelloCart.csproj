@@ -10,8 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.8" />
-    <PackageReference Include="Stl.Fusion.Client" Version="1.5.11" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="1.5.11" />
-    <PackageReference Include="Stl.Fusion.Server" Version="1.5.11" />
+    <PackageReference Include="Stl.Fusion.Client" Version="1.5.12" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="1.5.12" />
+    <PackageReference Include="Stl.Fusion.Server" Version="1.5.12" />
   </ItemGroup>
 </Project>
