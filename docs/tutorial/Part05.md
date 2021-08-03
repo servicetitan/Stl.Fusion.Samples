@@ -413,7 +413,7 @@ public class DemoSwapService : SimpleSwapService
         return base.Renew(key, cancellationToken);
     }
 
-    protected override async ValueTask<Option<string>> Load(string key, CancellationToken cancellationToken)
+    protected override async ValueTask<string?> Load(string key, CancellationToken cancellationToken)
     {
         var result = await base.Load(key, cancellationToken);
         WriteLine($"Swap: {key} -> {result}");

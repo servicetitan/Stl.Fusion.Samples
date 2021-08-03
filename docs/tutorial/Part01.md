@@ -50,13 +50,13 @@ public class CounterService
     [ComputeMethod]
     public virtual async Task<int> Get(string key)
     {
-        WriteLine($"Get({key})");
+        WriteLine($"{nameof(Get)}({key})");
         return _counters.TryGetValue(key, out var value) ? value : 0;
     }
 
     public void Increment(string key)
     {
-        WriteLine($"Increment({key})");
+        WriteLine($"{nameof(Increment)}({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
         using (Computed.Invalidate())
             Get(key).Ignore();
@@ -146,7 +146,7 @@ public class CounterSumService
     [ComputeMethod]
     public virtual async Task<int> Sum(string key1, string key2)
     {
-        WriteLine($"Sum({key1}, {key2})");
+        WriteLine($"{nameof(Sum)}({key1}, {key2})");
         return await Counters.Get(key1) + await Counters.Get(key2);
     }
 }
@@ -259,9 +259,9 @@ public class HelloService
     [ComputeMethod]
     public virtual async Task<string> Hello(string name)
     {
-        WriteLine($"+ Hello({name})");
+        WriteLine($"+ {nameof(Hello)}({name})");
         await Task.Delay(1000);
-        WriteLine($"- Hello({name})");
+        WriteLine($"- {nameof(Hello)}({name})");
         return $"Hello, {name}!";
     }
 }

@@ -203,7 +203,7 @@ WriteLine("Creating state.");
             using var state = stateFactory.NewComputed<string>(
                 options =>
                 {
-                    options.UpdateDelayer = new UpdateDelayer(1.0); // 1 second update delay
+                    options.UpdateDelayer = new UpdateDelayer(UICommandTracker.None, 1.0); // 1 second update delay
                     options.EventConfigurator += state1 =>
                     {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
