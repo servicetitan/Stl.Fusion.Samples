@@ -214,7 +214,7 @@ WriteLine("Creating state.");
                 async (state, cancellationToken) =>
                 {
                     var counter = await counters.Get("a");
-                    return $"counters.GetAsync(a) -> {counter}";
+                    return $"counters.Get(a) -> {counter}";
                 });
 WriteLine("Before state.Update(false).");
 await state.Update(); // Ensures the state gets up-to-date value
@@ -234,15 +234,15 @@ Creating state.
 10/2/2020 6:26:04 AM: Invalidated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Invalidated)
 Before state.Update(false).
 10/2/2020 6:26:04 AM: Updating, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @26, State: Invalidated)
-GetAsync(a)
-10/2/2020 6:26:04 AM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Consistent)
+Get(a)
+10/2/2020 6:26:04 AM: Updated, Value: counters.Get(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Consistent)
 After state.Update(false).
 Increment(a)
-10/2/2020 6:26:04 AM: Invalidated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
-10/2/2020 6:26:05 AM: Updating, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
-GetAsync(a)
-10/2/2020 6:26:05 AM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @29, State: Consistent)
-Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @29, State: Consistent)
+10/2/2020 6:26:04 AM: Invalidated, Value: counters.Get(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
+10/2/2020 6:26:05 AM: Updating, Value: counters.Get(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @4a, State: Invalidated)
+Get(a)
+10/2/2020 6:26:05 AM: Updated, Value: counters.Get(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @29, State: Consistent)
+Value: counters.Get(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#66697461) @29, State: Consistent)
 ```
 
 Some observations:
@@ -255,7 +255,7 @@ Some observations:
   Interestingly, though, that this update will anyway happen
   immediately by default - the very first update delay is
   always zero. You can check this by replacing the line
-  with `UpdateAsync(false)` to `await Task.Delay(100)`
+  with `Update(false)` to `await Task.Delay(100)`
 * Later the invalidation happens right after the value
   state depends on gets invalidated.
 * But the update follows in 1 second - i.e. as it was

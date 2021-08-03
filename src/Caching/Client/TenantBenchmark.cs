@@ -74,25 +74,25 @@ namespace Samples.Caching.Client
             async Task Read()
             {
                 var tenantId = rnd.Next(0, TenantCount).ToString();
-                await tenants.GetAsync(tenantId, cancellationToken);
+                await tenants.Get(tenantId, cancellationToken);
             }
 
             async Task Write()
             {
                 var tenantId = rnd.Next(0, TenantCount).ToString();
-                var tenant = await tenants.GetAsync(tenantId, cancellationToken);
+                var tenant = await tenants.Get(tenantId, cancellationToken);
                 tenant = tenant with { Name = $"Tenant-{tenant.Id}-{tenant.Version + 1}" };
                 await tenants.AddOrUpdate(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
             }
 
-            var operationAsync = isWriter ? (Func<Task>) Write : Read;
+            var operation = isWriter ? (Func<Task>) Write : Read;
 
             // The benchmarking loop
             var count = 0L;
             var errorCount = 0L;
             for (; (count & tcIndexMask) != 0 || stopwatch.Elapsed < duration; count++) {
                 try {
-                    await operationAsync().ConfigureAwait(false);
+                    await operation.Invoke().ConfigureAwait(false);
                 }
                 catch (Exception) {
                     errorCount++;

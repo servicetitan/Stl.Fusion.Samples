@@ -14,7 +14,7 @@ namespace Samples.HelloWorld
         private readonly ConcurrentDictionary<string, long> _versions = new();
 
         [ComputeMethod]
-        public virtual async Task<ProjectBuildResult> GetOrBuildAsync(string projectId, CancellationToken cancellationToken = default)
+        public virtual async Task<ProjectBuildResult> GetOrBuild(string projectId, CancellationToken cancellationToken = default)
         {
             WriteLine($"> Building: {projectId}");
             // Get project & new version of its output
@@ -22,13 +22,13 @@ namespace Samples.HelloWorld
             var version = _versions.AddOrUpdate(projectId, id => 1, (id, version) => version + 1);
             // Build dependencies
             await Task.WhenAll(project.DependsOn.Select(
-                // IMPORTANT: Noticed recursive GetOrBuildAsync call below?
+                // IMPORTANT: Noticed recursive GetOrBuild call below?
                 // Such calls - i.e. calls made inside [ComputeMethod]-s to
                 // other [ComputeMethod]-s - is all Fusion needs to know that
                 // A (currently produced output) depends on B (the output of
                 // whatever is called).
                 // Note it's also totally fine to run such calls concurrently.
-                dependencyId => GetOrBuildAsync(dependencyId, cancellationToken)));
+                dependencyId => GetOrBuild(dependencyId, cancellationToken)));
             // Simulate build
             await Task.Delay(100);
 
@@ -41,7 +41,7 @@ namespace Samples.HelloWorld
             return result;
         }
 
-        public Task AddOrUpdateAsync(Project project, CancellationToken cancellationToken = default)
+        public Task AddOrUpdate(Project project, CancellationToken cancellationToken = default)
         {
             _projects.AddOrUpdate(project.Id, id => project, (id, _) => project);
             InvalidateGetOrBuildResult(project.Id);
@@ -53,7 +53,7 @@ namespace Samples.HelloWorld
             // WriteLine($"Invalidating build results for: {projectId}");
             using var _ = Computed.Invalidate();
             // Invalidation call to [ComputeMethod] always completes synchronously, so...
-            GetOrBuildAsync(projectId, default).Ignore(); // Ignore() call is here just to suppress warning
+            GetOrBuild(projectId, default).Ignore(); // Ignore() call is here just to suppress warning
         }
     }
 }

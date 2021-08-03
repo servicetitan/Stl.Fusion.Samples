@@ -17,20 +17,20 @@ namespace Samples.HelloBlazorHybrid.Server.Controllers
         public ChatController(IChatService chat) => _chat = chat;
 
         [HttpGet, Publish]
-        public Task<int> GetMessageCountAsync()
-            => _chat.GetMessageCountAsync();
+        public Task<int> GetMessageCount()
+            => _chat.GetMessageCount();
 
         [HttpGet, Publish]
-        public Task<Unit> GetAnyTailAsync()
-            => _chat.GetAnyTailAsync();
+        public Task<Unit> GetAnyTail()
+            => _chat.GetAnyTail();
 
         [HttpGet, Publish]
-        public Task<IChatService.Message[]> GetMessagesAsync(int count, CancellationToken cancellationToken = default)
-            => _chat.GetMessagesAsync(count, cancellationToken);
+        public Task<IChatService.Message[]> GetMessages(int count, CancellationToken cancellationToken = default)
+            => _chat.GetMessages(count, cancellationToken);
 
         [HttpPost]
-        public Task PostMessageAsync([FromBody] IChatService.PostCommand command,
+        public Task PostMessage([FromBody] IChatService.PostCommand command,
             CancellationToken cancellationToken = default)
-            => _chat.PostMessageAsync(command, cancellationToken);
+            => _chat.PostMessage(command, cancellationToken);
     }
 }

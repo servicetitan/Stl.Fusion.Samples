@@ -40,7 +40,7 @@ You already know that `IComputed<T>` instances are reused, but so far
 we didn't talk much about the details. Let's learn some specific
 aspects of this behavior before jumping to caching.
 
-The service below prints a message once its `GetAsync` method
+The service below prints a message once its `Get` method
 is actually computed (i.e. its cached value for a given argument isn't reused)
 and returns the same value as its input. We'll be using it to
 find out when `IComputed` instances are actually reused.
@@ -74,7 +74,7 @@ reused while it's possible:
 
 ``` cs --region Part05_Caching1 --source-file Part05.cs
 var service = CreateServices().GetRequiredService<Service1>();
-// var computed = await Computed.Capture(_ => counters.GetAsync("a"));
+// var computed = await Computed.Capture(_ => counters.Get("a"));
 WriteLine(await service.Get("a"));
 WriteLine(await service.Get("a"));
 GC.Collect();
@@ -86,17 +86,17 @@ WriteLine(await service.Get("a"));
 The output:
 
 ```text
-GetAsync(a)
+Get(a)
 a
 a
 GC.Collect()
-GetAsync(a)
+Get(a)
 a
 a
 ```
 
 As you see, `GC.Collect()` call removes cached `IComputed`
-for `GetAsync("a")` - and that's why `GetAsync(a)` is printed
+for `Get("a")` - and that's why `Get(a)` is printed
 twice here.
 
 All of this means that most likely Fusion holds a
@@ -120,7 +120,7 @@ WriteLine(await service.Get("a"));
 The output:
 
 ```text
-GetAsync(a)
+Get(a)
 a
 a
 GC.Collect()
@@ -160,7 +160,7 @@ public class Service2
 ``` cs --region Part05_Caching3 --source-file Part05.cs
 var service = CreateServices().GetRequiredService<Service2>();
 var computed = await Computed.Capture(_ => service.Combine("a", "b"));
-WriteLine("computed = CombineAsync(a, b) completed");
+WriteLine("computed = Combine(a, b) completed");
 WriteLine(await service.Combine("a", "b"));
 WriteLine(await service.Get("a"));
 WriteLine(await service.Get("b"));
@@ -175,21 +175,21 @@ WriteLine(await service.Combine("a", "c"));
 The output:
 
 ```text
-CombineAsync(a, b)
-GetAsync(a)
-GetAsync(b)
-computed = CombineAsync(a, b) completed
+Combine(a, b)
+Get(a)
+Get(b)
+computed = Combine(a, b) completed
 ab
 a
 b
-CombineAsync(a, c)
-GetAsync(c)
+Combine(a, c)
+Get(c)
 ac
 GC.Collect() completed
 a
 b
-CombineAsync(a, c)
-GetAsync(c)
+Combine(a, c)
+Get(c)
 ac
 ```
 
@@ -203,7 +203,7 @@ Let's check if the opposite is true as well:
 ``` cs --region Part05_Caching4 --source-file Part05.cs
 var service = CreateServices().GetRequiredService<Service2>();
 var computed = await Computed.Capture(_ => service.Get("a"));
-WriteLine("computed = GetAsync(a) completed");
+WriteLine("computed = Get(a) completed");
 WriteLine(await service.Combine("a", "b"));
 GC.Collect();
 WriteLine("GC.Collect() completed");
@@ -213,14 +213,14 @@ WriteLine(await service.Combine("a", "b"));
 The output:
 
 ```text
-GetAsync(a)
-computed = GetAsync(a) completed
-CombineAsync(a, b)
-GetAsync(b)
+Get(a)
+computed = Get(a) completed
+Combine(a, b)
+Get(b)
 ab
 GC.Collect() completed
-CombineAsync(a, b)
-GetAsync(b)
+Combine(a, b)
+Get(b)
 ab
 ```
 
@@ -330,36 +330,36 @@ WriteLine(await service.Get("x"));
 The output:
 
 ```text
-CombineAsync(a, b)
-GetAsync(a)
-GetAsync(b)
+Combine(a, b)
+Get(a)
+Get(b)
 ab
 a
-GetAsync(x)
+Get(x)
 x
 GC.Collect()
 ab
 a
-GetAsync(x)
+Get(x)
 x
 Task.Delay(...) and GC.Collect()
-CombineAsync(a, b)
-GetAsync(a)
-GetAsync(b)
+Combine(a, b)
+Get(a)
+Get(b)
 ab
 a
-GetAsync(x)
+Get(x)
 x
 ```
 
 As you see, `KeepAliveTime` does exactly what's expected:
 
-- It holds a strong reference to the output of `CombineAsync` for 0.3 seconds,
-  so the output of `CombineAsync("a", "b")` gets cached for 0.3s
-- Since `CombineAsync` calls `GetAsync`, the outputs of
-  `GetAsync("a")` and `GetAsync("b")` are cached for 0.3s too
-- But not the output of `GetAsync("x")`, which wasn't used in any of
-  `CombineAsync` calls in this example.
+- It holds a strong reference to the output of `Combine` for 0.3 seconds,
+  so the output of `Combine("a", "b")` gets cached for 0.3s
+- Since `Combine` calls `Get`, the outputs of
+  `Get("a")` and `Get("b")` are cached for 0.3s too
+- But not the output of `Get("x")`, which wasn't used in any of
+  `Combine` calls in this example.
 
 That's basically it on `KeepAliveTime`.
 
@@ -438,7 +438,7 @@ WriteLine(await service.Get("a"));
 The output:
 
 ```text
-GetAsync(a)
+Get(a)
 a
 Swap: Castle.Proxies.Service4Proxy|@26|a <- [try renew]
 Swap: Castle.Proxies.Service4Proxy|@26|a <- {"$type":"Stl.ResultBox`1[[System.String, System.Private.CoreLib]], Stl","UnsafeValue":"a"}
@@ -447,14 +447,14 @@ Swap: Castle.Proxies.Service4Proxy|@26|a -> Some({"$type":"Stl.ResultBox`1[[Syst
 a
 Swap: Castle.Proxies.Service4Proxy|@26|a <- [try renew]
 Task.Delay(1500) and GC.Collect()
-GetAsync(a)
+Get(a)
 a
 ```
 
 So what's going on here?
 
 * `[ComputeMethod(KeepAliveTime = 1)]` tells the `IComputed` describing the output
-  of `GetAsync` should stay in RAM for 1s
+  of `Get` should stay in RAM for 1s
 * `[Swap(0.1)]` tells its value should be swapped out once 0.1s pass after
   the last attempt to use it, which, in turn, means that if someone tries
   to access it after it was swapped, Fusion will try to load it back, and

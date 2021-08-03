@@ -45,5 +45,5 @@
         => options.InitialOutputFactory = _ => DateTime.Today;
 
     protected override Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
-        => WeatherForecast.GetForecastAsync(MutableState.Value, cancellationToken);
+        => WeatherForecast.GetForecast(MutableState.Value, cancellationToken);
 }

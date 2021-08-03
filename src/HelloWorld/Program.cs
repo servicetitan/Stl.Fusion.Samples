@@ -25,7 +25,7 @@ WriteLine("Projects:");
 var index = 1;
 foreach (var project in projects) {
     WriteLine($"{index++}. {project}");
-    await builder.AddOrUpdateAsync(project);
+    await builder.AddOrUpdate(project);
 }
 
 Project InputProject(string prompt)
@@ -42,7 +42,7 @@ Project InputProject(string prompt)
 var watchedProject = InputProject("Which project do you want to continuously rebuild?");
 Task.Run(async () => {
     WriteLine($"Watching: {watchedProject}");
-    var computed = await Computed.Capture(_ => builder.GetOrBuildAsync(watchedProject.Id, default));
+    var computed = await Computed.Capture(_ => builder.GetOrBuild(watchedProject.Id, default));
     while (true) {
         WriteLine($"* Build result: {computed.Value}");
         await computed.WhenInvalidated();

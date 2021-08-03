@@ -122,7 +122,7 @@ namespace Tutorial
         public class RecSumCommandService
         {
             [CommandHandler] // Note that ICommandHandler<RecSumCommand, long> support isn't needed
-            public virtual async Task<long> RecSumAsync( // Notice "public virtual"!
+            public virtual async Task<long> RecSum( // Notice "public virtual"!
                 RecSumCommand command,
                 // You can't have any extra arguments here
                 CancellationToken cancellationToken = default)
@@ -131,7 +131,7 @@ namespace Tutorial
                     return 0;
                 var head = command.Numbers[0];
                 var tail = command.Numbers[1..];
-                var tailSum = await RecSumAsync( // Note it's a direct call, but the whole pipeline still gets invoked!
+                var tailSum = await RecSum( // Note it's a direct call, but the whole pipeline still gets invoked!
                     new RecSumCommand() { Numbers = tail },
                     cancellationToken);
                 return head + tailSum;
@@ -175,7 +175,7 @@ namespace Tutorial
             var recSumService = services.GetRequiredService<RecSumCommandService>();
             WriteLine(recSumService.GetType());
             WriteLine(await commander.Call(new RecSumCommand() { Numbers = new [] { 1L, 2 }}));
-            WriteLine(await recSumService.RecSumAsync(new RecSumCommand() { Numbers = new [] { 3L, 4 }}));
+            WriteLine(await recSumService.RecSum(new RecSumCommand() { Numbers = new [] { 3L, 4 }}));
             #endregion
         }
 

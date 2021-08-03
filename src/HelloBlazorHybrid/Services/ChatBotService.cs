@@ -33,7 +33,7 @@ namespace Samples.HelloBlazorHybrid.Services
             => _chatService = chatService;
 
         public async Task StartAsync(CancellationToken cancellationToken)
-            => await _chatService.PostMessageAsync(new(Morpheus, MorpheusMessage1), cancellationToken);
+            => await _chatService.PostMessage(new(Morpheus, MorpheusMessage1), cancellationToken);
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         [CommandHandler(Priority = 1, IsFilter = true)]
@@ -52,24 +52,24 @@ namespace Samples.HelloBlazorHybrid.Services
 
         private async Task Reaction(IChatService.PostCommand command, CancellationToken cancellationToken)
         {
-            var messageCount = await _chatService.GetMessageCountAsync();
+            var messageCount = await _chatService.GetMessageCount();
             switch (messageCount) {
             case 1:
                 break;
             case 2:
                 await Task.Delay(1000);
-                await _chatService.PostMessageAsync(new(Morpheus, MorpheusMessage2), default);
+                await _chatService.PostMessage(new(Morpheus, MorpheusMessage2), default);
                 break;
             default:
-                var messages = await _chatService.GetMessagesAsync(1, cancellationToken);
+                var messages = await _chatService.GetMessages(1, cancellationToken);
                 var (time, name, message) = messages.SingleOrDefault()!;
                 name ??= "";
                 if (name == "" || BotNames.Contains(name))
                     break;
                 if (message.ToLowerInvariant().Contains("time"))
-                    await _chatService.PostMessageAsync(new(TimeBot, DateTime.Now.ToString("F")), default);
+                    await _chatService.PostMessage(new(TimeBot, DateTime.Now.ToString("F")), default);
                 else
-                    await _chatService.PostMessageAsync(new(Groot, GrootMessage), default);
+                    await _chatService.PostMessage(new(Groot, GrootMessage), default);
                 break;
             }
         }

@@ -61,7 +61,7 @@
 
     protected override async Task<(string Name, string Text, string Time)[]> ComputeState(CancellationToken cancellationToken)
     {
-        var messages = await Chat.GetMessagesAsync(20, cancellationToken);
+        var messages = await Chat.GetMessages(20, cancellationToken);
         var result = new List<(string Name, string Text, string Time)>();
         foreach (var message in messages) {
             var momentsAgo = await Time.GetMomentsAgo(message.Time);
@@ -74,7 +74,7 @@
     {
         if (Message == "")
             return;
-        await Chat.PostMessageAsync(new(Name, Message));
+        await Chat.PostMessage(new(Name, Message));
         Message = "";
     }
 }

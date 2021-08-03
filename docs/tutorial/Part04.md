@@ -131,7 +131,7 @@ public class CounterController : ControllerBase
     public CounterController(ICounterService counterService)
         => Counters = counterService;
 
-    // Publish ensures GetAsync output is published if publication was requested by the client:
+    // Publish ensures Get output is published if publication was requested by the client:
     // - Publication is created
     // - Its Id is shared in response header.
     [HttpGet, Publish]
@@ -275,25 +275,25 @@ The output:
 
 ```text
 Host started.
-CounterController.GetAsync(a)
-GetAsync(a)
-aComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(a, System.Threading.CancellationToken) @4f, State: Consistent)
-CounterController.GetAsync(b)
-GetAsync(b)
-bComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(b, System.Threading.CancellationToken) @6j, State: Consistent)
-CounterController.IncrementAsync(a)
-IncrementAsync(a)
-aComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(a, System.Threading.CancellationToken) @4f, State: Invalidated)
-GetAsync(a)
-aComputed: 1, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(a, System.Threading.CancellationToken) @2m, State: Consistent)
-CounterController.SetOffsetAsync(10)
-SetOffsetAsync(10)
-bComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(b, System.Threading.CancellationToken) @6j, State: Invalidated)
-aComputed: 1, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(a, System.Threading.CancellationToken) @2m, State: Invalidated)
-GetAsync(a)
-GetAsync(b)
-aComputed: 11, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(a, System.Threading.CancellationToken) @2n, State: Consistent)
-bComputed: 10, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.GetAsync(b, System.Threading.CancellationToken) @29, State: Consistent)
+CounterController.Get(a)
+Get(a)
+aComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(a, System.Threading.CancellationToken) @4f, State: Consistent)
+CounterController.Get(b)
+Get(b)
+bComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(b, System.Threading.CancellationToken) @6j, State: Consistent)
+CounterController.Increment(a)
+Increment(a)
+aComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(a, System.Threading.CancellationToken) @4f, State: Invalidated)
+Get(a)
+aComputed: 1, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(a, System.Threading.CancellationToken) @2m, State: Consistent)
+CounterController.SetOffset(10)
+SetOffset(10)
+bComputed: 0, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(b, System.Threading.CancellationToken) @6j, State: Invalidated)
+aComputed: 1, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(a, System.Threading.CancellationToken) @2m, State: Invalidated)
+Get(a)
+Get(b)
+aComputed: 11, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(a, System.Threading.CancellationToken) @2n, State: Consistent)
+bComputed: 10, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(b, System.Threading.CancellationToken) @29, State: Consistent)
 ```
 
 So Replica Service does its job &ndash; it perfectly mimics the underlying Compute Service!
@@ -335,7 +335,7 @@ var stateFactory = services.StateFactory();
                 async (state, cancellationToken) =>
                 {
                     var counter = await counters.Get("a", cancellationToken);
-                    return $"counters.GetAsync(a) -> {counter}";
+                    return $"counters.Get(a) -> {counter}";
                 });
 await state.Update(); // Ensures the state gets up-to-date value
 await counters.Increment("a");
@@ -353,22 +353,22 @@ Host started.
 10/2/2020 6:27:48 AM: Updated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @26, State: Consistent)
 10/2/2020 6:27:48 AM: Invalidated, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @26, State: Invalidated)
 10/2/2020 6:27:48 AM: Updating, Value: , Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @26, State: Invalidated)
-CounterController.GetAsync(a)
-GetAsync(a)
-10/2/2020 6:27:48 AM: Updated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Consistent)
-CounterController.IncrementAsync(a)
-IncrementAsync(a)
-10/2/2020 6:27:48 AM: Invalidated, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Invalidated)
-10/2/2020 6:27:49 AM: Updating, Value: counters.GetAsync(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Invalidated)
-GetAsync(a)
-10/2/2020 6:27:50 AM: Updated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Consistent)
-CounterController.SetOffsetAsync(10)
-SetOffsetAsync(10)
-10/2/2020 6:27:50 AM: Invalidated, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Invalidated)
-10/2/2020 6:27:51 AM: Updating, Value: counters.GetAsync(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Invalidated)
-GetAsync(a)
-10/2/2020 6:27:51 AM: Updated, Value: counters.GetAsync(a) -> 11, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @ap, State: Consistent)
-10/2/2020 6:27:52 AM: Invalidated, Value: counters.GetAsync(a) -> 11, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @ap, State: Invalidated)
+CounterController.Get(a)
+Get(a)
+10/2/2020 6:27:48 AM: Updated, Value: counters.Get(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Consistent)
+CounterController.Increment(a)
+Increment(a)
+10/2/2020 6:27:48 AM: Invalidated, Value: counters.Get(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Invalidated)
+10/2/2020 6:27:49 AM: Updating, Value: counters.Get(a) -> 0, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @4a, State: Invalidated)
+Get(a)
+10/2/2020 6:27:50 AM: Updated, Value: counters.Get(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Consistent)
+CounterController.SetOffset(10)
+SetOffset(10)
+10/2/2020 6:27:50 AM: Invalidated, Value: counters.Get(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Invalidated)
+10/2/2020 6:27:51 AM: Updating, Value: counters.Get(a) -> 1, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @6h, State: Invalidated)
+Get(a)
+10/2/2020 6:27:51 AM: Updated, Value: counters.Get(a) -> 11, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @ap, State: Consistent)
+10/2/2020 6:27:52 AM: Invalidated, Value: counters.Get(a) -> 11, Computed: StateBoundComputed`1(FuncLiveState`1(#38338487) @ap, State: Invalidated)
 ```
 
 As you might guess, this is exactly the logic out Blazor samples use to update

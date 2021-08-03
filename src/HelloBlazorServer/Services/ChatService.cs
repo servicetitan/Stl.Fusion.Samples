@@ -24,11 +24,11 @@ namespace Samples.HelloBlazorServer.Services
         private readonly object _lock = new();
 
         [CommandHandler]
-        public virtual Task PostMessageAsync(PostCommand command, CancellationToken cancellationToken = default)
+        public virtual Task PostMessage(PostCommand command, CancellationToken cancellationToken = default)
         {
             if (Computed.IsInvalidating()) {
-                GetMessageCountAsync().Ignore();
-                GetAnyTailAsync().Ignore();
+                GetMessageCount().Ignore();
+                PseudoGetAnyTail().Ignore();
                 return Task.CompletedTask;
             }
 
@@ -40,19 +40,19 @@ namespace Samples.HelloBlazorServer.Services
         }
 
         [ComputeMethod]
-        public virtual Task<int> GetMessageCountAsync()
+        public virtual Task<int> GetMessageCount()
             => Task.FromResult(_messages.Count);
 
         [ComputeMethod]
-        public virtual async Task<(DateTime Time, string Name, string Message)[]> GetMessagesAsync(
+        public virtual async Task<(DateTime Time, string Name, string Message)[]> GetMessages(
             int count, CancellationToken cancellationToken = default)
         {
-            // Fake dependency used to invalidate all GetMessagesAsync(...) independently on count argument
-            await GetAnyTailAsync();
+            // Fake dependency used to invalidate all GetMessages(...) independently on count argument
+            await PseudoGetAnyTail();
             return _messages.TakeLast(count).ToArray();
         }
 
         [ComputeMethod]
-        protected virtual Task<Unit> GetAnyTailAsync() => TaskEx.UnitTask;
+        protected virtual Task<Unit> PseudoGetAnyTail() => TaskEx.UnitTask;
     }
 }

@@ -118,7 +118,7 @@ the code of your old action handlers:
 **Pre-OF handler:**
 
 ```cs
-public async Task<ChatMessage> PostMessageAsync(
+public async Task<ChatMessage> PostMessage(
     Session session, string text, CancellationToken cancellationToken = default)
 {
     await using var dbContext = CreateDbContext().ReadWrite();
@@ -126,7 +126,7 @@ public async Task<ChatMessage> PostMessageAsync(
 
     // Invalidation
     using (Computed.Invalidate())
-        PseudoGetAnyChatTailAsync().Ignore();
+        PseudoGetAnyChatTail().Ignore();
     return message;
 }
 ```
@@ -157,11 +157,11 @@ to their immutability.
 
 ```cs
 [CommandHandler]
-public virtual async Task<ChatMessage> PostMessageAsync(
+public virtual async Task<ChatMessage> PostMessage(
     PostMessageCommand command, CancellationToken cancellationToken = default)
 {
     if (Computed.IsInvalidating()) {
-        PseudoGetAnyChatTailAsync().Ignore();
+        PseudoGetAnyChatTail().Ignore();
         return default!;
     }
 
@@ -210,7 +210,7 @@ So to pass some data to your invalidation blocks, use
 nearly as follows:
 
 ```cs
-public virtual async Task SignOutAsync(
+public virtual async Task SignOut(
     SignOutCommand command, CancellationToken cancellationToken = default)
 {
     // ...
@@ -219,14 +219,14 @@ public virtual async Task SignOutAsync(
         // Fetch operation item
         var invSessionInfo = context.Operation().Items.Get<SessionInfo>();
         // Use it
-        TryGetUserAsync(invSessionInfo.UserId, default).Ignore();
-        GetUserSessionsAsync(invSessionInfo.UserId, default).Ignore();
+        TryGetUser(invSessionInfo.UserId, default).Ignore();
+        GetUserSessions(invSessionInfo.UserId, default).Ignore();
         return;
     }
 
     await using var dbContext = await CreateCommandDbContext(cancellationToken).ConfigureAwait(false);
 
-    var dbSessionInfo = await Sessions.FindOrCreateAsync(dbContext, session, cancellationToken).ConfigureAwait(false);
+    var dbSessionInfo = await Sessions.FindOrCreate(dbContext, session, cancellationToken).ConfigureAwait(false);
     var sessionInfo = dbSessionInfo.ToModel();
     if (sessionInfo.IsSignOutForced)
         return;
@@ -372,7 +372,7 @@ section:
 ### What is Operation Completion?
 
 It's a process that happens on invocation of
-`OperationCompletionNotifier.NotifyCompletedAsync(operation)`.
+`OperationCompletionNotifier.NotifyCompleted(operation)`.
 `IOperationCompletionNotifier` is a service simply "distributes" such
 notifications to `IOperationCompletionListener`-s after eliminating
 all *duplicate notifications* (based on `IOperation.Id`). By default,
@@ -446,7 +446,7 @@ for `ICompletion<MyCommand>`. And yes, it's better to use
 So what is operation completion?
 
 - It's invocation of
-  `OperationCompletionNotifier.NotifyCompletedAsync(operation)`
+  `OperationCompletionNotifier.NotifyCompleted(operation)`
 - Which in turn invokes all operation completion listeners
   - One of such listeners - `CompletionProducer` - reacts
     to this by creating a "meta command" of
@@ -542,7 +542,7 @@ Let's look at its handler declaration first:
 
 ```cs
 [CommandHandler(Priority = 100, IsFilter = true)]
-public async Task OnCommandAsync(
+public async Task OnCommand(
   ICompletion command, CommandContext context, CancellationToken cancellationToken)
 { 
     //  ... 
@@ -576,24 +576,24 @@ I'll show how it's used in one of Fusion's built-in command handlers -
 [`SignOutCommand` handler of `DbAuthService`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/Authentication/DbAuthService.cs#L91):
 
 ```cs
-public virtual async Task SignOutAsync(
+public virtual async Task SignOut(
     SignOutCommand command, CancellationToken cancellationToken = default)
 {
     var (session, force) = command;
     var context = CommandContext.GetCurrent();
     if (Computed.IsInvalidating()) {
-        GetSessionInfoAsync(session, default).Ignore();
+        GetSessionInfo(session, default).Ignore();
         var invSessionInfo = context.Operation().Items.TryGet<SessionInfo>();
         if (invSessionInfo != null) {
-            TryGetUserAsync(invSessionInfo.UserId, default).Ignore();
-            GetUserSessionsAsync(invSessionInfo.UserId, default).Ignore();
+            TryGetUser(invSessionInfo.UserId, default).Ignore();
+            GetUserSessions(invSessionInfo.UserId, default).Ignore();
         }
         return;
     }
 
     await using var dbContext = await CreateCommandDbContext(cancellationToken).ConfigureAwait(false);
 
-    var dbSessionInfo = await Sessions.FindOrCreateAsync(dbContext, session, cancellationToken).ConfigureAwait(false);
+    var dbSessionInfo = await Sessions.FindOrCreate(dbContext, session, cancellationToken).ConfigureAwait(false);
     var sessionInfo = dbSessionInfo.ToModel();
     if (sessionInfo.IsSignOutForced)
         return;
@@ -605,7 +605,7 @@ public virtual async Task SignOutAsync(
         UserId = "",
         IsSignOutForced = force,
     };
-    await Sessions.CreateOrUpdateAsync(dbContext, sessionInfo, cancellationToken).ConfigureAwait(false);
+    await Sessions.CreateOrUpdate(dbContext, sessionInfo, cancellationToken).ConfigureAwait(false);
 }
 ```
 

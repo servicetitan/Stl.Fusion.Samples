@@ -57,15 +57,15 @@ WriteLine($"- Value:          {computed.Value}");
 The output:
 
 ```text
-GetAsync(a)
-Computed: Computed`1(Intercepted:CounterService.GetAsync(a) @xIs0saqEU, State: Consistent)
+Get(a)
+Computed: Computed`1(Intercepted:CounterService.Get(a) @xIs0saqEU, State: Consistent)
 - IsConsistent(): True
 - Value:          0
 ```
 
 As you may notice, `IComputed<T>` stores:
 
-- Some representation of its input: `Intercepted:CounterService.GetAsync(a`
+- Some representation of its input: `Intercepted:CounterService.Get(a`
 - Version: `@xIs0saqEU`
 - State: `Consistent`
 - Value: `0`
@@ -208,12 +208,12 @@ WriteLine($"newComputed: {newComputed}");
 The output:
 
 ```text
-GetAsync(a)
-computed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaNN, State: Consistent)
+Get(a)
+computed: Computed`1(Intercepted:CounterService.Get(a) @1EhL08uaNN, State: Consistent)
 computed.Invalidate()
-computed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaNN, State: Invalidated)
-GetAsync(a)
-newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @1EhL08uaPR, State: Consistent)
+computed: Computed`1(Intercepted:CounterService.Get(a) @1EhL08uaNN, State: Invalidated)
+Get(a)
+newComputed: Computed`1(Intercepted:CounterService.Get(a) @1EhL08uaPR, State: Consistent)
 ```
 
 Compare the above code with this one:
@@ -222,7 +222,7 @@ Compare the above code with this one:
 var counters = CreateServices().GetRequiredService<CounterService>();
 var computed = await Computed.Capture(_ => counters.Get("a"));
 WriteLine($"computed: {computed}");
-WriteLine("using (Computed.Invalidate()) counters.GetAsync(\"a\"))");
+WriteLine("using (Computed.Invalidate()) counters.Get(\"a\"))");
 using (Computed.Invalidate()) // <- This line
     counters.Get("a").Ignore();
 WriteLine($"computed: {computed}");
@@ -233,12 +233,12 @@ WriteLine($"newComputed: {newComputed}");
 The output:
 
 ```text
-GetAsync(a)
-computed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVbo, State: Consistent)
-Computed.Invalidate(() => counters.GetAsync("a"))
-computed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVbo, State: Invalidated)
-GetAsync(a)
-newComputed: Computed`1(Intercepted:CounterService.GetAsync(a) @R0oNKnVds, State: Consistent)
+Get(a)
+computed: Computed`1(Intercepted:CounterService.Get(a) @R0oNKnVbo, State: Consistent)
+Computed.Invalidate(() => counters.Get("a"))
+computed: Computed`1(Intercepted:CounterService.Get(a) @R0oNKnVbo, State: Invalidated)
+Get(a)
+newComputed: Computed`1(Intercepted:CounterService.Get(a) @R0oNKnVds, State: Consistent)
 ```
 
 The output is ~ identical. As you might guess,
@@ -276,22 +276,22 @@ for (var i = 0; i < 5; i++)
 The output:
 
 ```text
-GetAsync(a)
+Get(a)
 9/1/2020 5:08:54 PM: 0
 Increment(a)
-GetAsync(a)
+Get(a)
 9/1/2020 5:08:55 PM: 1
 Increment(a)
-GetAsync(a)
+Get(a)
 9/1/2020 5:08:56 PM: 2
 Increment(a)
-GetAsync(a)
+Get(a)
 9/1/2020 5:08:57 PM: 3
 Increment(a)
-GetAsync(a)
+Get(a)
 9/1/2020 5:08:58 PM: 4
 Increment(a)
-GetAsync(a)
+Get(a)
 9/1/2020 5:08:59 PM: 5
 ```
 

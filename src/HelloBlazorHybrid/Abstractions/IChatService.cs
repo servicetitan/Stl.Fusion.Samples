@@ -23,15 +23,15 @@ namespace Samples.HelloBlazorHybrid.Abstractions
         }
 
         [CommandHandler]
-        Task PostMessageAsync(PostCommand command, CancellationToken cancellationToken = default);
+        Task PostMessage(PostCommand command, CancellationToken cancellationToken = default);
 
         [ComputeMethod]
-        Task<int> GetMessageCountAsync();
+        Task<int> GetMessageCount();
 
         [ComputeMethod]
-        Task<Message[]> GetMessagesAsync(int count, CancellationToken cancellationToken = default);
+        Task<Message[]> GetMessages(int count, CancellationToken cancellationToken = default);
 
         [ComputeMethod]
-        Task<Unit> GetAnyTailAsync();
+        Task<Unit> GetAnyTail();
     }
 }

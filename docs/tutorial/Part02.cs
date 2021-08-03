@@ -71,7 +71,7 @@ namespace Tutorial
             var counters = CreateServices().GetRequiredService<CounterService>();
             var computed = await Computed.Capture(_ => counters.Get("a"));
             WriteLine($"computed: {computed}");
-            WriteLine("using (Computed.Invalidate()) counters.GetAsync(\"a\"))");
+            WriteLine("using (Computed.Invalidate()) counters.Get(\"a\"))");
             using (Computed.Invalidate()) // <- This line
                 counters.Get("a").Ignore();
             WriteLine($"computed: {computed}");

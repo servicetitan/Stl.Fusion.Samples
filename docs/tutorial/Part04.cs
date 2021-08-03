@@ -84,7 +84,7 @@ namespace Tutorial
             public CounterController(ICounterService counterService)
                 => Counters = counterService;
 
-            // Publish ensures GetAsync output is published if publication was requested by the client:
+            // Publish ensures Get output is published if publication was requested by the client:
             // - Publication is created
             // - Its Id is shared in response header.
             [HttpGet, Publish]
@@ -239,7 +239,7 @@ namespace Tutorial
                 },
                 async (state, cancellationToken) => {
                     var counter = await counters.Get("a", cancellationToken);
-                    return $"counters.GetAsync(a) -> {counter}";
+                    return $"counters.Get(a) -> {counter}";
                 });
             await state.Update(); // Ensures the state gets up-to-date value
             await counters.Increment("a");

@@ -105,7 +105,7 @@ namespace Tutorial
             var counterSum = services.GetRequiredService<CounterSumService>();
             WriteLine("Nothing is cached (yet):");
             WriteLine(await counterSum.Sum("a", "b"));
-            WriteLine("Only GetAsync(a) and GetAsync(b) outputs are cached:");
+            WriteLine("Only Get(a) and Get(b) outputs are cached:");
             WriteLine(await counterSum.Sum("b", "a"));
             WriteLine("Everything is cached:");
             WriteLine(await counterSum.Sum("a", "b"));

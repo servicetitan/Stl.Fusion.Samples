@@ -93,7 +93,7 @@ namespace Tutorial
                 },
                 async (state, cancellationToken) => {
                     var counter = await counters.Get("a");
-                    return $"counters.GetAsync(a) -> {counter}";
+                    return $"counters.Get(a) -> {counter}";
                 });
             WriteLine("Before state.Update(false).");
             await state.Update(); // Ensures the state gets up-to-date value
