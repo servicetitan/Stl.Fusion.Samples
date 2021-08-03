@@ -50,13 +50,13 @@ public class CounterService
     [ComputeMethod]
     public virtual async Task<int> Get(string key)
     {
-        WriteLine($"Get ({key})");
+        WriteLine($"Get({key})");
         return _counters.TryGetValue(key, out var value) ? value : 0;
     }
 
     public void Increment(string key)
     {
-        WriteLine($"Increment ({key})");
+        WriteLine($"Increment({key})");
         _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
         using (Computed.Invalidate())
             Get(key).Ignore();
