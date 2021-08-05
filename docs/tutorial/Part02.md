@@ -65,7 +65,7 @@ Computed: Computed`1(Intercepted:CounterService.Get(a) @xIs0saqEU, State: Consis
 
 As you may notice, `IComputed<T>` stores:
 
-- Some representation of its input: `Intercepted:CounterService.Get(a`
+- Some representation of its input: `Intercepted:CounterService.Get(a)`
 - Version: `@xIs0saqEU`
 - State: `Consistent`
 - Value: `0`
