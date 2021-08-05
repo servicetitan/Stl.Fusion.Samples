@@ -235,7 +235,7 @@ The output:
 ```text
 Get(a)
 computed: Computed`1(Intercepted:CounterService.Get(a) @R0oNKnVbo, State: Consistent)
-Computed.Invalidate(() => counters.Get("a"))
+using Computed.Invalidate(() => counters.Get("a"))
 computed: Computed`1(Intercepted:CounterService.Get(a) @R0oNKnVbo, State: Invalidated)
 Get(a)
 newComputed: Computed`1(Intercepted:CounterService.Get(a) @R0oNKnVds, State: Consistent)
