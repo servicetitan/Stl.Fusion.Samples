@@ -77,17 +77,17 @@ Overall, its key properties include:
   `IsConsistent()` extension method is a shortcut checking whether the state
   is exactly `Consistent`.
   You may find more of such shortcuts by Ctrl-clicking on `IsConsistent()`.
-* `Version` property - a unique value for any `IComputed<T>` instance.
+* `Version` property — an unique value for any `IComputed<T>` instance.
   `LTag` struct uses 64-bit integer under the hood, so "unique" actually means
   "unique assuming you don't run a process for a few hundreed years".
-* `Output`, `Value` and `Error` - the properties describing the
+* `Output`, `Value` and `Error` — the properties describing the
   result of the computation.
-* `Invalidated` - an event raised on invalidation. Handlers of this event
+* `Invalidated` — an event raised on invalidation. Handlers of this event
   should never throw exceptions.
 
-`IComputed<T>` implements a set of interfaces - most notably,
+`IComputed<T>` implements a set of interfaces — most notably,
 
-* `IResult<T>` - interestingly, it both "mimics" `IResult<T>` behavior,
+* `IResult<T>` — interestingly, it both "mimics" `IResult<T>` behavior,
   but also exposes a property of `Result<T>` type.
   * `IResult<T>` describes an object that stores the result of computation
     of type `T`, which is either a `Value` of `T`, or an `Error`
@@ -100,9 +100,9 @@ Overall, its key properties include:
     as well (by, basically, forwarding all the calls to its `Output` property),
     you can write `computed.Value` instead of `computed.Output.Value` and so on.
   * Later you'll find out there are other types in Fusion that follow
-    the same pattern (i.e. similarly implement `IResult<T>`) - in particular,
+    the same pattern (i.e. similarly implement `IResult<T>`) — in particular,
     `IState<T>`.
-* `IComputedImpl` - an interface  allowing computed instances
+* `IComputedImpl` — an interface  allowing computed instances
   to list themselves as dependencies of other computed instances.
   Most likely you won't ever need to use it, which is why the interface
   is declared in `Stl.Fusion.Internal` namespace and implemented explicitly.
@@ -113,21 +113,21 @@ Overall, its key properties include:
   to keep reference to *either* dependency or dependent instance to ensure
   *both* stay in RAM. Fusion, on contrary, doesn't prevent unreferenced
   dependent instances to be garbage collected.
-* `IComputed`, `IResult` - "untyped" versions of `IComputed<T>` and
+* `IComputed`, `IResult` — "untyped" versions of `IComputed<T>` and
   `IResult<T>`. Similarly to `IEnumerable` (vs `IEnumerable<T>`), you can
   use them when the type of result isn't known.
 
 And finally, there are a few important methods:
 
-* `Invalidate()` - triggers invalidation, which turns the instance
+* `Invalidate()` — triggers invalidation, which turns the instance
   into `Invalidated` state. This is the only change that may happen
   with `IComputed<T>` over its lifetime; other than that, computed
   instances are immutable.
   As with `IDisposable.Dispose`, you are free to call this method
   multiple times, though only the first call matters.
-* `WhenInvalidated(...)` - an extension method allowing to await
+* `WhenInvalidated(...)` — an extension method allowing to await
   for invalidation.
-* `Update(...)` - *finds or computes* the consistent version
+* `Update(...)` — *finds or computes* the consistent version
   of this computed instance. *Finds* means the computation will happen
   if and only if there is no cached consistent instance in
   `ComputedRegistry` (~ a cache tracking the most up-to-date version of
@@ -136,7 +136,7 @@ And finally, there are a few important methods:
   but not necessarily, consistent*, because it could be invalidated
   either in between the computation and the moment you check its status,
   or even right during the computation.
-* `Use(...)` -gets the most up-to-date value of the current computed and
+* `Use(...)` — gets the most up-to-date value of the current computed and
   makes sure that if this happens inside the computation of another
   computed value, the current `IComputed<T>` gets listed as a dependency
   of this "outer"  computed.
@@ -300,7 +300,7 @@ achieving exactly the same behavior with it is pretty straightforward.
 
 A good question to ask is: but why it doesn't, if literally everyone else
 does? E.g.
-[MobX even tries to re-compute all the derivations atomically](https://mobx.js.org/intro/concepts.html) - so why Fusion does literally the opposite?
+[MobX even tries to re-compute all the derivations atomically](https://mobx.js.org/intro/concepts.html) — so why Fusion does literally the opposite?
 
 The answer is:
 
@@ -314,7 +314,7 @@ The answer is:
   almost never possible in this scenario.
 
 What's totally possible though is to notify the code using certain computed value
-that it became obsolete and thus has to be recomputed. And this notification -
+that it became obsolete and thus has to be recomputed. And this notification —
 plus maybe some other "knowns" about the domain would let the code to
 determine the right strategy for triggering the recomputation.
 
@@ -326,7 +326,7 @@ Think of these two cases:
   we can immediately update it to reflect the result of user action;
   there are no potential scalability problems here.
 - In another case the post was invalidated w/o current user action.
-  And in this case we may delay the update for several seconds - in fact,
+  And in this case we may delay the update for several seconds — in fact,
   as for long as we think is reasonable taking into account such factors
   as current backend load or the current rate of actions on this post.
 
