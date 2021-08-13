@@ -667,17 +667,17 @@ services.AddFusion(fusion => {
 // a preferable way of accessing DbContexts nowadays
 var appTempDir = PathEx.GetApplicationTempDirectory("", true);
 var dbPath = appTempDir & "HelloCart_v01.db";
-services.AddDbContextFactory<AppDbContext>(b => {
-    b.UseSqlite($"Data Source={dbPath}");
-    b.EnableSensitiveDataLogging();
+services.AddDbContextFactory<AppDbContext>(dbContext => {
+    dbContext.UseSqlite($"Data Source={dbPath}");
+    dbContext.EnableSensitiveDataLogging();
 });
 
 // AddDbContextServices is just a convenience builder allowing
 // to omit DbContext type in misc. normal and extension methods 
 // it has
-services.AddDbContextServices<AppDbContext>(b => {
+services.AddDbContextServices<AppDbContext>(dbContext => {
     // This call enabled Operations Framework (OF) for AppDbContext. 
-    b.AddDbOperations((_, o) => {
+    dbContext.AddOperations((_, o) => {
         // Here we tell operation log reader that it should fetch the
         // tail of operation log every 5 seconds no matter what.
         o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5);
@@ -690,7 +690,7 @@ services.AddDbContextServices<AppDbContext>(b => {
     // scenario, but it works well if you just want to test
     // multi-host invalidation on a single host by running
     // multiple processes there.
-    b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
+    dbContext.AddFileBasedOperationLogChangeTracking(dbPath + "_changed");
 });
 ClientServices = HostServices = services.BuildServiceProvider();
 ```
@@ -769,8 +769,8 @@ The `v2` code is actually already good enough, but one small improvement
 can make it way better:
 
 ```cs
-b.AddDbEntityResolver<string, DbProduct>();
-b.AddDbEntityResolver<string, DbCart>((_, options) => {
+b.AddEntityResolver<string, DbProduct>();
+b.AddEntityResolver<string, DbCart>((_, options) => {
     // Cart is always loaded together with items
     options.QueryTransformer = carts => carts.Include(c => c.Items);
 });

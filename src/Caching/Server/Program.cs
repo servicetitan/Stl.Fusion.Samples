@@ -20,7 +20,7 @@ namespace Samples.Caching.Server
                         }
                     });
                 })
-                .ConfigureWebHostDefaults(builder => builder
+                .ConfigureWebHostDefaults(webHost => webHost
                     .UseDefaultServiceProvider((ctx, options) => {
                         options.ValidateScopes = ctx.HostingEnvironment.IsDevelopment();
                         options.ValidateOnBuild = true;

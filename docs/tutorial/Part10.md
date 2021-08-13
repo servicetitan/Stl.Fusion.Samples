@@ -49,13 +49,13 @@ public DbSet<DbOperation> Operations { get; protected set; } = null!;
    (typically it is `Startup.ConfigureServices` method):
 
 ```cs
-services.AddDbContextServices<AppDbContext>(builder => {
-    builder.AddDbOperations((_, o) => {
+services.AddDbContextServices<AppDbContext>(dbContext => {
+    dbContext.AddOperations((_, o) => {
         // Default unconditional wake up period: 0.25s
         o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(1); 
     });
     // Optionally enable file-based log change tracker 
-    builder.AddFileBasedDbOperationLogChangeTracking(someSharedFilePath);
+    dbContext.AddFileBasedOperationLogChangeTracking(someSharedFilePath);
     // Or, if you use PostgreSQL, use this instead of above line
     // builder.AddNpgsqlDbOperationLogChangeTracking();
 });
@@ -68,14 +68,14 @@ services.AddDbContextServices<AppDbContext>(builder => {
 What happens here?
 
 - `AddDbContextServices<TDbContext>(Action<DbContextBuilder<TDbcontext>>)`
-  is a convenience helper allowing methods like `AddDbOperations`
+  is a convenience helper allowing methods like `AddOperations`
   to be implemented as extension methods to `DbContextBuilder<TDbcontext>`,
   so you as a user of such methods need to specify `TDbContext` type
   just once - when you call `AddDbContextServices`. In other
   words, `AddDbContextServices` does nothing itself, but allows
   services registered inside its builder block to be dependent on
   `TDbContext` type.
-- `AddDbOperations` does nearly all the job. I'll cover every service
+- `AddOperations` does nearly all the job. I'll cover every service
   it registers in details further.
 - And finally, `AddXxxDbOperationLogChangeTracking` adds one of two
   services implementing log change tracking notification / listening.
@@ -89,7 +89,7 @@ What happens here?
   make this part way more efficient by explicitly notifying the log
   reader to read the tail as soon as they know for sure one of their
   peers updated it:
-  - `AddFileBasedDbOperationLogChangeTracking` relies on a shared file
+  - `AddFileBasedOperationLogChangeTracking` relies on a shared file
     to pass these notifications. Any peer that updates operation log
     also "touches" this file (just update its modify date), and all
     other peers are using `FileSystemWatcher`-s to know about these
@@ -676,7 +676,7 @@ other than solving this problem once and forever 😎
 ## How can I learn Operation Framework deeper?
 
 The easiest way to find all the components used by Operations
-Framework is to see the implementation of `DbContextBuilder.AddDbOperations`
+Framework is to see the implementation of `DbContextBuilder.AddOperations`
 and `IServiceCollection.AddFusion` (more precisely, `FusionBuilder`
 constructor). Links to the source code of both methods:
 
@@ -758,7 +758,7 @@ are routing commands to corresponding server-side services,
 the invalidation and any other post-processing should
 happen there, but not on the client.
 
-Ok, now let's look at `DbContextBuilder.AddDbOperations`:
+Ok, now let's look at `DbContextBuilder.AddOperations`:
 
 ```cs
 // Common services

@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -50,9 +51,10 @@ namespace Templates.TodoApp.Host
             services.AddLogging(logging => {
                 logging.ClearProviders();
                 logging.AddConsole();
-                logging.SetMinimumLevel(LogLevel.Warning);
+                logging.SetMinimumLevel(LogLevel.Information);
                 if (Env.IsDevelopment()) {
                     logging.AddFilter(typeof(App).Namespace, LogLevel.Information);
+                    logging.AddFilter("Microsoft", LogLevel.Warning);
                     logging.AddFilter("Microsoft.AspNetCore.Hosting", LogLevel.Information);
                     logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Information);
                     logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
@@ -67,36 +69,33 @@ namespace Templates.TodoApp.Host
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
-            var canUseCommandReprocessor = false;
-            services.AddDbContextFactory<AppDbContext>(builder => {
-                if (!string.IsNullOrEmpty(HostSettings.UseSqlServer)) {
-                    builder.UseSqlServer(HostSettings.UseSqlServer);
-                    canUseCommandReprocessor = true;
-                }
-                else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql)) {
-                    builder.UseNpgsql(HostSettings.UsePostgreSql);
-                    canUseCommandReprocessor = true;
-                }
+            services.AddDbContextFactory<AppDbContext>(dbContext => {
+                if (!string.IsNullOrEmpty(HostSettings.UseSqlServer))
+                    dbContext.UseSqlServer(HostSettings.UseSqlServer);
+                else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql))
+                    dbContext.UseNpgsql(HostSettings.UsePostgreSql);
                 else
-                    builder.UseSqlite($"Data Source={dbPath}");
+                    dbContext.UseSqlite($"Data Source={dbPath}");
                 if (Env.IsDevelopment())
-                    builder.EnableSensitiveDataLogging();
+                    dbContext.EnableSensitiveDataLogging();
             });
-            services.AddDbContextServices<AppDbContext>(b => {
+            services.AddCommandReprocessor();
+            services.AddTransient(c => new DbOperationScope<AppDbContext>(c) {
+                IsolationLevel = IsolationLevel.Serializable,
+            });
+            services.AddDbContextServices<AppDbContext>(dbContext => {
                 // This is the best way to add DbContext-related services from Stl.Fusion.EntityFramework
-                b.AddDbOperations((_, o) => {
+                dbContext.AddOperations((_, o) => {
                     // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
                     // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
                 });
                 var operationLogChangeAlertPath = dbPath + "_changed";
-                b.AddFileBasedDbOperationLogChangeTracking(operationLogChangeAlertPath);
+                dbContext.AddFileBasedOperationLogChangeTracking(operationLogChangeAlertPath);
                 if (!HostSettings.UseInMemoryAuthService)
-                    b.AddDbAuthentication();
-                b.AddKeyValueStore();
+                    dbContext.AddAuthentication();
+                dbContext.AddKeyValueStore();
             });
-            if (canUseCommandReprocessor)
-                services.AddCommandReprocessor();
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = HostSettings.PublisherId });

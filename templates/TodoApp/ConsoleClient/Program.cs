@@ -16,7 +16,7 @@ var session = new Session(sessionId);
 var services = CreateServiceProvider();
 var todoService = services.GetRequiredService<ITodoService>();
 var computed = await Computed.Capture(ct => todoService.GetSummary(session, ct));
-for (;;) {
+while (true) {
     WriteLine($"- {computed.Value}");
     await computed.WhenInvalidated();
     computed = await computed.Update();
@@ -26,10 +26,10 @@ IServiceProvider CreateServiceProvider()
 {
     // ReSharper disable once VariableHidesOuterVariable
     var services = new ServiceCollection();
-    services.AddLogging(b => {
-        b.ClearProviders();
-        b.SetMinimumLevel(LogLevel.Warning);
-        b.AddConsole();
+    services.AddLogging(logging => {
+        logging.ClearProviders();
+        logging.SetMinimumLevel(LogLevel.Warning);
+        logging.AddConsole();
     });
 
     var baseUri = new Uri("http://localhost:5005");

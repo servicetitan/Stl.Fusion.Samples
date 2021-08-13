@@ -71,20 +71,20 @@ namespace Samples.Blazor.Server
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App_v011.db";
-            services.AddDbContextFactory<AppDbContext>(b => {
-                b.UseSqlite($"Data Source={dbPath}");
+            services.AddDbContextFactory<AppDbContext>(dbContext => {
+                dbContext.UseSqlite($"Data Source={dbPath}");
                 if (Env.IsDevelopment())
-                    b.EnableSensitiveDataLogging();
+                    dbContext.EnableSensitiveDataLogging();
             });
-            services.AddDbContextServices<AppDbContext>(b => {
-                b.AddDbEntityResolver<long, ChatMessage>();
-                b.AddDbOperations((_, o) => {
+            services.AddDbContextServices<AppDbContext>(dbContext => {
+                dbContext.AddEntityResolver<long, ChatMessage>();
+                dbContext.AddOperations((_, o) => {
                     // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
                     // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
                     o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
                 });
-                b.AddFileBasedDbOperationLogChangeTracking(dbPath + "_changed");
-                b.AddDbAuthentication();
+                dbContext.AddFileBasedOperationLogChangeTracking(dbPath + "_changed");
+                dbContext.AddAuthentication();
             });
 
             // Fusion

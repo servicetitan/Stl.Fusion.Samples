@@ -81,16 +81,16 @@ namespace Samples.Caching.Client
         public static Task<IServiceProvider> CreateLocalServiceProvider(CancellationToken cancellationToken)
         {
             var host = Host.CreateDefaultBuilder()
-                .ConfigureAppConfiguration((ctx, builder) => {
+                .ConfigureAppConfiguration((ctx, cfg) => {
                     // Looks like there is no better way to set _default_ URL
-                    builder.Sources.Insert(0, new MemoryConfigurationSource() {
+                    cfg.Sources.Insert(0, new MemoryConfigurationSource() {
                         InitialData = new Dictionary<string, string>() {
                             {WebHostDefaults.EnvironmentKey, "Production"},
                             {WebHostDefaults.ServerUrlsKey, "http://localhost:0"},
                         }
                     });
                 })
-                .ConfigureWebHostDefaults(builder => builder
+                .ConfigureWebHostDefaults(webHost => webHost
                     .UseDefaultServiceProvider((ctx, options) => {
                         options.ValidateScopes = ctx.HostingEnvironment.IsDevelopment();
                         options.ValidateOnBuild = true;

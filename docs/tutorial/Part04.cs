@@ -147,10 +147,10 @@ namespace Tutorial
                 // And its controller
                 services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
             });
-            builder.ConfigureWebHost(b => {
-                b.UseKestrel();
-                b.UseUrls("http://localhost:50050/");
-                b.Configure((ctx, app) => {
+            builder.ConfigureWebHost(webHost => {
+                webHost.UseKestrel();
+                webHost.UseUrls("http://localhost:50050/");
+                webHost.Configure((ctx, app) => {
                     app.UseWebSockets();
                     app.UseRouting();
                     app.UseEndpoints(endpoints => {
