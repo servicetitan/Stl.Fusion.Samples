@@ -78,7 +78,7 @@ namespace Samples.Blazor.Server.Services
         [ComputeMethod(KeepAliveTime = 61, AutoInvalidateTime = 60)]
         public virtual async Task<long> GetActiveUserCount(CancellationToken cancellationToken = default)
         {
-            var minLastSeenAt = (Clock.Now - TimeSpan.FromMinutes(5)).ToDateTime();
+            var minLastSeenAt = (Clocks.SystemClock.Now - TimeSpan.FromMinutes(5)).ToDateTime();
             await using var dbContext = CreateDbContext();
             return await dbContext.Sessions.AsQueryable()
                 .Where(s => s.LastSeenAt >= minLastSeenAt)

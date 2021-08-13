@@ -10,10 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="5.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="5.0.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
-    <PackageReference Include="Stl.Fusion.Client" Version="1.5.19" />
+    <PackageReference Include="Stl.Fusion.Client" Version="1.7.18" />
   </ItemGroup>
 
 </Project>

@@ -8,9 +8,9 @@ namespace Templates.TodoApp.Services
     public class AppDbContext : DbContext
     {
         // Stl.Fusion.EntityFramework tables
-        public DbSet<DbUser> Users { get; protected set; } = null!;
-        public DbSet<DbUserIdentity> UserIdentities { get; protected set; } = null!;
-        public DbSet<DbSessionInfo> Sessions { get; protected set; } = null!;
+        public DbSet<DbUser<long>> Users { get; protected set; } = null!;
+        public DbSet<DbUserIdentity<long>> UserIdentities { get; protected set; } = null!;
+        public DbSet<DbSessionInfo<long>> Sessions { get; protected set; } = null!;
         public DbSet<DbKeyValue> KeyValues { get; protected set; } = null!;
         public DbSet<DbOperation> Operations { get; protected set; } = null!;
 

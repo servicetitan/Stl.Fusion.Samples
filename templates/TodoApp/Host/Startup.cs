@@ -67,11 +67,16 @@ namespace Templates.TodoApp.Host
             // DbContext & related services
             var appTempDir = PathEx.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App.db";
+            var canUseCommandReprocessor = false;
             services.AddDbContextFactory<AppDbContext>(builder => {
-                if (!string.IsNullOrEmpty(HostSettings.UseSqlServer))
+                if (!string.IsNullOrEmpty(HostSettings.UseSqlServer)) {
                     builder.UseSqlServer(HostSettings.UseSqlServer);
-                else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql))
+                    canUseCommandReprocessor = true;
+                }
+                else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql)) {
                     builder.UseNpgsql(HostSettings.UsePostgreSql);
+                    canUseCommandReprocessor = true;
+                }
                 else
                     builder.UseSqlite($"Data Source={dbPath}");
                 if (Env.IsDevelopment())
@@ -90,6 +95,8 @@ namespace Templates.TodoApp.Host
                     b.AddDbAuthentication();
                 b.AddKeyValueStore();
             });
+            if (canUseCommandReprocessor)
+                services.AddCommandReprocessor();
 
             // Fusion services
             services.AddSingleton(new Publisher.Options() { Id = HostSettings.PublisherId });
