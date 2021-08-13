@@ -167,7 +167,7 @@ namespace Tutorial
         public class DemoSwapService : SimpleSwapService
         {
             public DemoSwapService(Options? options, IServiceProvider services)
-                : base(options ?? new(), services) { }
+                : base(options ?? new Options(), services) { }
 
             protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)
             {

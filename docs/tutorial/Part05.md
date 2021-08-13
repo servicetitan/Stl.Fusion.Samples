@@ -401,6 +401,9 @@ public class Service4
 
 public class DemoSwapService : SimpleSwapService
 {
+    public DemoSwapService(Options? options, IServiceProvider services)
+        : base(options ?? new Options(), services) { }
+
     protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)
     {
         WriteLine($"Swap: {key} <- {value}");
