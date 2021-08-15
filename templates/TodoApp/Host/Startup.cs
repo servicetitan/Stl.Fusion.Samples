@@ -24,8 +24,10 @@ using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Extensions;
+using Stl.Fusion.Operations.Reprocessing;
 using Stl.IO;
 using Templates.TodoApp.Abstractions;
 using Templates.TodoApp.UI;
@@ -79,7 +81,6 @@ namespace Templates.TodoApp.Host
                 if (Env.IsDevelopment())
                     dbContext.EnableSensitiveDataLogging();
             });
-            services.AddCommandReprocessor();
             services.AddTransient(c => new DbOperationScope<AppDbContext>(c) {
                 IsolationLevel = IsolationLevel.Serializable,
             });
@@ -109,8 +110,19 @@ namespace Templates.TodoApp.Host
                 authHelperOptionsBuilder: (_, options) => {
                     options.NameClaimKeys = Array.Empty<string>();
                 });
-            fusion.AddComputeService<ITodoService, TodoService>();
             fusion.AddSandboxedKeyValueStore();
+            fusion.AddOperationReprocessor();
+            // You don't need to manually add TransientFailureDetector -
+            // it's here only to show that operation reprocessor works
+            // when TodoService.AddOrUpdate throws this exception.
+            // Database-related transient errors are auto-detected by
+            // DbOperationScopeProvider<TDbContext> (it uses DbContext's
+            // IExecutionStrategy to do this).
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(
+                TransientFailureDetector.New(e => e is DbUpdateConcurrencyException)));
+
+            // Compute service(s)
+            fusion.AddComputeService<ITodoService, TodoService>();
 
             // Shared services
             Program.ConfigureSharedServices(services);

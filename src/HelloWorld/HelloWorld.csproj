@@ -9,6 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion" Version="1.8.3" />
+    <PackageReference Include="Stl.Fusion" Version="1.8.5" />
   </ItemGroup>
 </Project>
