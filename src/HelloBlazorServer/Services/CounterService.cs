@@ -6,7 +6,7 @@ namespace Samples.HelloBlazorServer.Services
 {
     public class CounterService
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private int _count;
         private DateTime _changeTime = DateTime.Now;
 
