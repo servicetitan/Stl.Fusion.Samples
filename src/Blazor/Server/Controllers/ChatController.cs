@@ -24,19 +24,13 @@ namespace Samples.Blazor.Server.Controllers
 
         [HttpPost]
         public Task<ChatMessage> Post([FromBody] IChatService.PostCommand command, CancellationToken cancellationToken = default)
-        {
-            command.UseDefaultSession(_sessionResolver);
-            return _chat.Post(command, cancellationToken);
-        }
+            => _chat.Post(command.UseDefaultSession(_sessionResolver), cancellationToken);
 
         // Queries
 
         [HttpGet, Publish]
-        public Task<ChatUser> GetCurrentUser(Session? session, CancellationToken cancellationToken = default)
-        {
-            session ??= _sessionResolver.Session;
-            return _chat.GetCurrentUser(session, cancellationToken);
-        }
+        public Task<ChatUser> GetCurrentUser(Session session, CancellationToken cancellationToken = default)
+            => _chat.GetCurrentUser(session, cancellationToken);
 
         [HttpGet, Publish]
         public Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default)
