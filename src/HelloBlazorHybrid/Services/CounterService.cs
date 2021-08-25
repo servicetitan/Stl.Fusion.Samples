@@ -7,22 +7,15 @@ namespace Samples.HelloBlazorHybrid.Services
 {
     public class CounterService : ICounterService
     {
-        private readonly object _lock = new();
-        private int _count;
+        private volatile int _count;
 
         [ComputeMethod]
         public virtual Task<int> Get(CancellationToken cancellationToken = default)
-        {
-            lock (_lock) {
-                return Task.FromResult(_count);
-            }
-        }
-        
+            => Task.FromResult(_count);
+
         public Task Increment(CancellationToken cancellationToken = default)
         {
-            lock (_lock) {
-                ++_count;
-            }
+            Interlocked.Increment(ref _count);
             using (Computed.Invalidate())
                 Get(cancellationToken);
             return Task.CompletedTask;
