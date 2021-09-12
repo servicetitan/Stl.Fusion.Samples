@@ -27,7 +27,7 @@ namespace Tutorial
                 WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
                 using (Computed.Invalidate())
-                    Get(key).Ignore();
+                    _ = Get(key);
             }
         }
 
@@ -73,7 +73,7 @@ namespace Tutorial
             WriteLine($"computed: {computed}");
             WriteLine("using (Computed.Invalidate()) counters.Get(\"a\"))");
             using (Computed.Invalidate()) // <- This line
-                counters.Get("a").Ignore();
+                _ = counters.Get("a");
             WriteLine($"computed: {computed}");
             var newComputed = await Computed.Capture(_ => counters.Get("a")); // <- This line
             WriteLine($"newComputed: {newComputed}");
@@ -85,12 +85,12 @@ namespace Tutorial
             #region Part02_IncrementCounter
             var counters = CreateServices().GetRequiredService<CounterService>();
 
-            Task.Run(async () => {
+            _ = Task.Run(async () => {
                 for (var i = 0; i <= 5; i++) {
                     await Task.Delay(1000);
                     counters.Increment("a");
                 }
-            }).Ignore();
+            });
 
             var computed = await Computed.Capture(_ => counters.Get("a"));
             WriteLine($"{DateTime.Now}: {computed.Value}");

@@ -126,7 +126,7 @@ public async Task<ChatMessage> PostMessage(
 
     // Invalidation
     using (Computed.Invalidate())
-        PseudoGetAnyChatTail().Ignore();
+        _ = PseudoGetAnyChatTail();
     return message;
 }
 ```
@@ -161,7 +161,7 @@ public virtual async Task<ChatMessage> PostMessage(
     PostMessageCommand command, CancellationToken cancellationToken = default)
 {
     if (Computed.IsInvalidating()) {
-        PseudoGetAnyChatTail().Ignore();
+        _ = PseudoGetAnyChatTail();
         return default!;
     }
 
@@ -219,8 +219,8 @@ public virtual async Task SignOut(
         // Fetch operation item
         var invSessionInfo = context.Operation().Items.Get<SessionInfo>();
         // Use it
-        TryGetUser(invSessionInfo.UserId, default).Ignore();
-        GetUserSessions(invSessionInfo.UserId, default).Ignore();
+        _ = TryGetUser(invSessionInfo.UserId, default);
+        _ = GetUserSessions(invSessionInfo.UserId, default);
         return;
     }
 
@@ -582,11 +582,11 @@ public virtual async Task SignOut(
     var (session, force) = command;
     var context = CommandContext.GetCurrent();
     if (Computed.IsInvalidating()) {
-        GetSessionInfo(session, default).Ignore();
+        _ = GetSessionInfo(session, default);
         var invSessionInfo = context.Operation().Items.TryGet<SessionInfo>();
         if (invSessionInfo != null) {
-            TryGetUser(invSessionInfo.UserId, default).Ignore();
-            GetUserSessions(invSessionInfo.UserId, default).Ignore();
+            _ = TryGetUser(invSessionInfo.UserId, default);
+            _ = GetUserSessions(invSessionInfo.UserId, default);
         }
         return;
     }

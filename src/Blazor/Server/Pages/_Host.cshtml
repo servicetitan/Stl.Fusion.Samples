@@ -8,7 +8,7 @@
 @inject ServerAuthHelper ServerAuthHelper
 @inject ServerSettings ServerSettings
 @{
-    Task.Run(() => ServerAuthHelper.UpdateAuthState(HttpContext)).Ignore();
+    await Task.Run(() => ServerAuthHelper.UpdateAuthState(HttpContext));
     var authSchemas = await ServerAuthHelper.GetSchemas(HttpContext);
     var sessionId = ServerAuthHelper.Session.Id.Value;
     var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);

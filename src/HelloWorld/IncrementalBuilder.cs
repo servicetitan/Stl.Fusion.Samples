@@ -51,9 +51,9 @@ namespace Samples.HelloWorld
         public void InvalidateGetOrBuildResult(string projectId)
         {
             // WriteLine($"Invalidating build results for: {projectId}");
-            using var _ = Computed.Invalidate();
+            using var invalidating = Computed.Invalidate();
             // Invalidation call to [ComputeMethod] always completes synchronously, so...
-            GetOrBuild(projectId, default).Ignore(); // Ignore() call is here just to suppress warning
+            _ = GetOrBuild(projectId, default);
         }
     }
 }

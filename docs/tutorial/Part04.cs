@@ -62,7 +62,7 @@ namespace Tutorial
                 WriteLine($"{nameof(Increment)}({key})");
                 _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
                 using (Computed.Invalidate())
-                    Get(key, default).Ignore();
+                    _ = Get(key, default);
                 return Task.CompletedTask;
             }
 
@@ -203,9 +203,9 @@ namespace Tutorial
             var services = CreateClientServices();
             var counters = services.GetRequiredService<ICounterService>();
             var aComputed = await Computed.Capture(_ => counters.Get("a"));
-            Task.Run(() => Watch(nameof(aComputed), aComputed)).Ignore();
+            _ = Task.Run(() => Watch(nameof(aComputed), aComputed));
             var bComputed = await Computed.Capture(_ => counters.Get("b"));
-            Task.Run(() => Watch(nameof(bComputed), bComputed)).Ignore();
+            _ = Task.Run(() => Watch(nameof(bComputed), bComputed));
 
             await Task.Delay(200);
             await counters.Increment("a");

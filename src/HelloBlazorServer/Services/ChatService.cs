@@ -27,8 +27,8 @@ namespace Samples.HelloBlazorServer.Services
         public virtual Task PostMessage(PostCommand command, CancellationToken cancellationToken = default)
         {
             if (Computed.IsInvalidating()) {
-                GetMessageCount().Ignore();
-                PseudoGetAnyTail().Ignore();
+                _ = GetMessageCount();
+                _ = PseudoGetAnyTail();
                 return Task.CompletedTask;
             }
 

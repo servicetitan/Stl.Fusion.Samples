@@ -40,7 +40,7 @@ Project InputProject(string prompt)
 }
 
 var watchedProject = InputProject("Which project do you want to continuously rebuild?");
-Task.Run(async () => {
+_ = Task.Run(async () => {
     WriteLine($"Watching: {watchedProject}");
     var computed = await Computed.Capture(_ => builder.GetOrBuild(watchedProject.Id, default));
     while (true) {
@@ -49,7 +49,7 @@ Task.Run(async () => {
         // Computed instances are ~ immutable, so update means getting a new one
         computed = await computed.Update();
     }
-}).Ignore();
+});
 
 // Notice the code below doesn't even know there are some IComputed, etc.
 while (true) {

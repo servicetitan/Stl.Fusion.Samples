@@ -343,7 +343,7 @@ You might notice just a few unusual things there:
 2. `Edit` contains a bit unusual piece of code:
    ```cs
     if (Computed.IsInvalidating()) {
-        TryGet(productId, default).Ignore();
+        _ = TryGet(productId, default);
         return Task.CompletedTask;
     }
    ```
@@ -357,7 +357,7 @@ The same is equally applicable to `InMemoryCartService`:
 2. `Edit` contains a bit unusual piece of code:
    ```cs
     if (Computed.IsInvalidating()) {
-        TryGet(cartId, default).Ignore();
+        _ = TryGet(cartId, default);
         return Task.CompletedTask;
     }
    ```
@@ -525,7 +525,7 @@ public virtual Task Edit(EditCommand<Product> command, CancellationToken cancell
         // This is the invalidation block.
         // Every [ComputeMethod] result you "touch" here
         // instantly becomes a 🎃 (gets invalidated)!
-        TryGet(productId, default).Ignore();
+        _ = TryGet(productId, default);
         return Task.CompletedTask;
     }
 
@@ -542,7 +542,7 @@ you'll find a very similar block there:
 
 ```cs
 if (Computed.IsInvalidating()) {
-    TryGet(cartId, default).Ignore();
+    _ = TryGet(cartId, default);
     return Task.CompletedTask;
 }
 ```

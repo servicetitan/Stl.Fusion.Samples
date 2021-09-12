@@ -20,8 +20,8 @@ namespace Samples.HelloBlazorHybrid.Abstractions
         public virtual Task PostMessage(IChatService.PostCommand command, CancellationToken cancellationToken = default)
         {
             if (Computed.IsInvalidating()) {
-                GetMessageCount().Ignore();
-                GetAnyTail().Ignore();
+                _ = GetMessageCount();
+                _ = GetAnyTail();
                 return Task.CompletedTask;
             }
 

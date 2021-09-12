@@ -30,8 +30,8 @@ namespace Samples.Caching.Server.Services
 
             if (IsComputeService)
                 using (Computed.Invalidate()) {
-                    TryGet(tenant.Id, default).Ignore();
-                    GetAll(default).Ignore();
+                    _ = TryGet(tenant.Id, default);
+                    _ = GetAll(default);
                 }
         }
 
@@ -44,8 +44,8 @@ namespace Samples.Caching.Server.Services
 
             if (IsComputeService)
                 using (Computed.Invalidate()) {
-                    TryGet(tenantId, default).Ignore();
-                    GetAll(default).Ignore();
+                    _ = TryGet(tenantId, default);
+                    _ = GetAll(default);
                 }
         }
 

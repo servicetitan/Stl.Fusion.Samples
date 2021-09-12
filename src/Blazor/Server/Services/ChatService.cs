@@ -46,7 +46,7 @@ namespace Samples.Blazor.Server.Services
             var (text, session) = command;
             var context = CommandContext.GetCurrent();
             if (Computed.IsInvalidating()) {
-                PseudoGetAnyChatTail().Ignore();
+                _ = PseudoGetAnyChatTail();
                 return default!;
             }
 
@@ -136,8 +136,8 @@ namespace Samples.Blazor.Server.Services
             if (Computed.IsInvalidating()) {
                 var isNewUser = context.Operation().Items.TryGet<bool>();
                 if (isNewUser) {
-                    GetUserCount(default).Ignore();
-                    GetActiveUserCount(default).Ignore();
+                    _ = GetUserCount(default);
+                    _ = GetActiveUserCount(default);
                 }
             }
         }
