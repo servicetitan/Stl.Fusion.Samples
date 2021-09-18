@@ -126,7 +126,7 @@ namespace Samples.Blazor.Server.Services
         // Helpers
 
         [ComputeMethod]
-        protected virtual Task<Unit> PseudoGetAnyChatTail() => TaskEx.UnitTask;
+        protected virtual Task<Unit> PseudoGetAnyChatTail() => TaskExt.UnitTask;
 
         [CommandHandler(IsFilter = true, Priority = 1)]
         protected virtual async Task OnSignIn(SignInCommand command, CancellationToken cancellationToken)

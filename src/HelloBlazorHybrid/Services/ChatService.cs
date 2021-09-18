@@ -46,6 +46,6 @@ namespace Samples.HelloBlazorHybrid.Abstractions
         }
 
         [ComputeMethod]
-        public virtual Task<Unit> GetAnyTail() => TaskEx.UnitTask;
+        public virtual Task<Unit> GetAnyTail() => TaskExt.UnitTask;
     }
 }

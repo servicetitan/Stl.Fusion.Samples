@@ -9,6 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.CommandR" Version="1.9.1" />
+    <PackageReference Include="Stl.CommandR" Version="1.10.6" />
   </ItemGroup>
 </Project>

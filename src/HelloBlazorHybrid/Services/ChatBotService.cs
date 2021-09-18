@@ -45,7 +45,7 @@ namespace Samples.HelloBlazorHybrid.Services
                 // Now we need to suppress ExecutionContext flow to ensure
                 // Reaction runs its commands outside of the current command context,
                 // outside Computed.Invalidate() block, etc.
-                using var suppressing = ExecutionContextEx.SuppressFlow();
+                using var suppressing = ExecutionContextExt.SuppressFlow();
                 _ = Task.Run(() => Reaction(command, default), default);
             }
         }

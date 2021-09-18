@@ -1,18 +1,19 @@
 ﻿@page "/"
 @namespace Samples.Blazor.Server.Pages
 @using Samples.Blazor.UI
-@using Stl.Async
+@using Stl.Fusion.Blazor
 @using Stl.Fusion.Server.Authentication
 @using Stl.Fusion.Server.Controllers
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@inject ServerAuthHelper ServerAuthHelper
-@inject ServerSettings ServerSettings
+@inject ServerAuthHelper _serverAuthHelper
+@inject ServerSettings _serverSettings
+@inject BlazorCircuitContext _blazorCircuitContext
 @{
-    await Task.Run(() => ServerAuthHelper.UpdateAuthState(HttpContext));
-    var authSchemas = await ServerAuthHelper.GetSchemas(HttpContext);
-    var sessionId = ServerAuthHelper.Session.Id.Value;
+    await _serverAuthHelper.UpdateAuthState(HttpContext);
+    var authSchemas = await _serverAuthHelper.GetSchemas(HttpContext);
+    var sessionId = _serverAuthHelper.Session.Id.Value;
     var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
-    var isCloseWindowRequest = ServerAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
+    var isCloseWindowRequest = _serverAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
     Layout = null;
 }
 
@@ -44,9 +45,13 @@
     </div>
 } else {
     <app id="app">
-        @(await Html.RenderComponentAsync<App>(
-            isServerSideBlazor ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
-            new { SessionId = sessionId }))
+        @{
+            using var prerendering = _blazorCircuitContext.Prerendering();
+            var prerenderedApp = await Html.RenderComponentAsync<App>(
+                isServerSideBlazor ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
+                new { SessionId = sessionId });
+        }
+        @(prerenderedApp)
     </app>
 
     <div id="blazor-error-ui">

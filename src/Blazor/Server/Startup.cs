@@ -69,7 +69,7 @@ namespace Samples.Blazor.Server
             ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
 
             // DbContext & related services
-            var appTempDir = PathEx.GetApplicationTempDirectory("", true);
+            var appTempDir = PathExt.GetApplicationTempDirectory("", true);
             var dbPath = appTempDir & "App_v011.db";
             services.AddDbContextFactory<AppDbContext>(dbContext => {
                 dbContext.UseSqlite($"Data Source={dbPath}");

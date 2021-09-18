@@ -51,7 +51,7 @@ WriteLine("Initial state:");
 using var cts = new CancellationTokenSource();
 _ = app.Watch(cts.Token);
 await Task.Delay(700); // Just to make sure watch tasks print whatever they want before our prompt appears
-// await AutoRunner.RunAsync(app);
+// await AutoRunner.Run(app);
 
 WriteLine();
 WriteLine("Change product price by typing [productId]=[price], e.g. \"apple=0\".");

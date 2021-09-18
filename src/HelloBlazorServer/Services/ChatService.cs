@@ -53,6 +53,6 @@ namespace Samples.HelloBlazorServer.Services
         }
 
         [ComputeMethod]
-        protected virtual Task<Unit> PseudoGetAnyTail() => TaskEx.UnitTask;
+        protected virtual Task<Unit> PseudoGetAnyTail() => TaskExt.UnitTask;
     }
 }
