@@ -3,4 +3,4 @@
 set ASPNETCORE_ENVIRONMENT=Development
 
 (sleep 3; xdg-open http://localhost:5005/) &
-dotnet run --no-launch-profile -f net5.0 -p src/Blazor/Server/Server.csproj
+dotnet run --no-launch-profile --project src/Blazor/Server/Server.csproj

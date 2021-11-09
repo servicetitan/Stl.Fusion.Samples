@@ -16,94 +16,93 @@ using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
 
-namespace Samples.Caching.Server
+namespace Samples.Caching.Server;
+
+public class Startup
 {
-    public class Startup
+    private IConfiguration Cfg { get; }
+    private IWebHostEnvironment Env { get; }
+    private ServerSettings ServerSettings { get; set; } = null!;
+    private DbSettings DbSettings { get; set; } = null!;
+    private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
+
+    public Startup(IConfiguration cfg, IWebHostEnvironment environment)
     {
-        private IConfiguration Cfg { get; }
-        private IWebHostEnvironment Env { get; }
-        private ServerSettings ServerSettings { get; set; } = null!;
-        private DbSettings DbSettings { get; set; } = null!;
-        private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
+        Cfg = cfg;
+        Env = environment;
+    }
 
-        public Startup(IConfiguration cfg, IWebHostEnvironment environment)
-        {
-            Cfg = cfg;
-            Env = environment;
-        }
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // Logging
+        services.AddLogging(logging => {
+            logging.ClearProviders();
+            logging.AddConsole();
+            logging.SetMinimumLevel(LogLevel.Information);
+            logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+        });
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Logging
-            services.AddLogging(logging => {
-                logging.ClearProviders();
-                logging.AddConsole();
-                logging.SetMinimumLevel(LogLevel.Information);
-                logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-            });
-
-            // Creating Log, HostSettings, and DbSettings as early as possible
-            services.AddSettings<ServerSettings>("Server");
-            services.AddSettings<DbSettings>("DB");
+        // Creating Log, HostSettings, and DbSettings as early as possible
+        services.AddSettings<ServerSettings>("Server");
+        services.AddSettings<DbSettings>("DB");
 #pragma warning disable ASP0000
-            var tmpServices = services.BuildServiceProvider();
+        var tmpServices = services.BuildServiceProvider();
 #pragma warning restore ASP0000
-            Log = tmpServices.GetRequiredService<ILogger<Startup>>();
-            ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
-            DbSettings = tmpServices.GetRequiredService<DbSettings>();
+        Log = tmpServices.GetRequiredService<ILogger<Startup>>();
+        ServerSettings = tmpServices.GetRequiredService<ServerSettings>();
+        DbSettings = tmpServices.GetRequiredService<DbSettings>();
 
-            // DbContext & related services
-            services.AddPooledDbContextFactory<AppDbContext>((c, builder) => {
-                var connectionString =
-                    $"Server={DbSettings.ServerHost},{DbSettings.ServerPort}; " +
-                    $"Database={DbSettings.DatabaseName}; " +
-                    $"User Id=sa; Password=Fusion.0.to.1; " +
-                    $"MultipleActiveResultSets=True; ";
-                builder.UseSqlServer(connectionString, sqlServer => { });
-            }, 512);
+        // DbContext & related services
+        services.AddPooledDbContextFactory<AppDbContext>((c, builder) => {
+            var connectionString =
+                $"Server={DbSettings.ServerHost},{DbSettings.ServerPort}; " +
+                $"Database={DbSettings.DatabaseName}; " +
+                $"User Id=sa; Password=Fusion.0.to.1; " +
+                $"MultipleActiveResultSets=True; ";
+            builder.UseSqlServer(connectionString, sqlServer => { });
+        }, 512);
 
-            // Fusion
-            var fusion = services.AddFusion();
-            var fusionServer = fusion.AddWebServer();
-            var fusionClient = fusion.AddRestEaseClient();
-            services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
+        // Fusion
+        var fusion = services.AddFusion();
+        var fusionServer = fusion.AddWebServer();
+        var fusionClient = fusion.AddRestEaseClient();
+        services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
 
-            // Fusion services
-            fusion.AddComputeService<ITenantService, TenantService>();
+        // Fusion services
+        fusion.AddComputeService<ITenantService, TenantService>();
 
-            // Other services
-            services.AddSingleton<DbInitializer>();
-            services.AddSingleton<ISqlTenantService, TenantService>(); // Non-Fusion version of ITenantService
+        // Other services
+        services.AddSingleton<DbInitializer>();
+        services.AddSingleton<ISqlTenantService, TenantService>(); // Non-Fusion version of ITenantService
 
-            services.AddRouting();
-            services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+        services.AddRouting();
+        services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+    }
+
+    public void Configure(IApplicationBuilder app, ILogger<Startup> log)
+    {
+        Log = log;
+
+        if (Env.IsDevelopment()) {
+            app.UseDeveloperExceptionPage();
+        }
+        else {
+            app.UseExceptionHandler("/Error");
+            app.UseHsts();
         }
 
-        public void Configure(IApplicationBuilder app, ILogger<Startup> log)
-        {
-            Log = log;
+        app.UseWebSockets(new WebSocketOptions() {
+            KeepAliveInterval = TimeSpan.FromSeconds(30),
+        });
 
-            if (Env.IsDevelopment()) {
-                app.UseDeveloperExceptionPage();
-            }
-            else {
-                app.UseExceptionHandler("/Error");
-                app.UseHsts();
-            }
+        // Static + Swagger
+        app.UseStaticFiles();
 
-            app.UseWebSockets(new WebSocketOptions() {
-                KeepAliveInterval = TimeSpan.FromSeconds(30),
-            });
-
-            // Static + Swagger
-            app.UseStaticFiles();
-
-            // API controllers
-            app.UseRouting();
-            app.UseEndpoints(endpoints => {
-                endpoints.MapFusionWebSocketServer();
-                endpoints.MapControllers();
-            });
-        }
+        // API controllers
+        app.UseRouting();
+        app.UseEndpoints(endpoints => {
+            endpoints.MapFusionWebSocketServer();
+            endpoints.MapControllers();
+        });
     }
 }

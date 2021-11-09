@@ -2,12 +2,11 @@
 using System.Threading.Tasks;
 using Stl.Fusion;
 
-namespace Samples.HelloBlazorHybrid.Abstractions
+namespace Samples.HelloBlazorHybrid.Abstractions;
+
+public interface ICounterService
 {
-    public interface ICounterService
-    {
-        [ComputeMethod]
-        Task<int> Get(CancellationToken cancellationToken = default);
-        Task Increment(CancellationToken cancellationToken = default);
-    }
+    [ComputeMethod]
+    Task<int> Get(CancellationToken cancellationToken = default);
+    Task Increment(CancellationToken cancellationToken = default);
 }

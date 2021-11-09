@@ -1,2 +1,2 @@
 #!/bin/bash
-dotnet run -p src/HelloWorld/HelloWorld.csproj
+dotnet run --project src/HelloWorld/HelloWorld.csproj

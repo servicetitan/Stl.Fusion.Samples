@@ -2,11 +2,11 @@
 @using System.Threading
 @using Stl.Fusion.Authentication.Commands
 @inherits MixedStateComponent<Chat.Model, Chat.LocalsModel>
-@inject Session Session
-@inject IChatService ChatService
-@inject UICommandRunner CommandRunner
-@inject NavigationManager Navigator
-@inject ILogger<Chat> Log
+@inject Session _session
+@inject IChatService _chats
+@inject UICommandRunner _uiCommandRunner
+@inject NavigationManager _nav
+@inject ILogger<Chat> _log
 
 @{
     var locals = MutableState.Value;
@@ -28,7 +28,7 @@
 </div>
 
 <Note>
-    Open <a href="@Navigator.Uri" target="_blank">this page</a> or
+    Open <a href="@_nav.Uri" target="_blank">this page</a> or
     <a href="/composition" target="_blank">Composition example</a>
     in another window to see everything is updated in sync in real time.
 </Note>
@@ -130,10 +130,10 @@
 
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
-        var userCount = await ChatService.GetUserCount(cancellationToken);
-        var activeUserCount = await ChatService.GetActiveUserCount(cancellationToken);
-        var chatUser = await ChatService.GetCurrentUser(Session, cancellationToken);
-        var lastPage = await ChatService.GetChatTail(30, cancellationToken);
+        var userCount = await _chats.GetUserCount(cancellationToken);
+        var activeUserCount = await _chats.GetActiveUserCount(cancellationToken);
+        var chatUser = await _chats.GetCurrentUser(_session, cancellationToken);
+        var lastPage = await _chats.GetChatTail(30, cancellationToken);
         if (!MutableState.Value.IsNameModified)
             ResetName(chatUser.IsValid ? chatUser.Name : "");
         return new Model() {
@@ -147,19 +147,19 @@
     private async Task SetName()
     {
         var locals = MutableState.Value;
-        var command = new EditUserCommand(Session, locals.Name ?? "");
-        var (_, ce) = await CommandRunner.Run(LocalCommand.New(() => {
+        var command = new EditUserCommand(_session, locals.Name ?? "");
+        var (_, ce) = await _uiCommandRunner.Run(LocalCommand.New(() => {
             if (command.Name!.Length < 4)
                 throw new ApplicationException("The name should be at least 4 character long.");
         }));
         if (ce.IsFailed)
             return;
-        await CommandRunner.Run(command);
+        await _uiCommandRunner.Run(command);
    }
 
     private async Task Post()
     {
-        var (_, ce) = await CommandRunner.Run(new IChatService.PostCommand(MutableState.Value.Message, Session));
+        var (_, ce) = await _uiCommandRunner.Run(new IChatService.PostCommand(MutableState.Value.Message, _session));
         if (ce.IsFailed)
             return;
         MutableState.Value.Message = "";

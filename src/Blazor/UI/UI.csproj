@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
@@ -8,16 +8,22 @@
     <AssemblyName>Samples.Blazor.UI</AssemblyName>
   </PropertyGroup>
 
+  <!-- Publish & runtime properties -->
+  <PropertyGroup>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Blazorise" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.DataGrid" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.Sidebar" Version="0.9.4.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.10" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="1.11.8" />
+    <PackageReference Include="Blazorise" Version="0.9.4.7" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.4.7" />
+    <PackageReference Include="Blazorise.DataGrid" Version="0.9.4.7" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.4.7" />
+    <PackageReference Include="Blazorise.Sidebar" Version="0.9.4.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="2.0.70" />
     <PackageReference Include="UAParser" Version="3.1.46" />
   </ItemGroup>
 

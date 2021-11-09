@@ -1,2 +1,2 @@
 @echo off
-dotnet run -p src/HelloCart/HelloCart.csproj
+dotnet run --project src/HelloCart/HelloCart.csproj

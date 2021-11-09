@@ -8,79 +8,77 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Samples.HelloBlazorServer.Services;
 using Stl.Fusion;
 using Stl.Fusion.Extensions;
-using Stl.Fusion.UI;
 
-namespace Samples.HelloBlazorServer
+namespace Samples.HelloBlazorServer;
+
+public class Startup
 {
-    public class Startup
+    private IConfiguration Cfg { get; }
+    private IWebHostEnvironment Env { get; }
+    private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
+
+    public Startup(IConfiguration cfg, IWebHostEnvironment environment)
     {
-        private IConfiguration Cfg { get; }
-        private IWebHostEnvironment Env { get; }
-        private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
+        Cfg = cfg;
+        Env = environment;
+    }
 
-        public Startup(IConfiguration cfg, IWebHostEnvironment environment)
-        {
-            Cfg = cfg;
-            Env = environment;
-        }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Logging
-            services.AddLogging(logging => {
-                logging.ClearProviders();
-                logging.AddConsole();
-                logging.SetMinimumLevel(LogLevel.Information);
-                if (Env.IsDevelopment()) {
-                    logging.AddFilter("Microsoft", LogLevel.Warning);
-                    logging.AddFilter("Microsoft.AspNetCore.Hosting", LogLevel.Information);
-                    logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
-                }
-            });
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // Logging
+        services.AddLogging(logging => {
+            logging.ClearProviders();
+            logging.AddConsole();
+            logging.SetMinimumLevel(LogLevel.Information);
+            if (Env.IsDevelopment()) {
+                logging.AddFilter("Microsoft", LogLevel.Warning);
+                logging.AddFilter("Microsoft.AspNetCore.Hosting", LogLevel.Information);
+                logging.AddFilter("Stl.Fusion.Operations", LogLevel.Information);
+            }
+        });
 
 #pragma warning disable ASP0000
-            var tmpServices = services.BuildServiceProvider();
+        var tmpServices = services.BuildServiceProvider();
 #pragma warning restore ASP0000
-            Log = tmpServices.GetRequiredService<ILogger<Startup>>();
+        Log = tmpServices.GetRequiredService<ILogger<Startup>>();
 
-            // Fusion services
-            var fusion = services.AddFusion();
-            fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
-            fusion.AddComputeService<CounterService>();
-            fusion.AddComputeService<WeatherForecastService>();
-            fusion.AddComputeService<ChatService>();
-            fusion.AddComputeService<ChatBotService>();
-            // This is just to make sure ChatBotService.StartAsync is called on startup
-            services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
+        // Fusion services
+        var fusion = services.AddFusion();
+        fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
+        fusion.AddComputeService<CounterService>();
+        fusion.AddComputeService<WeatherForecastService>();
+        fusion.AddComputeService<ChatService>();
+        fusion.AddComputeService<ChatBotService>();
+        // This is just to make sure ChatBotService.StartAsync is called on startup
+        services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
 
-            // Default update delay is set to min.
-            services.AddTransient<IUpdateDelayer>(_ => UpdateDelayer.MinDelay);
+        // Default update delay is set to min.
+        services.AddTransient<IUpdateDelayer>(_ => UpdateDelayer.MinDelay);
 
-            // Web
-            services.AddRazorPages();
-            services.AddServerSideBlazor();
+        // Web
+        services.AddRazorPages();
+        services.AddServerSideBlazor();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment()) {
+            app.UseDeveloperExceptionPage();
+        }
+        else {
+            app.UseExceptionHandler("/Error");
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            if (env.IsDevelopment()) {
-                app.UseDeveloperExceptionPage();
-            }
-            else {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapBlazorHub();
-                endpoints.MapFallbackToPage("/_Host");
-            });
-        }
+            endpoints.MapBlazorHub();
+            endpoints.MapFallbackToPage("/_Host");
+        });
     }
 }
