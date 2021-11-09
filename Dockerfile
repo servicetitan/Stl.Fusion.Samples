@@ -19,12 +19,13 @@ ENTRYPOINT ["sh", "start.sh"]
 FROM mcr.microsoft.com/dotnet/sdk:6.0 as build
 RUN apt-get update \
   && apt-get install -y --allow-unauthenticated \
+    apt-utils \
     libc6-dev \
     libgdiplus \
-    libx11-dev \
+    python3 \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* \
-  && dotnet workload install wasm-tools
+  && rm -rf /var/lib/apt/lists/*
+RUN dotnet workload install wasm-tools
 WORKDIR /samples
 COPY ["src/", "src/"]
 COPY ["templates/", "templates/"]
@@ -75,6 +76,7 @@ RUN dotnet publish -c:Release --no-build --no-restore src/Blazor/Server/Server.c
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim as runtime
 RUN apt-get update \
   && apt-get install -y --allow-unauthenticated \
+    apt-utils \
     libc6-dev \
     libgdiplus \
     libx11-dev \
