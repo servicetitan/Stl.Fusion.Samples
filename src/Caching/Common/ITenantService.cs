@@ -9,7 +9,7 @@ public interface ITenantService
     [ComputeMethod(KeepAliveTime = 10)]
     Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
     [ComputeMethod(KeepAliveTime = 10)]
-    Task<Tenant?> TryGet(string tenantId, CancellationToken cancellationToken = default);
+    Task<Tenant?> Get(string tenantId, CancellationToken cancellationToken = default);
 }
 
 public interface ISqlTenantService : ITenantService { }

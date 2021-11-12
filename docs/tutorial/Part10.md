@@ -218,9 +218,11 @@ public virtual async Task SignOut(
     if (Computed.IsInvalidating()) {
         // Fetch operation item
         var invSessionInfo = context.Operation().Items.Get<SessionInfo>();
-        // Use it
-        _ = TryGetUser(invSessionInfo.UserId, default);
-        _ = GetUserSessions(invSessionInfo.UserId, default);
+        if (invSessionInfo != null) {
+            // Use it
+            _ = GetUser(invSessionInfo.UserId, default);
+            _ = GetUserSessions(invSessionInfo.UserId, default);
+        }
         return;
     }
 
@@ -583,9 +585,9 @@ public virtual async Task SignOut(
     var context = CommandContext.GetCurrent();
     if (Computed.IsInvalidating()) {
         _ = GetSessionInfo(session, default);
-        var invSessionInfo = context.Operation().Items.TryGet<SessionInfo>();
+        var invSessionInfo = context.Operation().Items.Get<SessionInfo>();
         if (invSessionInfo != null) {
-            _ = TryGetUser(invSessionInfo.UserId, default);
+            _ = GetUser(invSessionInfo.UserId, default);
             _ = GetUserSessions(invSessionInfo.UserId, default);
         }
         return;
@@ -612,7 +614,7 @@ public virtual async Task SignOut(
 First, look at this line inside the invalidation block:
 
 ```cs
-var invSessionInfo = context.Operation().Items.TryGet<SessionInfo>()
+var invSessionInfo = context.Operation().Items.Get<SessionInfo>()
 ```
 
 It tries to pull `SessionInfo` object from `Operation().Items`. But why?

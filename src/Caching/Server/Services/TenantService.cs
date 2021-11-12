@@ -26,7 +26,7 @@ public class TenantService : DbServiceBase<AppDbContext>, ISqlTenantService
 
         if (IsComputeService)
             using (Computed.Invalidate()) {
-                _ = TryGet(tenant.Id, default);
+                _ = Get(tenant.Id, default);
                 _ = GetAll(default);
             }
     }
@@ -40,7 +40,7 @@ public class TenantService : DbServiceBase<AppDbContext>, ISqlTenantService
 
         if (IsComputeService)
             using (Computed.Invalidate()) {
-                _ = TryGet(tenantId, default);
+                _ = Get(tenantId, default);
                 _ = GetAll(default);
             }
     }
@@ -55,9 +55,9 @@ public class TenantService : DbServiceBase<AppDbContext>, ISqlTenantService
         return tenants;
     }
 
-    public virtual async Task<Tenant?> TryGet(string tenantId, CancellationToken cancellationToken = default)
+    public virtual async Task<Tenant?> Get(string tenantId, CancellationToken cancellationToken = default)
     {
-        // var c = Computed.TryGetExisting(() => GetAllAsync(default));
+        // var c = Computed.GetExisting(() => GetAll(default));
         await using var dbContext = CreateDbContext();
         var tenant = await dbContext.Tenants.AsQueryable()
             .SingleOrDefaultAsync(t => t.Id == tenantId, cancellationToken).ConfigureAwait(false);

@@ -26,7 +26,7 @@ public class TenantBenchmark : BenchmarkBase
             var tenants = TenantServiceResolver(Services);
             var clock = Services.GetRequiredService<IMomentClock>();
             while (tenantIds.TryDequeue(out var tenantId)) {
-                var tenant = await tenants.TryGet(tenantId, cancellationToken).ConfigureAwait(false);
+                var tenant = await tenants.Get(tenantId, cancellationToken).ConfigureAwait(false);
                 if (tenant != null)
                     continue;
                 var now = clock.Now.ToDateTime();
@@ -68,13 +68,13 @@ public class TenantBenchmark : BenchmarkBase
         async Task Read()
         {
             var tenantId = rnd.Next(0, TenantCount).ToString();
-            await tenants.Get(tenantId, cancellationToken);
+            await TenantServiceEx.Get(tenants, tenantId, cancellationToken);
         }
 
         async Task Write()
         {
             var tenantId = rnd.Next(0, TenantCount).ToString();
-            var tenant = await tenants.Get(tenantId, cancellationToken);
+            var tenant = await TenantServiceEx.Get(tenants, tenantId, cancellationToken);
             tenant = tenant with { Name = $"Tenant-{tenant.Id}-{tenant.Version + 1}" };
             await tenants.AddOrUpdate(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
         }

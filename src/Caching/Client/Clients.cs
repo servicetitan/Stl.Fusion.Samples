@@ -6,25 +6,25 @@ namespace Samples.Caching.Client;
 [BasePath("tenants")]
 public interface ITenantClientDef
 {
-    [Post("addOrUpdate")]
+    [Post(nameof(AddOrUpdate))]
     Task AddOrUpdate([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
-    [Post("remove")]
+    [Post(nameof(Remove))]
     Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);
-    [Get("getAll")]
+    [Get(nameof(GetAll))]
     Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
-    [Get("tryGet")]
-    Task<Tenant> TryGet(string tenantId, CancellationToken cancellationToken = default);
+    [Get(nameof(Get))]
+    Task<Tenant> Get(string tenantId, CancellationToken cancellationToken = default);
 }
 
 [BasePath("sqlTenants")]
 public interface ISqlTenantClientDef
 {
-    [Post("addOrUpdate")]
+    [Get(nameof(AddOrUpdate))]
     Task AddOrUpdate([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
-    [Post("remove")]
+    [Get(nameof(Remove))]
     Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);
-    [Get("getAll")]
+    [Get(nameof(GetAll))]
     Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
-    [Get("tryGet")]
-    Task<Tenant> TryGet(string tenantId, CancellationToken cancellationToken = default);
+    [Get(nameof(Get))]
+    Task<Tenant> Get(string tenantId, CancellationToken cancellationToken = default);
 }

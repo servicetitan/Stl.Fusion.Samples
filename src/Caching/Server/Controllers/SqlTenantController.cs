@@ -27,6 +27,6 @@ public class SqlTenantController : Controller, ISqlTenantService
         => Tenants.GetAll(cancellationToken);
 
     [HttpGet]
-    public Task<Tenant?> TryGet(string tenantId, CancellationToken cancellationToken = default)
-        => Tenants.TryGet(tenantId ?? "", cancellationToken);
+    public Task<Tenant?> Get(string tenantId, CancellationToken cancellationToken = default)
+        => Tenants.Get(tenantId ?? "", cancellationToken);
 }
