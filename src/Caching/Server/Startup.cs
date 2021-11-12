@@ -57,7 +57,7 @@ public class Startup
             var connectionString =
                 $"Server={DbSettings.ServerHost},{DbSettings.ServerPort}; " +
                 $"Database={DbSettings.DatabaseName}; " +
-                $"User Id=sa; Password=Fusion.0.to.1; " +
+                $"User Id=sa; Password=mssql; " +
                 $"MultipleActiveResultSets=True; ";
             builder.UseSqlServer(connectionString, sqlServer => { });
         }, 512);

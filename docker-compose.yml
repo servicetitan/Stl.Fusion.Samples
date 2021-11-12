@@ -3,12 +3,10 @@ services:
   db:
     image: "mcr.microsoft.com/mssql/server"
     environment:
-      SA_PASSWORD: "Fusion.0.to.1"
+      SA_PASSWORD: "SqlServer1" # Min. 8 chars, upper-lower-digit/symbol
       ACCEPT_EULA: "Y"
-    expose:
-     - "1433"
     ports:
-     - "5020:1433"
+     - "1433:1433"
   
   tutorial:
     build: 
