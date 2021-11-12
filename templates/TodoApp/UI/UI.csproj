@@ -9,6 +9,20 @@
     <AssemblyName>Templates.TodoApp.UI</AssemblyName>
   </PropertyGroup>
 
+  <!-- Publish & runtime properties -->
+  <PropertyGroup>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TrimMode>link</TrimMode>
+  </PropertyGroup>
+
+  <!-- Extra trimming roots -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="System.Security.Cryptography.X509Certificates" />
+    <TrimmerRootAssembly Include="System.Text.Json" />
+    <TrimmerRootAssembly Include="System.Collections.Immutable" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Blazorise" Version="0.9.4.7" />
     <PackageReference Include="Blazorise.Bootstrap" Version="0.9.4.7" />

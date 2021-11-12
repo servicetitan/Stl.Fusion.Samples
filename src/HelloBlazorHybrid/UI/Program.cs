@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Blazorise;
+﻿using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Samples.HelloBlazorHybrid.Abstractions;
-using Stl.Fusion;
+using Samples.HelloBlazorHybrid.Services;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
@@ -69,6 +66,10 @@ public class Program
         // Other UI-related services
         var fusion = services.AddFusion().AddBlazorUIServices();
         fusion.AddFusionTime();
+        fusion.AddBackendStatus<CustomBackendStatus>();
+        // We don't care about Sessions in this sample, but IBackendStatus
+        // service assumes it's there, so let's register a fake one
+        services.AddSingleton(new SessionFactory().CreateSession());
 
         // Default update delay is set to min.
         services.AddTransient<IUpdateDelayer>(_ => UpdateDelayer.MinDelay);

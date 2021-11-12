@@ -1,7 +1,7 @@
-using System;
 using System.Data;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.FileProviders;
@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Templates.TodoApp.Services;
 using Stl.DependencyInjection;
-using Stl.Fusion;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
@@ -23,7 +22,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.Operations.Reprocessing;
@@ -176,11 +174,12 @@ public class Startup
         // we need to find Client's wwwroot in bin/(Debug/Release) folder
         // and set it as this server's content root.
         var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
+        var binCfgPart = Regex.Match(baseDir, @"[\\/]bin[\\/]\w+[\\/]").Value;
         var wwwRootPath = Path.Combine(baseDir, "wwwroot");
         if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
             // This is a regular build, not a build produced w/ "publish",
             // so we remap wwwroot to the client's wwwroot folder
-            wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, "../../UI/net6.0/wwwroot"));
+            wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net6.0/wwwroot"));
         Env.WebRootPath = wwwRootPath;
         Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
         StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);

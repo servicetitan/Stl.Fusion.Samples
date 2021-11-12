@@ -1,4 +1,3 @@
-using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,12 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
-using Stl.Fusion;
 using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
@@ -57,7 +53,7 @@ public class Startup
             var connectionString =
                 $"Server={DbSettings.ServerHost},{DbSettings.ServerPort}; " +
                 $"Database={DbSettings.DatabaseName}; " +
-                $"User Id=sa; Password=mssql; " +
+                $"User Id=sa; Password=SqlServer1; " +
                 $"MultipleActiveResultSets=True; ";
             builder.UseSqlServer(connectionString, sqlServer => { });
         }, 512);

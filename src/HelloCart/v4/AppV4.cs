@@ -1,21 +1,15 @@
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Samples.HelloCart.V2;
-using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.EntityFramework;
-using Stl.Fusion.EntityFramework.Redis;
 using Stl.Fusion.Server;
 using Stl.IO;
-using Stl.Redis;
 
 namespace Samples.HelloCart.V4;
 

@@ -1,8 +1,4 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Samples.HelloCart.V2;
-using Stl.Fusion;
 using Stl.Fusion.EntityFramework;
 
 namespace Samples.HelloCart.V3;

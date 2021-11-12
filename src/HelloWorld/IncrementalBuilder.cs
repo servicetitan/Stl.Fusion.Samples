@@ -1,8 +1,3 @@
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Stl.Fusion;
 using static System.Console;
 
 namespace Samples.HelloWorld;

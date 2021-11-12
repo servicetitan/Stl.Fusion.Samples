@@ -1,9 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Stl.Fusion;
-
-namespace Samples.HelloBlazorHybrid.Abstractions;
+﻿namespace Samples.HelloBlazorHybrid.Abstractions;
 
 public interface IWeatherForecastService
 {

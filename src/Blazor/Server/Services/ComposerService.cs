@@ -1,11 +1,4 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Samples.Blazor.Abstractions;
-using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Services;
 

@@ -1,9 +1,6 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Stl.Fusion.Server;
 using Samples.Blazor.Abstractions;
-using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Server.Controllers;
 

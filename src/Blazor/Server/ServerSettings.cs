@@ -1,6 +1,3 @@
-using System;
-using System.Text;
-
 namespace Samples.Blazor.Server;
 
 public class ServerSettings

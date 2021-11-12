@@ -1,7 +1,3 @@
-using System.Collections.Immutable;
-using System.Text;
-using Stl.Collections;
-
 namespace Samples.HelloWorld;
 
 public record Project

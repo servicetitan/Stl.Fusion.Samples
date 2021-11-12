@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
@@ -11,7 +8,6 @@ using Samples.Caching.Common;
 using Samples.Caching.Server;
 using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
-using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using static System.Console;

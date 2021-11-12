@@ -1,8 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-using Stl.Fusion;
-using Stl.Fusion.Authentication;
-
 namespace Samples.Blazor.Abstractions;
 
 public record ComposedValue

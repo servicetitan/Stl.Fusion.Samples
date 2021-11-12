@@ -1,5 +1,3 @@
-using System;
-
 namespace Samples.HelloBlazorHybrid.Abstractions;
 
 public class WeatherForecast

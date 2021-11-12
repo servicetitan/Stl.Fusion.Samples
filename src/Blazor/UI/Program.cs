@@ -1,15 +1,11 @@
-using System;
-using System.Threading.Tasks;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Client;
 using Samples.Blazor.UI.Services;
-using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
@@ -73,6 +69,7 @@ public class Program
         // Fusion services
         var fusion = services.AddFusion();
         fusion.AddFusionTime();
+        fusion.AddBackendStatus();
         fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
 
         // Default update delay is 0.1s

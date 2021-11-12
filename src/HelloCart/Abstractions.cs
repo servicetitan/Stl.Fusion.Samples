@@ -1,12 +1,3 @@
-using System.Collections.Immutable;
-using System.Reactive;
-using System.Threading;
-using System.Threading.Tasks;
-using Stl;
-using Stl.CommandR;
-using Stl.CommandR.Configuration;
-using Stl.Fusion;
-
 namespace Samples.HelloCart;
 
 public record Product : IHasId<string>

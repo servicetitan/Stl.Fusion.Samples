@@ -1,10 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Stl.Fusion;
 using static System.Console;
 
 namespace Samples.HelloCart;

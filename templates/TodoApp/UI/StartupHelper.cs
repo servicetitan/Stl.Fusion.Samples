@@ -1,11 +1,8 @@
-using System;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
@@ -65,6 +62,7 @@ public static class StartupHelper
         // Other UI-related services
         var fusion = services.AddFusion();
         fusion.AddFusionTime();
+        fusion.AddBackendStatus();
 
         // Default update delay is 0.5s
         services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UICommandTracker(), 0.5));

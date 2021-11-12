@@ -1,10 +1,7 @@
-using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Samples.Caching.Server;
 using static System.Console;
 

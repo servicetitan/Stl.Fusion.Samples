@@ -6,7 +6,12 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Templates.TodoApp.Host</RootNamespace>
     <AssemblyName>Templates.TodoApp.Host</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Runtime properties -->
+  <PropertyGroup>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>

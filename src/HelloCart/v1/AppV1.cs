@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Stl.Fusion;
 
 namespace Samples.HelloCart.V1;
 

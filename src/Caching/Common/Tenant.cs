@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Stl;
 
 namespace Samples.Caching.Common;
 

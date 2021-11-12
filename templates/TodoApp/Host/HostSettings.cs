@@ -1,6 +1,3 @@
-using System;
-using System.Text;
-
 namespace Templates.TodoApp.Host;
 
 public class HostSettings

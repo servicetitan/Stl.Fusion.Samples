@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Stl.Fusion;
 using Stl.Fusion.EntityFramework;
 
 namespace Samples.HelloCart.V2;

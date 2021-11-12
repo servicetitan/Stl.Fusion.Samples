@@ -1,5 +1,3 @@
-using System;
-
 namespace Samples.Caching.Client;
 
 public class ClientSettings

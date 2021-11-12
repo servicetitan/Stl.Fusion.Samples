@@ -1,7 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-using Stl.Fusion;
-
 namespace Samples.Caching.Common;
 
 public interface ITenantService

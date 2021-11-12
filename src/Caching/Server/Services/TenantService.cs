@@ -1,9 +1,6 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Samples.Caching.Common;
-using Stl.Fusion;
 using Stl.Fusion.EntityFramework;
 
 namespace Samples.Caching.Server.Services;
@@ -53,7 +50,8 @@ public class TenantService : DbServiceBase<AppDbContext>, ISqlTenantService
     public virtual async Task<Tenant[]> GetAll(CancellationToken cancellationToken = default)
     {
         await using var dbContext = CreateDbContext();
-        var tenants = await dbContext.Tenants.ToArrayAsync(cancellationToken).ConfigureAwait(false);
+        var tenants = await dbContext.Tenants.AsQueryable()
+            .ToArrayAsync(cancellationToken).ConfigureAwait(false);
         return tenants;
     }
 
@@ -61,7 +59,7 @@ public class TenantService : DbServiceBase<AppDbContext>, ISqlTenantService
     {
         // var c = Computed.TryGetExisting(() => GetAllAsync(default));
         await using var dbContext = CreateDbContext();
-        var tenant = await dbContext.Tenants
+        var tenant = await dbContext.Tenants.AsQueryable()
             .SingleOrDefaultAsync(t => t.Id == tenantId, cancellationToken).ConfigureAwait(false);
         return tenant;
     }

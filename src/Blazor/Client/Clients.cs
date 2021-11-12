@@ -1,9 +1,5 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using RestEase;
 using Samples.Blazor.Abstractions;
-using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Client;
 

@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Samples.HelloCart.V4;
 

@@ -1,5 +1,3 @@
-using System;
-
 namespace Samples.Caching.Common;
 
 public abstract record VersionedEntityBase

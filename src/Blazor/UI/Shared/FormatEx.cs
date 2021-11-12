@@ -1,5 +1,3 @@
-using System;
-
 namespace Samples.Blazor.UI.Shared;
 
 public static class FormatEx

@@ -1,7 +1,4 @@
-using System.Threading;
-using System.Threading.Tasks;
 using RestEase;
-using Stl.Fusion.Authentication;
 using Stl.Fusion.Extensions;
 
 namespace Templates.TodoApp.Abstractions.Clients;

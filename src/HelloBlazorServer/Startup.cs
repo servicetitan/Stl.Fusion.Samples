@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Samples.HelloBlazorServer.Services;
-using Stl.Fusion;
 using Stl.Fusion.Extensions;
 
 namespace Samples.HelloBlazorServer;
