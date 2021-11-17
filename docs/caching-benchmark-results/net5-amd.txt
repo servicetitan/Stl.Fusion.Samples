@@ -6,19 +6,20 @@ Benchmark parameters:
 
 Local services:
 Fusion's Compute Service [-> EF Core -> SQL Server]:
-  Reads         : 24.52M operations/s
-  Writes        : 102.40 operations/s
+  Reads         : 25.04M operations/s
+  Writes        : 112.00 operations/s
 Regular Service [-> EF Core -> SQL Server]:
-  Reads         : 22.13K operations/s
-  Writes        : 92.80 operations/s
+  Reads         : 24.16K operations/s
+  Writes        : 99.20 operations/s
 
 Remote services:
 Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 18.58M operations/s
-  Writes        : 83.20 operations/s
+  Reads         : 19.78M operations/s
+  Writes        : 92.80 operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 130.89K operations/s
+  Reads         : 132.08K operations/s
   Writes        : 83.20 operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
-  Reads         : 18.79K operations/s
-  Writes        : 86.40 operations/s
+  Reads         : 20.79K operations/s
+  Write Errors  : 396.80 operations/s
+  Writes        : 396.80 operations/s
