@@ -19,9 +19,9 @@ public interface ITenantClientDef
 [BasePath("sqlTenants")]
 public interface ISqlTenantClientDef
 {
-    [Get(nameof(AddOrUpdate))]
+    [Post(nameof(AddOrUpdate))]
     Task AddOrUpdate([Body] Tenant tenant, long? version, CancellationToken cancellationToken = default);
-    [Get(nameof(Remove))]
+    [Post(nameof(Remove))]
     Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);
     [Get(nameof(GetAll))]
     Task<Tenant[]> GetAll(CancellationToken cancellationToken = default);
