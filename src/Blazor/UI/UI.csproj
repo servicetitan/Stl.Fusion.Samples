@@ -10,7 +10,7 @@
 
   <!-- Publish & runtime properties -->
   <PropertyGroup>
-    <RunAOTCompilation>true</RunAOTCompilation>
+    <RunAOTCompilation>false</RunAOTCompilation>
     <InvariantGlobalization>true</InvariantGlobalization>
     <TrimMode>link</TrimMode>
   </PropertyGroup>
