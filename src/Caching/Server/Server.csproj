@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Server" Version="2.0.83" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="2.0.83" />
+    <PackageReference Include="Stl.Fusion.Server" Version="2.0.103" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="2.0.103" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('net6'))">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0" />
