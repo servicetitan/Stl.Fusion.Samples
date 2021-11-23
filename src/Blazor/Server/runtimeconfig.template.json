@@ -1,7 +1,5 @@
 {
-  "runtimeOptions": {
-    "configProperties": {
-      "System.Drawing.EnableUnixSupport": true
-    }
+  "configProperties": {
+    "System.Drawing.EnableUnixSupport": true
   }
 }
