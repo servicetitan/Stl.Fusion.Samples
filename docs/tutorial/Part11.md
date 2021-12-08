@@ -140,22 +140,12 @@ public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, Can
 
 `GetSessionInfo` and `GetUser` are also a compute methods, so they will registered a dependencies of our method, meaning that if anything changes regarding the state of our session our method will also get invalidated.
 
-
-## Using authentication services in a Blazor client
-
-- How can I access session at client side?
-- How can I access authentication state/authenticated user associated with session from client side?
-- What if someone steals (or is able to correctly guess) my session?
-
-
 ## Synchronizing Fusion and ASP.NET Core authentication states
 
-_Host.cshtml
-Server side rendering
-
-await Task.Run(() => ServerAuthHelper.UpdateAuthState(HttpContext));
-
 We can create a Host.cshtmL file in the server project, the code inside here will run on each page load, so this is an ideal place to synchronize authentication states.
+The synchronization is done by the `UpdateAuthState` method. This method updates the Fusion authentication state (in memory/database) to match what's currently inside the HttpContext, in the background it calls `IAuthBackend.SignIn()` and `IAuthBackend.SignOut` depending on the current authentication state.
+
+The following code snippet shows a typical implementation of this scenario
 
 ``` cs
 @page "/"
@@ -165,8 +155,6 @@ We can create a Host.cshtmL file in the server project, the code inside here wil
     await _serverAuthHelper.UpdateAuthState(HttpContext);
     var authSchemas = await _serverAuthHelper.GetSchemas(HttpContext);
     var sessionId = _serverAuthHelper.Session.Id.Value;
-    var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
-    var isCloseWindowRequest = _serverAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
     Layout = null;
 }
 
@@ -177,9 +165,103 @@ We can create a Host.cshtmL file in the server project, the code inside here wil
         window.FusionAuth.schemas = "@authSchemas";
         window.FusionAuth.sessionId = "@sessionId";
     </script>
+...
+```
+
+## Using authentication services in a Blazor client
+
+Because the client-side Replica Services have the same interface as their server-side Compute Service counterparts, the client needs to pass the session as a parameter for methods that require it. This server doesn't really require this, because it can (and does) read the session from the cookie sent with the request, but it is neccessary for client side caching, so that we can store separate entries for different session values.
+
+However the session is stored in a http-only cookie, so the client can't read its value directly, but as seen in the previous code snippet (Host.cshtml) we pass the value of the session to the client using the `window.FusionAuth.sessionId` variable that the client can read. After this we can inject our session anywhere in the Blazor client, we just need to write `@inject Session Session` in the beggining of our components. Then we can use the `IAuth` service on the client to access the current user, and our authentication state in the same way as we do on the server.
+
+``` cs
+@page "/myOrders
+@inherits ComputedStateComponent<List<OrderHeaderDto>>
+@inject IOrderService OrderService
+@inject Session _session
+@inject IAuth _auth
+
+protected override async Task<List<OrderHeaderDto>> ComputeState(CancellationToken cancellationToken)
+    {
+        var user = await AuthService.GetUser(Session, cancellationToken);
+        var sessionInfo = await AuthService.GetSessionInfo(Session, cancellationToken);
+
+        if(user.IsAuthenticated)
+        {
+            if(user.Claims.ContainsKey("required-claim"))
+            {
+                return await OrderService.GetMyOrders(Session);
+            }
+        }
+    }
+```
+
+Another important thing concerning sessions is that even if someone managed to steal or correctly guess your session id and send it to the server it still wouldn't matter because the server can read you actual session from your cookie and use that instead. In the following example the server application uses the session from the cookie, instead of the one provided by the client.
+
+``` cs
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class OrderController : ControllerBase, IOrderService
+    {
+        private readonly IOrderService _orderService;
+        private readonly ISessionResolver _sessionResolver;
+
+        public OrderController(IOrderService orderService, ISessionResolver sessionResolver)
+        {
+            _orderService = orderService;
+            _sessionResolver = sessionResolver;
+        }
+
+        [HttpGet, Publish]
+        public async Task<List<OrderHeaderDto>> GetMyOrders([FromQuery] Session session, CancellationToken cancellationToken = default)
+        {
+            return await _orderService.GetMyOrders(_sessionResolver.Session, cancellationToken);
+        }
+    }
 ```
 
 ## Forcing sign out
+
+You can force sign-out for a specific session. This feauture is implemented in the `SessionMiddleware` class, that executes with every request. Basically we check the state of our session (stored in-memory/in database), and if we requested a forced sign out, then we call a registered handler that signs out the user, deletes the cookie that the session was stored in and optionally redirects them to somewhere else in the application. The relevant parts of the `SessionMiddleware` class are the following:
+
+``` cs
+public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
+    {
+        var cancellationToken = httpContext.RequestAborted;
+        var cookies = httpContext.Request.Cookies;
+        var cookieName = Cookie.Name ?? "";
+        cookies.TryGetValue(cookieName, out var sessionId);
+        var session = string.IsNullOrEmpty(sessionId) ? null : new Session(sessionId);
+        if (session != null) {
+            if (Auth != null) {
+                var isSignOutForced = await Auth.IsSignOutForced(session, cancellationToken).ConfigureAwait(false);
+                if (isSignOutForced) {
+                    if (await ForcedSignOutHandler(this, httpContext).ConfigureAwait(false)) {
+                        var responseCookies = httpContext.Response.Cookies;
+                        responseCookies.Delete(cookieName);
+                        return;
+                    }
+                    session = null;
+                }
+            }
+        }
+        // ...
+    }
+```
+
+You can create your own `ForcedSignOutHandler` or use the default implementation provided by Fusion.
+
+``` cs
+public static async Task<bool> DefaultForcedSignOutHandler(SessionMiddleware self, HttpContext httpContext)
+        {
+            await httpContext.SignOutAsync().ConfigureAwait(false);
+            var url = httpContext.Request.GetEncodedPathAndQuery();
+            httpContext.Response.Redirect(url);
+            // true:  reload: redirect w/o invoking the next middleware
+            // false: proceed normally, i.e. invoke the next middleware
+            return true;
+        }
+```
 
 ## Using external authentication
 
