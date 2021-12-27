@@ -55,7 +55,7 @@ docker-compose build
 | [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
 | [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
-## Detailed Description
+## Samples' Documentation
 
 See https://servicetitan.github.io/Stl.Fusion.Samples/
 
@@ -63,8 +63,8 @@ See https://servicetitan.github.io/Stl.Fusion.Samples/
 
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
-* Explore [Board Games](https://github.com/alexyakunin/BoardGames) -  a real-time multiplayer board gaming app built on Fusion
-* Join our [Discord Server] to ask questions and track project updates.
+* Join our [Discord Server] to ask questions and track project updates
+* Explore [Board Games](https://github.com/alexyakunin/BoardGames) -  a real-time multiplayer board gaming app built on Fusion.
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 
