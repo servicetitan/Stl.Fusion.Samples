@@ -58,7 +58,7 @@
     protected override async Task OnInitializedAsync()
         => await State.Update();
 
-    protected override ComputedState<(string Name, string Text, string Time)[]>.Options GetStateOptions()
+    protected override ComputedState<(string, string, string)[]>.Options GetStateOptions()
         => new () { InitialValue = Array.Empty<(string, string, string)>() };
 
     protected override async Task<(string Name, string Text, string Time)[]> ComputeState(CancellationToken cancellationToken)
