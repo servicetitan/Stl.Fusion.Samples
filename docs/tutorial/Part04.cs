@@ -228,7 +228,7 @@ namespace Tutorial
             var services = CreateClientServices();
             var counters = services.GetRequiredService<ICounterService>();
             var stateFactory = services.StateFactory();
-            using var state = stateFactory.NewComputed<string>(
+            using var state = stateFactory.NewComputed(
                 new ComputedState<string>.Options() {
                     UpdateDelayer = new UpdateDelayer(UICommandTracker.None, 1.0), // 1 second update delay
                     EventConfigurator = state1 => {
