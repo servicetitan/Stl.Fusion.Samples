@@ -58,10 +58,6 @@ docker-compose build
 | [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
 | [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
-## Samples' Documentation
-
-See https://servicetitan.github.io/Stl.Fusion.Samples/
-
 ## Useful Links
 
 * More detailed version of this page: https://servicetitan.github.io/Stl.Fusion.Samples/
