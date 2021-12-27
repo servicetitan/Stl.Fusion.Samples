@@ -18,6 +18,9 @@ be no logic related to real-time updates at all:
 
 <img src="https://img.shields.io/badge/-Live!-red" valign="middle"> Play with [live version of this app](https://fusion-samples.servicetitan.com) right now!
 
+If you're looking for detailed description of every sample,
+see https://servicetitan.github.io/Stl.Fusion.Samples/
+
 ## Running Samples
 
 Build & run locally with [.NET 6.0 SDK](https://dotnet.microsoft.com/download):
@@ -61,6 +64,7 @@ See https://servicetitan.github.io/Stl.Fusion.Samples/
 
 ## Useful Links
 
+* More detailed version of this page: https://servicetitan.github.io/Stl.Fusion.Samples/
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
 * Join our [Discord Server] to ask questions and track project updates
