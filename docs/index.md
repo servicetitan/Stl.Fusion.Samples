@@ -208,16 +208,16 @@ please help us to make it better by completing [Fusion Feedback Form]
 [HelloBlazorHybrid]: src/HelloBlazorHybrid
 [Blazor Samples]: src/Blazor
 [Caching]: src/Caching
-[Tutorial]: docs/tutorial/README.md
-[Fusion Tutorial]: docs/tutorial/README.md
+[Tutorial]: tutorial/README.md
+[Fusion Tutorial]: tutorial/README.md
 [Documentation Home]: https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md
 
-[Compute Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part01.md
-[Compute Service]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part01.md
-[`IComputed<T>`]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part02.md
-[Computed Value]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part02.md
-[Live State]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part03.md
-[Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
+[Compute Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part01.md
+[Compute Service]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part01.md
+[`IComputed<T>`]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part02.md
+[Computed Value]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part02.md
+[Live State]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part03.md
+[Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part04.md
 [Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
 
 [Discord Server]: https://discord.gg/EKEwv6d
