@@ -9,7 +9,7 @@ Welcome to a collection of [Fusion] samples!
 ### 0. Solution Templates
 
 We don't provide `dotnet new`-based templates yet, but you can find
-template solutions to copy in [`templates/*` folders](./templates).
+template solutions to copy in [`templates/*` folders](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/templates).
 
 ![](img/Samples-Template.gif)
 
