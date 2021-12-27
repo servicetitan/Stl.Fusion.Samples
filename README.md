@@ -5,16 +5,18 @@ Welcome to the collection of [Fusion] samples!
 > [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
 Don't know what Fusion is? [You should!](https://github.com/servicetitan/Stl.Fusion) 
-It's probably your #1 partner in crime no matter
-what app you build on .NET, but it's especially
-useful if it's a real-time or high-load app,
-and it plays really well with Blazor.
+Fusion is probably your #1 partner in crime if you're 
+building a real-time app (an online app delivering
+some or all updates in real-time) or a high-load app,
+and moreover, it plays really well with Blazor.
 
 In particular, Fusion allows you to build fully 
-real-time UIs like this as if there would be 
-no real-time updates at all:
+real-time UIs like this one as easily as if there would
+be no logic related to real-time updates at all:
 
 ![](docs/img/Samples-Blazor.gif)
+
+<img src="https://img.shields.io/badge/-Live!-red" valign="middle"> Play with [live version of this app](https://fusion-samples.servicetitan.com) right now!
 
 ## Running Samples
 
