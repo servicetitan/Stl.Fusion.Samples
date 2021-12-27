@@ -6,8 +6,6 @@ Welcome to a collection of [Fusion] samples!
 > [![Build](https://github.com/servicetitan/Stl.Fusion.Samples/workflows/Build/badge.svg)](https://github.com/servicetitan/Stl.Fusion.Samples/actions?query=workflow%3A%22Build%22)
 > [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
-<img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> Check out [Board Games](https://github.com/alexyakunin/BoardGames) - the newest Fusion sample that implements both Blazor Server and WASM modes, 2 games, chat, online presence, OAuth sign-in, user session tracking, and a number of other 100% real-time features. All of this is powered by Fusion + just 35 lines of code related to real-time updates!
-
 ## What's Inside?
 
 ### 0. Solution Templates
