@@ -114,7 +114,7 @@ public class ScreenshotService : IScreenshotService
 
         var image = screen.Image;
         var font = _fontCollection.Find("Open Sans").CreateFont(48);
-        var options = new TextGraphicsOptions() {
+        var options = new DrawingOptions() {
             GraphicsOptions = { Antialias = true },
             TextOptions = {
                 HorizontalAlignment = HorizontalAlignment.Center,

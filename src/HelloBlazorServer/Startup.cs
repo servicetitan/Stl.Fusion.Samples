@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Samples.HelloBlazorServer.Services;
+using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
 
 namespace Samples.HelloBlazorServer;
@@ -41,6 +42,7 @@ public class Startup
 
         // Fusion services
         var fusion = services.AddFusion();
+        fusion.AddBlazorUIServices();
         fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
         fusion.AddComputeService<CounterService>();
         fusion.AddComputeService<WeatherForecastService>();

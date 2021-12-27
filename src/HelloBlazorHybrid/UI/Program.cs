@@ -36,7 +36,7 @@ public class Program
         var apiBaseUri = new Uri($"{baseUri}api/");
 
         // Fusion
-        var fusion = services.AddFusion().AddFusionTime();
+        var fusion = services.AddFusion();
         var fusionClient = fusion.AddRestEaseClient(
             (c, o) => {
                 o.BaseUri = baseUri;
@@ -48,7 +48,6 @@ public class Program
                 var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
                 o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
             });
-        services.AddSingleton<BlazorModeHelper>();
 
         // Fusion service clients
         fusionClient.AddReplicaService<ICounterService, ICounterClientDef>();
@@ -64,7 +63,8 @@ public class Program
         services.AddBlazorise().AddBootstrapProviders().AddFontAwesomeIcons();
 
         // Other UI-related services
-        var fusion = services.AddFusion().AddBlazorUIServices();
+        var fusion = services.AddFusion();
+        fusion.AddBlazorUIServices();
         fusion.AddFusionTime();
         fusion.AddBackendStatus<CustomBackendStatus>();
         // We don't care about Sessions in this sample, but IBackendStatus

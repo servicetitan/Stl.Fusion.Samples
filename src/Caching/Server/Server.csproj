@@ -14,12 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Server" Version="2.0.103" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="2.0.103" />
+    <PackageReference Include="Stl.Fusion.Server" Version="2.1.21" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="2.1.21" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('net6'))">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.*" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('net5'))">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.*" />

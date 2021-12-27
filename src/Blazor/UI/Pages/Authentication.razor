@@ -2,7 +2,6 @@
 @using System.Threading
 @using UAParser
 @using System.Collections.Concurrent
-@using Stl.Fusion.Extensions
 @inherits ComputedStateComponent<List<Authentication.SessionModel>>
 @inject Session _session
 @inject IAuth _auth
@@ -147,9 +146,7 @@
     private (string Name, string DisplayName)[] AuthSchemas { get; set; } = Array.Empty<(string, string)>();
 
     protected override async Task OnParametersSetAsync()
-    {
-        AuthState = await AuthStateTask;
-    }
+        => AuthState = await AuthStateTask;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -160,8 +157,8 @@
         }
     }
 
-    protected override void ConfigureState(ComputedState<List<SessionModel>>.Options options)
-        => options.InitialOutputFactory = _ => new List<SessionModel>();
+    protected override ComputedState<List<SessionModel>>.Options GetStateOptions()
+        => new () { InitialValue = new List<SessionModel>() };
 
     protected override async Task<List<SessionModel>> ComputeState(CancellationToken cancellationToken)
     {

@@ -1,14 +1,13 @@
 ﻿@page "/simpleChat"
 @using System.Threading
 @using Samples.HelloBlazorHybrid.Abstractions
-@using Stl.Fusion.Extensions
 @inherits ComputedStateComponent<(string Name, string Text, string Time)[]>
 @inject IChatService _chats
 @inject IFusionTime _time
 @inject NavigationManager _nav
 
 @{
-    var state = State.LatestNonErrorValue ?? Array.Empty<(string, string, string)>();
+    var state = State.LatestNonErrorValue;
     var error = State.Error;
 }
 
@@ -58,6 +57,9 @@
 
     protected override async Task OnInitializedAsync()
         => await State.Update();
+
+    protected override ComputedState<(string Name, string Text, string Time)[]>.Options GetStateOptions()
+        => new () { InitialValue = Array.Empty<(string, string, string)>() };
 
     protected override async Task<(string Name, string Text, string Time)[]> ComputeState(CancellationToken cancellationToken)
     {

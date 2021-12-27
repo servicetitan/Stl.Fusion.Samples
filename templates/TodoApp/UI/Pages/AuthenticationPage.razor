@@ -140,8 +140,8 @@
         }
     }
 
-    protected override void ConfigureState(ComputedState<(User, List<SessionInfoModel>)>.Options options)
-        => options.InitialOutputFactory = _ => (new(""), new List<SessionInfoModel>());
+    protected override ComputedState<(User User, List<SessionInfoModel> Sessions)>.Options GetStateOptions()
+        => new () { InitialValue = (new(""), new List<SessionInfoModel>()) };
 
     protected override async Task<(User, List<SessionInfoModel>)> ComputeState(CancellationToken cancellationToken)
     {

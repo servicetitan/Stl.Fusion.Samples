@@ -42,8 +42,8 @@
 </table>
 
 @code {
-    protected override void ConfigureMutableState(MutableState<DateTime>.Options options)
-        => options.InitialOutputFactory = _ => DateTime.Today;
+    protected override MutableState<DateTime>.Options GetMutableStateOptions()
+        => new () { InitialValue = DateTime.Today };
 
     protected override async Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
         => await _weatherForecast.GetForecast(MutableState.Value, cancellationToken);

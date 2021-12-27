@@ -52,8 +52,14 @@
         public ComposedValue RemotelyComposedValue { get; set; } = new ComposedValue();
     }
 
-    protected override void ConfigureState(ComputedState<Model>.Options options)
-        => options.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), 0.5);
+    protected override MutableState<string>.Options GetMutableStateOptions()
+        => new () { InitialValue = "" };
+
+    protected override ComputedState<Model>.Options GetStateOptions()
+        => new () {
+            InitialValue = new(),
+            UpdateDelayer =  new UpdateDelayer(Services.UICommandTracker(), 0.5),
+        };
 
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {

@@ -1,7 +1,7 @@
 @using System.Threading
-@using System.Reflection
 @using Stl
 @using System.Reactive
+@using System.Globalization
 @inherits MixedStateComponent<double, AccumulatorCard.LocalModel>
 @inject ISumService _sumService
 @inject UICommandRunner _uiCommandRunner
@@ -55,8 +55,11 @@
     protected override void OnParametersSet()
         => State.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay);
 
-    protected override void ConfigureState(ComputedState<double>.Options options)
-        => options.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay);
+    protected override MutableState<LocalModel>.Options GetMutableStateOptions()
+        => new () { InitialValue = new() };
+
+    protected override ComputedState<double>.Options GetStateOptions()
+        => new () { UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay) };
 
     protected override Task<double> ComputeState(CancellationToken cancellationToken)
         => _sumService.GetAccumulator(cancellationToken);

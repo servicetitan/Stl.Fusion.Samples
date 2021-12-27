@@ -83,13 +83,13 @@ namespace Tutorial
             var stateFactory = services.StateFactory();
             WriteLine("Creating state.");
             using var state = stateFactory.NewComputed<string>(
-                options => {
-                    options.UpdateDelayer = new UpdateDelayer(UICommandTracker.None, 1.0); // 1 second update delay
-                    options.EventConfigurator += state1 => {
+                new ComputedState<string>.Options() {
+                    UpdateDelayer = new UpdateDelayer(UICommandTracker.None, 1.0), // 1 second update delay
+                    EventConfigurator = state1 => {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
                         state1.AddEventHandler(StateEventKind.All,
                             (s, e) => WriteLine($"{DateTime.Now}: {e}, Value: {s.Value}, Computed: {s.Computed}"));
-                    };
+                    },
                 },
                 async (state, cancellationToken) => {
                     var counter = await counters.Get("a");

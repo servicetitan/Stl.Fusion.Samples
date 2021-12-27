@@ -33,8 +33,11 @@
     protected override async Task OnInitializedAsync()
         => await State.Update(); // An example showing how to load the State before the first render
 
-    protected override void ConfigureState(ComputedState<Screenshot>.Options options)
-        => options.UpdateDelayer = UpdateDelayer.ZeroDelay;
+    protected override ComputedState<Screenshot>.Options GetStateOptions()
+        => new () {
+            InitialValue = new(),
+            UpdateDelayer = UpdateDelayer.ZeroDelay,
+        };
 
     protected override Task<Screenshot> ComputeState(CancellationToken cancellationToken)
         => _screenshots.GetScreenshot(ActualWidth, cancellationToken);
