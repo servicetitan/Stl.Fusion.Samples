@@ -575,16 +575,21 @@ some data together with the operation - so once its completion
 is "played" on this or other hosts, this data is readily available.
 
 I'll show how it's used in one of Fusion's built-in command handlers -
-[`SignOutCommand` handler of `DbAuthService`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/Authentication/DbAuthService.cs#L91):
+[`SignOutCommand` handler of `DbAuthService`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/Authentication/DbAuthService.cs#L39):
 
 ```cs
-public virtual async Task SignOut(
+public override async Task SignOut(
     SignOutCommand command, CancellationToken cancellationToken = default)
 {
     var (session, force) = command;
     var context = CommandContext.GetCurrent();
     if (Computed.IsInvalidating()) {
+        _ = GetAuthInfo(session, default);
         _ = GetSessionInfo(session, default);
+        if (force) {
+            _ = IsSignOutForced(session, default);
+            _ = GetOptions(session, default);
+        }
         var invSessionInfo = context.Operation().Items.Get<SessionInfo>();
         if (invSessionInfo != null) {
             _ = GetUser(invSessionInfo.UserId, default);
@@ -593,21 +598,22 @@ public virtual async Task SignOut(
         return;
     }
 
-    await using var dbContext = await CreateCommandDbContext(cancellationToken).ConfigureAwait(false);
+    var dbContext = await CreateCommandDbContext(cancellationToken).ConfigureAwait(false);
+    await using var _1 = dbContext.ConfigureAwait(false);
 
-    var dbSessionInfo = await Sessions.FindOrCreate(dbContext, session, cancellationToken).ConfigureAwait(false);
-    var sessionInfo = dbSessionInfo.ToModel();
-    if (sessionInfo.IsSignOutForced)
+    var dbSessionInfo = await Sessions.GetOrCreate(dbContext, session.Id, cancellationToken).ConfigureAwait(false);
+    var sessionInfo = SessionConverter.ToModel(dbSessionInfo);
+    if (sessionInfo!.IsSignOutForced)
         return;
 
     context.Operation().Items.Set(sessionInfo);
     sessionInfo = sessionInfo with {
-        LastSeenAt = Clock.Now,
+        LastSeenAt = Clocks.SystemClock.Now,
         AuthenticatedIdentity = "",
         UserId = "",
         IsSignOutForced = force,
     };
-    await Sessions.CreateOrUpdate(dbContext, sessionInfo, cancellationToken).ConfigureAwait(false);
+    await Sessions.Upsert(dbContext, sessionInfo, cancellationToken).ConfigureAwait(false);
 }
 ```
 
