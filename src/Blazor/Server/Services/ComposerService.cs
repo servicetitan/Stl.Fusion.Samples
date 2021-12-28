@@ -33,7 +33,7 @@ public class ComposerService : IComposerService
         if (double.TryParse(parameter, out var value))
             sum = await SumService.GetSum(new [] { value }, true, cancellationToken);
         var lastChatMessage = chatTail.Messages.SingleOrDefault()?.Text ?? "(no messages)";
-        var user = await Auth.GetSessionUser(session, cancellationToken);
+        var user = await Auth.GetUser(session, cancellationToken);
         var activeUserCount = await ChatService.GetActiveUserCount(cancellationToken);
         return new ComposedValue() {
             Parameter = $"{parameter} - server",

@@ -80,7 +80,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
 
     public virtual async Task<ChatUser> GetCurrentUser(Session session, CancellationToken cancellationToken = default)
     {
-        var user = await _auth.GetSessionUser(session, cancellationToken);
+        var user = await _auth.GetUser(session, cancellationToken);
         return ToChatUser(user);
     }
 
