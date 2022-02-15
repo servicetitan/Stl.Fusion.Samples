@@ -1,7 +1,5 @@
 # Part 11: Fusion Authentication
 
-Fusion has its own authentication system based on 
-
 ## Fusion Session
 
 One of the important elements in this authentication system is Fusion's own session. 
