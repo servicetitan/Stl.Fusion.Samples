@@ -3,8 +3,8 @@
 ## Fusion Session
 
 One of the important elements in this authentication system is Fusion's own session. 
-A session is essentialy a string value, that is stored in http only cookie. if the client sends this cookie with a request then we use the session specified there
-if not we create a new session and store it inside a cookie. To use this Fusion session we need to call `UseFusionSession` inside the `Configure` method of the Startup class.
+A session is essentialy a string value, that is stored in http only cookie. If the client sends this cookie with a request then we use the session specified there
+if not we create a new session and store it inside a cookie. To enable Fusion session we need to call `UseFusionSession` inside the `Configure` method of the Startup class.
 This will add the `SessionMiddleware` to the request pipeline. The actual class contains a bit more logic, but the important parts for now are the following:
 
 ``` cs --editable false
@@ -27,7 +27,7 @@ public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
 
 The Session class in itself is very simple, it stores a string Id value (inside a Symbol) and it also specifies how it should be serialized and how should we compare it to other session objects.
 
-```cs 
+```cs --editable false
 [DataContract]
 [JsonConverter(typeof(SessionJsonConverter))]
 [Newtonsoft.Json.JsonConverter(typeof(SessionNewtonsoftJsonConverter))]
@@ -58,7 +58,7 @@ only accessable server side, for example signing in a session and associating it
 The in-memory service is registered by default, in order to register the DbAuthService in the DI Container we need to call the `AddAuthentication` method in a similar way
 to the following code snippet. The Operations Framework is also needed for this service, you can read more about that topic tutorial Part 10.
 
-```cs
+```cs --editable false
 services.AddDbContextServices<FusionDbContext>(dbContext =>
             {
                 dbContext.AddOperations((_, o) => {
@@ -71,7 +71,7 @@ services.AddDbContextServices<FusionDbContext>(dbContext =>
 Our DbContext needs to contain DbSets for the classes provided here as type parameters.
 The `DbSessionInfo` and `DbUser` classes are very simple entities provided by Fusion for storing authentication data.
 
-```cs
+```cs --editable false
 public class DbSessionInfo<TDbUserId> : IHasId<string>, IHasVersion<long>
     {
         [Key]
@@ -92,7 +92,7 @@ public class DbSessionInfo<TDbUserId> : IHasId<string>, IHasVersion<long>
 
 `DbSessionInfo` stores our sessions, and these sessions (if authenticated) can be associated with a `DbUser`
 
-``` cs
+``` cs --editable false
 public class DbUser<TDbUserId> : IHasId<TDbUserId>, IHasVersion<long> where TDbUserId : notnull
     {
         public DbUser();
@@ -116,7 +116,7 @@ public class DbUser<TDbUserId> : IHasId<TDbUserId>, IHasVersion<long> where TDbU
 Our Compute Services can receive a Session object, that we can use to decide if we are authenticated or not and who the signed in user is.
 We can use a `IAuthService` for this purpose in a similar way to the following code snippet
 
-``` cs
+``` cs --editable false
 [ComputeMethod]
 public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, CancellationToken cancellationToken = default)
         {
@@ -145,7 +145,7 @@ The synchronization is done by the `UpdateAuthState` method. This method updates
 
 The following code snippet shows a typical implementation of this scenario
 
-``` cs
+``` cs --editable false
 @page "/"
 @inject ServerAuthHelper _serverAuthHelper
 @inject BlazorCircuitContext _blazorCircuitContext
@@ -172,7 +172,7 @@ Because the client-side Replica Services have the same interface as their server
 
 However the session is stored in a http-only cookie, so the client can't read its value directly, but as seen in the previous code snippet (Host.cshtml) we pass the value of the session to the client using the `window.FusionAuth.sessionId` variable that the client can read. After this we can inject our session anywhere in the Blazor client, we just need to write `@inject Session Session` in the beggining of our components. Then we can use the `IAuth` service on the client to access the current user, and our authentication state in the same way as we do on the server.
 
-``` cs
+``` cs --editable false
 @page "/myOrders
 @inherits ComputedStateComponent<List<OrderHeaderDto>>
 @inject IOrderService OrderService
@@ -196,7 +196,7 @@ protected override async Task<List<OrderHeaderDto>> ComputeState(CancellationTok
 
 Another important thing concerning sessions is that even if someone managed to steal or correctly guess your session id and send it to the server it still wouldn't matter because the server can read you actual session from your cookie and use that instead. In the following example the server application uses the session from the cookie, instead of the one provided by the client.
 
-``` cs
+``` cs --editable false
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class OrderController : ControllerBase, IOrderService
@@ -222,7 +222,7 @@ Another important thing concerning sessions is that even if someone managed to s
 
 You can force sign-out for a specific session. This feauture is implemented in the `SessionMiddleware` class, that executes with every request. Basically we check the state of our session (stored in-memory/in database), and if we requested a forced sign out, then we call a registered handler that signs out the user, deletes the cookie that the session was stored in and optionally redirects them to somewhere else in the application. The relevant parts of the `SessionMiddleware` class are the following:
 
-``` cs
+``` cs --editable false
 public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
     {
         var cancellationToken = httpContext.RequestAborted;
