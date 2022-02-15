@@ -369,7 +369,7 @@ the only difference is that this `O(1)` cost can have a much higher
 (but still fixed) absolute value there, because every computation and
 invalidation requires an extra network roundtrip there.
 
-Finally, notice that [ILiveState] &ndash; an abstraction that powers most
+Finally, notice that [IState] &ndash; an abstraction that powers most
 of UI updates &ndash; uses `IUpdateDelayer`, which, in fact, controls the
 max. possible update rate, and you can change its settings at any time.
 So:
@@ -395,4 +395,4 @@ the main point is: **yes, Fusion-based services scale**.
 [Rendezvous Hashing]: https://medium.com/i0exception/rendezvous-hashing-8c00e2fb58b0
 [Replica Services]: ./Part04.md
 [Compute Services]: ./Part01.md
-[ILiveState]: ./Part03.md
+[IState]: ./Part03.md

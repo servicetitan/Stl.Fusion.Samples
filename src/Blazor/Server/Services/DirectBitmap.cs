@@ -1,47 +1,46 @@
-using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Threading;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Samples.Blazor.Server.Services
+namespace Samples.Blazor.Server.Services;
+
+#pragma warning disable CA1416
+
+public sealed class DirectBitmap : IDisposable
 {
-    public sealed class DirectBitmap : IDisposable
+    private int _isDisposed;
+    private GCHandle _gcHandle;
+    public Bitmap Bitmap { get; }
+    public Image<Bgra32> Image { get; }
+    public Bgra32[] Buffer { get; }
+    public int Height { get; }
+    public int Width { get; }
+
+    public DirectBitmap(int width, int height)
     {
-        private int _isDisposed;
-        private GCHandle _gcHandle;
-        public Bitmap Bitmap { get; }
-        public Image<Bgra32> Image { get; }
-        public Bgra32[] Buffer { get; }
-        public int Height { get; }
-        public int Width { get; }
+        if (width < 1)
+            throw new ArgumentOutOfRangeException(nameof(width));
+        if (height < 1)
+            throw new ArgumentOutOfRangeException(nameof(height));
+        Width = width;
+        Height = height;
+        Buffer = GC.AllocateUninitializedArray<Bgra32>(width * height, true);
+        _gcHandle = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
+        Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, _gcHandle.AddrOfPinnedObject());
+        Image = SixLabors.ImageSharp.Image.WrapMemory(Buffer.AsMemory(), width, height);
+    }
 
-        public DirectBitmap(int width, int height)
-        {
-            if (width < 1)
-                throw new ArgumentOutOfRangeException(nameof(width));
-            if (height < 1)
-                throw new ArgumentOutOfRangeException(nameof(height));
-            Width = width;
-            Height = height;
-            Buffer = GC.AllocateUninitializedArray<Bgra32>(width * height, true);
-            _gcHandle = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
-            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, _gcHandle.AddrOfPinnedObject());
-            Image = SixLabors.ImageSharp.Image.WrapMemory(Buffer.AsMemory(), width, height);
-        }
+    ~DirectBitmap() => Dispose();
 
-        ~DirectBitmap() => Dispose();
-
-        public void Dispose()
-        {
-            if (0 != Interlocked.Exchange(ref _isDisposed, 1))
-                return;
-            Bitmap.Dispose();
-            Image.Dispose();
-            _gcHandle.Free();
-            GC.SuppressFinalize(this);
-        }
+    public void Dispose()
+    {
+        if (0 != Interlocked.Exchange(ref _isDisposed, 1))
+            return;
+        Bitmap.Dispose();
+        Image.Dispose();
+        _gcHandle.Free();
+        GC.SuppressFinalize(this);
     }
 }

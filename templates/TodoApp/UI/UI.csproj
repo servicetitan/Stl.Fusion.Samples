@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
@@ -9,16 +9,30 @@
     <AssemblyName>Templates.TodoApp.UI</AssemblyName>
   </PropertyGroup>
 
+  <!-- Publish & runtime properties -->
+  <PropertyGroup>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TrimMode>link</TrimMode>
+  </PropertyGroup>
+
+  <!-- Extra trimming roots -->
   <ItemGroup>
-    <PackageReference Include="Blazorise" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.DataGrid" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.4.4" />
-    <PackageReference Include="Blazorise.Sidebar" Version="0.9.4.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.10" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="1.11.8" />
+    <TrimmerRootAssembly Include="System.Security.Cryptography.X509Certificates" />
+    <TrimmerRootAssembly Include="System.Text.Json" />
+    <TrimmerRootAssembly Include="System.Collections.Immutable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazorise" Version="0.9.5.4" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.5.4" />
+    <PackageReference Include="Blazorise.DataGrid" Version="0.9.5.4" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.5.4" />
+    <PackageReference Include="Blazorise.Sidebar" Version="0.9.5.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="2.2.34" />
     <PackageReference Include="UAParser" Version="3.1.47" />
   </ItemGroup>
 

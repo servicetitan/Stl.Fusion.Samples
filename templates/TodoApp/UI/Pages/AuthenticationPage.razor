@@ -2,7 +2,7 @@
 @using UAParser
 @inherits ComputedStateComponent<(User User, List<AuthenticationPage.SessionInfoModel> Sessions)>
 @inject Session _session
-@inject IAuthService _auth
+@inject IAuth _auth
 @inject ClientAuthHelper _clientAuthHelper
 @inject IFusionTime _fusionTime
 @inject NavigationManager _nav
@@ -18,19 +18,6 @@
 <h1>Authentication</h1>
 
 <WhenException Title="Update error:" Exception="@error" />
-
-<Note>
-    <Div Margin="Margin.Is1.FromBottom">
-        Open <a href="@_nav.Uri" target="_blank">this page</a> or
-        <a href="/composition" target="_blank">Composition example</a>
-        in another window to see how authentication state is synchronized everywhere.
-    </Div>
-    <Div>
-        If authentication doesn't work, most likely you need to provide
-        <code>ClientId</code> and <code>ClientSecret</code> for one of
-        authentication providers.
-    </Div>
-</Note>
 
 <Card>
     <CardBody>
@@ -153,8 +140,8 @@
         }
     }
 
-    protected override void ConfigureState(ComputedState<(User, List<SessionInfoModel>)>.Options options)
-        => options.InitialOutputFactory = _ => (new(""), new List<SessionInfoModel>());
+    protected override ComputedState<(User User, List<SessionInfoModel> Sessions)>.Options GetStateOptions()
+        => new () { InitialValue = (new(""), new List<SessionInfoModel>()) };
 
     protected override async Task<(User, List<SessionInfoModel>)> ComputeState(CancellationToken cancellationToken)
     {

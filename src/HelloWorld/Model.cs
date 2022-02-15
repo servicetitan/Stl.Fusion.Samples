@@ -1,32 +1,27 @@
-using System.Collections.Immutable;
-using System.Text;
-using Stl.Collections;
+namespace Samples.HelloWorld;
 
-namespace Samples.HelloWorld
+public record Project
 {
-    public record Project
+    public string Id { get; init; } = "";
+    public ImmutableList<string> DependsOn { get; init; } = ImmutableList<string>.Empty;
+
+    public Project() { }
+    public Project(string id, params string[] dependsOn)
     {
-        public string Id { get; init; } = "";
-        public ImmutableList<string> DependsOn { get; init; } = ImmutableList<string>.Empty;
-
-        public Project() { }
-        public Project(string id, params string[] dependsOn)
-        {
-            Id = id;
-            DependsOn = dependsOn.ToImmutableList();
-        }
-
-        protected virtual bool PrintMembers(StringBuilder builder)
-        {
-            builder.AppendFormat($"Id: {Id}, DependsOn: [{DependsOn.ToDelimitedString()}]");
-            return true;
-        }
+        Id = id;
+        DependsOn = dependsOn.ToImmutableList();
     }
 
-    public record ProjectBuildResult
+    protected virtual bool PrintMembers(StringBuilder builder)
     {
-        public Project Project { get; init; } = null!;
-        public long Version { get; init; }
-        public string Artifacts { get; init; } = "";
+        builder.AppendFormat($"Id: {Id}, DependsOn: [{DependsOn.ToDelimitedString()}]");
+        return true;
     }
+}
+
+public record ProjectBuildResult
+{
+    public Project Project { get; init; } = null!;
+    public long Version { get; init; }
+    public string Artifacts { get; init; } = "";
 }

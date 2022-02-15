@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{01FE6776-E788-46B2-93E4-1CEDB01AA851}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial", "docs\tutorial\Tutorial.csproj", "{B3AC9B52-96D7-4CBD-9873-8B427BB09BEB}"
 EndProject
@@ -37,6 +40,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{A0720149-962C-4F9E-A128-9EF0846D5393}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TodoApp", "TodoApp", "{073BAF33-E1DA-4285-B19B-F81887226006}"
+	ProjectSection(SolutionItems) = preProject
+		templates\TodoApp\Directory.Build.props = templates\TodoApp\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelloBlazorHybrid", "HelloBlazorHybrid", "{ABFD1214-E544-44FC-A46E-7EE97AB1C20C}"
 EndProject

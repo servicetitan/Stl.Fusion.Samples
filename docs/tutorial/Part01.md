@@ -168,6 +168,7 @@ Sum(a, b)
 Get(a)
 Get(b)
 0
+0
 ```
 
 Assuming you know how these services work now, this is exactly what you'd expect.

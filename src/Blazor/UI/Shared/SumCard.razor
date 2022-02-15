@@ -1,6 +1,6 @@
 @using System.Threading
 @inherits MixedStateComponent<double, SumCard.LocalModel>
-@inject ISumService SumService
+@inject ISumService _sumService
 
 @{
     var sum = State.LatestNonErrorValue;
@@ -53,14 +53,17 @@
     protected override void OnParametersSet()
         => State.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay);
 
-    protected override void ConfigureState(ComputedState<double>.Options options)
-        => options.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay);
+    protected override MutableState<LocalModel>.Options GetMutableStateOptions()
+        => new () { InitialValue = new() };
+
+    protected override ComputedState<double>.Options GetStateOptions()
+        => new () { UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay) };
 
     protected override async Task<double> ComputeState(CancellationToken cancellationToken)
     {
         var locals = MutableState.Value;
         var values = new[] { locals.ValueA, locals.ValueB };
-        return await SumService.GetSum(values, true, cancellationToken);
+        return await _sumService.GetSum(values, true, cancellationToken);
     }
 
     // Action handlers

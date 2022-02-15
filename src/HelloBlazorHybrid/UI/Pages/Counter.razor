@@ -1,11 +1,10 @@
 ﻿@page "/counter"
 @using System.Threading
 @using Samples.HelloBlazorHybrid.Abstractions
-@using Stl.Fusion.Extensions
 @inherits ComputedStateComponent<string>
-@inject ICounterService CounterService
-@inject IFusionTime Time
-@inject NavigationManager Navigator
+@inject ICounterService _counter
+@inject IFusionTime _time
+@inject NavigationManager _nav
 
 @{
     var state = State.ValueOrDefault;
@@ -15,7 +14,7 @@
 <h1>Counter</h1>
 
 <div class="alert alert-primary">
-    Open this page in <a href="@Navigator.Uri" target="_blank">another window</a> to see it updates in sync.
+    Open this page in <a href="@_nav.Uri" target="_blank">another window</a> to see it updates in sync.
 </div>
 @if (error != null) {
     <div class="alert alert-warning" role="alert">Update error: @error.Message</div>
@@ -28,12 +27,12 @@
 @code {
      protected override async Task<string> ComputeState(CancellationToken cancellationToken)
      {
-         var count = await CounterService.Get(cancellationToken);
+         var count = await _counter.Get(cancellationToken);
          return $"{count}";
      }
 
     private async Task Increment()
     {
-        await CounterService.Increment();
+        await _counter.Increment();
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Samples.HelloWorld;
-using Stl.Async;
 using Stl.Fusion;
 using static System.Console;
 

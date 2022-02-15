@@ -3,12 +3,10 @@ services:
   db:
     image: "mcr.microsoft.com/mssql/server"
     environment:
-      SA_PASSWORD: "Fusion.0.to.1"
+      SA_PASSWORD: "SqlServer1" # Min. 8 chars, upper-lower-digit/symbol
       ACCEPT_EULA: "Y"
-    expose:
-     - "1433"
     ports:
-     - "5020:1433"
+     - "1433:1433"
   
   tutorial:
     build: 
@@ -34,6 +32,7 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
+      Logging__Console__FormatterName: ""
   sample_hello_blazor_hybrid:
     build: 
       context: .
@@ -43,6 +42,7 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
+      Logging__Console__FormatterName: ""
   sample_blazor:
     build: 
       context: .
@@ -52,6 +52,7 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
+      Logging__Console__FormatterName: ""
   sample_caching_server:
     build: 
       context: .
@@ -68,6 +69,7 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:5010"
       DB__ServerHost: "db"
       DB__ServerPort: "1433"
+      Logging__Console__FormatterName: ""
   sample_caching_client:
     build: 
       context: .
@@ -83,6 +85,7 @@ services:
       DB__ServerPort: "1433"
       Client__ServerHost: "sample_caching_server"
       Client__ServerPort: "5010"
+      Logging__Console__FormatterName: ""
   
   sample_blazor_ws:
     build: 
@@ -93,3 +96,4 @@ services:
     environment:
       ASPNETCORE_URLS: "http://*:80"
       Server__AssumeHttps: "true"
+      Logging__Console__FormatterName: ""

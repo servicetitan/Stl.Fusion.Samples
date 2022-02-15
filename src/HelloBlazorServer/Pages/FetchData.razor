@@ -1,7 +1,7 @@
 ﻿@page "/fetchdata"
 @using System.Threading
 @inherits MixedStateComponent<WeatherForecast[], DateTime>
-@inject WeatherForecastService WeatherForecast
+@inject WeatherForecastService _weatherForecast
 
 @{
     var state = State.ValueOrDefault ?? Array.Empty<WeatherForecast>();
@@ -41,9 +41,9 @@
 </table>
 
 @code {
-    protected override void ConfigureMutableState(MutableState<DateTime>.Options options)
-        => options.InitialOutputFactory = _ => DateTime.Today;
+    protected override MutableState<DateTime>.Options GetMutableStateOptions()
+        => new () { InitialValue = DateTime.Today };
 
     protected override Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
-        => WeatherForecast.GetForecast(MutableState.Value, cancellationToken);
+        => _weatherForecast.GetForecast(MutableState.Value, cancellationToken);
 }

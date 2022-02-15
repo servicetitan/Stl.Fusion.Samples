@@ -1,32 +1,27 @@
-using System;
-using System.Threading.Tasks;
-using Stl.Fusion;
+namespace Samples.HelloBlazorServer.Services;
 
-namespace Samples.HelloBlazorServer.Services
+public class CounterService
 {
-    public class CounterService
+    private readonly object _lock = new();
+    private int _count;
+    private DateTime _changeTime = DateTime.Now;
+
+    [ComputeMethod]
+    public virtual Task<(int, DateTime)> Get()
     {
-        private readonly object _lock = new();
-        private int _count;
-        private DateTime _changeTime = DateTime.Now;
-
-        [ComputeMethod]
-        public virtual Task<(int, DateTime)> Get()
-        {
-            lock (_lock) {
-                return Task.FromResult((_count, _changeTime));
-            }
+        lock (_lock) {
+            return Task.FromResult((_count, _changeTime));
         }
+    }
 
-        public Task Increment()
-        {
-            lock (_lock) {
-                ++_count;
-                _changeTime = DateTime.Now;
-            }
-            using (Computed.Invalidate())
-                Get();
-            return Task.CompletedTask;
+    public Task Increment()
+    {
+        lock (_lock) {
+            ++_count;
+            _changeTime = DateTime.Now;
         }
+        using (Computed.Invalidate())
+            Get();
+        return Task.CompletedTask;
     }
 }

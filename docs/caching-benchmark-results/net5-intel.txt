@@ -1,0 +1,25 @@
+Benchmark parameters:
+  Duration      : 5.00s
+  Worker #      : 14
+  - Writer #    : 1
+  - Reader #    : 13
+
+Local services:
+Fusion's Compute Service [-> EF Core -> SQL Server]:
+  Reads         : 10.65M operations/s
+  Writes        : 164.80 operations/s
+Regular Service [-> EF Core -> SQL Server]:
+  Reads         : 11.06K operations/s
+  Writes        : 147.20 operations/s
+
+Remote services:
+Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
+  Reads         : 6.29M operations/s
+  Writes        : 116.80 operations/s
+RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
+  Reads         : 52.06K operations/s
+  Writes        : 94.40 operations/s
+RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
+  Reads         : 7.40K operations/s
+  Write Errors  : 494.40 operations/s
+  Writes        : 494.40 operations/s

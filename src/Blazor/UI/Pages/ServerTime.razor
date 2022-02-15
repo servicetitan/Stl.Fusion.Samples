@@ -1,7 +1,7 @@
 @page "/serverTime"
 @using System.Threading
 @inherits ComputedStateComponent<DateTime>
-@inject ITimeService Time
+@inject ITimeService _time
 
 @{
     var time = State.LatestNonErrorValue.Format();
@@ -20,9 +20,9 @@
 <Button Color="Color.Primary" @onclick="() => State.Recompute()">State.Recompute()</Button>
 
 @code {
-    protected override void ConfigureState(ComputedState<DateTime>.Options options)
-        => options.UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), 0.5);
+    protected override ComputedState<DateTime>.Options GetStateOptions()
+        => new () { UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), 0.5) };
 
     protected override Task<DateTime> ComputeState(CancellationToken cancellationToken)
-        => Time.GetTime(cancellationToken);
+        => _time.GetTime(cancellationToken);
 }

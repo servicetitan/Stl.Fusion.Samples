@@ -53,7 +53,7 @@ public interface IProductService
     [CommandHandler]
     Task Edit(EditCommand<Product> command, CancellationToken cancellationToken = default);
     [ComputeMethod]
-    Task<Product?> TryGet(string id, CancellationToken cancellationToken = default);
+    Task<Product?> Get(string id, CancellationToken cancellationToken = default);
 }
 
 public interface ICartService
@@ -61,7 +61,7 @@ public interface ICartService
     [CommandHandler]
     Task Edit(EditCommand<Cart> command, CancellationToken cancellationToken = default);
     [ComputeMethod]
-    Task<Cart?> TryGet(string id, CancellationToken cancellationToken = default);
+    Task<Cart?> Get(string id, CancellationToken cancellationToken = default);
     [ComputeMethod]
     Task<decimal> GetTotal(string id, CancellationToken cancellationToken = default);
 }
@@ -343,7 +343,7 @@ You might notice just a few unusual things there:
 2. `Edit` contains a bit unusual piece of code:
    ```cs
     if (Computed.IsInvalidating()) {
-        _ = TryGet(productId, default);
+        _ = Get(productId, default);
         return Task.CompletedTask;
     }
    ```
@@ -357,7 +357,7 @@ The same is equally applicable to `InMemoryCartService`:
 2. `Edit` contains a bit unusual piece of code:
    ```cs
     if (Computed.IsInvalidating()) {
-        _ = TryGet(cartId, default);
+        _ = Get(cartId, default);
         return Task.CompletedTask;
     }
    ```
@@ -486,14 +486,14 @@ Now, how these dependencies get created? Let's look at
 public virtual async Task<decimal> GetTotal(
     string id, CancellationToken cancellationToken = default)
 {
-    // Dependency: this.TryGet(id)!
-    var cart = await TryGet(id, cancellationToken);
+    // Dependency: this.Get(id)!
+    var cart = await Get(id, cancellationToken);
     if (cart == null)
         return 0;
     var total = 0M;
     foreach (var (productId, quantity) in cart.Items) {
-        // Dependency: _products.TryGet(productId)!
-        var product = await _products.TryGet(productId, cancellationToken);
+        // Dependency: _products.Get(productId)!
+        var product = await _products.Get(productId, cancellationToken);
         total += (product?.Price ?? 0M) * quantity;
     }
     return total;
@@ -510,7 +510,7 @@ dependent on:
 > `IComputed`, check out [Part 1](Part01.md) and [Part 2](Part02.md)
 > of this Tutorial later.
 
-Now it's time to demystify how `TryGet(productId)` call result gets
+Now it's time to demystify how `Get(productId)` call result gets
 invalidated once a product with `productId` gets changed.
 
 Again, remember this code?
@@ -525,7 +525,7 @@ public virtual Task Edit(EditCommand<Product> command, CancellationToken cancell
         // This is the invalidation block.
         // Every [ComputeMethod] result you "touch" here
         // instantly becomes a 🎃 (gets invalidated)!
-        _ = TryGet(productId, default);
+        _ = Get(productId, default);
         return Task.CompletedTask;
     }
 
@@ -542,7 +542,7 @@ you'll find a very similar block there:
 
 ```cs
 if (Computed.IsInvalidating()) {
-    _ = TryGet(cartId, default);
+    _ = Get(cartId, default);
     return Task.CompletedTask;
 }
 ```
@@ -799,9 +799,9 @@ while (NotDisposed()) {
 Here is an example of how to use such resolvers:
 
 ```cs
-public virtual async Task<Product?> TryGet(string id, CancellationToken cancellationToken = default)
+public virtual async Task<Product?> Get(string id, CancellationToken cancellationToken = default)
 {
-    var dbProduct = await _productResolver.TryGet(id, cancellationToken);
+    var dbProduct = await _productResolver.Get(id, cancellationToken);
     if (dbProduct == null)
         return null;
     return new Product() { Id = dbProduct.Id, Price = dbProduct.Price };
@@ -813,11 +813,11 @@ Guess why this important? Look at the production-grade `GetTotal` code:
 ```cs
 public virtual async Task<decimal> GetTotal(string id, CancellationToken cancellationToken = default)
 {
-    var cart = await TryGet(id, cancellationToken);
+    var cart = await Get(id, cancellationToken);
     if (cart == null)
         return 0;
     var itemTotals = await Task.WhenAll(cart.Items.Select(async item => {
-        var product = await _products.TryGet(item.Key, cancellationToken);
+        var product = await _products.Get(item.Key, cancellationToken);
         return item.Value * (product?.Price ?? 0M);
     }));
     return itemTotals.Sum();
@@ -827,15 +827,15 @@ public virtual async Task<decimal> GetTotal(string id, CancellationToken cancell
 Contrary to the previous version, it fetches all the products **in parallel**.
 But why?
 
-- First, it "hopes" that Fusion will resolve most of `TryGet` calls via
+- First, it "hopes" that Fusion will resolve most of `Get` calls via
   its `IComputed` instance cache, i.e. without hitting the DB. And why
   shouldn't it try to do this in parallel, if this possible?
 - But now imagine the case when Fusion's cache is empty, or it doesn't
-  store the result of `TryGet` for every product that's in the cart.
-  This is where entity resolver used in `TryGet` kicks in: most
+  store the result of `Get` for every product that's in the cart.
+  This is where entity resolver used in `Get` kicks in: most
   likely it will run just 1 or 2 queries to resolve every remaining
   product that `GetTotal` throws - and moreover, since all
-  these calls "flow" through `TryGet`, these results will be
+  these calls "flow" through `Get`, these results will be
   cached in Fusion's cache too!
 
 So crafting highly efficient Compute Services based on EF Core is actually
@@ -968,8 +968,8 @@ public class CartController : ControllerBase, ICartService
     // Queries
 
     [HttpGet, Publish]
-    public Task<Cart?> TryGet(string id, CancellationToken cancellationToken = default)
-        => _cartService.TryGet(id, cancellationToken);
+    public Task<Cart?> Get(string id, CancellationToken cancellationToken = default)
+        => _cartService.Get(id, cancellationToken);
 
     [HttpGet, Publish]
     public Task<decimal> GetTotal(string id, CancellationToken cancellationToken = default)
@@ -1045,7 +1045,7 @@ public interface ICartClientDef
     [Post("edit")]
     Task Edit([Body] EditCommand<Cart> command, CancellationToken cancellationToken);
     [Get("tryGet")]
-    Task<Cart?> TryGet(string id, CancellationToken cancellationToken);
+    Task<Cart?> Get(string id, CancellationToken cancellationToken);
     [Get("getTotal")]
     Task<decimal> GetTotal(string id, CancellationToken cancellationToken);
 }

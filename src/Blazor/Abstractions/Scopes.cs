@@ -1,8 +1,7 @@
-namespace Samples.Blazor.Abstractions
+namespace Samples.Blazor.Abstractions;
+
+public static class Scopes
 {
-    public static class Scopes
-    {
-        public const string ServerSideOnly = nameof(ServerSideOnly);
-        public const string ClientSideOnly = nameof(ClientSideOnly);
-    }
+    public const string ServerSideOnly = nameof(ServerSideOnly);
+    public const string ClientSideOnly = nameof(ClientSideOnly);
 }

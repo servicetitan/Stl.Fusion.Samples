@@ -1,7 +1,6 @@
-namespace Samples.Caching.Server
+namespace Samples.Caching.Server;
+
+public class ServerSettings
 {
-    public class ServerSettings
-    {
-        public string PublisherId { get; set; } = "p";
-    }
+    public string PublisherId { get; set; } = "p";
 }

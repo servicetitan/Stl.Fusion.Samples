@@ -16,14 +16,16 @@ ENTRYPOINT ["sh", "start.sh"]
 
 # Samples
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0 as build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 as build
 RUN apt-get update \
   && apt-get install -y --allow-unauthenticated \
+    apt-utils \
     libc6-dev \
     libgdiplus \
-    libx11-dev \
+    python3 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+RUN dotnet workload install wasm-tools
 WORKDIR /samples
 COPY ["src/", "src/"]
 COPY ["templates/", "templates/"]
@@ -34,58 +36,60 @@ RUN dotnet build -c:Release --no-restore
 
 # Create HelloWorld sample image
 FROM build as sample_hello_world
-WORKDIR /samples/src/HelloWorld/bin/Debug/net5.0
+WORKDIR /samples/src/HelloWorld/bin/Debug/net6.0
 
 # Create HelloCart sample image
 FROM build as sample_hello_cart
-WORKDIR /samples/src/HelloCart/bin/Debug/net5.0
+WORKDIR /samples/src/HelloCart/bin/Debug/net6.0
 
 # Create HelloBlazorServer sample image
 FROM build as sample_hello_blazor_server
 WORKDIR /samples/src/HelloBlazorServer
-ENTRYPOINT ["dotnet", "bin/Debug/net5.0/Samples.HelloBlazorServer.dll"]
+ENTRYPOINT ["dotnet", "bin/Debug/net6.0/Samples.HelloBlazorServer.dll"]
 
 # Create HelloBlazorHybrid sample image
 FROM build as sample_hello_blazor_hybrid
 WORKDIR /samples/src/HelloBlazorHybrid/Server
-ENTRYPOINT ["dotnet", "bin/Debug/net5.0/Samples.HelloBlazorHybrid.Server.dll"]
+ENTRYPOINT ["dotnet", "bin/Debug/net6.0/Samples.HelloBlazorHybrid.Server.dll"]
 
 # Create Blazor sample image
 FROM build as sample_blazor
 WORKDIR /samples/src/Blazor/Server
-ENTRYPOINT ["dotnet", "bin/Debug/net5.0/Samples.Blazor.Server.dll"]
+ENTRYPOINT ["dotnet", "bin/Debug/net6.0/Samples.Blazor.Server.dll"]
 
 # Create Caching Server sample image
 FROM build as sample_caching_server
 WORKDIR /samples/src/Caching/Server
-ENTRYPOINT ["dotnet", "bin/Release/net5.0/Samples.Caching.Server.dll"]
+ENTRYPOINT ["dotnet", "bin/Release/net6.0/Samples.Caching.Server.dll"]
 
 # Create Caching Client sample image
 FROM build as sample_caching_client
-WORKDIR /samples/src/Caching/Client/bin/Release/net5.0
+WORKDIR /samples/src/Caching/Client/bin/Release/net6.0
 
 
 # Websites
 
 FROM build as publish
 WORKDIR /samples
-RUN dotnet publish -c:Release -f:net5.0 --no-build --no-restore src/Blazor/Server/Server.csproj
+RUN dotnet publish -c:Release --no-build --no-restore src/Blazor/Server/Server.csproj
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim as runtime
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim as runtime
 RUN apt-get update \
   && apt-get install -y --allow-unauthenticated \
+    apt-utils \
     libc6-dev \
     libgdiplus \
     libx11-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 WORKDIR /samples
 COPY --from=publish /samples .
 
 # Create Blazor sample image for website
 FROM runtime as sample_blazor_ws
 WORKDIR /samples/src/Blazor/Server
+ENV Logging__Console__FormatterName=
 ENV Server__GitHubClientId=7d519556dd8207a36355
 ENV Server__GitHubClientSecret=8e161ca4799b7e76e1c25429728db6b2430f2057
-ENTRYPOINT ["dotnet", "bin/Release/net5.0/publish/Samples.Blazor.Server.dll"]
+ENTRYPOINT ["dotnet", "bin/Release/net6.0/publish/Samples.Blazor.Server.dll"]
