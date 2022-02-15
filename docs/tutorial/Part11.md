@@ -263,27 +263,94 @@ public static async Task<bool> DefaultForcedSignOutHandler(SessionMiddleware sel
         }
 ```
 
-## Using external authentication
-
 ## Creating your own registration/login system with ASP.NET Core Identity
 
--Need to call `IAuthBackend.SignIn`
--Need to create cookie with authentication data
--Need to store claims from identity to fusion auth storage (
+You can use Fusion's authentication system on top of ASP.NET Core Identity. If you follow this approach then you will need to synchronize the authentication state between the two frameworks, the following code shows a very a basic implementation of this.
+
+Our SignIn methods needs to receive the username and password of the user that wants to sign in, and also the current Fusion session.
+Then we can check if the provided data is valid in the example we basically check if
+    - The user exists
+    - If the user is already signed in or not in Fusions authentication state
+    - Whether the password/email pair is correct
 
 ``` cs
 public async Task SignIn(Session session, EmailPasswordDto signInDto, CancellationToken cancellationToken)
         {
-            ...
-            var fusionUser = new User(session.Id);
-            var (newUser, authenticatedIdentity) = CreateFusionUser(fusionUser, principal, CookieAuthenticationDefaults.AuthenticationScheme);
-            var signInCommand = new SignInCommand(session, newUser, authenticatedIdentity);
-            signInCommand.IsServerSide = true;
-            await _authService.SignIn(signInCommand, cancellationToken);
-                
             var user = await _userManager.FindByNameAsync(signInDto.Email);
+            if (user is ApplicationUser)
+            {
+                var sessionInfo = await _authService.GetSessionInfo(session, cancellationToken);
+                if (sessionInfo.IsAuthenticated)
+                    throw new Exception("You are already signed in");
+
+                var signInResult = await _signInManager.CheckPasswordSignInAsync(user, signInDto.Password, lockoutOnFailure: false);
+                
+            }
         }
 ```
 
--Need to call `IAuthBackend.SignOut`
+If everything was correct then we can proceed with signing the user in. The basic idea here is that we store what the claims and roles of each user with the Identity framework, inside the database, and during the signin process we query these roles and claims from here using the `UserManager` service that Identity provides and we can create a `ClaimsPrincipa` from these values that we can pass to the Fusion SignIn method.
+
+``` cs
+    if (signInResult.Succeeded)
+    {
+        var claims = await _userManager.GetClaimsAsync(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        foreach (var role in roles)
+        {
+            identity.AddClaim(new Claim(ClaimTypes.Role, role));
+        }
+        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
+        identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
+        var principal = new ClaimsPrincipal(identity);
+
+        var ipAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
+        var userAgent = _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("User-Agent", out var userAgentValues)
+                        ? userAgentValues.FirstOrDefault() ?? ""
+                        : "";
+
+        var mustUpdateSessionInfo =
+            !StringComparer.Ordinal.Equals(sessionInfo.IPAddress, ipAddress)
+            || !StringComparer.Ordinal.Equals(sessionInfo.UserAgent, userAgent);
+        if (mustUpdateSessionInfo)
+        {
+            var setupSessionCommand = new SetupSessionCommand(session, ipAddress, userAgent);
+            await _authService.SetupSession(setupSessionCommand, cancellationToken);
+        }
+
+        var fusionUser = new User(session.Id);
+        var (newUser, authenticatedIdentity) = CreateFusionUser(fusionUser, principal, CookieAuthenticationDefaults.AuthenticationScheme);
+        var signInCommand = new SignInCommand(session, newUser, authenticatedIdentity);
+        signInCommand.IsServerSide = true;
+        await _authService.SignIn(signInCommand, cancellationToken);
+     }
+     
+     protected virtual (User User, UserIdentity AuthenticatedIdentity) CreateFusionUser(User user, ClaimsPrincipal httpUser, string schema)
+        {
+            var httpUserIdentityName = httpUser.Identity?.Name ?? "";
+            var claims = httpUser.Claims.ToImmutableDictionary(c => c.Type, c => c.Value);
+            var id = FirstClaimOrDefault(claims, IdClaimKeys) ?? httpUserIdentityName;
+            var name = FirstClaimOrDefault(claims, NameClaimKeys) ?? httpUserIdentityName;
+            var identity = new UserIdentity(schema, id);
+            var identities = ImmutableDictionary<UserIdentity, string>.Empty.Add(identity, "");
+
+            user = new User("", name)
+            {
+                Claims = claims,
+                Identities = identities
+            };
+            return (user, identity);
+        }
+
+        protected static string? FirstClaimOrDefault(IReadOnlyDictionary<string, string> claims, string[] keys)
+        {
+            foreach (var key in keys)
+                if (claims.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
+                    return value;
+            return null;
+        }
+```
+
+After calling Fusion's `_authService.SignIn()` the authentication state will be stored inside Fusion's storage and a cookie will also be created, so we can proceed as usual. One thing we need to be careful with is if we edit the roles/claims of a certain user inside Identity, we will need to invalidate this inside Fusion's storage or maybe even force the user to sign out, in order to keep the two frameworks in sync. To update the authentication state inside Fusion we can simply call `_authService.SignIn` with a newly constructed `ClaimsPrincipal` object containing the updated roles/claims.
 
