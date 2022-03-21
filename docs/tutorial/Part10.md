@@ -57,7 +57,7 @@ services.AddDbContextServices<AppDbContext>(dbContext => {
     // Optionally enable file-based log change tracker 
     dbContext.AddFileBasedOperationLogChangeTracking(someSharedFilePath);
     // Or, if you use PostgreSQL, use this instead of above line
-    // builder.AddNpgsqlDbOperationLogChangeTracking();
+    // builder.AddNpgsqlOperationLogChangeTracking();
 });
 ```
 
@@ -95,7 +95,7 @@ What happens here?
     other peers are using `FileSystemWatcher`-s to know about these
     touches as soon as they happen. And once they happen, they "wake up"
     the operation log reader.
-  - `AddNpgsqlDbOperationLogChangeTracking` does ~ the same, but
+  - `AddNpgsqlOperationLogChangeTracking` does ~ the same, but
     relying on PostgreSQL's
     [NOTIFY / LISTEN](https://www.postgresql.org/docs/13/sql-notify.html)
     feature - basically, a built-in message queue.
