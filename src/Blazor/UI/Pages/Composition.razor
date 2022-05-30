@@ -1,10 +1,9 @@
 @page "/composition"
 @using System.Threading
 @inherits MixedStateComponent<Composition.Model, string>
-@inject Session _session;
-@inject ILocalComposerService _localComposer;
-@inject IComposerService _composer;
-@inject NavigationManager _nav
+@inject Session Session;
+@inject ILocalComposerService LocalComposer;
+@inject IComposerService Composer;
 
 @{
     var state = State.LatestNonErrorValue;
@@ -64,8 +63,8 @@
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
         var parameter = MutableState.Value;
-        var localValue = await _localComposer.GetComposedValue(parameter, _session, cancellationToken);
-        var remoteValue = await _composer.GetComposedValue(parameter, _session, cancellationToken);
+        var localValue = await LocalComposer.GetComposedValue(parameter, Session, cancellationToken);
+        var remoteValue = await Composer.GetComposedValue(parameter, Session, cancellationToken);
         return new Model() {
             LocallyComposedValue = localValue,
             RemotelyComposedValue = remoteValue,

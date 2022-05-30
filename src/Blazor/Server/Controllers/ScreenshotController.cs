@@ -5,12 +5,13 @@ using Samples.Blazor.Abstractions;
 namespace Samples.Blazor.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class ScreenshotController : ControllerBase, IScreenshotService
 {
     private readonly IScreenshotService _screenshots;
 
-    public ScreenshotController(IScreenshotService screenshots) => _screenshots = screenshots;
+    public ScreenshotController(IScreenshotService screenshots) 
+        => _screenshots = screenshots;
 
     [HttpGet, Publish]
     public Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken)

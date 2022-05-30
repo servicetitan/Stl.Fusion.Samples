@@ -24,7 +24,7 @@ public class DbProductService2 : DbServiceBase<AppDbContext>, IProductService
         }
 
         await using var dbContext = await CreateCommandDbContext(cancellationToken);
-        var dbProduct = await dbContext.Products.FindAsync(ComposeKey(productId), cancellationToken);
+        var dbProduct = await dbContext.Products.FindAsync(DbKey.Compose(productId), cancellationToken);
         if (product == null) {
             if (dbProduct != null)
                 dbContext.Remove(dbProduct);

@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
-@inject NavigationManager Navigator
+@inject NavigationManager Nav
 @inject UICommandFailureList CommandFailureList
 
 @{
@@ -33,13 +33,13 @@
 
     protected override void OnInitialized()
     {
-        Navigator.LocationChanged += OnLocationChanged;
+        Nav.LocationChanged += OnLocationChanged;
         CommandFailureList.Changed += OnCommandFailureListChanged;
     }
 
     public void Dispose()
     {
-        Navigator.LocationChanged -= OnLocationChanged;
+        Nav.LocationChanged -= OnLocationChanged;
         CommandFailureList.Changed -= OnCommandFailureListChanged;
     }
 

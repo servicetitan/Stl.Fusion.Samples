@@ -11,15 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise" Version="0.9.5.4" />
-    <PackageReference Include="Blazorise.Bootstrap" Version="0.9.5.4" />
-    <PackageReference Include="Blazorise.DataGrid" Version="0.9.5.4" />
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.5.4" />
-    <PackageReference Include="Blazorise.Sidebar" Version="0.9.5.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" PrivateAssets="all" />
+    <PackageReference Include="Blazorise" Version="1.0.4" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="1.0.4" />
+    <PackageReference Include="Blazorise.DataGrid" Version="1.0.4" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.0.4" />
+    <PackageReference Include="Blazorise.Sidebar" Version="1.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.5" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="2.2.34" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="2.4.52" />
     <PackageReference Include="UAParser" Version="3.1.47" />
   </ItemGroup>
 

@@ -5,12 +5,13 @@ using Stl.Fusion.Server;
 namespace Samples.Blazor.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class SumController : ControllerBase, ISumService
 {
     private readonly ISumService _sumService;
 
-    public SumController(ISumService sumService) => _sumService = sumService;
+    public SumController(ISumService sumService) 
+        => _sumService = sumService;
 
     [HttpPost]
     public Task Reset(CancellationToken cancellationToken)

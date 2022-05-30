@@ -1,6 +1,6 @@
 @using System.Threading
 @inherits MixedStateComponent<double, SumCard.LocalModel>
-@inject ISumService _sumService
+@inject ISumService SumService
 
 @{
     var sum = State.LatestNonErrorValue;
@@ -63,7 +63,7 @@
     {
         var locals = MutableState.Value;
         var values = new[] { locals.ValueA, locals.ValueB };
-        return await _sumService.GetSum(values, true, cancellationToken);
+        return await SumService.GetSum(values, true, cancellationToken);
     }
 
     // Action handlers

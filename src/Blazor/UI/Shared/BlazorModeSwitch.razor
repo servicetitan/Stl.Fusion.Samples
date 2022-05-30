@@ -1,8 +1,8 @@
 @using Stl.OS
 @using System.Web
 @using System.Reflection
-@inject BlazorModeHelper _blazorModeHelper
-@inject IJSRuntime _js
+@inject BlazorModeHelper BlazorModeHelper
+@inject IJSRuntime JS
 
 @if (_isPrerendering) {
     <span>Loading...</span>
@@ -10,7 +10,7 @@
     <RadioGroup Class="@CssClass" TValue="bool"
                 Name="BlazorMode"
                 CheckedValue="@(BlazorModeHelper.IsServerSideBlazor)"
-                CheckedValueChanged="@(v => _blazorModeHelper.ChangeMode(v))">
+                CheckedValueChanged="@(v => BlazorModeHelper.ChangeMode(v))">
         @foreach(var mode in new [] {true, false}) {
             <Radio TValue="bool" Value="@mode">@GetModeName(mode)</Radio>
         }
@@ -26,13 +26,13 @@
 
     protected override void OnInitialized()
     {
-        var jsRuntimeType = _js.GetType();
+        var jsRuntimeType = JS.GetType();
         if (jsRuntimeType.Name != "RemoteJSRuntime") {
             _isPrerendering = false;
             return;
         }
         var fClientProxy = jsRuntimeType.GetField("_clientProxy", BindingFlags.Instance | BindingFlags.NonPublic);
-        var clientProxy = fClientProxy?.GetValue(_js);
+        var clientProxy = fClientProxy?.GetValue(JS);
         _isPrerendering = fClientProxy != null && clientProxy == null;
     }
 

@@ -13,7 +13,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using RestEase;
-using Stl.Async;
 using Stl.Fusion;
 using Stl.Fusion.Client;
 using Stl.Fusion.Server;
@@ -76,7 +75,7 @@ namespace Tutorial
 
         // We need Web API controller to publish the service
         [Route("api/[controller]/[action]")]
-        [ApiController, JsonifyErrors]
+        [ApiController, JsonifyErrors, UseDefaultSession]
         public class CounterController : ControllerBase
         {
             private ICounterService Counters { get; }

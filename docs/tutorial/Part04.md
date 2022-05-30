@@ -123,7 +123,7 @@ public class CounterService : ICounterService
 
 // We need Web API controller to publish the service
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class CounterController : ControllerBase
 {
     private ICounterService Counters { get; }

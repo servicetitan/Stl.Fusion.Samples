@@ -5,12 +5,13 @@ using Stl.Fusion.Server;
 namespace Samples.HelloBlazorHybrid.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class WeatherForecastController : ControllerBase, IWeatherForecastService
 {
     private readonly IWeatherForecastService _forecast;
 
-    public WeatherForecastController(IWeatherForecastService forecast) => _forecast = forecast;
+    public WeatherForecastController(IWeatherForecastService forecast) 
+        => _forecast = forecast;
 
     [HttpGet, Publish]
     public Task<WeatherForecast[]> GetForecast(DateTime startDate,

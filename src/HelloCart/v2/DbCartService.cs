@@ -21,7 +21,7 @@ public class DbCartService : DbServiceBase<AppDbContext>, ICartService
         }
 
         await using var dbContext = await CreateCommandDbContext(cancellationToken);
-        var dbCart = await dbContext.Carts.FindAsync(ComposeKey(cartId), cancellationToken);
+        var dbCart = await dbContext.Carts.FindAsync(DbKey.Compose(cartId), cancellationToken);
         if (cart == null) {
             if (dbCart != null)
                 dbContext.Remove(dbCart);
@@ -64,7 +64,7 @@ public class DbCartService : DbServiceBase<AppDbContext>, ICartService
         await using var _ = dbContext.ConfigureAwait(false);
         dbContext.EnableChangeTracking(); // Otherwise LoadAsync below won't work
 
-        var dbCart = await dbContext.Carts.FindAsync(ComposeKey(id), cancellationToken);
+        var dbCart = await dbContext.Carts.FindAsync(DbKey.Compose(id), cancellationToken);
         if (dbCart == null)
             return null;
         await dbContext.Entry(dbCart).Collection(c => c.Items).LoadAsync(cancellationToken);

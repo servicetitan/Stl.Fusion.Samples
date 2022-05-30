@@ -5,12 +5,13 @@ using Stl.Fusion.Server;
 namespace Samples.HelloBlazorHybrid.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class CounterController : ControllerBase, ICounterService
 {
     private readonly ICounterService _counter;
 
-    public CounterController(ICounterService counter) => _counter = counter;
+    public CounterController(ICounterService counter) 
+        => _counter = counter;
 
     [HttpGet, Publish]
     public Task<int> Get(CancellationToken cancellationToken = default)

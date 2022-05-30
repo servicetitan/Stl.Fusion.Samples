@@ -29,7 +29,7 @@ public class DbCartService2 : DbServiceBase<AppDbContext>, ICartService
         }
 
         await using var dbContext = await CreateCommandDbContext(cancellationToken);
-        var dbCart = await dbContext.Carts.FindAsync(ComposeKey(cartId), cancellationToken);
+        var dbCart = await dbContext.Carts.FindAsync(DbKey.Compose(cartId), cancellationToken);
         if (cart == null) {
             if (dbCart != null)
                 dbContext.Remove(dbCart);

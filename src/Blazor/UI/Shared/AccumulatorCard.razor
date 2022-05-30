@@ -3,8 +3,8 @@
 @using System.Reactive
 @using System.Globalization
 @inherits MixedStateComponent<double, AccumulatorCard.LocalModel>
-@inject ISumService _sumService
-@inject UICommandRunner _uiCommandRunner
+@inject ISumService SumService
+@inject UICommandRunner UICommandRunner
 
 @{
     var accumulator = State.LatestNonErrorValue;
@@ -62,13 +62,13 @@
         => new () { UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), UpdateDelay) };
 
     protected override Task<double> ComputeState(CancellationToken cancellationToken)
-        => _sumService.GetAccumulator(cancellationToken);
+        => SumService.GetAccumulator(cancellationToken);
 
     // Action handlers
 
     private async Task Reset()
-        => await _uiCommandRunner.Run(LocalCommand.New(() => _sumService.Reset()));
+        => await UICommandRunner.Run(LocalCommand.New(() => SumService.Reset()));
 
     private async Task Accumulate()
-        => await _uiCommandRunner.Run(LocalCommand.New(() => _sumService.Accumulate(MutableState.Value.Value)));
+        => await UICommandRunner.Run(LocalCommand.New(() => SumService.Accumulate(MutableState.Value.Value)));
 }

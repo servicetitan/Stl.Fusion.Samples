@@ -5,12 +5,13 @@ using Stl.Fusion.Server;
 namespace Samples.HelloBlazorHybrid.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class ChatController : ControllerBase, IChatService
 {
     private readonly IChatService _chat;
 
-    public ChatController(IChatService chat) => _chat = chat;
+    public ChatController(IChatService chat) 
+        => _chat = chat;
 
     [HttpGet, Publish]
     public Task<int> GetMessageCount()

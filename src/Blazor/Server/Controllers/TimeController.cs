@@ -5,12 +5,13 @@ using Samples.Blazor.Abstractions;
 namespace Samples.Blazor.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class TimeController : ControllerBase, ITimeService
 {
     private readonly ITimeService _time;
 
-    public TimeController(ITimeService time) => _time = time;
+    public TimeController(ITimeService time) 
+        => _time = time;
 
     [HttpGet, Publish]
     public Task<DateTime> GetTime(CancellationToken cancellationToken)

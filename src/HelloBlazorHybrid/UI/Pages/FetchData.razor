@@ -2,7 +2,7 @@
 @using System.Threading
 @using Samples.HelloBlazorHybrid.Abstractions
 @inherits MixedStateComponent<Samples.HelloBlazorHybrid.Abstractions.WeatherForecast[], DateTime>
-@inject IWeatherForecastService _weatherForecast
+@inject IWeatherForecastService WeatherForecast
 
 @{
     var state = State.ValueOrDefault ?? Array.Empty<WeatherForecast>();
@@ -46,5 +46,5 @@
         => new () { InitialValue = DateTime.Today };
 
     protected override async Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
-        => await _weatherForecast.GetForecast(MutableState.Value, cancellationToken);
+        => await WeatherForecast.GetForecast(MutableState.Value, cancellationToken);
 }

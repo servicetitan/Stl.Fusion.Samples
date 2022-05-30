@@ -1,16 +1,17 @@
 @page "/authentication"
 @using UAParser
-@inherits ComputedStateComponent<(User User, List<AuthenticationPage.SessionInfoModel> Sessions)>
-@inject Session _session
-@inject IAuth _auth
-@inject ClientAuthHelper _clientAuthHelper
-@inject IFusionTime _fusionTime
-@inject NavigationManager _nav
+@inherits ComputedStateComponent<(User? User, List<AuthenticationPage.SessionInfoModel>? Sessions)>
+@inject Session Session
+@inject IAuth Auth
+@inject ClientAuthHelper ClientAuthHelper
+@inject IFusionTime FusionTime
+@inject NavigationManager Nav
 
 @{
     var state = State.LatestNonErrorValue;
     var error = State.Error;
-    var user = state.User;
+    var user = state.User ?? new("");
+    var sessions = state.Sessions ?? new();
     var usedAuthSchemas = user.Identities.Select(kv => kv.Key.Schema).ToHashSet();
     var unusedAuthSchemas = AuthSchemas.Where(p => !usedAuthSchemas.Contains(p.Name)).ToArray();
 }
@@ -19,12 +20,25 @@
 
 <WhenException Title="Update error:" Exception="@error" />
 
+<Note>
+    <Div Margin="Margin.Is1.FromBottom">
+        Open <a href="@Nav.Uri" target="_blank">this page</a> or
+        <a href="/composition" target="_blank">Composition example</a>
+        in another window to see how authentication state is synchronized everywhere.
+    </Div>
+    <Div>
+        If authentication doesn't work, most likely you need to provide
+        <code>ClientId</code> and <code>ClientSecret</code> for one of
+        authentication providers.
+    </Div>
+</Note>
+
 <Card>
     <CardBody>
         <CardTitle>Session properties:</CardTitle>
         <CardText>
             <ul>
-                <li><code>Session.Id</code>: <b><code>@_session.Id</code></b></li>
+                <li><code>Session.Id</code>: <b><code>@Session.Id</code></b></li>
             </ul>
         </CardText>
 
@@ -51,7 +65,7 @@
                 </ul>
             }
         </CardText>
-        @if (user.IsAuthenticated && state.Sessions.Count > 0) {
+        @if (user.IsAuthenticated && sessions.Count > 0) {
             <CardTitle>Sessions:</CardTitle>
             <CardText>
                 <table class="table table-sm">
@@ -66,7 +80,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach (var session in state.Sessions) {
+                    @foreach (var session in sessions) {
                         <tr @key="@session.Id">
                             <td>@session.IPAddress</td>
                             <td>@session.UserAgent</td>
@@ -78,7 +92,7 @@
                                     <span>Current</span>
                                 } else {
                                     <button type="button" class="btn btn-sm btn-danger"
-                                            @onclick="_ => _clientAuthHelper.SignOut(session.Id)">Kick</button>
+                                            @onclick="_ => ClientAuthHelper.SignOut(session.Id)">Kick</button>
                                 }
                             </td>
                         </tr>
@@ -93,16 +107,16 @@
             <Authorized>
                 <Buttons Margin="Margin.Is0">
                     <Button Color="Color.Warning"
-                            @onclick="_ => _clientAuthHelper.SignOut()">Sign out</Button>
+                            @onclick="_ => ClientAuthHelper.SignOut()">Sign out</Button>
                     <Button Color="Color.Danger"
-                            @onclick="_ => _clientAuthHelper.SignOutEverywhere()">Sign out everywhere</Button>
+                            @onclick="_ => ClientAuthHelper.SignOutEverywhere()">Sign out everywhere</Button>
                 </Buttons>
                 @if (unusedAuthSchemas.Length != 0) {
                     <span> or add account: </span>
                     <Buttons Margin="Margin.Is0">
                         @foreach (var (name, displayName) in unusedAuthSchemas) {
                             <Button Color="Color.Primary"
-                                    @onclick="_ => _clientAuthHelper.SignIn(name)">@displayName</Button>
+                                    @onclick="_ => ClientAuthHelper.SignIn(name)">@displayName</Button>
                         }
                     </Buttons>
                 }
@@ -135,29 +149,26 @@
     {
         if (firstRender) {
             // GetSchemas requires JS interop, so it can be called only at this point
-            AuthSchemas = await _clientAuthHelper.GetSchemas();
+            AuthSchemas = await ClientAuthHelper.GetSchemas();
             StateHasChanged();
         }
     }
 
-    protected override ComputedState<(User User, List<SessionInfoModel> Sessions)>.Options GetStateOptions()
-        => new () { InitialValue = (new(""), new List<SessionInfoModel>()) };
-
-    protected override async Task<(User, List<SessionInfoModel>)> ComputeState(CancellationToken cancellationToken)
+    protected override async Task<(User?, List<SessionInfoModel>?)> ComputeState(CancellationToken cancellationToken)
     {
-        var user = await _auth.GetUser(_session, cancellationToken);
-        var sessions = await _auth.GetUserSessions(_session, cancellationToken).ConfigureAwait(false);
+        var user = await Auth.GetUser(Session, cancellationToken);
+        var sessions = await Auth.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
         var result = new List<SessionInfoModel>();
 
         foreach (var session in sessions) {
             var userAgent = UserAgentCache.GetOrAdd(session.UserAgent, ua => Parser.ParseUserAgent(ua));
             var model = new SessionInfoModel() {
                 Id = session.Id,
-                IsCurrent = _session.Id == session.Id,
+                IsCurrent = Session.Id == session.Id,
                 IPAddress = session.IPAddress,
                 UserAgent = $"{userAgent.Family} {userAgent.Major}.{userAgent.Minor}",
-                Created = await _fusionTime.GetMomentsAgo(session.CreatedAt),
-                LastSeen = await _fusionTime.GetMomentsAgo(session.LastSeenAt),
+                Created = await FusionTime.GetMomentsAgo(session.CreatedAt),
+                LastSeen = await FusionTime.GetMomentsAgo(session.LastSeenAt),
                 Version = session.Version,
             };
             result.Add(model);

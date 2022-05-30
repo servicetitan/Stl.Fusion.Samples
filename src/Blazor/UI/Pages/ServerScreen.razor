@@ -2,7 +2,7 @@
 @using System.Threading
 @using System.Globalization
 @inherits ComputedStateComponent<Screenshot>
-@inject IScreenshotService _screenshots
+@inject IScreenshotService Screenshots
 
 @{
     var screenshot = State.LatestNonErrorValue;
@@ -40,5 +40,5 @@
         };
 
     protected override Task<Screenshot> ComputeState(CancellationToken cancellationToken)
-        => _screenshots.GetScreenshot(ActualWidth, cancellationToken);
+        => Screenshots.GetScreenshot(ActualWidth, cancellationToken);
 }

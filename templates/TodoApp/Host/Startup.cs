@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Templates.TodoApp.Services;
 using Stl.DependencyInjection;
@@ -19,12 +18,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Stl.Fusion.EntityFramework;
+using Stl.Fusion.EntityFramework.Npgsql;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.Operations.Reprocessing;
+using Stl.Fusion.Server.Authentication;
+using Stl.Fusion.Server.Controllers;
 using Stl.IO;
 using Templates.TodoApp.Abstractions;
 using Templates.TodoApp.UI;
@@ -73,7 +74,7 @@ public class Startup
                 dbContext.UseSqlServer(HostSettings.UseSqlServer);
             else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql)) {
                 dbContext.UseNpgsql(HostSettings.UsePostgreSql);
-                // dbContext.UseNpgsqlHintFormatter();
+                dbContext.UseNpgsqlHintFormatter();
             }
             else
                 dbContext.UseSqlite($"Data Source={dbPath}");
@@ -105,11 +106,14 @@ public class Startup
         var fusionServer = fusion.AddWebServer();
         var fusionClient = fusion.AddRestEaseClient();
         var fusionAuth = fusion.AddAuthentication().AddServer(
-            signInControllerOptionsBuilder: (_, options) => {
-                options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
+            signInControllerSettingsFactory: _ => SignInController.DefaultSettings with {
+                DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
+                SignInPropertiesBuilder = (_, properties) => {
+                    properties.IsPersistent = true;
+                }
             },
-            authHelperOptionsBuilder: (_, options) => {
-                options.NameClaimKeys = Array.Empty<string>();
+            serverAuthHelperSettingsFactory: _ => ServerAuthHelper.DefaultSettings with {
+                NameClaimKeys = Array.Empty<string>(),
             });
         fusion.AddSandboxedKeyValueStore();
         fusion.AddOperationReprocessor();
@@ -136,6 +140,14 @@ public class Startup
             options.LogoutPath = "/signOut";
             if (Env.IsDevelopment())
                 options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+            // This controls the expiration time stored in the cookie itself
+            options.ExpireTimeSpan = TimeSpan.FromDays(7);
+            options.SlidingExpiration = true;
+            // And this controls when the browser forgets the cookie
+            options.Events.OnSigningIn = ctx => {
+                ctx.CookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(28);
+                return Task.CompletedTask;
+            };
         }).AddMicrosoftAccount(options => {
             options.ClientId = HostSettings.MicrosoftAccountClientId;
             options.ClientSecret = HostSettings.MicrosoftAccountClientSecret;

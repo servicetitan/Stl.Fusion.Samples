@@ -5,23 +5,19 @@ using Samples.Blazor.Abstractions;
 namespace Samples.Blazor.Server.Controllers;
 
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class ChatController : ControllerBase, IChatService
 {
     private readonly IChatService _chat;
-    private readonly ISessionResolver _sessionResolver;
 
-    public ChatController(IChatService chat, ISessionResolver sessionResolver)
-    {
-        _chat = chat;
-        _sessionResolver = sessionResolver;
-    }
+    public ChatController(IChatService chat) 
+        => _chat = chat;
 
     // Commands
 
     [HttpPost]
     public Task<ChatMessage> Post([FromBody] IChatService.PostCommand command, CancellationToken cancellationToken = default)
-        => _chat.Post(command.UseDefaultSession(_sessionResolver), cancellationToken);
+        => _chat.Post(command, cancellationToken);
 
     // Queries
 

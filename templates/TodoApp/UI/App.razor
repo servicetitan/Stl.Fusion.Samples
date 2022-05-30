@@ -1,6 +1,7 @@
 @using Stl.Text
+@using Stl.OS
 @implements IDisposable
-@inject BlazorCircuitContext _blazorCircuitContext
+@inject BlazorCircuitContext BlazorCircuitContext
 
 <CascadingAuthState SessionId="@SessionId">
 <ThemeProvider Theme="@Theme">
@@ -25,10 +26,12 @@
 
     protected override void OnInitialized()
     {
-        if (!_blazorCircuitContext.IsPrerendering)
-            _blazorCircuitContext.RootComponent = this;
+        if (OSInfo.IsWebAssembly)
+            SessionId = Session.Default.Id; // We don't want to store it anywhere in WASM or JS
+        if (!BlazorCircuitContext.IsPrerendering)
+            BlazorCircuitContext.RootComponent = this;
     }
 
     public void Dispose()
-        => _blazorCircuitContext.Dispose();
+        => BlazorCircuitContext.Dispose();
 }

@@ -23,6 +23,8 @@ using Stl.Fusion.Bridge;
 using Stl.Fusion.Client;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Server;
+using Stl.Fusion.Server.Authentication;
+using Stl.Fusion.Server.Controllers;
 using Stl.IO;
 
 namespace Samples.Blazor.Server;
@@ -87,8 +89,14 @@ public class Startup
         var fusionClient = fusion.AddRestEaseClient();
         var fusionServer = fusion.AddWebServer();
         var fusionAuth = fusion.AddAuthentication().AddServer(
-            signInControllerOptionsBuilder: (_, options) => {
-                options.DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme;
+            signInControllerSettingsFactory: _ => SignInController.DefaultSettings with {
+                DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
+                SignInPropertiesBuilder = (_, properties) => {
+                    properties.IsPersistent = true;
+                }
+            },
+            serverAuthHelperSettingsFactory: _ => ServerAuthHelper.DefaultSettings with {
+                NameClaimKeys = Array.Empty<string>(),
             });
         services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
         services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
@@ -116,6 +124,14 @@ public class Startup
             options.LogoutPath = "/signOut";
             if (Env.IsDevelopment())
                 options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+            // This controls the expiration time stored in the cookie itself
+            options.ExpireTimeSpan = TimeSpan.FromDays(7);
+            options.SlidingExpiration = true;
+            // And this controls when the browser forgets the cookie
+            options.Events.OnSigningIn = ctx => {
+                ctx.CookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(28);
+                return Task.CompletedTask;
+            };
         }).AddMicrosoftAccount(options => {
             options.ClientId = ServerSettings.MicrosoftAccountClientId;
             options.ClientSecret = ServerSettings.MicrosoftAccountClientSecret;

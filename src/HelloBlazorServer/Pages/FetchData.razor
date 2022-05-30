@@ -1,7 +1,7 @@
 ﻿@page "/fetchdata"
 @using System.Threading
 @inherits MixedStateComponent<WeatherForecast[], DateTime>
-@inject WeatherForecastService _weatherForecast
+@inject WeatherForecastService WeatherForecast
 
 @{
     var state = State.ValueOrDefault ?? Array.Empty<WeatherForecast>();
@@ -45,5 +45,5 @@
         => new () { InitialValue = DateTime.Today };
 
     protected override Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
-        => _weatherForecast.GetForecast(MutableState.Value, cancellationToken);
+        => WeatherForecast.GetForecast(MutableState.Value, cancellationToken);
 }

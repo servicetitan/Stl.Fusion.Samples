@@ -2,9 +2,9 @@
 @using System.Threading
 @using Samples.HelloBlazorHybrid.Abstractions
 @inherits ComputedStateComponent<(string Name, string Text, string Time)[]>
-@inject IChatService _chats
-@inject IFusionTime _time
-@inject NavigationManager _nav
+@inject IChatService Chats
+@inject IFusionTime Time
+@inject NavigationManager Nav
 
 @{
     var state = State.LatestNonErrorValue;
@@ -14,7 +14,7 @@
 <h1>Simple Chat</h1>
 
 <div class="alert alert-primary">
-    Open this page in <a href="@_nav.Uri" target="_blank">another window</a> to see it updates in sync.
+    Open this page in <a href="@Nav.Uri" target="_blank">another window</a> to see it updates in sync.
 </div>
 @if (error != null) {
     <div class="alert alert-warning" role="alert">Update error: @error.Message</div>
@@ -63,10 +63,10 @@
 
     protected override async Task<(string Name, string Text, string Time)[]> ComputeState(CancellationToken cancellationToken)
     {
-        var messages = await _chats.GetMessages(20, cancellationToken);
+        var messages = await Chats.GetMessages(20, cancellationToken);
         var result = new List<(string Name, string Text, string Time)>();
         foreach (var message in messages) {
-            var momentsAgo = await _time.GetMomentsAgo(message.Time);
+            var momentsAgo = await Time.GetMomentsAgo(message.Time);
             result.Add((message.Name, message.Text, momentsAgo));
         }
         return result.ToArray();
@@ -76,7 +76,7 @@
     {
         if (Message == "")
             return;
-        await _chats.PostMessage(new(Name, Message));
+        await Chats.PostMessage(new(Name, Message));
         Message = "";
     }
 }

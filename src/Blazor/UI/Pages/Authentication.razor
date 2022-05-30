@@ -3,11 +3,11 @@
 @using UAParser
 @using System.Collections.Concurrent
 @inherits ComputedStateComponent<List<Authentication.SessionModel>>
-@inject Session _session
-@inject IAuth _auth
-@inject ClientAuthHelper _clientAuthHelper
-@inject IFusionTime _time
-@inject NavigationManager _nav
+@inject Session Session
+@inject IAuth Auth
+@inject ClientAuthHelper ClientAuthHelper
+@inject IFusionTime Time
+@inject NavigationManager Nav
 
 @{
     var state = State.LatestNonErrorValue;
@@ -22,7 +22,7 @@
 
 <Note>
     <Div Margin="Margin.Is1.FromBottom">
-        Open <a href="@_nav.Uri" target="_blank">this page</a> or
+        Open <a href="@Nav.Uri" target="_blank">this page</a> or
         <a href="/composition" target="_blank">Composition example</a>
         in another window to see how authentication state is synchronized everywhere.
     </Div>
@@ -38,7 +38,7 @@
         <CardTitle>Session properties:</CardTitle>
         <CardText>
             <ul>
-                <li><code>Session.Id</code>: <b><code>@_session.Id</code></b></li>
+                <li><code>Session.Id</code>: <b><code>@Session.Id</code></b></li>
             </ul>
         </CardText>
 
@@ -89,7 +89,7 @@
                                     <span>Current</span>
                                 } else {
                                     <button type="button" class="btn btn-sm btn-danger"
-                                            @onclick="_ => _clientAuthHelper.SignOut(session.Id)">Kick</button>
+                                            @onclick="_ => ClientAuthHelper.SignOut(session.Id)">Kick</button>
                                 }
                             </td>
                         </tr>
@@ -104,16 +104,16 @@
             <Authorized>
                 <Buttons Margin="Margin.Is0">
                     <Button Color="Color.Warning"
-                            @onclick="_ => _clientAuthHelper.SignOut()">Sign out</Button>
+                            @onclick="_ => ClientAuthHelper.SignOut()">Sign out</Button>
                     <Button Color="Color.Danger"
-                            @onclick="_ => _clientAuthHelper.SignOutEverywhere()">Sign out everywhere</Button>
+                            @onclick="_ => ClientAuthHelper.SignOutEverywhere()">Sign out everywhere</Button>
                 </Buttons>
                 @if (unusedAuthSchemas.Length != 0) {
                     <span> or add account: </span>
                     <Buttons Margin="Margin.Is0">
                         @foreach (var (name, displayName) in unusedAuthSchemas) {
                             <Button Color="Color.Primary"
-                                    @onclick="_ => _clientAuthHelper.SignIn(name)">@displayName</Button>
+                                    @onclick="_ => ClientAuthHelper.SignIn(name)">@displayName</Button>
                         }
                     </Buttons>
                 }
@@ -152,7 +152,7 @@
     {
         if (firstRender) {
             // GetSchemasAsync requires JS interop, so it can be called only at this point
-            AuthSchemas = await _clientAuthHelper.GetSchemas();
+            AuthSchemas = await ClientAuthHelper.GetSchemas();
             StateHasChanged();
         }
     }
@@ -162,18 +162,18 @@
 
     protected override async Task<List<SessionModel>> ComputeState(CancellationToken cancellationToken)
     {
-        var sessions = await _auth.GetUserSessions(_session, cancellationToken).ConfigureAwait(false);
+        var sessions = await Auth.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
         var result = new List<SessionModel>();
 
         foreach (var session in sessions) {
             var userAgent = UserAgentCache.GetOrAdd(session.UserAgent, ua => Parser.ParseUserAgent(ua));
             var model = new SessionModel() {
                 Id = session.Id,
-                IsCurrent = _session.Id == session.Id,
+                IsCurrent = Session.Id == session.Id,
                 IPAddress = session.IPAddress,
                 UserAgent = $"{userAgent.Family} {userAgent.Major}.{userAgent.Minor}",
-                Created = await _time.GetMomentsAgo(session.CreatedAt),
-                LastSeen = await _time.GetMomentsAgo(session.LastSeenAt),
+                Created = await Time.GetMomentsAgo(session.CreatedAt),
+                LastSeen = await Time.GetMomentsAgo(session.LastSeenAt),
             };
             result.Add(model);
         }

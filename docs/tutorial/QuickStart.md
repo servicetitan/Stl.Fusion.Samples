@@ -952,12 +952,13 @@ Ok, and how Fusion controller looks like?
 
 ```cs
 [Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors]
+[ApiController, JsonifyErrors, UseDefaultSession]
 public class CartController : ControllerBase, ICartService
 {
     private readonly ICartService _cartService;
 
-    public CartController(ICartService cartService) => _cartService = cartService;
+    public CartController(ICartService cartService) 
+        => _cartService = cartService;
 
     // Commands
 
@@ -983,6 +984,10 @@ Key points on controllers:
   it retains only the exception type and message, but usually this is still
   better than seeing a generic exception type for any error happening on
   server. But you're free to replace it with whatever logic you like ;)
+- `[UseDefaultSession]` sets empty `Session`-typed argument values 
+  and `ISessionCommand.Session` property value to
+  `ISessionResolver.Session` value, which is set to cookie-based
+  session by `SessionMiddleware`. 
 - For command handler endpoints, you just need to forward the call by calling
   the underlying command handler or `ICommander.Call`.
   And typically you need to apply `[FromBody]` attribute to your
