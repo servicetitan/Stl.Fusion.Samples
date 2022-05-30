@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Client;
 using Stl.Fusion.Client;

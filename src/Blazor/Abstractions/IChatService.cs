@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -58,11 +57,7 @@ public class ChatUser : LongKeyedEntity
 
 public interface IChatService
 {
-    public record PostCommand(string Text, Session Session) : ISessionCommand<ChatMessage>
-    {
-        // Default constructor is needed for JSON deserialization
-        public PostCommand() : this(null!, Session.Null) { }
-    }
+    public record PostCommand(string Text, Session Session) : ISessionCommand<ChatMessage>;
 
     // Commands
     [CommandHandler]

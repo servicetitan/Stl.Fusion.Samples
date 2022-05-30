@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
 using Samples.Caching.Common;
 using Stl.OS;
 using static System.Console;

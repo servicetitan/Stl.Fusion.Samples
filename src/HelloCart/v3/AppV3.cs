@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Samples.HelloCart.V2;
 using Stl.Fusion.EntityFramework;
 using Stl.IO;

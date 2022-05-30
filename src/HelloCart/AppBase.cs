@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
 using static System.Console;
 
 namespace Samples.HelloCart;

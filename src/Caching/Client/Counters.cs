@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Samples.Caching.Client;
 
 public abstract class Counter

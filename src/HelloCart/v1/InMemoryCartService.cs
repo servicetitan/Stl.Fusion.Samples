@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Samples.HelloCart.V1;
 
 public class InMemoryCartService : ICartService

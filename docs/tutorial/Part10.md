@@ -136,12 +136,7 @@ public async Task<ChatMessage> PostMessage(
 ‎1. Create a dedicated command type for this action:
 
 ```cs
-public record PostMessageCommand(Session Session, string Text) : ICommand<ChatMessage>
-{
-    // Default constructor is needed for JSON deserialization -
-    // positional records don't have one by default
-    public PostMessageCommand() : this(Session.Null, "") { }
-}
+public record PostMessageCommand(Session Session, string Text) : ICommand<ChatMessage>;
 ```
 
 Notice that above type implements `ICommand<ChatMessage>` - the

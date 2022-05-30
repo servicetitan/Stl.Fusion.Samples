@@ -9,6 +9,7 @@
     <Using Include="System.Collections" />
     <Using Include="System.Collections.Immutable" />
     <Using Include="System.Collections.Concurrent" />
+    <Using Include="System.Collections.Generic" />
     <Using Include="System.Linq" />
     <Using Include="System.Reactive" /> <!-- Mainly for Unit type -->
     <Using Include="System.Text" />
@@ -29,6 +30,7 @@
     <Using Include="Stl.Serialization" />
     <Using Include="Stl.Text" />
     <Using Include="Stl.Time" />
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
     <Using Include="Microsoft.Extensions.Logging" />
     <Using Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>

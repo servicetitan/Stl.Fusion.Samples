@@ -1,11 +1,4 @@
-﻿using System;
-using System.Reactive;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Stl.CommandR;
-using Stl.CommandR.Configuration;
-using static System.Console;
+﻿using static System.Console;
 
 var services = new ServiceCollection()
     .AddCommander(c => c.AddCommandService<GreetingService>())
@@ -20,10 +13,7 @@ await commander.Run(new SayCommand("")); // This call won't throw an exception
 
 // Types used in this example
 
-public record SayCommand(string Text) : ICommand<Unit>
-{
-    public SayCommand() : this("") { }
-}
+public record SayCommand(string Text) : ICommand<Unit>;
 
 public class GreetingService
 {

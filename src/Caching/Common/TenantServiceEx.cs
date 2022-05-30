@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Samples.Caching.Common;
 
 public static class TenantServiceEx
