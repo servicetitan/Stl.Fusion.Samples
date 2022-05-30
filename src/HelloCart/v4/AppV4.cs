@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Samples.HelloCart.V2;
 using Stl.Fusion.Client;
 using Stl.Fusion.EntityFramework;
+using Stl.Fusion.EntityFramework.Redis;
 using Stl.Fusion.Server;
 using Stl.IO;
 
