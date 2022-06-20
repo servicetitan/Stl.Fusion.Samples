@@ -57,7 +57,11 @@ public class ChatUser : LongKeyedEntity
 
 public interface IChatService
 {
-    public record PostCommand(string Text, Session Session) : ISessionCommand<ChatMessage>;
+    public record PostCommand(string Text, Session Session) : ISessionCommand<ChatMessage>
+    {
+        // Newtonsoft.Json needs this constructor to deserialize this record
+        public PostCommand() : this("", Session.Null) { }
+    }
 
     // Commands
     [CommandHandler]

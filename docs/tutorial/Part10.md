@@ -136,7 +136,11 @@ public async Task<ChatMessage> PostMessage(
 ‎1. Create a dedicated command type for this action:
 
 ```cs
-public record PostMessageCommand(Session Session, string Text) : ICommand<ChatMessage>;
+public record PostMessageCommand(Session Session, string Text) : ICommand<ChatMessage>
+{
+    // Newtonsoft.Json needs this constructor to deserialize this record
+    public PostMessageCommand() : this(Session.Null, "") { } 
+}
 ```
 
 Notice that above type implements `ICommand<ChatMessage>` - the
