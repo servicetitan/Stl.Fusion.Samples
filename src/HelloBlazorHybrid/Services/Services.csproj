@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="2.4.59" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="2.4.66" />
   </ItemGroup>
 
 </Project>
