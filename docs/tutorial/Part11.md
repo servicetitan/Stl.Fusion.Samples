@@ -3,13 +3,18 @@
 ## Fusion Session
 
 One of the important elements in this authentication system is Fusion's own session. 
-A session is essentialy a string value, that is stored in http only cookie. If the client sends this cookie with a request then we use the session specified there
-if not we create a new session and store it inside a cookie. To enable Fusion session we need to call `UseFusionSession` inside the `Configure` method of the Startup class.
-This will add the `SessionMiddleware` to the request pipeline. The actual class contains a bit more logic, but the important parts for now are the following:
+A session is essentially a string value, that is stored in HTTP only cookie. If the client sends this cookie with a request then we use the session specified there; if not, `SessionMiddleware` creates it. 
+
+To enable Fusion session we need to call `UseFusionSession` inside the `Configure` method of the `Startup` class.
+This adds `SessionMiddleware` to the request pipeline. The actual class contains a bit more logic, but the important parts for now are the following:
 
 ``` cs --editable false
 public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
     {
+        // Note that now it's slightly more complex due to
+        // newly introduced multitenancy support in Fusion 3.x.
+        // But you'll get the idea.
+
         var cookies = httpContext.Request.Cookies;
         var cookieName = Cookie.Name ?? "";
         cookies.TryGetValue(cookieName, out var sessionId);
@@ -25,7 +30,7 @@ public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
     }
 ```
 
-The Session class in itself is very simple, it stores a string Id value (inside a Symbol) and it also specifies how it should be serialized and how should we compare it to other session objects.
+The `Session` class in itself is very simple, it stores a single `Symbol Id` value. `Symbol` is a struct storing a string with its cached `HashCode`, its only role is to speedup dictionary lookups when it's used. Besides that, `Session` overrides equality - they're compared by `Id`.
 
 ```cs --editable false
 [DataContract]
@@ -45,102 +50,123 @@ public sealed class Session : IHasId<Symbol>, IEquatable<Session>,
 
 # Authentication services in the backend application
 
-We can associate authentication info with each session. Basically we store if the session is authenticated, then who the signed in user is and what claims do they have.
-On the server side the following two services interact with authentication data.
+`Session`'s role is quite similar to ASP.NET sessions - it allows to identify everything related to the current user. Technically it's up to you what to associate with it, but Fusion's built-in services address a single kind of this information: authentication info.
 
-- InMemoryAuthService
-- DbAuthService
+If the session is authenticated, it allows you to get the user information, claims associated with this user, etc.
+On the server side the following Fusion services interact with authentication data.
 
-They implement the same interfaces, so they can be used interchangeably the only difference between them is where they store the authentication data (in memory/database).
-These two interfaces are `IAuth` and `IAuthBackend`. These interfaces are separate because some functions are accessable both client and server side, while there are functions
-only accessable server side, for example signing in a session and associating it with a user.
+- `InMemoryAuthService`
+- `DbAuthService<...>`
 
-The in-memory service is registered by default, in order to register the DbAuthService in the DI Container we need to call the `AddAuthentication` method in a similar way
-to the following code snippet. The Operations Framework is also needed for this service, you can read more about that topic tutorial Part 10.
+They implement the same interfaces, so they can be used interchangeably - the only difference between them is where they store the data: in memory on in the database. `InMemoryAuthService` is there primarily for debugging or quick prototyping - you don't want to use it in the real app.
+
+Speaking of interfaces, these services implement two of them:
+`IAuth` and `IAuthBackend`. The first one is intended to be used on the client; the second one must be used on the server side.
+
+Here is how they look like:
+- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/Authentication/IAuth.cs
+
+The key difference is:
+- `IAuth` allows to just read the data associated with the current session
+- `IAuthBackend` allows to modify it and read the information about any user.
+
+This, btw, is a recommended way for designing Fusion services:
+- `IXxx` is your front-end, it gets `Session` as the very first parameter and provides only the data current user is allowed to access
+- `IXxxBackend` doesn't require `Session` and allows to access everything.
+
+When you add authentication, `InMemoryAuthService` is registered as `IAuth` and `IAuthBackend` implementation by default. In order to register the `DbAuthService` in the DI container, we need to call the `AddAuthentication` method in a similar way
+to the following code snippet. 
+
+The Operations Framework is also needed for any of these services -
+hopefully you read [Part 10](./Part10.md), which covers it.
 
 ```cs --editable false
-services.AddDbContextServices<FusionDbContext>(dbContext =>
-            {
-                dbContext.AddOperations((_, o) => {
-                    o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(1);
-                });
-
-                dbContext.AddAuthentication<DbSessionInfo<long>, DbUser<long>, long>();
-            });
+services.AddDbContextServices<FusionDbContext>(dbContext => {
+    dbContext.AddOperations((_, o) => {
+        o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(1);
+    });
+    dbContext.AddAuthentication<DbSessionInfo<long>, DbUser<long>, long>();
+});
 ```
-Our DbContext needs to contain DbSets for the classes provided here as type parameters.
+Our `DbContext` needs to contain `DbSet`-s for the classes provided here as type parameters.
 The `DbSessionInfo` and `DbUser` classes are very simple entities provided by Fusion for storing authentication data.
 
 ```cs --editable false
+public class AppDbContext : DbContextBase
+{
+    // Authentication-related tables
+    public DbSet<DbUser<long>> Users { get; protected set; } = null!;
+    public DbSet<DbUserIdentity<long>> UserIdentities { get; protected set; } = null!;
+    public DbSet<DbSessionInfo<long>> Sessions { get; protected set; } = null!;
+    // Operations Framework's operation log
+    public DbSet<DbOperation> Operations { get; protected set; } = null!;
+
+    public AppDbContext(DbContextOptions options) : base(options) { }
+}
+
+```
+
+And that's how these entity types look:
+
+```cs --editable false
 public class DbSessionInfo<TDbUserId> : IHasId<string>, IHasVersion<long>
-    {
-        [Key]
-        [StringLength(32)]
-        public string Id { get; set; }
-        [ConcurrencyCheck]
-        public long Version { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime LastSeenAt { get; set; }
-        public string IPAddress { get; set; }
-        public string UserAgent { get; set; }
-        public string AuthenticatedIdentity { get; set; }
-        public TDbUserId UserId { get; set; }
-        public bool IsSignOutForced { get; set; }
-        public string OptionsJson { get; set; }
-    }
+{
+    [Key] [StringLength(32)] public string Id { get; set; }
+    [ConcurrencyCheck] public long Version { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime LastSeenAt { get; set; }
+    public string IPAddress { get; set; }
+    public string UserAgent { get; set; }
+    public string AuthenticatedIdentity { get; set; }
+    public TDbUserId UserId { get; set; }
+    public bool IsSignOutForced { get; set; }
+    public string OptionsJson { get; set; }
+}
 ```
 
 `DbSessionInfo` stores our sessions, and these sessions (if authenticated) can be associated with a `DbUser`
 
 ``` cs --editable false
 public class DbUser<TDbUserId> : IHasId<TDbUserId>, IHasVersion<long> where TDbUserId : notnull
-    {
-        public DbUser();
+{
+    public DbUser();
 
-        [Key]
-        public TDbUserId Id { get; set; }
-        [ConcurrencyCheck]
-        public long Version { get; set; }
-        [MinLength(3)]
-        public string Name { get; set; }
-        public string ClaimsJson { get; set; }
-        [JsonIgnore]
-        [NotMapped]
-        public ImmutableDictionary<string, string> Claims { get; set; }
-        public List<DbUserIdentity<TDbUserId>> Identities { get; }
-    }
+    [Key] public TDbUserId Id { get; set; }
+    [ConcurrencyCheck] public long Version { get; set; }
+    [MinLength(3)] public string Name { get; set; }
+    public string ClaimsJson { get; set; }
+    public List<DbUserIdentity<TDbUserId>> Identities { get; }
+    
+    [JsonIgnore, NotMapped]
+    public ImmutableDictionary<string, string> Claims { get; set; }
+}
 ```
 
 ## Using session in Compute Services for authorization
 
-Our Compute Services can receive a Session object, that we can use to decide if we are authenticated or not and who the signed in user is.
-We can use a `IAuthService` for this purpose in a similar way to the following code snippet
+Our Compute Services can receive a `Session` object that we can use to decide if we are authenticated or not and who the signed in user is:
 
 ``` cs --editable false
 [ComputeMethod]
 public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, CancellationToken cancellationToken = default)
-        {
-            await using var dbContext = CreateDbContext();
+{
+    // We assume that _auth is of IAuth type here.
+    var sessionInfo = await _auth.GetSessionInfo(session, cancellationToken);
+    // You can use any of such methods
+    var user = await _authService.GetUser(session, CancellationToken);
 
-            var sessionInfo = await _authService.GetSessionInfo(session, cancellationToken);
-            if(sessionInfo.IsAuthenticated)
-            {
-                var user = await _authService.GetUser(session, CancellationToken.None);
+    await using var dbContext = CreateDbContext();
 
-                if(user.Claims.ContainsKey("read_orders"))
-                {
-                    ...
-                }
-            }
-            ...
-         }
+    if (user.IsAuthenticated && user.Claims.ContainsKey("read_orders")) {
+        // Read orders
+    }
 ```
 
-`GetSessionInfo` and `GetUser` are also a compute methods, so they will registered a dependencies of our method, meaning that if anything changes regarding the state of our session our method will also get invalidated.
+`GetSessionInfo`, `GetUser` and all other `IAuth` and `IAuthBackend` methods are compute methods, which means that the result of `GetMyOrders` call will invalidate once you sign-in into the provided `session` or sign out - generally, whenever a change that impacts on their result happens.
 
 ## Synchronizing Fusion and ASP.NET Core authentication states
 
-We can create a Host.cshtmL file in the server project, the code inside here will run on each page load, so this is an ideal place to synchronize authentication states.
+We can create a `Host.cshtml` file in the server project, the code inside here will run on each page load, so this is an ideal place to synchronize authentication states.
 The synchronization is done by the `UpdateAuthState` method. This method updates the Fusion authentication state (in memory/database) to match what's currently inside the HttpContext, in the background it calls `IAuthBackend.SignIn()` and `IAuthBackend.SignOut` depending on the current authentication state.
 
 The following code snippet shows a typical implementation of this scenario
@@ -148,7 +174,6 @@ The following code snippet shows a typical implementation of this scenario
 ``` cs --editable false
 @page "/"
 @inject ServerAuthHelper _serverAuthHelper
-@inject BlazorCircuitContext _blazorCircuitContext
 @{
     await _serverAuthHelper.UpdateAuthState(HttpContext);
     var authSchemas = await _serverAuthHelper.GetSchemas(HttpContext);
