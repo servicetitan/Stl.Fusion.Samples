@@ -37,17 +37,17 @@ public class Program
 
         // Fusion
         var fusion = services.AddFusion();
-        var fusionClient = fusion.AddRestEaseClient(
-            (c, o) => {
-                o.BaseUri = baseUri;
-                o.IsLoggingEnabled = true;
-                o.IsMessageLoggingEnabled = false;
-            }).ConfigureHttpClientFactory(
-            (c, name, o) => {
-                var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-                var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-                o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-            });
+        var fusionClient = fusion.AddRestEaseClient();
+        fusionClient.ConfigureWebSocketChannel(c => new() {
+            BaseUri = baseUri,
+            LogLevel = LogLevel.Information,
+            MessageLogLevel = LogLevel.None,
+        });
+        fusionClient.ConfigureHttpClient((c, name, o) => {
+            var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
+            var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
+            o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
+        });
         var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
 
         // Fusion services

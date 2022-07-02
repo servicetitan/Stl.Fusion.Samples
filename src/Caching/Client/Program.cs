@@ -60,11 +60,13 @@ class Program
         var clientSettings = services.BuildServiceProvider().GetRequiredService<ClientSettings>();
 
         var fusion = services.AddFusion();
-        var fusionClient = fusion.AddRestEaseClient((_, options) => {
-            options.BaseUri = clientSettings.BaseUri;
-            options.IsLoggingEnabled = false;
-        }).ConfigureHttpClientFactory((_, name, options) => {
-            options.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
+        var fusionClient = fusion.AddRestEaseClient();
+        fusionClient.ConfigureWebSocketChannel(c => new() {
+            BaseUri = clientSettings.BaseUri,
+            LogLevel = LogLevel.None, 
+        });
+        fusionClient.ConfigureHttpClient((c, name, o) => {
+            o.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
         });
         fusionClient.AddReplicaService<ITenantService, ITenantClientDef>();
         fusionClient.AddClientService<ITenantServiceClient, ITenantClientDef>();

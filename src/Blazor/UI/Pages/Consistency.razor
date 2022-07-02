@@ -21,6 +21,12 @@
     to <code>LiveComponent.State</code>, so they don't interfere with any
     other component or logic.
 </p>
+<p style="color: darkred">
+    Note that update delay you set here only impacts the updates you get due to
+    actions performed in other windows. Your own updates are shown without
+    any delay - that's what use of <code>UICommandRunner</code> does in
+    <code>Accumulate</code> and <code>Reset</code> action handlers.
+</p>
 
 <Note>
     Open <a href="@Nav.Uri" target="_blank">this page</a> or

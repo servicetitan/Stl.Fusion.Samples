@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Samples.HelloCart.V2;
 using Stl.Fusion.Client;
 using Stl.Fusion.EntityFramework;
+using Stl.Fusion.EntityFramework.Operations;
 using Stl.Fusion.EntityFramework.Redis;
 using Stl.Fusion.Server;
 using Stl.IO;
@@ -51,14 +52,15 @@ public class AppV4 : AppBase
                         dbContext.EnableSensitiveDataLogging();
                     });
                     services.AddDbContextServices<AppDbContext>(dbContext => {
-                        dbContext.AddOperations((_, o) => { o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5); });
-                        dbContext.AddFileBasedOperationLogChangeTracking(dbPath + "_changed");
-                        // dbContext.AddRedisDb("localhost", "Fusion.Samples.HelloCart");
-                        // dbContext.AddRedisOperationLogChangeTracking();
+                        dbContext.AddOperations(_ => new() {
+                            UnconditionalCheckPeriod = TimeSpan.FromSeconds(5),
+                        });
+                        dbContext.AddRedisDb("localhost", "Fusion.Samples.HelloCart");
+                        dbContext.AddRedisOperationLogChangeTracking();
                         dbContext.AddEntityResolver<string, DbProduct>();
-                        dbContext.AddEntityResolver<string, DbCart>((_, options) => {
+                        dbContext.AddEntityResolver<string, DbCart>(_ => new() {
                             // Cart is always loaded together with items
-                            options.QueryTransformer = carts => carts.Include(c => c.Items);
+                            QueryTransformer = carts => carts.Include(c => c.Items),
                         });
                     });
                 })
@@ -81,11 +83,11 @@ public class AppV4 : AppBase
         ConfigureLogging(services);
         services.AddFusion(fusion => {
             fusion.AddRestEaseClient(client => {
-                client.ConfigureHttpClientFactory((c, name, options) => {
+                client.ConfigureWebSocketChannel(_ => new() { BaseUri = baseUri });
+                client.ConfigureHttpClient((_, name, options) => {
                     var apiBaseUri = new Uri($"{baseUri}api/");
                     options.HttpClientActions.Add(httpClient => httpClient.BaseAddress = apiBaseUri);
                 });
-                client.ConfigureWebSocketChannel((c, options) => { options.BaseUri = baseUri; });
                 client.AddReplicaService<IProductService, IProductClientDef>();
                 client.AddReplicaService<ICartService, ICartClientDef>();
             });

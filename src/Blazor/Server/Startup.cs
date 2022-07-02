@@ -74,12 +74,14 @@ public class Startup
         });
         services.AddDbContextServices<AppDbContext>(dbContext => {
             dbContext.AddEntityResolver<long, ChatMessage>();
-            dbContext.AddOperations((_, o) => {
+            dbContext.AddOperations(_ => new() {
                 // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
                 // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
-                o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5);
+                // See what .ToRandom does - most of timeouts in Fusion settings are RandomTimeSpan-s,
+                // but you can provide a normal one too - there is an implicit conversion from it.
+                UnconditionalCheckPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5).ToRandom(0.05),
             });
-            dbContext.AddFileBasedOperationLogChangeTracking(dbPath + "_changed");
+            dbContext.AddFileBasedOperationLogChangeTracking();
             dbContext.AddAuthentication();
         });
 
@@ -88,16 +90,16 @@ public class Startup
         var fusionClient = fusion.AddRestEaseClient();
         var fusionServer = fusion.AddWebServer();
         var fusionAuth = fusion.AddAuthentication().AddServer(
-            signInControllerSettingsFactory: _ => SignInController.DefaultSettings with {
+            signInControllerOptionsFactory: _ => new() {
                 DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
                 SignInPropertiesBuilder = (_, properties) => {
                     properties.IsPersistent = true;
                 }
             },
-            serverAuthHelperSettingsFactory: _ => ServerAuthHelper.DefaultSettings with {
+            serverAuthHelperOptionsFactory: _ => new() {
                 NameClaimKeys = Array.Empty<string>(),
             });
-        services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
+        services.AddSingleton(new PublisherOptions() { Id = ServerSettings.PublisherId });
         services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
 
         // Fusion services

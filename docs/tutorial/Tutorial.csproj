@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <!-- 1591: Missing XML comment for publicly visible type or member '*' -->
     <!-- 1998: [CS1998] This async method lacks 'await' operators and will run synchronously. -->
     <NoWarn>$(NoWarn);1591;1998</NoWarn>
@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Client" Version="2.4.66" />
-    <PackageReference Include="Stl.Fusion.Server" Version="2.4.66" />
+    <PackageReference Include="Stl.Fusion.Client" Version="3.0.28" />
+    <PackageReference Include="Stl.Fusion.Server" Version="3.0.28" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.21617.1" />
   </ItemGroup>

@@ -61,7 +61,7 @@ public class Startup
         var fusion = services.AddFusion();
         var fusionServer = fusion.AddWebServer();
         var fusionClient = fusion.AddRestEaseClient();
-        services.AddSingleton(new Publisher.Options() { Id = ServerSettings.PublisherId });
+        services.AddSingleton(new PublisherOptions() { Id = ServerSettings.PublisherId });
 
         // Fusion services
         fusion.AddComputeService<ITenantService, TenantService>();

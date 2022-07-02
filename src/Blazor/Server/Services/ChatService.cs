@@ -85,7 +85,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
 
     public virtual async Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default)
     {
-        var user = await _authBackend.GetUser(id.ToString(), cancellationToken);
+        var user = await _authBackend.GetUser(default, id.ToString(), cancellationToken);
         return ToChatUser(user ?? throw new KeyNotFoundException());
     }
 
