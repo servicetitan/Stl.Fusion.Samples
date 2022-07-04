@@ -241,14 +241,14 @@ Besides that, you need to add a couple extras to your ASP.NET Core app service c
 var fusion = services.AddFusion();
 var fusionServer = fusion.AddWebServer();
 var fusionAuth = fusion.AddAuthentication().AddServer(
-    signInControllerOptionsFactory: _ => new() {
+    signInControllerSettingsFactory: _ => new() {
         // Set to the desired one
         DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme, 
         SignInPropertiesBuilder = (_, properties) => {
             properties.IsPersistent = true;
         }
     },
-    serverAuthHelperOptionsFactory: _ => new() {
+    serverAuthHelperSettingsFactory: _ => new() {
         // These are the claims mapped to User.Name once a new
         // User is created on sign-in; if they absent or this list
         // is empty, ClaimsPrincipal.Identity.Name is used.
@@ -344,7 +344,7 @@ All of this means your Blazor WASM client doesn't need to know the actual `Sessi
 
 And you want your Blazor components to work on Blazor Server, you need to use the right `Session`, which is available there.
 
-Now, if you still remember the beginning of this document, there is a number of services managing `Session` in Fusion:
+Now, if you still remember the beginning of this document, there is a number of services managing `Session` in Fusion on Client side:
 
 ```cs --editable false
 Services.TryAddScoped<ISessionProvider, SessionProvider>();
@@ -372,15 +372,7 @@ So all we need is to make `ISessionResolver` to resolve `Session.Default` on the
 </CascadingAuthState>
 
 @code {
-    [Parameter]
-    public string SessionId { get; set; } = Session.Default.Id;
-
-    protected override void OnInitialized()
-    {
-        if (!BlazorCircuitContext.IsPrerendering)
-            BlazorCircuitContext.RootComponent = this;
-    }
-
+  
     [Parameter] 
     public string SessionId { get; set; } = Session.Default.Id;
 
@@ -407,7 +399,7 @@ All of this implies you also need a bit special logic in `_Host.cshtml` to spawn
 ```cs --editable false
 <app id="app">
     @{
-        using var prerendering = BlazorCircuitContext.Prerendering();
+        using var prerendering = _blazorCircuitContext.Prerendering();
         var prerenderedApp = await Html.RenderComponentAsync<App>(
             isServerSideBlazor ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
             isServerSideBlazor ? new { SessionId = sessionId } : null);
