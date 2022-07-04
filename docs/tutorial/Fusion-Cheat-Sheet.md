@@ -42,6 +42,7 @@ using (Computed.Invalidate()) {
 
 Register compute service:
 ```cs
+fusion = services.AddFusion(); // services is IServiceCollection
 fusion.AddComputeService<IOrderService, OrderService>();
 ```
 
