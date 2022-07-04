@@ -55,10 +55,10 @@ Without further ado:
 * [Part 10: Multi-Host Invalidation and CQRS with Operations Framework](./Part10.md)
 * <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [Part 11: Authentication in Fusion](./Part11.md) 
 * [Epilogue](./PartFF.md)
-
-Check out the
-[Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md)
-as well - it provides a high-level description of Fusion abstractions.
+  
+Finally, check out:
+- <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [Fusion Cheat Sheet](./Fusion-Cheat-Sheet.md) - consider adding it to Favorites :)
+- [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md) - a high-level description of Fusion abstractions.
 
 Join our [Discord Server] to ask questions and track project updates.
 
