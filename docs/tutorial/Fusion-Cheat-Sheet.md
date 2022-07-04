@@ -23,7 +23,7 @@ public class CartService : ICartService
     // The method must be virtual + return Task<T>
     public virtual async Task<List<Order>> GetOrders(long cartId, CancellationToken cancellationToken)
     {
-        // ...
+        // Implementation goes here
     }
 }    
 ```
@@ -81,20 +81,20 @@ public interface ICartClientDef
 
 Configure Fusion client (this has to be done once in a code that configures client-side `IServiceProvider`):
 ```cs
-    var baseUri = new Uri("http://localhost:5005");
-    var apiBaseUri = new Uri($"{baseUri}api/");
+var baseUri = new Uri("http://localhost:5005");
+var apiBaseUri = new Uri($"{baseUri}api/");
 
-    var fusion = services.AddFusion();
-    fusion.AddRestEaseClient(
-        client => {
-            client.ConfigureWebSocketChannel(_ => new() { BaseUri = baseUri });
-            client.ConfigureHttpClient((_, name, o) => {
-                var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-                var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-                o.HttpClientActions.Add(httpClient => httpClient.BaseAddress = clientBaseUri);
-            });
-            client.AddReplicaService<ITodoService, ITodoClientDef>();
+var fusion = services.AddFusion();
+fusion.AddRestEaseClient(
+    client => {
+        client.ConfigureWebSocketChannel(_ => new() { BaseUri = baseUri });
+        client.ConfigureHttpClient((_, name, o) => {
+            var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
+            var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
+            o.HttpClientActions.Add(httpClient => httpClient.BaseAddress = clientBaseUri);
         });
+        client.AddReplicaService<ITodoService, ITodoClientDef>();
+    });
 ```
 
 Register Replica Service:
@@ -204,7 +204,7 @@ Capture:
 var computed = await Computed.Capture(ct => service.ComputeMethod(args, ct), cancellationToken);
 ```
 
-Check its state:
+Check whether `IComputed` is still consistent:
 ```cs
 if (computed.IsConsistent()) {
     // ...
@@ -213,6 +213,10 @@ if (computed.IsConsistent()) {
 
 Await for invalidation:
 ```cs
+// Always pass CancellationToken here, otherwise you'll
+// end up with a memory leak due to growing number of
+// event handler registrations. They'll be gone on
+// invalidation, of course, but what if it never happens?
 await computed.WhenInvalidated(cancellationToken);
 // Or
 computed.Invalidated += c => Console.WriteLine("Invalidated!");
