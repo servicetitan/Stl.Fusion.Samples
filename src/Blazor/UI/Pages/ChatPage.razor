@@ -1,17 +1,18 @@
 @page "/chat"
 @using System.Threading
 @using Stl.Fusion.Authentication.Commands
-@inherits MixedStateComponent<Chat.Model, Chat.LocalsModel>
+@inherits MixedStateComponent<ChatPage.Model, ChatPage.LocalsModel>
 @inject Session Session
+@inject IAuth Auth
 @inject IChatService Chats
 @inject UICommandRunner UICommandRunner
 @inject NavigationManager Nav
-@inject ILogger<Chat> Log
 
 @{
     var locals = MutableState.Value;
     var state = State.LatestNonErrorValue;
-    var lastPage = state.LastPage;
+    var user = state.User;
+    var lastPage = state.Messages;
     var error = State.Error;
 }
 
@@ -35,25 +36,22 @@
 
 <WhenUpdateError Exception="@error"/>
 
-<AuthorizeView>
-    <Authorized>
-        @if (state.ChatUser.Name != locals.Name) {
-            <Badge Color="Color.Primary">Current name: @state.ChatUser.Name</Badge>
-        }
-        <form @onsubmit="SetName">
-
-            <Addons>
-                <Addon AddonType="AddonType.Start">
-                    <AddonLabel>Your name</AddonLabel>
-                </Addon>
-                <TextEdit @bind-Text="@locals.Name" type="search" />
-                <Addon>
-                    <Button Type="@ButtonType.Submit" Color="Color.Warning">Change</Button>
-                </Addon>
-            </Addons>
-        </form>
-    </Authorized>
-</AuthorizeView>
+@if (user.IsAuthenticated()) {
+    @if (user.Name != locals.Name) {
+        <Badge Color="Color.Primary">Current name: @user.Name</Badge>
+    }
+    <form @onsubmit="SetName">
+        <Addons>
+            <Addon AddonType="AddonType.Start">
+                <AddonLabel>Your name</AddonLabel>
+            </Addon>
+            <TextEdit @bind-Text="@locals.Name" type="search" />
+            <Addon>
+                <Button Type="@ButtonType.Submit" Color="Color.Warning">Change</Button>
+            </Addon>
+        </Addons>
+    </form>
+} 
 
 <Table Narrow="true" Striped="true" Margin="Margin.Is3.OnY">
     <TableHeader ThemeContrast="ThemeContrast.Dark">
@@ -64,9 +62,9 @@
     </TableHeader>
     <TableBody>
         @foreach(var message in lastPage.Messages) {
-            var user = lastPage.Users[message.UserId];
+            var messageUser = lastPage.Users[message.UserId];
             <TableRow>
-                <TableRowCell Style="width: 20%; max-width: 33%">@user.Name</TableRowCell>
+                <TableRowCell Style="width: 20%; max-width: 33%">@messageUser.Name</TableRowCell>
                 <TableRowCell Style="width: auto; min-width: 67%">@message.Text</TableRowCell>
             </TableRow>
         }
@@ -111,12 +109,12 @@
         public string Message { get; set; } = "";
     }
 
-    public class Model
+    public record Model
     {
-        public long UserCount { get; set; }
-        public long ActiveUserCount { get; set; }
-        public ChatUser ChatUser { get; set; } = ChatUser.None;
-        public ChatPage LastPage { get; set; } = new();
+        public long UserCount { get; init; }
+        public long ActiveUserCount { get; init; }
+        public User User { get; init; } = User.NewGuest();
+        public ChatMessageList Messages { get; init; } = new();
     }
 
     protected override void OnInitialized()
@@ -138,15 +136,16 @@
     {
         var userCount = await Chats.GetUserCount(cancellationToken);
         var activeUserCount = await Chats.GetActiveUserCount(cancellationToken);
-        var chatUser = await Chats.GetCurrentUser(Session, cancellationToken);
+        var user = await Auth.GetUser(Session, cancellationToken);
+        user = user.OrGuest();
         var lastPage = await Chats.GetChatTail(30, cancellationToken);
         if (!MutableState.Value.IsNameModified)
-            ResetName(chatUser.IsValid ? chatUser.Name : "");
+            ResetName(user.IsAuthenticated() ? user.Name : "");
         return new Model() {
             UserCount = userCount,
             ActiveUserCount = activeUserCount,
-            ChatUser = chatUser,
-            LastPage = lastPage,
+            User = user,
+            Messages = lastPage,
         };
     }
 

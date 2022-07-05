@@ -1,7 +1,9 @@
+@using Stl.OS
 @implements IDisposable
 @inject BlazorCircuitContext BlazorCircuitContext
+@inject ISessionProvider SessionProvider
 
-<CascadingAuthState SessionId="@SessionId">
+<CascadingAuthState>
     <ThemeProvider Theme="@Theme">
         <Router AppAssembly="@typeof(Program).Assembly">
             <Found Context="routeData">
@@ -24,6 +26,9 @@
 
     protected override void OnInitialized()
     {
+        SessionProvider.Session = OSInfo.IsWebAssembly 
+            ? Session.Default 
+            : new Session(SessionId);
         if (!BlazorCircuitContext.IsPrerendering)
             BlazorCircuitContext.RootComponent = this;
     }

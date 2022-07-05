@@ -1,31 +1,39 @@
+@inherits ComputedStateComponent<User?>
+@inject Session Session
+@inject IAuth Auth
 @inject BlazorModeHelper BlazorModeHelper
 @inject ClientAuthHelper ClientAuthHelper
 
 @{
-    var usedAuthSchemas = User.Identities.Select(kv => kv.Key.Schema).ToHashSet();
+    var user = State.LatestNonErrorValue.OrGuest();
+    var isAuthenticated = user.IsAuthenticated();
+    var usedAuthSchemas = user.Identities.Select(kv => kv.Key.Schema).ToHashSet() ?? new();
     var unusedAuthSchemas = AuthSchemas.Where(p => !usedAuthSchemas.Contains(p.Name)).ToArray();
-    var signInOrAddFormat = User.IsAuthenticated ? "Add {0} account" : "Sign in with {0}";
+    var signInOrAddFormat = isAuthenticated ? "Add {0} account" : "Sign in with {0}";
+    var signInIconName = isAuthenticated ? FontAwesomeIcons.Plus : FontAwesomeIcons.SignInAlt;
 }
 
 <BarDropdown Class="@CssClass">
-    <BarDropdownToggle Color="Color.Primary">
-        @if (User.IsAuthenticated) {
+    <BarDropdownToggle>
+        @if (isAuthenticated) {
             <Blazorise.Icon Name="FontAwesomeIcons.UserCircle" IconStyle="@IconStyle.Solid" />
         }
         else {
             <Blazorise.Icon Name="FontAwesomeIcons.UserCircle" />
         }
-        <span class="pl-1">@User.Name</span>
+        <span class="pl-1">@user.Name</span>
     </BarDropdownToggle>
     <BarDropdownMenu>
         @foreach (var (name, displayName) in unusedAuthSchemas) {
             <BarDropdownItem Color="Color.Primary" Clicked="@(_ => ClientAuthHelper.SignIn(name))">
+                <Blazorise.Icon Name="@signInIconName" />
                 @(string.Format(signInOrAddFormat, displayName))
             </BarDropdownItem>
         }
         <AuthorizeView>
             <Authorized>
                 <BarDropdownItem Clicked="@(_ => ClientAuthHelper.SignOut())">
+                    <Blazorise.Icon Name="FontAwesomeIcons.SignOutAlt" />
                     Sign out
                 </BarDropdownItem>
             </Authorized>
@@ -34,23 +42,18 @@
 </BarDropdown>
 
 @code {
-    [Parameter]
-    public string CssClass { get; set; } = "";
-    [CascadingParameter]
-    private Task<AuthState> AuthStateTask { get; set; } = null!;
-    private AuthState AuthState { get; set; } = new(new User("")); // For SSB pre-render
-    private User User => AuthState.User;
     private (string Name, string DisplayName)[] AuthSchemas { get; set; } = Array.Empty<(string, string)>();
 
-    protected override async Task OnParametersSetAsync()
-    {
-        AuthState = await AuthStateTask;
-    }
+    [Parameter]
+    public string CssClass { get; set; } = "";
+
+    protected override Task<User?> ComputeState(CancellationToken cancellationToken) 
+        => Auth.GetUser(Session, cancellationToken);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender) {
-            // GetSchemasAsync requires JS interop, so it can be called only at this point
+            // GetSchemas requires JS interop, so it can be called only at this point
             AuthSchemas = await ClientAuthHelper.GetSchemas();
             StateHasChanged();
         }

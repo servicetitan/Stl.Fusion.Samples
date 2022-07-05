@@ -6,16 +6,16 @@ namespace Samples.Blazor.Client;
 [BasePath("time")]
 public interface ITimeClientDef
 {
-    [Get("getTime")]
+    [Get(nameof(GetTime))]
     Task<DateTime> GetTime(CancellationToken cancellationToken = default);
-    [Get("getUptime")]
+    [Get(nameof(GetUptime))]
     Task<double> GetUptime(double updatePeriod, CancellationToken cancellationToken = default);
 }
 
 [BasePath("screenshot")]
 public interface IScreenshotClientDef
 {
-    [Get("getScreenshot")]
+    [Get(nameof(GetScreenshot))]
     Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default);
 }
 
@@ -23,28 +23,22 @@ public interface IScreenshotClientDef
 public interface IChatClientDef
 {
     // Commands
-    [Post("post")]
+    [Post(nameof(Post))]
     Task<ChatMessage> Post([Body] IChatService.PostCommand command, CancellationToken cancellationToken = default);
 
     // Queries
-    [Get("getCurrentUser")]
-    Task<ChatUser> GetCurrentUser(Session? session, CancellationToken cancellationToken = default);
-    [Get("getUser")]
-    Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default);
-    [Get("getUserCount")]
+    [Get(nameof(GetChatTail))]
+    Task<ChatMessageList> GetChatTail(int length, CancellationToken cancellationToken = default);
+    [Get(nameof(GetUserCount))]
     Task<long> GetUserCount(CancellationToken cancellationToken = default);
-    [Get("getActiveUserCount")]
+    [Get(nameof(GetActiveUserCount))]
     Task<long> GetActiveUserCount(CancellationToken cancellationToken = default);
-    [Get("getChatTail")]
-    Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default);
-    [Get("getChatPage")]
-    Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default);
 }
 
 [BasePath("composer")]
 public interface IComposerClientDef
 {
-    [Get("getComposedValue")]
+    [Get(nameof(GetComposedValue))]
     Task<ComposedValue> GetComposedValue(string? parameter,
         Session session, CancellationToken cancellationToken = default);
 }
@@ -53,14 +47,14 @@ public interface IComposerClientDef
 public interface ISumClientDef
 {
     // Commands
-    [Post("reset")]
+    [Post(nameof(Reset))]
     Task Reset(CancellationToken cancellationToken);
-    [Post("accumulate")]
+    [Post(nameof(Accumulate))]
     Task Accumulate(double value, CancellationToken cancellationToken);
 
     // Queries
-    [Get("getAccumulator")]
+    [Get(nameof(GetAccumulator))]
     Task<double> GetAccumulator(CancellationToken cancellationToken);
-    [Get("getSum")]
+    [Get(nameof(GetSum))]
     Task<double> GetSum(double[] values, bool addAccumulator, CancellationToken cancellationToken);
 }

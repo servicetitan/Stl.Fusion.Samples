@@ -166,6 +166,7 @@ public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, Can
     var sessionInfo = await _auth.GetSessionInfo(session, cancellationToken);
     // You can use any of such methods
     var user = await _authService.GetUser(session, CancellationToken);
+    user = user.AssertAuthenticated();
 
     await using var dbContext = CreateDbContext();
 
@@ -355,10 +356,12 @@ Services.TryAddTransient(c => c.GetRequiredService<ISessionProvider>().Session);
 So all we need is to make `ISessionResolver` to resolve `Session.Default` on the Blazor WASM client. One of ways to do this is to use this `App.razor` (your root Blazor component):
 
 ```cs --editable false
+@using Stl.OS
 @implements IDisposable
 @inject BlazorCircuitContext BlazorCircuitContext
+@inject ISessionProvider SessionProvider
 
-<CascadingAuthState SessionId="@SessionId">
+<CascadingAuthState>
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
@@ -372,20 +375,16 @@ So all we need is to make `ISessionResolver` to resolve `Session.Default` on the
 </CascadingAuthState>
 
 @code {
+    private Theme Theme { get; } = new() { IsGradient = true, IsRounded = false };
+
     [Parameter]
     public string SessionId { get; set; } = Session.Default.Id;
 
     protected override void OnInitialized()
     {
-        if (!BlazorCircuitContext.IsPrerendering)
-            BlazorCircuitContext.RootComponent = this;
-    }
-
-    [Parameter] 
-    public string SessionId { get; set; } = Session.Default.Id;
-
-    protected override void OnInitialized()
-    {
+        SessionProvider.Session = OSInfo.IsWebAssembly 
+            ? Session.Default 
+            : new Session(SessionId);
         if (!BlazorCircuitContext.IsPrerendering)
             BlazorCircuitContext.RootComponent = this;
     }
@@ -395,11 +394,9 @@ So all we need is to make `ISessionResolver` to resolve `Session.Default` on the
 }
 ```
 
-It works as follows:
-- If this component is created from Blazor Server, the correct `SessionId` is expected to be passed there. It's safe, coz this `SessionId` never leaves the server.
-- And if this component is created in Blazor WASM, it doesn't expect any `SessionId`, so `Session.Default.Id` will be used in this case.
+You can see that when this component is initialized, it sets `SessionProvider.Session` to the value it gets as a parameter &ndash; unless we're running Blazor WASM. In this case it sets it to `Session.Default`. Any attempt to resolve `Session` (either via `ISessionResolver`, or via service provider) will return this value.  
 
-You may notice that this component wraps its content into `CascadingAuthState`, which actually does the rest by setting `ISessionResolver.Session` to a `Session` with the specified `SessionId`. In addition, it makes Blazor authentication to work as expected as well by embedding its `ChildContent` into Blazor's `<CascadingAuthenticationState>`. If you are interested in details, see its source:
+You may notice that `App.razor` wraps its content into `CascadingAuthState`, which makes Blazor authentication to work as expected as well by embedding its `ChildContent` into Blazor's `<CascadingAuthenticationState>`. If you are interested in details, see its source:
 - https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Authentication/CascadingAuthState.razor
 
 All of this implies you also need a bit special logic in `_Host.cshtml` to spawn `App.razor` on the server side:

@@ -1,24 +1,24 @@
 @page "/authentication"
-@using System.Threading
 @using UAParser
-@using System.Collections.Concurrent
-@inherits ComputedStateComponent<List<Authentication.SessionModel>>
+@inherits ComputedStateComponent<(User? User, List<AuthenticationPage.SessionInfoModel>? Sessions)>
 @inject Session Session
 @inject IAuth Auth
 @inject ClientAuthHelper ClientAuthHelper
-@inject IFusionTime Time
+@inject IFusionTime FusionTime
 @inject NavigationManager Nav
 
 @{
     var state = State.LatestNonErrorValue;
     var error = State.Error;
-    var usedAuthSchemas = User.Identities.Select(kv => kv.Key.Schema).ToHashSet();
+    var user = state.User.OrGuest();
+    var sessions = state.Sessions ?? new();
+    var usedAuthSchemas = user.Identities.Select(kv => kv.Key.Schema).ToHashSet();
     var unusedAuthSchemas = AuthSchemas.Where(p => !usedAuthSchemas.Contains(p.Name)).ToArray();
 }
 
 <h1>Authentication</h1>
 
-<WhenUpdateError Exception="@error" />
+<WhenException Title="Update error:" Exception="@error" />
 
 <Note>
     <Div Margin="Margin.Is1.FromBottom">
@@ -45,51 +45,54 @@
         <CardTitle>User properties:</CardTitle>
         <CardText>
             <ul>
-                <li><code>User.IsAuthenticated</code>: <b><code>@User.IsAuthenticated</code></b></li>
-                <li><code>User.Id</code>: <b><code>@User.Id</code></b></li>
-                <li><code>User.Name</code>: <b><code>@User.Name</code></b></li>
+                <li><code>User.Id</code>: <b><code>@user.Id</code></b></li>
+                <li><code>User.Name</code>: <b><code>@user.Name</code></b></li>
+                <li><code>User.Version</code>: <b><code>@user.Version</code></b></li>
             </ul>
-            @if (User.IsAuthenticated) {
-                <div class="card-subtitle">Claims:</div>
-                <ul>
-                    @foreach (var (key, value) in User.Claims) {
-                        <li><code>@key</code>: <b><code>@value</code></b></li>
-                    }
-                </ul>
-                <div class="card-subtitle">Identities:</div>
-                <ul>
-                    @foreach (var ((schema, schemaBoundId), _) in User.Identities) {
-                        <li><code>@schema</code>: <b><code>@schemaBoundId</code></b></li>
-                    }
-                </ul>
-            }
+            <div class="card-subtitle">Claims:</div>
+            <ul>
+                @foreach (var (key, value) in user.Claims) {
+                    <li><code>@key</code>: <b><code>@value</code></b></li>
+                }
+            </ul>
+            <div class="card-subtitle">Identities:</div>
+            <ul>
+                @foreach (var ((schema, schemaBoundId), _) in user.Identities) {
+                    <li><code>@schema</code>: <b><code>@schemaBoundId</code></b></li>
+                }
+            </ul>
         </CardText>
-        @if (User.IsAuthenticated && state.Count > 0) {
+
+        @if (sessions.Count > 0) {
             <CardTitle>Sessions:</CardTitle>
             <CardText>
                 <table class="table table-sm">
                     <thead>
                     <tr>
+                        <th scope="col">Session Hash</th>
                         <th scope="col">IP</th>
                         <th scope="col">Browser</th>
                         <th scope="col">Created</th>
                         <th scope="col">Last Seen</th>
+                        <th scope="col">Version</th>
                         <th scope="col"></th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach (var session in state) {
-                        <tr @key="@session.Id">
+                    @foreach (var session in sessions) {
+                        <tr @key="@session.SessionHash">
+                            <td>@session.SessionHash</td>
                             <td>@session.IPAddress</td>
                             <td>@session.UserAgent</td>
                             <td>@session.Created</td>
                             <td>@session.LastSeen</td>
+                            <td>@session.Version</td>
                             <td>
                                 @if (session.IsCurrent) {
                                     <span>Current</span>
                                 } else {
                                     <button type="button" class="btn btn-sm btn-danger"
-                                            @onclick="_ => ClientAuthHelper.SignOut(session.Id)">Kick</button>
+                                            @onclick="_ => ClientAuthHelper.Kick(Session, session.SessionHash)">Kick</button>
                                 }
                             </td>
                         </tr>
@@ -126,57 +129,50 @@
 </Card>
 
 @code {
-    public class SessionModel
+    public class SessionInfoModel
     {
-        public string Id { get; set; } = "";
+        public string SessionHash { get; set; } = "";
         public string IPAddress { get; set; } = "";
         public string UserAgent { get; set; } = "";
         public string Created { get; set; } = "";
         public string LastSeen { get; set; } = "";
+        public long Version { get; set; }
         public bool IsCurrent { get; set; }
     }
 
     private static readonly Parser Parser = Parser.GetDefault();
 
-    [CascadingParameter]
-    private Task<AuthState> AuthStateTask { get; set; } = null!;
-    private AuthState AuthState { get; set; } = new(new User("")); // For SSB pre-render
-    private User User => AuthState.User;
     private ConcurrentDictionary<string, UserAgent> UserAgentCache { get; } = new();
     private (string Name, string DisplayName)[] AuthSchemas { get; set; } = Array.Empty<(string, string)>();
-
-    protected override async Task OnParametersSetAsync()
-        => AuthState = await AuthStateTask;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender) {
-            // GetSchemasAsync requires JS interop, so it can be called only at this point
+            // GetSchemas requires JS interop, so it can be called only at this point
             AuthSchemas = await ClientAuthHelper.GetSchemas();
             StateHasChanged();
         }
     }
 
-    protected override ComputedState<List<SessionModel>>.Options GetStateOptions()
-        => new () { InitialValue = new List<SessionModel>() };
-
-    protected override async Task<List<SessionModel>> ComputeState(CancellationToken cancellationToken)
+    protected override async Task<(User?, List<SessionInfoModel>?)> ComputeState(CancellationToken cancellationToken)
     {
-        var sessions = await Auth.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
-        var result = new List<SessionModel>();
+        var user = await Auth.GetUser(Session, cancellationToken);
+        var sessionInfos = await Auth.GetUserSessions(Session, cancellationToken).ConfigureAwait(false);
+        var result = new List<SessionInfoModel>();
 
-        foreach (var session in sessions) {
-            var userAgent = UserAgentCache.GetOrAdd(session.UserAgent, ua => Parser.ParseUserAgent(ua));
-            var model = new SessionModel() {
-                Id = session.Id,
-                IsCurrent = Session.Id == session.Id,
-                IPAddress = session.IPAddress,
+        foreach (var sessionInfo in sessionInfos) {
+            var userAgent = UserAgentCache.GetOrAdd(sessionInfo.UserAgent, ua => Parser.ParseUserAgent(ua));
+            var model = new SessionInfoModel() {
+                SessionHash = sessionInfo.SessionHash,
+                IsCurrent = sessionInfo.SessionHash == Session.Hash,
+                IPAddress = sessionInfo.IPAddress,
                 UserAgent = $"{userAgent.Family} {userAgent.Major}.{userAgent.Minor}",
-                Created = await Time.GetMomentsAgo(session.CreatedAt),
-                LastSeen = await Time.GetMomentsAgo(session.LastSeenAt),
+                Created = await FusionTime.GetMomentsAgo(sessionInfo.CreatedAt),
+                LastSeen = await FusionTime.GetMomentsAgo(sessionInfo.LastSeenAt),
+                Version = sessionInfo.Version,
             };
             result.Add(model);
         }
-        return result;
+        return (user, result);
     }
 }

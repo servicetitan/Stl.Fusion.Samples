@@ -9,7 +9,7 @@ var services = CreateServiceProvider();
 var stateFactory = services.StateFactory();
 var chat = services.GetRequiredService<IChatService>();
 var seenMessageIds = new ConcurrentDictionary<long, Unit>();
-using var timeState = stateFactory.NewComputed<ChatPage>(async (s, cancellationToken) => {
+using var timeState = stateFactory.NewComputed<ChatMessageList>(async (s, cancellationToken) => {
     var chatPage = await chat.GetChatTail(10, cancellationToken);
     foreach (var message in chatPage.Messages) {
         if (!seenMessageIds.TryAdd(message.Id, default))

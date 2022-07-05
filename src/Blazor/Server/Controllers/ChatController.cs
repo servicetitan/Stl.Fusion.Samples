@@ -22,12 +22,8 @@ public class ChatController : ControllerBase, IChatService
     // Queries
 
     [HttpGet, Publish]
-    public Task<ChatUser> GetCurrentUser(Session session, CancellationToken cancellationToken = default)
-        => _chat.GetCurrentUser(session, cancellationToken);
-
-    [HttpGet, Publish]
-    public Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default)
-        => _chat.GetUser(id, cancellationToken);
+    public Task<ChatMessageList> GetChatTail(int length, CancellationToken cancellationToken = default)
+        => _chat.GetChatTail(length, cancellationToken);
 
     [HttpGet, Publish]
     public Task<long> GetUserCount(CancellationToken cancellationToken = default)
@@ -36,12 +32,4 @@ public class ChatController : ControllerBase, IChatService
     [HttpGet, Publish]
     public Task<long> GetActiveUserCount(CancellationToken cancellationToken = default)
         => _chat.GetActiveUserCount(cancellationToken);
-
-    [HttpGet, Publish]
-    public Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default)
-        => _chat.GetChatTail(length, cancellationToken);
-
-    [HttpGet, Publish]
-    public Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
-        => _chat.GetChatPage(minMessageId, maxMessageId, cancellationToken);
 }

@@ -1,23 +1,38 @@
-@using Stl.Text
+@using Stl.OS
+@implements IDisposable
+@inject BlazorCircuitContext BlazorCircuitContext
+@inject ISessionProvider SessionProvider
 
-<CascadingAuthState SessionId="@SessionId">
-<ThemeProvider Theme="@Theme">
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-        </Found>
-        <NotFound>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p>Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
-</ThemeProvider>
+<CascadingAuthState>
+    <ThemeProvider Theme="@Theme">
+        <Router AppAssembly="@typeof(Program).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <p>Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </ThemeProvider>
 </CascadingAuthState>
 
 @code {
     private Theme Theme { get; } = new() { IsGradient = true, IsRounded = false };
 
     [Parameter]
-    public string SessionId { get; set; } = Symbol.Empty;
+    public string SessionId { get; set; } = Session.Default.Id;
+
+    protected override void OnInitialized()
+    {
+        SessionProvider.Session = OSInfo.IsWebAssembly 
+            ? Session.Default 
+            : new Session(SessionId);
+        if (!BlazorCircuitContext.IsPrerendering)
+            BlazorCircuitContext.RootComponent = this;
+    }
+
+    public void Dispose()
+        => BlazorCircuitContext.Dispose();
 }

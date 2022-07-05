@@ -41,9 +41,8 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
         }
 
         text = await NormalizeText(text, cancellationToken);
-        var user = await GetCurrentUser(session, cancellationToken);
-        if (user == null)
-            throw new AuthenticationException("Please sign in first.");
+        var user = await _auth.GetUser(session, cancellationToken);
+        user = user.AssertAuthenticated();
 
         await using var dbContext = await CreateCommandDbContext(cancellationToken);
         var message = new ChatMessage() {
@@ -77,19 +76,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
             .LongCountAsync(cancellationToken);
     }
 
-    public virtual async Task<ChatUser> GetCurrentUser(Session session, CancellationToken cancellationToken = default)
-    {
-        var user = await _auth.GetUser(session, cancellationToken);
-        return ToChatUser(user);
-    }
-
-    public virtual async Task<ChatUser> GetUser(long id, CancellationToken cancellationToken = default)
-    {
-        var user = await _authBackend.GetUser(default, id.ToString(), cancellationToken);
-        return ToChatUser(user ?? throw new KeyNotFoundException());
-    }
-
-    public virtual async Task<ChatPage> GetChatTail(int length, CancellationToken cancellationToken = default)
+    public virtual async Task<ChatMessageList> GetChatTail(int length, CancellationToken cancellationToken = default)
     {
         await PseudoGetAnyChatTail();
         await using var dbContext = CreateDbContext();
@@ -103,15 +90,18 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
 
         // Fetching users via GetUserAsync
         var userIds = messages.Select(m => m.UserId).Distinct().ToArray();
-        var userTasks = userIds.Select(id => GetUser(id, cancellationToken));
-        var users = await Task.WhenAll(userTasks);
+        var userTasks = userIds.Select(async id => {
+            var user = await _authBackend.GetUser(default, id, cancellationToken);
+            return user.OrGuest("<Deleted user>").ToClientSideUser();
+        });
+        var users = (await Task.WhenAll(userTasks)).OfType<User>();
 
         // Composing the end result
-        return new ChatPage(messages, users.ToDictionary(u => u.Id));
+        return new ChatMessageList() {
+            Messages = messages.ToImmutableArray(), 
+            Users = users.ToImmutableDictionary(u => u.Id.Value),
+        };
     }
-
-    public virtual Task<ChatPage> GetChatPage(long minMessageId, long maxMessageId, CancellationToken cancellationToken = default)
-        => throw new NotImplementedException();
 
     // Helpers
 
@@ -140,15 +130,5 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
         var json = await _forismaticClient.GetQuote(cancellationToken: cancellationToken);
         var jObject = JObject.Parse(json);
         return jObject.Value<string>("quoteText")!;
-    }
-
-    private ChatUser ToChatUser(User? user)
-    {
-        if (user == null || !long.TryParse(user.Id, out var userId))
-            return ChatUser.None;
-        return new() {
-            Id = userId,
-            Name = user.Name,
-        };
     }
 }
