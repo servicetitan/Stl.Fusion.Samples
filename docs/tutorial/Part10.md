@@ -49,15 +49,28 @@ public DbSet<DbOperation> Operations { get; protected set; } = null!;
    (typically it is `Startup.ConfigureServices` method):
 
 ```cs
-services.AddDbContextServices<AppDbContext>(dbContext => {
-    dbContext.AddOperations((_, o) => {
-        // Default unconditional wake up period: 0.25s
-        o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(1); 
+services.AddDbContextServices<AppDbContext>(db => {
+    // Uncomment if you'll be using AddRedisOperationLogChangeTracking 
+    // db.AddRedisDb("localhost", "Fusion.Tutorial.Part10");
+    
+    db.AddOperations(operations => {
+        // This call enabled Operations Framework (OF) for AppDbContext. 
+        operations.ConfigureOperationLogReader(_ => new() {
+            // We use FileBasedDbOperationLogChangeTracking, so unconditional wake up period
+            // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
+            // See what .ToRandom does - most of timeouts in Fusion settings are RandomTimeSpan-s,
+            // but you can provide a normal one too - there is an implicit conversion from it.
+            UnconditionalCheckPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5).ToRandom(0.05),
+        });
+        // Optionally enable file-based log change tracker 
+        operations.AddFileBasedOperationLogChangeTracking();
+        
+        // Or, if you use PostgreSQL, use this instead of above line
+        // operations.AddNpgsqlOperationLogChangeTracking();
+        
+        // Or, if you use Redis, use this instead of above line
+        // operations.AddRedisOperationLogChangeTracking();
     });
-    // Optionally enable file-based log change tracker 
-    dbContext.AddFileBasedOperationLogChangeTracking(someSharedFilePath);
-    // Or, if you use PostgreSQL, use this instead of above line
-    // builder.AddNpgsqlOperationLogChangeTracking();
 });
 ```
 
@@ -684,50 +697,18 @@ other than solving this problem once and forever 😎
 
 The easiest way to find all the components used by Operations
 Framework is to see the implementation of `DbContextBuilder.AddOperations`
-and `IServiceCollection.AddFusion` (more precisely, `FusionBuilder`
-constructor). Links to the source code of both methods:
+and `IServiceCollection.AddFusion`. Both methods invoke corresponding 
+builder's constructor first, which I highly recommend to view: 
 
-- [https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/FusionBuilder.cs#L34](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/FusionBuilder.cs#L34)
-- [https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/DbContextBuilder.cs#L46](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/DbContextBuilder.cs#L46)
+- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.EntityFramework/DbOperationsBuilder.cs#L25
+- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/FusionBuilder.cs#L46
 
-The services added in `FusionBuilder` constructor (i.e. the ones
-that are used no matter what) are:
+Below is a brief description of some of the services I didn't mention yet;
+as for anything else, above code is the best place to start digging
+into the Operations Framework a bit deeper.
 
-```cs
-// CommandR, command completion and invalidation
-var commander = Services.AddCommander();
-Services.TryAddSingleton<AgentInfo>();
-Services.TryAddSingleton<InvalidationInfoProvider>();
-
-// Transient operation scope & its provider
-Services.TryAddTransient<TransientOperationScope>();
-Services.TryAddSingleton<TransientOperationScopeProvider>();
-commander.AddHandlers<TransientOperationScopeProvider>();
-
-// Nested command logger
-Services.TryAddSingleton<NestedCommandLogger>();
-commander.AddHandlers<NestedCommandLogger>();
-
-// Operation completion - notifier & producer
-Services.TryAddSingleton<OperationCompletionNotifier.Options>();
-Services.TryAddSingleton<IOperationCompletionNotifier, OperationCompletionNotifier>();
-Services.TryAddSingleton<CompletionProducer.Options>();
-Services.TryAddEnumerable(ServiceDescriptor.Singleton(
-    typeof(IOperationCompletionListener),
-    typeof(CompletionProducer)));
-
-// Command completion handler performing invalidations
-Services.TryAddSingleton<InvalidateOnCompletionCommandHandler.Options>();
-Services.TryAddSingleton<InvalidateOnCompletionCommandHandler>();
-commander.AddHandlers<InvalidateOnCompletionCommandHandler>();
-```
-
-I'll briefly describe the services I didn't mention yet;
-as for anything else, this piece of code is the best option to
-start digging into OF deeper.
-
-`AgentInfo` is a simple type allowing OF to check if an
-operation is originating from this or some other process.
+`AgentInfo` is a simple type allowing Operations Framework to check 
+if an operation is originating from this or some other process.
 Check out its [source code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/Operations/AgentInfo.cs) -
 it's tiny.
 
@@ -765,40 +746,8 @@ are routing commands to corresponding server-side services,
 the invalidation and any other post-processing should
 happen there, but not on the client.
 
-Ok, now let's look at `DbContextBuilder.AddOperations`:
-
-```cs
-// Common services
-Services.TryAddSingleton<IDbOperationLog<TDbContext>, DbOperationLog<TDbContext, TDbOperation>>();
-
-// DbOperationScope & its CommandR handler
-Services.TryAddTransient<DbOperationScope<TDbContext>>();
-Services.TryAddSingleton<DbOperationScopeProvider<TDbContext>>();
-Services.AddCommander().AddHandlers<DbOperationScopeProvider<TDbContext>>();
-
-// DbOperationLogReader - hosted service!
-Services.TryAddSingleton(c => {
-    var options = new DbOperationLogReader<TDbContext>.Options();
-    logReaderOptionsBuilder?.Invoke(c, options);
-    return options;
-});
-Services.TryAddSingleton<DbOperationLogReader<TDbContext>>();
-Services.AddHostedService(c => c.GetRequiredService<DbOperationLogReader<TDbContext>>());
-
-// DbOperationLogTrimmer - hosted service!
-Services.TryAddSingleton(c => {
-    var options = new DbOperationLogTrimmer<TDbContext>.Options();
-    logTrimmerOptionsBuilder?.Invoke(c, options);
-    return options;
-});
-Services.TryAddSingleton<DbOperationLogTrimmer<TDbContext>>();
-Services.AddHostedService(c => c.GetRequiredService<DbOperationLogTrimmer<TDbContext>>());
-```
-
-`DbOperationLog` is a repository-like service providing access
+`IDbOperationLog` is a repository-like service providing access
 to DB operation log.
-
-The rest is self-explanatory (or was covered earlier).
 
 P.S. I certainly realize that even though OF's usage is fairly
 simple on the outside, there is a complex API with many moving

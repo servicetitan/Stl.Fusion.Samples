@@ -219,16 +219,20 @@ public static IServiceProvider CreateClientServices()
     var services = new ServiceCollection();
     var baseUri = new Uri($"http://localhost:50050/");
     var apiBaseUri = new Uri($"{baseUri}api/");
-    services.ConfigureAll<HttpClientFactoryOptions>(options =>
-    {
+
+    var fusion = services.AddFusion();
+    var fusionClient = fusion.AddRestEaseClient();
+    fusionClient.ConfigureHttpClient((c, name, options) => {
         // Replica Services construct HttpClients using IHttpClientFactory, so this is
         // the right way to make all HttpClients to have BaseAddress = apiBaseUri by default.
         options.HttpClientActions.Add(client => client.BaseAddress = apiBaseUri);
     });
-    var fusion = services.AddFusion();
-    var fusionClient = fusion.AddRestEaseClient((c, options) => options.BaseUri = baseUri);
+    fusionClient.ConfigureWebSocketChannel(c => new () {
+        BaseUri = baseUri,
+    });
     // Registering replica service
     fusionClient.AddReplicaService<ICounterService, ICounterClientDef>();
+
     return services.BuildServiceProvider();
 }
 ```

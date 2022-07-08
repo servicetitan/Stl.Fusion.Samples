@@ -410,10 +410,10 @@ public class DemoSwapService : SimpleSwapService
         return base.Store(key, value, cancellationToken);
     }
 
-    protected override ValueTask<bool> Renew(string key, CancellationToken cancellationToken)
+    protected override ValueTask<bool> Touch(string key, CancellationToken cancellationToken)
     {
-        WriteLine($"Swap: {key} <- [try renew]");
-        return base.Renew(key, cancellationToken);
+        WriteLine($"Swap: {key} <- [touch]");
+        return base.Touch(key, cancellationToken);
     }
 
     protected override async ValueTask<string?> Load(string key, CancellationToken cancellationToken)

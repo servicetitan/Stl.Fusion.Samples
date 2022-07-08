@@ -94,10 +94,13 @@ hopefully you read [Part 10](./Part10.md), which covers it.
 
 ```cs --editable false
 services.AddDbContextServices<FusionDbContext>(dbContext => {
-    dbContext.AddOperations((_, o) => {
-        o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(1);
+    db.AddOperations(operations => {
+        operations.ConfigureOperationLogReader(_ => new() {
+            UnconditionalCheckPeriod = TimeSpan.FromSeconds(10).ToRandom(0.05),
+        });
+        operations.AddFileBasedOperationLogChangeTracking();
     });
-    dbContext.AddAuthentication<DbSessionInfo<long>, DbUser<long>, long>();
+    dbContext.AddAuthentication<long>();
 });
 ```
 Our `DbContext` needs to contain `DbSet`-s for the classes provided here as type parameters.

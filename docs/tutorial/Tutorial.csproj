@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Client" Version="3.1.11" />
-    <PackageReference Include="Stl.Fusion.Server" Version="3.1.11" />
+    <PackageReference Include="Stl.Fusion.Client" Version="3.2.1" />
+    <PackageReference Include="Stl.Fusion.Server" Version="3.2.1" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.21617.1" />
   </ItemGroup>

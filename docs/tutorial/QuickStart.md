@@ -667,30 +667,43 @@ services.AddFusion(fusion => {
 // a preferable way of accessing DbContexts nowadays
 var appTempDir = PathEx.GetApplicationTempDirectory("", true);
 var dbPath = appTempDir & "HelloCart_v01.db";
-services.AddDbContextFactory<AppDbContext>(dbContext => {
-    dbContext.UseSqlite($"Data Source={dbPath}");
-    dbContext.EnableSensitiveDataLogging();
+services.AddDbContextFactory<AppDbContext>(db => {
+    db.UseSqlite($"Data Source={dbPath}");
+    db.EnableSensitiveDataLogging();
 });
 
 // AddDbContextServices is just a convenience builder allowing
 // to omit DbContext type in misc. normal and extension methods 
 // it has
-services.AddDbContextServices<AppDbContext>(dbContext => {
+services.AddDbContextServices<AppDbContext>(db => {
+    // Uncomment if you'll be using AddRedisOperationLogChangeTracking 
+    // db.AddRedisDb("localhost", "Fusion.Tutorial.Part10");
+
     // This call enabled Operations Framework (OF) for AppDbContext. 
-    dbContext.AddOperations((_, o) => {
-        // Here we tell operation log reader that it should fetch the
-        // tail of operation log every 5 seconds no matter what.
-        o.UnconditionalWakeUpPeriod = TimeSpan.FromSeconds(5);
+    db.AddOperations(operations => {
+        operations.ConfigureOperationLogReader(_ => new() {
+            // We use FileBasedDbOperationLogChangeTracking, so unconditional wake up period
+            // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
+            // See what .ToRandom does - most of timeouts in Fusion settings are RandomTimeSpan-s,
+            // but you can provide a normal one too - there is an implicit conversion from it.
+            UnconditionalCheckPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5).ToRandom(0.05),
+        });
+        // And this call tells that hosts will use a shared file
+        // to "message" each other that operation log was updated.
+        // In fact, they'll just be "touching" this file once
+        // this happens and watch for change of its modify date.
+        // You shouldn't use this mechanism in real multi-host
+        // scenario, but it works well if you just want to test
+        // multi-host invalidation on a single host by running
+        // multiple processes there.
+        operations.AddFileBasedOperationLogChangeTracking();
+        
+        // Or, if you use PostgreSQL, use this instead of above line
+        // operations.AddNpgsqlOperationLogChangeTracking();
+        
+        // Or, if you use Redis, use this instead of above line
+        // operations.AddRedisOperationLogChangeTracking();
     });
-    // And this call tells that hosts will use a shared file
-    // to "message" each other that operation log was updated.
-    // In fact, they'll just be "touching" this file once
-    // this happens and watch for change of its modify date.
-    // You shouldn't use this mechanism in real multi-host
-    // scenario, but it works well if you just want to test
-    // multi-host invalidation on a single host by running
-    // multiple processes there.
-    dbContext.AddFileBasedOperationLogChangeTracking(dbPath + "_changed");
 });
 ClientServices = HostServices = services.BuildServiceProvider();
 ```
