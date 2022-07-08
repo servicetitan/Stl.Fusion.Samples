@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Hosting;
 using Samples.HelloCart.V4;
 
 namespace Samples.HelloCart.V5;

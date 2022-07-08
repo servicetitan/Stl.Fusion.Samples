@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.Hosting;
 using Stl.Fusion.EntityFramework;

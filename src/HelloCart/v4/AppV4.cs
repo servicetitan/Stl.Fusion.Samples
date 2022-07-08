@@ -1,12 +1,8 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Memory;
-using Microsoft.Extensions.Hosting;
 using Samples.HelloCart.V2;
 using Stl.Fusion.Client;
 using Stl.Fusion.EntityFramework;
-using Stl.Fusion.EntityFramework.Operations;
 using Stl.Fusion.EntityFramework.Redis;
 using Stl.Fusion.Server;
 using Stl.IO;
@@ -31,7 +27,7 @@ public class AppV4 : AppBase
                 // Looks like there is no better way to set _default_ URL
                 cfg.Sources.Insert(0, new MemoryConfigurationSource() {
                     InitialData = new Dictionary<string, string>() {
-                        {WebHostDefaults.ServerUrlsKey, baseUri.ToString()},
+                        { WebHostDefaults.ServerUrlsKey, baseUri.ToString() },
                     }
                 });
             })
@@ -47,18 +43,20 @@ public class AppV4 : AppBase
                     // Add AppDbContext & related services
                     var appTempDir = FilePath.GetApplicationTempDirectory("", true);
                     var dbPath = appTempDir & "HelloCart_v01.db";
-                    services.AddDbContextFactory<AppDbContext>(dbContext => {
-                        dbContext.UseSqlite($"Data Source={dbPath}");
-                        dbContext.EnableSensitiveDataLogging();
+                    services.AddDbContextFactory<AppDbContext>(db => {
+                        db.UseSqlite($"Data Source={dbPath}");
+                        db.EnableSensitiveDataLogging();
                     });
-                    services.AddDbContextServices<AppDbContext>(dbContext => {
-                        dbContext.AddOperations(_ => new() {
-                            UnconditionalCheckPeriod = TimeSpan.FromSeconds(5),
+                    services.AddDbContextServices<AppDbContext>(db => {
+                        db.AddOperations(operations => {
+                            operations.ConfigureOperationLogReader(_ => new() {
+                                UnconditionalCheckPeriod = TimeSpan.FromSeconds(5),
+                            });
+                            operations.AddRedisOperationLogChangeTracking();
                         });
-                        dbContext.AddRedisDb("localhost", "Fusion.Samples.HelloCart");
-                        dbContext.AddRedisOperationLogChangeTracking();
-                        dbContext.AddEntityResolver<string, DbProduct>();
-                        dbContext.AddEntityResolver<string, DbCart>(_ => new() {
+                        db.AddRedisDb("localhost", "Fusion.Samples.HelloCart");
+                        db.AddEntityResolver<string, DbProduct>();
+                        db.AddEntityResolver<string, DbCart>(_ => new() {
                             // Cart is always loaded together with items
                             QueryTransformer = carts => carts.Include(c => c.Items),
                         });

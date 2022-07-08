@@ -67,22 +67,24 @@ public class Startup
         // DbContext & related services
         var appTempDir = FilePath.GetApplicationTempDirectory("", true);
         var dbPath = appTempDir & "App_v011.db";
-        services.AddDbContextFactory<AppDbContext>(dbContext => {
-            dbContext.UseSqlite($"Data Source={dbPath}");
+        services.AddDbContextFactory<AppDbContext>(db => {
+            db.UseSqlite($"Data Source={dbPath}");
             if (Env.IsDevelopment())
-                dbContext.EnableSensitiveDataLogging();
+                db.EnableSensitiveDataLogging();
         });
-        services.AddDbContextServices<AppDbContext>(dbContext => {
-            dbContext.AddEntityResolver<long, ChatMessage>();
-            dbContext.AddOperations(_ => new() {
-                // We use FileBasedDbOperationLogChangeMonitor, so unconditional wake up period
-                // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
-                // See what .ToRandom does - most of timeouts in Fusion settings are RandomTimeSpan-s,
-                // but you can provide a normal one too - there is an implicit conversion from it.
-                UnconditionalCheckPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5).ToRandom(0.05),
+        services.AddDbContextServices<AppDbContext>(db => {
+            db.AddEntityResolver<long, ChatMessage>();
+            db.AddOperations(operations => {
+                operations.ConfigureOperationLogReader(_ => new() {
+                    // We use FileBasedDbOperationLogChangeTracking, so unconditional wake up period
+                    // can be arbitrary long - all depends on the reliability of Notifier-Monitor chain.
+                    // See what .ToRandom does - most of timeouts in Fusion settings are RandomTimeSpan-s,
+                    // but you can provide a normal one too - there is an implicit conversion from it.
+                    UnconditionalCheckPeriod = TimeSpan.FromSeconds(Env.IsDevelopment() ? 60 : 5).ToRandom(0.05),
+                });
+                operations.AddFileBasedOperationLogChangeTracking();
             });
-            dbContext.AddFileBasedOperationLogChangeTracking();
-            dbContext.AddAuthentication();
+            db.AddAuthentication<long>();
         });
 
         // Fusion
