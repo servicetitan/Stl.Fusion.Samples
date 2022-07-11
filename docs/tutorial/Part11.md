@@ -168,8 +168,7 @@ public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, Can
     // We assume that _auth is of IAuth type here.
     var sessionInfo = await _auth.GetSessionInfo(session, cancellationToken);
     // You can use any of such methods
-    var user = await _authService.GetUser(session, CancellationToken);
-    user = user.AssertAuthenticated();
+    var user = await _authService.RequireUser(session, true, CancellationToken);
 
     await using var dbContext = CreateDbContext();
 
@@ -177,6 +176,8 @@ public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, Can
         // Read orders
     }
 ```
+
+`RequireUser` here calls `GetUser` and throws an error if the result of this call is `null`; `true` argument passed to it indicates it has to wrap `ArgumentNullException` into `ResultException`, which is viewed by Fusion as a "normal" result, so it won't auto-invalidate this result in 1 second (which by default happens for any other exception thrown from compute method - Fusion assumes any of such failures might be transient). You can read more about this behavior here: https://discord.com/channels/729970863419424788/729971920476307554/995865256201027614
 
 `GetSessionInfo`, `GetUser` and all other `IAuth` and `IAuthBackend` methods are compute methods, which means that the result of `GetMyOrders` call will invalidate once you sign-in into the provided `session` or sign out - generally, whenever a change that impacts on their result happens.
 
@@ -437,8 +438,8 @@ Ok, now all preps are done, and we're ready to write our first Blazor component 
 @code {
     protected override async Task<List<OrderHeader>> ComputeState(CancellationToken cancellationToken)
     {
-        var user = await AuthService.GetUser(Session, cancellationToken);
-        var sessionInfo = await AuthService.GetSessionInfo(Session, cancellationToken);
+        var user = await Auth.RequireUser(Session, true, cancellationToken);
+        var sessionInfo = await Auth.GetSessionInfo(Session, cancellationToken);
 
         if (!user.Claims.ContainsKey("required-claim"))
             return new List<OrderHeader>();

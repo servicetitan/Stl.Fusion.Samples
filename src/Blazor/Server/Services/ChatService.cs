@@ -41,8 +41,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
         }
 
         text = await NormalizeText(text, cancellationToken);
-        var user = await _auth.GetUser(session, cancellationToken);
-        user = user.AssertAuthenticated();
+        var user = await _auth.RequireUser(session, true, cancellationToken);
 
         await using var dbContext = await CreateCommandDbContext(cancellationToken);
         var message = new ChatMessage() {

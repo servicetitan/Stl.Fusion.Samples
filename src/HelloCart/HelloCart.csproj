@@ -10,9 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.6" />
-    <PackageReference Include="Stl.Fusion.Client" Version="3.2.1" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="3.2.1" />
-    <PackageReference Include="Stl.Fusion.EntityFramework.Redis" Version="3.2.1" />
-    <PackageReference Include="Stl.Fusion.Server" Version="3.2.1" />
+    <PackageReference Include="Stl.Fusion.Client" Version="3.2.9" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="3.2.9" />
+    <PackageReference Include="Stl.Fusion.EntityFramework.Redis" Version="3.2.9" />
+    <PackageReference Include="Stl.Fusion.Server" Version="3.2.9" />
   </ItemGroup>
 </Project>
