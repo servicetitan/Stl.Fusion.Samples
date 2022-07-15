@@ -73,7 +73,6 @@ public class Startup
 #pragma warning restore ASP0000
 
         // DbContext & related services
-        var appTempDir = FilePath.GetApplicationTempDirectory("", true);
         services.AddTransient(_ => new DbOperationScope<AppDbContext>.Options() {
             DefaultIsolationLevel = IsolationLevel.RepeatableRead,
         });
@@ -92,39 +91,38 @@ public class Startup
             if (!HostSettings.UseInMemoryAuthService)
                 db.AddAuthentication<string>();
             db.AddKeyValueStore();
-            db.AddMultitenancy(multitenancy => {
-                multitenancy.UseMultitenantMode();
-                multitenancy.AddMultitenantRegistry(
-                    Enumerable.Range(0, 3).Select(i => new Tenant($"tenant{i}")));
-                multitenancy.AddMultitenantDbContextFactory((c, tenant, db) => {
-                    if (!string.IsNullOrEmpty(HostSettings.UseSqlServer))
-                        db.UseSqlServer(HostSettings.UseSqlServer.Interpolate(tenant));
-                    else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql)) {
-                        db.UseNpgsql(HostSettings.UsePostgreSql.Interpolate(tenant), npgsql => {
-                            npgsql.EnableRetryOnFailure(0);
-                        });
-                        db.UseNpgsqlHintFormatter();
-                    }
-                    else {
-                        var dbPath = (appTempDir & "App_{0:StorageId}.db").Value.Interpolate(tenant);
-                        db.UseSqlite($"Data Source={dbPath}");
-                    }
-                    if (Env.IsDevelopment())
-                        db.EnableSensitiveDataLogging();
+            if (HostSettings.UseMultitenancy) {
+                db.AddMultitenancy(multitenancy => {
+                    multitenancy.UseMultitenantMode();
+                    multitenancy.AddMultitenantRegistry(
+                        Enumerable.Range(0, 3).Select(i => new Tenant($"tenant{i}")));
+                    multitenancy.AddMultitenantDbContextFactory(ConfigureTenantDbContext);
+                    // This call allows similar blocks for DbContext-s to call "UseDefault"
+                    // to make them re-use the same multitenancy settings (registry, resolver, etc.)
+                    multitenancy.MakeDefault();
                 });
-                multitenancy.MakeDefault();
-            });
+            }
+            else {
+                db.Services.AddDbContextFactory<AppDbContext>((c, db) => {
+                    // We use fakeTenant here solely to be able to
+                    // re-use the configuration logic from
+                    // ConfigureTenantDbContext.
+                    var fakeTenant = new Tenant(default, "single", "single");
+                    ConfigureTenantDbContext(c, fakeTenant, db);
+                });
+            }
         });
 
         // Fusion services
         services.AddSingleton(new PublisherOptions() { Id = HostSettings.PublisherId });
         var fusion = services.AddFusion();
         var fusionServer = fusion.AddWebServer();
-        fusionServer.ConfigureSessionMiddleware(_ => new() {
-            TenantIdExtractor = TenantIdExtractors.FromSubdomain(".localhost")
-                .Or(TenantIdExtractors.FromPort((5005, 5010)))
-                .WithValidator(tenantId => tenantId.Value.StartsWith("tenant")),
-        });
+        if (HostSettings.UseMultitenancy)
+            fusionServer.ConfigureSessionMiddleware(_ => new() {
+                TenantIdExtractor = TenantIdExtractors.FromSubdomain(".localhost")
+                    .Or(TenantIdExtractors.FromPort((5005, 5010)))
+                    .WithValidator(tenantId => tenantId.Value.StartsWith("tenant")),
+            });
         var fusionClient = fusion.AddRestEaseClient();
         var fusionAuth = fusion.AddAuthentication().AddServer(
             signInControllerOptionsFactory: _ => new() {
@@ -188,6 +186,25 @@ public class Startup
                 Title = "Templates.TodoApp API", Version = "v1"
             });
         });
+    }
+
+    private void ConfigureTenantDbContext(IServiceProvider services, Tenant tenant, DbContextOptionsBuilder db)
+    {
+        if (!string.IsNullOrEmpty(HostSettings.UseSqlServer))
+            db.UseSqlServer(HostSettings.UseSqlServer.Interpolate(tenant));
+        else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql)) {
+            db.UseNpgsql(HostSettings.UsePostgreSql.Interpolate(tenant), npgsql => {
+                npgsql.EnableRetryOnFailure(0);
+            });
+            db.UseNpgsqlHintFormatter();
+        }
+        else {
+            var appTempDir = FilePath.GetApplicationTempDirectory("", true);
+            var dbPath = (appTempDir & "App_{0:StorageId}.db").Value.Interpolate(tenant);
+            db.UseSqlite($"Data Source={dbPath}");
+        }
+        if (Env.IsDevelopment())
+            db.EnableSensitiveDataLogging();
     }
 
     public void Configure(IApplicationBuilder app, ILogger<Startup> log)
