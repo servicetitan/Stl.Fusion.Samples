@@ -63,7 +63,7 @@ public class ScreenshotService : IScreenshotService
         return CreateScreenshotFromBitmap(bitmap, width);
     }
 
-    [ComputeMethod(KeepAliveTime = 0.1, AutoInvalidateTime = 0.05)]
+    [ComputeMethod(AutoInvalidationDelay = 0.05)]
     protected virtual Task<DirectBitmap> GetScreenshot(CancellationToken cancellationToken = default)
     {
         // Captures a full-resolution screenshot; the code here is optimized

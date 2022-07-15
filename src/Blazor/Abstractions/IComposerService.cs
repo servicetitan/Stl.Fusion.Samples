@@ -12,7 +12,7 @@ public record ComposedValue
 
 public interface IComposerService
 {
-    [ComputeMethod(KeepAliveTime = 1)]
+    [ComputeMethod]
     Task<ComposedValue> GetComposedValue(string parameter,
         Session session, CancellationToken cancellationToken = default);
 }

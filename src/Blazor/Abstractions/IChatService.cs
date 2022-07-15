@@ -37,10 +37,10 @@ public interface IChatService
     Task<ChatMessage> Post(PostCommand command, CancellationToken cancellationToken = default);
 
     // Queries
-    [ComputeMethod(KeepAliveTime = 10)]
+    [ComputeMethod]
     Task<ChatMessageList> GetChatTail(int length, CancellationToken cancellationToken = default);
-    [ComputeMethod(KeepAliveTime = 60)]
+    [ComputeMethod]
     Task<long> GetUserCount(CancellationToken cancellationToken = default);
-    [ComputeMethod(KeepAliveTime = 60)]
+    [ComputeMethod]
     Task<long> GetActiveUserCount(CancellationToken cancellationToken = default);
 }

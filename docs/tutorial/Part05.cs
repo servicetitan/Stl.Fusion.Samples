@@ -123,7 +123,7 @@ namespace Tutorial
                 return key;
             }
 
-            [ComputeMethod(KeepAliveTime = 0.3)] // KeepAliveTime was added
+            [ComputeMethod(MinCacheDuration = 0.3)] // KeepAliveTime was added
             public virtual async Task<string> Combine(string key1, string key2)
             {
                 WriteLine($"{nameof(Combine)}({key1}, {key2})");
@@ -156,7 +156,7 @@ namespace Tutorial
         #region Part05_Service4
         public class Service4
         {
-            [ComputeMethod(KeepAliveTime = 1), Swap(0.1)]
+            [ComputeMethod(MinCacheDuration = 1), Swap(0.1)]
             public virtual async Task<string> Get(string key)
             {
                 WriteLine($"{nameof(Get)}({key})");

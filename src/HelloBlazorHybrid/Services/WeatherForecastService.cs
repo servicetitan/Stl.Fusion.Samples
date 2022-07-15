@@ -8,7 +8,7 @@ public class WeatherForecastService : IWeatherForecastService
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    [ComputeMethod(AutoInvalidateTime = 1)]
+    [ComputeMethod(AutoInvalidationDelay = 1)]
     public virtual Task<WeatherForecast[]> GetForecast(
         DateTime startDate, CancellationToken cancellationToken = default)
     {

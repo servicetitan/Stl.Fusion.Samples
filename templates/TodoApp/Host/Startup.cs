@@ -93,10 +93,10 @@ public class Startup
                 db.AddAuthentication<string>();
             db.AddKeyValueStore();
             db.AddMultitenancy(multitenancy => {
-                multitenancy.MultitenantMode();
-                multitenancy.SetupMultitenantRegistry(
+                multitenancy.UseMultitenantMode();
+                multitenancy.AddMultitenantRegistry(
                     Enumerable.Range(0, 3).Select(i => new Tenant($"tenant{i}")));
-                multitenancy.SetupMultitenantDbContextFactory((c, tenant, db) => {
+                multitenancy.AddMultitenantDbContextFactory((c, tenant, db) => {
                     if (!string.IsNullOrEmpty(HostSettings.UseSqlServer))
                         db.UseSqlServer(HostSettings.UseSqlServer.Interpolate(tenant));
                     else if (!string.IsNullOrEmpty(HostSettings.UsePostgreSql)) {
@@ -138,14 +138,6 @@ public class Startup
             });
         fusion.AddSandboxedKeyValueStore();
         fusion.AddOperationReprocessor();
-        // You don't need to manually add TransientFailureDetector -
-        // it's here only to show that operation reprocessor works
-        // when TodoService.AddOrUpdate throws this exception.
-        // Database-related transient errors are auto-detected by
-        // DbOperationScopeProvider<TDbContext> (it uses DbContext's
-        // IExecutionStrategy to do this).
-        services.TryAddEnumerable(ServiceDescriptor.Singleton(
-            TransientFailureDetector.New(e => e is DbUpdateConcurrencyException)));
 
         // Compute service(s)
         fusion.AddComputeService<ITodoService, TodoService>();

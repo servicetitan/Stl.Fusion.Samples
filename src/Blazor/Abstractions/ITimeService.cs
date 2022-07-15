@@ -2,8 +2,8 @@ namespace Samples.Blazor.Abstractions;
 
 public interface ITimeService
 {
-    [ComputeMethod(KeepAliveTime = 1)]
+    [ComputeMethod]
     Task<DateTime> GetTime(CancellationToken cancellationToken = default);
-    [ComputeMethod(KeepAliveTime = 60)]
+    [ComputeMethod]
     Task<double> GetUptime(double updatePeriod, CancellationToken cancellationToken = default);
 }

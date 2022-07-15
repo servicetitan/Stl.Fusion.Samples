@@ -272,7 +272,7 @@ to whatever you want to cache for as long as you want.
 
 Besides that, Fusion offers two built-in options:
 
-* `[ComputeMethod(KeepAliveTime = TimeInSeconds)]`,
+* `[ComputeMethod(MinCacheDuration = TimeInSeconds)]`,
   ensures a strong reference w/ specified expiration
   time is added to
   [Timeouts.KeepAlive](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/Internal/Timeouts.cs)
@@ -284,9 +284,9 @@ Besides that, Fusion offers two built-in options:
 
 Let's look at how they work.
 
-### ComputeMethodAttribute.KeepAliveTime
+### ComputeMethodAttribute.MinCacheDuration
 
-Let's just add `KeepAliveTime` to the service we were using previously:
+Let's just add `MinCacheDuration` to the service we were using previously:
 
 ``` cs --editable false --region Part05_Service3 --source-file Part05.cs
 public class Service3
@@ -298,7 +298,7 @@ public class Service3
         return key;
     }
 
-    [ComputeMethod(KeepAliveTime = 0.3)] // KeepAliveTime was added
+    [ComputeMethod(MinCacheDuration = 0.3)] // MinCacheDuration was added
     public virtual async Task<string> Combine(string key1, string key2)
     {
         WriteLine($"{nameof(Combine)}({key1}, {key2})");
@@ -352,7 +352,7 @@ Get(x)
 x
 ```
 
-As you see, `KeepAliveTime` does exactly what's expected:
+As you see, `MinCacheDuration` does exactly what's expected:
 
 - It holds a strong reference to the output of `Combine` for 0.3 seconds,
   so the output of `Combine("a", "b")` gets cached for 0.3s
@@ -361,14 +361,14 @@ As you see, `KeepAliveTime` does exactly what's expected:
 - But not the output of `Get("x")`, which wasn't used in any of
   `Combine` calls in this example.
 
-That's basically it on `KeepAliveTime`.
+That's basically it on `MinCacheDuration`.
 
 A few tips on how to use it:
 
 * You should apply it mainly to the final outputs - i.e. compute
   methods that are either exposed via API or used in your UI.
 * Applying it to other compute methods is fine too, though keep in mind
-  that whatever is used by top level methods with `KeepAliveTime`
+  that whatever is used by top level methods with `MinCacheDuration`
   is anyway cached for the same period, so probably you don't need this.
 * And in general, keep in mind that ideally you want to "recompose"
   or aggregate the outputs of compute methods rather than "rewrite".
@@ -391,7 +391,7 @@ Let's jump straight to the example:
 ``` cs --editable false --region Part05_Service4 --source-file Part05.cs
 public class Service4
 {
-    [ComputeMethod(KeepAliveTime = 1), Swap(0.1)]
+    [ComputeMethod(MinCacheDuration = 1), Swap(0.1)]
     public virtual async Task<string> Get(string key)
     {
         WriteLine($"{nameof(Get)}({key})");
@@ -456,7 +456,7 @@ a
 
 So what's going on here?
 
-* `[ComputeMethod(KeepAliveTime = 1)]` tells the `IComputed` describing the output
+* `[ComputeMethod(MinCacheDuration = 1)]` tells the `IComputed` describing the output
   of `Get` should stay in RAM for 1s
 * `[Swap(0.1)]` tells its value should be swapped out once 0.1s pass after
   the last attempt to use it, which, in turn, means that if someone tries
@@ -470,7 +470,7 @@ Maybe just the last part of it looks weird - i.e. it seems
 that once keep alive time passes, the value, even though it was
 swapped out, becomes unusable - why?
 
-Wait... Why do we need both `KeepAliveTime` and `[Swap]`?
+Wait... Why do we need both `MinCacheDuration` and `[Swap]`?
 Why there is `[Swap]` at the first place? Why Fusion can't
 simply store every `[IComputed]` in external cache?
 
@@ -499,9 +499,9 @@ no built-in implementations for popular caches, but you are welcome
 to contribute, and inheriting from `SimpleSwapService<string>` or
 `SwapServiceBase` could help you a lot to add it.
 
-You probably understand now that `KeepAliveTime` should be
+You probably understand now that `MinCacheDuration` should be
 higher (typically - much higher) than `SwapTime`:
-once `KeepAliveTime` passes, you may loose the `IComputed` instance.
+once `MinCacheDuration` passes, you may loose the `IComputed` instance.
 And once this happens, its "swapped out" value becomes unusable too,
 because its dependency graph is destroyed, and thus there
 is no way to tell if it's consistent or not now without recomputing it

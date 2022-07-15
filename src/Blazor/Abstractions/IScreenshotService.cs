@@ -27,6 +27,6 @@ public class Screenshot
 
 public interface IScreenshotService
 {
-    [ComputeMethod(KeepAliveTime = 0.1)]
+    [ComputeMethod(MinCacheDuration = 0.1)]
     Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default);
 }

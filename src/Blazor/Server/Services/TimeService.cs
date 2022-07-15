@@ -6,7 +6,7 @@ public class TimeService : ITimeService
 {
     private readonly DateTime _startTime = DateTime.UtcNow;
 
-    [ComputeMethod(AutoInvalidateTime = 0.25, KeepAliveTime = 1)]
+    [ComputeMethod(AutoInvalidationDelay = 0.25)]
     public virtual async Task<DateTime> GetTime(CancellationToken cancellationToken = default)
     {
         var time = DateTime.Now;

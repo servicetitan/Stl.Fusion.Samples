@@ -41,7 +41,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
         }
 
         text = await NormalizeText(text, cancellationToken);
-        var user = await _auth.RequireUser(session, cancellationToken);
+        var user = await _auth.GetUser(session, cancellationToken).Require();
 
         await using var dbContext = await CreateCommandDbContext(cancellationToken);
         var message = new ChatMessage() {
@@ -56,14 +56,14 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
 
     // Queries
 
-    [ComputeMethod(KeepAliveTime = 61, AutoInvalidateTime = 60)]
+    [ComputeMethod(AutoInvalidationDelay = 60)]
     public virtual async Task<long> GetUserCount(CancellationToken cancellationToken = default)
     {
         await using var dbContext = CreateDbContext();
         return await dbContext.Users.AsQueryable().LongCountAsync(cancellationToken);
     }
 
-    [ComputeMethod(KeepAliveTime = 61, AutoInvalidateTime = 60)]
+    [ComputeMethod(AutoInvalidationDelay = 60)]
     public virtual async Task<long> GetActiveUserCount(CancellationToken cancellationToken = default)
     {
         var minLastSeenAt = (Clocks.SystemClock.Now - TimeSpan.FromMinutes(5)).ToDateTime();
