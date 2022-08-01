@@ -1,7 +1,7 @@
 ﻿@page "/fetchdata"
 @using System.Threading
 @using Samples.HelloBlazorHybrid.Abstractions
-@inherits MixedStateComponent<Samples.HelloBlazorHybrid.Abstractions.WeatherForecast[], DateTime>
+@inherits MixedStateComponent<Samples.HelloBlazorHybrid.Abstractions.WeatherForecast[], Moment>
 @inject IWeatherForecastService WeatherForecast
 
 @{
@@ -32,7 +32,7 @@
     @foreach (var forecast in state)
     {
         <tr>
-            <td>@forecast.Date.ToShortDateString()</td>
+            <td>@forecast.Date.ToDateTime().ToShortDateString()</td>
             <td>@forecast.TemperatureC</td>
             <td>@forecast.TemperatureF</td>
             <td>@forecast.Summary</td>
@@ -42,7 +42,7 @@
 </table>
 
 @code {
-    protected override MutableState<DateTime>.Options GetMutableStateOptions()
+    protected override MutableState<Moment>.Options GetMutableStateOptions()
         => new () { InitialValue = DateTime.Today };
 
     protected override async Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)

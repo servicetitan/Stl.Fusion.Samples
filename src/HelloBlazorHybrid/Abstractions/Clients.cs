@@ -16,7 +16,7 @@ public interface ICounterClientDef
 public interface IWeatherForecastClientDef
 {
     [Get("getForecast")]
-    Task<WeatherForecast[]> GetForecast(DateTime startDate, CancellationToken cancellationToken = default);
+    Task<WeatherForecast[]> GetForecast(Moment startDate, CancellationToken cancellationToken = default);
 }
 
 [BasePath("chat")]
