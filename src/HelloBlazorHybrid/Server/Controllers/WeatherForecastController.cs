@@ -14,6 +14,7 @@ public class WeatherForecastController : ControllerBase, IWeatherForecastService
         => _forecast = forecast;
 
     [HttpGet, Publish]
-    public Task<WeatherForecast[]> GetForecast(Moment startDate, CancellationToken cancellationToken = default)
+    public Task<WeatherForecast[]> GetForecast(DateTime startDate,
+        CancellationToken cancellationToken = default)
         => _forecast.GetForecast(startDate, cancellationToken);
 }

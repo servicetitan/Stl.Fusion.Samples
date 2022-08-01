@@ -3,5 +3,5 @@
 public interface IWeatherForecastService
 {
     [ComputeMethod]
-    Task<WeatherForecast[]> GetForecast(Moment startDate, CancellationToken cancellationToken = default);
+    Task<WeatherForecast[]> GetForecast(DateTime startDate, CancellationToken cancellationToken = default);
 }

@@ -1,6 +1,6 @@
 ﻿@page "/fetchdata"
 @using System.Threading
-@inherits MixedStateComponent<WeatherForecast[], Moment>
+@inherits MixedStateComponent<WeatherForecast[], DateTime>
 @inject WeatherForecastService WeatherForecast
 
 @{
@@ -31,7 +31,7 @@
         @foreach (var forecast in state)
         {
             <tr>
-                <td>@forecast.Date.ToDateTime().ToShortDateString()</td>
+                <td>@forecast.Date.ToShortDateString()</td>
                 <td>@forecast.TemperatureC</td>
                 <td>@forecast.TemperatureF</td>
                 <td>@forecast.Summary</td>
@@ -41,7 +41,7 @@
 </table>
 
 @code {
-    protected override MutableState<Moment>.Options GetMutableStateOptions()
+    protected override MutableState<DateTime>.Options GetMutableStateOptions()
         => new () { InitialValue = DateTime.Today };
 
     protected override Task<WeatherForecast[]> ComputeState(CancellationToken cancellationToken)
