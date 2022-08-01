@@ -4,7 +4,7 @@
 @using System.Globalization
 @inherits MixedStateComponent<double, AccumulatorCard.LocalModel>
 @inject ISumService SumService
-@inject UICommandRunner UICommandRunner
+@inject UICommander UICommander
 
 @{
     var accumulator = State.LatestNonErrorValue;
@@ -47,19 +47,19 @@
         public double Value => double.TryParse(ValueText, out var v) ? v : 0;
     }
 
-    [Inject] private IUICommandTracker UICommandTracker { get; init; } = null!; 
+    [Inject] private UIActionTracker UIActionTracker { get; init; } = null!; 
 
     [Parameter] public string CssClass { get; set; } = "";
     [Parameter] public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     protected override void OnParametersSet()
-        => State.UpdateDelayer = new UpdateDelayer(UICommandTracker, UpdateDelay);
+        => State.UpdateDelayer = new UpdateDelayer(UIActionTracker, UpdateDelay);
 
     protected override MutableState<LocalModel>.Options GetMutableStateOptions()
         => new () { InitialValue = new() };
 
     protected override ComputedState<double>.Options GetStateOptions()
-        => new () { UpdateDelayer = new UpdateDelayer(UICommandTracker, UpdateDelay) };
+        => new () { UpdateDelayer = new UpdateDelayer(UIActionTracker, UpdateDelay) };
 
     protected override Task<double> ComputeState(CancellationToken cancellationToken)
         => SumService.GetAccumulator(cancellationToken);
@@ -67,8 +67,8 @@
     // Action handlers
 
     private async Task Reset()
-        => await UICommandRunner.Run(LocalCommand.New(() => SumService.Reset()));
+        => await UICommander.Run(LocalCommand.New(() => SumService.Reset()));
 
     private async Task Accumulate()
-        => await UICommandRunner.Run(LocalCommand.New(() => SumService.Accumulate(MutableState.Value.Value)));
+        => await UICommander.Run(LocalCommand.New(() => SumService.Accumulate(MutableState.Value.Value)));
 }

@@ -21,7 +21,7 @@
 
 @code {
     protected override ComputedState<DateTime>.Options GetStateOptions()
-        => new () { UpdateDelayer = new UpdateDelayer(Services.UICommandTracker(), 0.5) };
+        => new () { UpdateDelayer = new UpdateDelayer(Services.UIActionTracker(), 0.5) };
 
     protected override Task<DateTime> ComputeState(CancellationToken cancellationToken)
         => Time.GetTime(cancellationToken);

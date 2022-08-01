@@ -5,7 +5,7 @@
 @inject Session Session
 @inject IAuth Auth
 @inject IChatService Chats
-@inject UICommandRunner UICommandRunner
+@inject UICommander UICommander
 @inject NavigationManager Nav
 
 @{
@@ -153,20 +153,22 @@
     {
         var locals = MutableState.Value;
         var command = new EditUserCommand(Session, locals.Name ?? "");
-        var (_, ce) = await UICommandRunner.Run(LocalCommand.New(() => {
+        var result = await UICommander.Run(LocalCommand.New(() => {
             if (command.Name!.Length < 4)
                 throw new ApplicationException("The name should be at least 4 character long.");
         }));
-        if (ce.IsFailed)
-            return;
-        await UICommandRunner.Run(command);
+        if (result.HasError)
+            return; // The error will be displayed in the UI anyway
+
+        await UICommander.Run(command);
    }
 
     private async Task Post()
     {
-        var (_, ce) = await UICommandRunner.Run(new IChatService.PostCommand(MutableState.Value.Message, Session));
-        if (ce.IsFailed)
-            return;
+        var result = await UICommander.Run(new IChatService.PostCommand(MutableState.Value.Message, Session));
+        if (result.HasError)
+            return; // The error will be displayed in the UI anyway
+
         MutableState.Value.Message = "";
         MutableState.Invalidate();
     }

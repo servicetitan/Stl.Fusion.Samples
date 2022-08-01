@@ -57,7 +57,7 @@
     protected override ComputedState<Model>.Options GetStateOptions()
         => new () {
             InitialValue = new(),
-            UpdateDelayer =  new UpdateDelayer(Services.UICommandTracker(), 0.5),
+            UpdateDelayer =  new UpdateDelayer(Services.UIActionTracker(), 0.5),
         };
 
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)

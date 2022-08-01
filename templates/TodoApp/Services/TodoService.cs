@@ -57,6 +57,7 @@ public class TodoService : ITodoService
         var (session, id) = command;
         
         var user = await _auth.GetUser(session, cancellationToken).Require();
+
         var key = GetTodoKey(user, id);
         var doneKey = GetDoneKey(user, id);
         await _store.Remove(session, key, cancellationToken);

@@ -72,6 +72,6 @@ public class Program
         fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
 
         // Default update delay is 0.1s
-        services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UICommandTracker(), 0.1));
+        services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UIActionTracker(), 0.1));
     }
 }

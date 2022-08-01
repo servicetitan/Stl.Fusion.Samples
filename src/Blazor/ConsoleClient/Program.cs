@@ -54,7 +54,7 @@ static IServiceProvider CreateServiceProvider()
     fusionClient.AddReplicaService<ISumService, ISumClientDef>();
 
     // Default update delay is 0.1s
-    services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UICommandTracker(), 0.1));
+    services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UIActionTracker(), 0.1));
 
     return services.BuildServiceProvider();
 }
