@@ -43,7 +43,7 @@ using (Computed.Invalidate()) {
 Register compute service:
 ```cs
 fusion = services.AddFusion(); // services is IServiceCollection
-fusion.AddComputeService<IOrderService, OrderService>();
+fusion.AddComputeService<ICartService, CartService>();
 ```
 
 ## Replica Services
@@ -99,7 +99,7 @@ var fusionClient = fusion.AddRestEaseClient(
 Register Replica Service:
 ```cs
 // After "var fusionClient = ..."
-fusionClient.AddComputeService<IOrderService, OrderService>();
+fusionClient.AddReplicaService<ICartService, ICartClientDef>();
 ```
 
 Use Replica Service:
