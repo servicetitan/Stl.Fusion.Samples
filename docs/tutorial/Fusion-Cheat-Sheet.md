@@ -85,7 +85,7 @@ var baseUri = new Uri("http://localhost:5005");
 var apiBaseUri = new Uri($"{baseUri}api/");
 
 var fusion = services.AddFusion();
-fusion.AddRestEaseClient(
+var fusionClient = fusion.AddRestEaseClient(
     client => {
         client.ConfigureWebSocketChannel(_ => new() { BaseUri = baseUri });
         client.ConfigureHttpClient((_, name, o) => {
@@ -93,7 +93,6 @@ fusion.AddRestEaseClient(
             var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
             o.HttpClientActions.Add(httpClient => httpClient.BaseAddress = clientBaseUri);
         });
-        client.AddReplicaService<ITodoService, ITodoClientDef>();
     });
 ```
 
