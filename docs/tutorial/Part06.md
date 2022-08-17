@@ -192,7 +192,7 @@ of option 3:
 - Moreover, it calls `State.Recompute()` on `MutableState` changes,
   so there is no update delay for this chain.
 
-Check out [its 30 lines of code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs) to see how it works.
+Check out [its 30 lines of code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/MixedStateComponent.cs) to see how it works.
 
 ## Real-time UI in Server-Side Blazor apps
 
