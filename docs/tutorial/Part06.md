@@ -14,9 +14,9 @@ usually it's more convenient to use `ComputedStateComponent<TState>` and
 I'll describe how they work further, but since the classes
 are tiny, the link to their source code might explain it even better:
 
-- [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs) (common base type)
-- [ComputedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs)
-- [MixedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs) (inherits from `ComputedStateComponent<TState>`).
+- [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/StatefulComponentBase.cs) (common base type)
+- [ComputedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/ComputedStateComponent.cs)
+- [MixedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/MixedStateComponent.cs) (inherits from `ComputedStateComponent<TState>`).
 
 ## StatefulComponentBase&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs))
 
