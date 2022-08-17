@@ -129,7 +129,7 @@ constructs it using `IStateFactory` - and moreover:
   consequently, `StateChanged` event on the component. And since we're using
   `IComputedState` here, the state itself will use its `UpdateDelayer` to wait
   a bit and recompute itself using the same `ComputeState` method.
-- This state is configured by its own `ConfigureState` method -
+- This state is configured by its own `GetStateOptions` method -
   in particular, you can provide its initial value, `UpdateDelayer`, etc.
 - By default:
   - Change of component parameters triggers state recomputation
@@ -144,7 +144,7 @@ Compute Service (or a set of such services) changes, all you need is to:
 
 - Inherit it from `ComputedStateComponent<T>`
 - Override its `ComputeState` method
-- Possibly, override its `ConfigureState` method.
+- Possibly, override its `GetStateOptions` method.
 
 A good example of such component is `Counter.razor` from "HelloBlazorServer" example -
 check out [its source code](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/HelloBlazorServer/Pages/Counter.razor).
