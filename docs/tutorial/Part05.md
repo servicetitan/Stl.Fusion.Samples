@@ -443,12 +443,12 @@ The output:
 ```text
 Get(a)
 a
-Swap: Castle.Proxies.Service4Proxy|@26|a <- [try renew]
+Swap: Castle.Proxies.Service4Proxy|@26|a <- [touch]
 Swap: Castle.Proxies.Service4Proxy|@26|a <- {"$type":"Stl.ResultBox`1[[System.String, System.Private.CoreLib]], Stl","UnsafeValue":"a"}
 Task.Delay(500) and GC.Collect()
 Swap: Castle.Proxies.Service4Proxy|@26|a -> Some({"$type":"Stl.ResultBox`1[[System.String, System.Private.CoreLib]], Stl","UnsafeValue":"a"})
 a
-Swap: Castle.Proxies.Service4Proxy|@26|a <- [try renew]
+Swap: Castle.Proxies.Service4Proxy|@26|a <- [touch]
 Task.Delay(1500) and GC.Collect()
 Get(a)
 a
