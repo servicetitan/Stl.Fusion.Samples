@@ -18,7 +18,7 @@ are tiny, the link to their source code might explain it even better:
 - [ComputedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/ComputedStateComponent.cs)
 - [MixedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/MixedStateComponent.cs) (inherits from `ComputedStateComponent<TState>`).
 
-## StatefulComponentBase&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs))
+## StatefulComponentBase&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/StatefulComponentBase.cs))
 
 Any `StatefulComponentBase` has `State` property, which can be
 any `IState`.
@@ -62,7 +62,7 @@ Finally, it also disposes the state once the component gets disposed -
 unless its `OwnsState` property is set to `false`. And that's nearly all
 it does.
 
-## ComputedStateComponent&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs))
+## ComputedStateComponent&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/ComputedStateComponent.cs))
 
 This class tweaks a behavior of `StatefulComponentBase` to deal `IComputedState<T>`.
 
@@ -160,7 +160,7 @@ protected override async Task<string> ComputeState(CancellationToken cancellatio
 }
 ```
 
-## MixedStateComponent&lt;T, TLocals&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs))
+## MixedStateComponent&lt;T, TLocals&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/MixedStateComponent.cs))
 
 It's pretty common for UI components to have its own (local) state
 (e.g. a text entered into a few form fields)
