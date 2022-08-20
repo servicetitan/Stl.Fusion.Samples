@@ -756,5 +756,5 @@ So if you get stuck, please don't hesistate reaching me out
 on [Discord](https://discord.gg/EKEwv6d). My nickname is "AY"
 (Alex Yakunin), and I'll be happy to help.
 
-#### [Part 11: Authentication in Fusion &raquo;](./Part10.md) | [Tutorial Home](./README.md)
+#### [Part 11: Authentication in Fusion &raquo;](./Part11.md) | [Tutorial Home](./README.md)
 

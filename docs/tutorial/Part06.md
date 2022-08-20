@@ -14,11 +14,11 @@ usually it's more convenient to use `ComputedStateComponent<TState>` and
 I'll describe how they work further, but since the classes
 are tiny, the link to their source code might explain it even better:
 
-- [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs) (common base type)
-- [ComputedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs)
-- [MixedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs) (inherits from `ComputedStateComponent<TState>`).
+- [StatefulComponentBase.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/StatefulComponentBase.cs) (common base type)
+- [ComputedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/ComputedStateComponent.cs)
+- [MixedStateComponent.cs](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/MixedStateComponent.cs) (inherits from `ComputedStateComponent<TState>`).
 
-## StatefulComponentBase&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/StatefulComponentBase.cs))
+## StatefulComponentBase&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/StatefulComponentBase.cs))
 
 Any `StatefulComponentBase` has `State` property, which can be
 any `IState`.
@@ -62,7 +62,7 @@ Finally, it also disposes the state once the component gets disposed -
 unless its `OwnsState` property is set to `false`. And that's nearly all
 it does.
 
-## ComputedStateComponent&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/ComputedStateComponent.cs))
+## ComputedStateComponent&lt;T&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/ComputedStateComponent.cs))
 
 This class tweaks a behavior of `StatefulComponentBase` to deal `IComputedState<T>`.
 
@@ -129,7 +129,7 @@ constructs it using `IStateFactory` - and moreover:
   consequently, `StateChanged` event on the component. And since we're using
   `IComputedState` here, the state itself will use its `UpdateDelayer` to wait
   a bit and recompute itself using the same `ComputeState` method.
-- This state is configured by its own `ConfigureState` method -
+- This state is configured by its own `GetStateOptions` method -
   in particular, you can provide its initial value, `UpdateDelayer`, etc.
 - By default:
   - Change of component parameters triggers state recomputation
@@ -144,7 +144,7 @@ Compute Service (or a set of such services) changes, all you need is to:
 
 - Inherit it from `ComputedStateComponent<T>`
 - Override its `ComputeState` method
-- Possibly, override its `ConfigureState` method.
+- Possibly, override its `GetStateOptions` method.
 
 A good example of such component is `Counter.razor` from "HelloBlazorServer" example -
 check out [its source code](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/HelloBlazorServer/Pages/Counter.razor).
@@ -160,7 +160,7 @@ protected override async Task<string> ComputeState(CancellationToken cancellatio
 }
 ```
 
-## MixedStateComponent&lt;T, TLocals&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs))
+## MixedStateComponent&lt;T, TLocals&gt; ([source](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/MixedStateComponent.cs))
 
 It's pretty common for UI components to have its own (local) state
 (e.g. a text entered into a few form fields)
@@ -192,7 +192,7 @@ of option 3:
 - Moreover, it calls `State.Recompute()` on `MutableState` changes,
   so there is no update delay for this chain.
 
-Check out [its 30 lines of code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/MixedStateComponent.cs) to see how it works.
+Check out [its 30 lines of code](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Components/MixedStateComponent.cs) to see how it works.
 
 ## Real-time UI in Server-Side Blazor apps
 
