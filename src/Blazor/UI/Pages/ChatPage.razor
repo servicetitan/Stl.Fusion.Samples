@@ -122,7 +122,7 @@
         // Mutable state content is updated implicitly via bind-* here,
         // and since such a change doesn't trigger State recompute + StateHasChanged(),
         // we enable this feat. to make it happen on event.
-        EnableStateHasChangedCallAfterEvent = true;
+        MustCallStateHasChangedAfterEvent = true;
         base.OnInitialized();
     }
 

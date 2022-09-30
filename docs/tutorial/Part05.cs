@@ -39,7 +39,7 @@ namespace Tutorial
         {
             #region Part05_Caching1
             var service = CreateServices().GetRequiredService<Service1>();
-            // var computed = await Computed.Capture(_ => counters.Get("a"));
+            // var computed = await Computed.Capture(() => counters.Get("a"));
             WriteLine(await service.Get("a"));
             WriteLine(await service.Get("a"));
             GC.Collect();
@@ -53,7 +53,7 @@ namespace Tutorial
         {
             #region Part05_Caching2
             var service = CreateServices().GetRequiredService<Service1>();
-            var computed = await Computed.Capture(_ => service.Get("a"));
+            var computed = await Computed.Capture(() => service.Get("a"));
             WriteLine(await service.Get("a"));
             WriteLine(await service.Get("a"));
             GC.Collect();
@@ -86,7 +86,7 @@ namespace Tutorial
         {
             #region Part05_Caching3
             var service = CreateServices().GetRequiredService<Service2>();
-            var computed = await Computed.Capture(_ => service.Combine("a", "b"));
+            var computed = await Computed.Capture(() => service.Combine("a", "b"));
             WriteLine("computed = Combine(a, b) completed");
             WriteLine(await service.Combine("a", "b"));
             WriteLine(await service.Get("a"));
@@ -104,7 +104,7 @@ namespace Tutorial
         {
             #region Part05_Caching4
             var service = CreateServices().GetRequiredService<Service2>();
-            var computed = await Computed.Capture(_ => service.Get("a"));
+            var computed = await Computed.Capture(() => service.Get("a"));
             WriteLine("computed = Get(a) completed");
             WriteLine(await service.Combine("a", "b"));
             GC.Collect();

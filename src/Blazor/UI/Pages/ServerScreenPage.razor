@@ -36,7 +36,7 @@
     protected override ComputedState<Screenshot>.Options GetStateOptions()
         => new () {
             InitialValue = new(),
-            UpdateDelayer = UpdateDelayer.ZeroDelay,
+            UpdateDelayer = FixedDelayer.ZeroUnsafe,
         };
 
     protected override Task<Screenshot> ComputeState(CancellationToken cancellationToken)

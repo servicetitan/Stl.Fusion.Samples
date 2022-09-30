@@ -44,7 +44,7 @@ Without further ado:
 * [QuickStart: Learn 80% of Fusion by walking through HelloCart sample](./QuickStart.md)
 * [Part 0: NuGet packages](./Part00.md)
 * [Part 1: Compute Services](./Part01.md)
-* [Part 2: Computed Values: IComputed&lt;T&gt;](./Part02.md)
+* [Part 2: Computed Values: Computed&lt;T&gt;](./Part02.md)
 * [Part 3: State: IState&lt;T&gt; and Its Flavors](./Part03.md)
 * [Part 4: Replica Services](./Part04.md)
 * [Part 5: Caching and Fusion on Server-Side Only](./Part05.md)

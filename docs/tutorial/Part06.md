@@ -1,7 +1,7 @@
 # Part 6: Real-time UI in Blazor Apps
 
 You already know about `IState<T>` - it was described in [Part 3](./Part03.md).
-It's an abstraction that "tracks" the most current version of some `IComputed<T>`.
+It's an abstraction that "tracks" the most current version of some `Computed<T>`.
 There are a few "flavors" of the `IState` - the most important ones are:
 
 * `IMutableState<T>` - in fact, a variable exposed as `IState<T>`

@@ -1,10 +1,10 @@
-# Part 2: Computed Values and IComputed&lt;T&gt;
+# Part 2: Computed Values and Computed&lt;T&gt;
 
 Video covering this part:
 
 [<img src="./img/Part2-Screenshot.jpg" width="200"/>](https://youtu.be/DogHOuyRX20)
 
-Fusion's `IComputed<T>` is a fairly unique abstraction describing
+Fusion's `Computed<T>` is a fairly unique abstraction describing
 the result of a computation. Here is how it compares with computed
 observables from Knockout.js and MobX:
 
@@ -43,12 +43,12 @@ public static IServiceProvider CreateServices()
 }
 ```
 
-First, let's try to "pull" `IComputed<T>` instance created behind the
+First, let's try to "pull" `Computed<T>` instance created behind the
 scenes for a given call:
 
 ``` cs --region Part02_CaptureComputed --source-file Part02.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-var computed = await Computed.Capture(_ => counters.Get("a"));
+var computed = await Computed.Capture(() => counters.Get("a"));
 WriteLine($"Computed: {computed}");
 WriteLine($"- IsConsistent(): {computed.IsConsistent()}");
 WriteLine($"- Value:          {computed.Value}");
@@ -63,7 +63,7 @@ Computed: Computed`1(Intercepted:CounterService.Get(a) @xIs0saqEU, State: Consis
 - Value:          0
 ```
 
-As you may notice, `IComputed<T>` stores:
+As you may notice, `Computed<T>` stores:
 
 - Some representation of its input: `Intercepted:CounterService.Get(a)`
 - Version: `@xIs0saqEU`
@@ -77,7 +77,7 @@ Overall, its key properties include:
   `IsConsistent()` extension method is a shortcut checking whether the state
   is exactly `Consistent`.
   You may find more of such shortcuts by Ctrl-clicking on `IsConsistent()`.
-* `Version` property — an unique value for any `IComputed<T>` instance.
+* `Version` property — an unique value for any `Computed<T>` instance.
   `LTag` struct uses 64-bit integer under the hood, so "unique" actually means
   "unique assuming you don't run a process for a few hundreed years".
 * `Output`, `Value` and `Error` — the properties describing the
@@ -85,7 +85,7 @@ Overall, its key properties include:
 * `Invalidated` — an event raised on invalidation. Handlers of this event
   should never throw exceptions.
 
-`IComputed<T>` implements a set of interfaces — most notably,
+`Computed<T>` implements a set of interfaces — most notably,
 
 * `IResult<T>` — interestingly, it both "mimics" `IResult<T>` behavior,
   but also exposes a property of `Result<T>` type.
@@ -95,8 +95,8 @@ Overall, its key properties include:
     convenience methods (such as `IsValue(out var value)`, etc.),
     and there are a few extension methods for it as well.
   * `Result<T>` is its struct-based implementation that's frequently used
-    to store the actual result. `IComputed<T>.Output` is the property
-    of exactly this type. But since `IComputed<T>` implements `IResult<T>`
+    to store the actual result. `Computed<T>.Output` is the property
+    of exactly this type. But since `Computed<T>` implements `IResult<T>`
     as well (by, basically, forwarding all the calls to its `Output` property),
     you can write `computed.Value` instead of `computed.Output.Value` and so on.
   * Later you'll find out there are other types in Fusion that follow
@@ -113,7 +113,7 @@ Overall, its key properties include:
   to keep reference to *either* dependency or dependent instance to ensure
   *both* stay in RAM. Fusion, on contrary, doesn't prevent unreferenced
   dependent instances to be garbage collected.
-* `IComputed`, `IResult` — "untyped" versions of `IComputed<T>` and
+* `IComputed`, `IResult` — "untyped" versions of `Computed<T>` and
   `IResult<T>`. Similarly to `IEnumerable` (vs `IEnumerable<T>`), you can
   use them when the type of result isn't known.
 
@@ -121,7 +121,7 @@ And finally, there are a few important methods:
 
 * `Invalidate()` — triggers invalidation, which turns the instance
   into `Invalidated` state. This is the only change that may happen
-  with `IComputed<T>` over its lifetime; other than that, computed
+  with `Computed<T>` over its lifetime; other than that, computed
   instances are immutable.
   As with `IDisposable.Dispose`, you are free to call this method
   multiple times, though only the first call matters.
@@ -138,7 +138,7 @@ And finally, there are a few important methods:
   or even right during the computation.
 * `Use(...)` — gets the most up-to-date value of the current computed and
   makes sure that if this happens inside the computation of another
-  computed value, the current `IComputed<T>` gets listed as a dependency
+  computed value, the current `Computed<T>` gets listed as a dependency
   of this "outer"  computed.
 
 A bit of code to help remembering this:
@@ -160,13 +160,13 @@ interface IResult<T> {
 }
 
 // CancellationToken argument is removed everywhere for simplicity
-interface IComputed<T> : IResult<T> {
+interface Computed<T> : IResult<T> {
   ConsistencyState ConsistencyState { get; } 
   
   event Action Invalidated; // Event, triggered on the invalidation
   Task WhenInvalidated(); // Async way to await for the invalidation
   void Invalidate();
-  Task<IComputed<T>> Update(); // Notice it returns a new instance!
+  Task<Computed<T>> Update(); // Notice it returns a new instance!
   Task<T> Use();
 }
 ```
@@ -175,7 +175,7 @@ A diagram showing how `ConsistencyState` transition works:
 
 ![](./diagrams/consistency-state/transitions.dio.svg)
 
-Since every `IComputed<T>` is *almost immutable*, a new instance of
+Since every `Computed<T>` is *almost immutable*, a new instance of
 `IComputed` gets created on recomputation if the most recent one is
 already invalidated at this point (otherwise there is no reason to
 recompute). Here is how 3 computations (of the same value) look
@@ -183,20 +183,20 @@ on a Gantt chart:
 
 ![](./diagrams/consistency-state/instances.dio.svg)
 
-An ugly visualization showing how multiple `IComputed<T>`
+An ugly visualization showing how multiple `Computed<T>`
 instances get invalidated and eventually replaced with their consistent
 versions:
 
 ![](./img/Invalidate-Update.gif)
 
-> Earlier `IComputed<T>.Update(...)` was called `Renew`,
+> Earlier `Computed<T>.Update(...)` was called `Renew`,
 > so as you might guess, the animation was made before this rename :)
 
 Ok, let's get back to code and see how invalidation *really* works:
 
 ``` cs --region Part02_InvalidateComputed1 --source-file Part02.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-var computed = await Computed.Capture(_ => counters.Get("a"));
+var computed = await Computed.Capture(() => counters.Get("a"));
 WriteLine($"computed: {computed}");
 WriteLine("computed.Invalidate()");
 computed.Invalidate();
@@ -220,13 +220,13 @@ Compare the above code with this one:
 
 ``` cs --region Part02_InvalidateComputed2 --source-file Part02.cs
 var counters = CreateServices().GetRequiredService<CounterService>();
-var computed = await Computed.Capture(_ => counters.Get("a"));
+var computed = await Computed.Capture(() => counters.Get("a"));
 WriteLine($"computed: {computed}");
 WriteLine("using (Computed.Invalidate()) counters.Get(\"a\"))");
 using (Computed.Invalidate()) // <- This line
     _ = counters.Get("a");
 WriteLine($"computed: {computed}");
-var newComputed = await Computed.Capture(_ => counters.Get("a")); // <- This line
+var newComputed = await Computed.Capture(() => counters.Get("a")); // <- This line
 WriteLine($"newComputed: {newComputed}");
 ```
 
@@ -263,7 +263,7 @@ _ = Task.Run(async () =>
     }
 });
 
-var computed = await Computed.Capture(_ => counters.Get("a"));
+var computed = await Computed.Capture(() => counters.Get("a"));
 WriteLine($"{DateTime.Now}: {computed.Value}");
 for (var i = 0; i < 5; i++)
 {
@@ -336,7 +336,7 @@ rate (without affecting user-induced updates) in cases when instant updates
 create performance problems.
 
 It worth mentioning that Fusion offers all the abstractions you need to
-have this behavior, and moreover, similarly to almost-invisible `IComputed<T>`,
+have this behavior, and moreover, similarly to almost-invisible `Computed<T>`,
 you normally don't even need to know these abstractions exist.
 But they'll be ready to help you once you conclude you need throttling.
 

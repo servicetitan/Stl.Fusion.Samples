@@ -194,7 +194,7 @@ namespace Tutorial
             using var stopCts = new CancellationTokenSource();
             var cancellationToken = stopCts.Token;
 
-            async Task Watch<T>(string name, IComputed<T> computed)
+            async Task Watch<T>(string name, Computed<T> computed)
             {
                 for (;;) {
                     WriteLine($"{name}: {computed.Value}, {computed}");
@@ -206,9 +206,9 @@ namespace Tutorial
 
             var services = CreateClientServices();
             var counters = services.GetRequiredService<ICounterService>();
-            var aComputed = await Computed.Capture(_ => counters.Get("a"));
+            var aComputed = await Computed.Capture(() => counters.Get("a"));
             _ = Task.Run(() => Watch(nameof(aComputed), aComputed));
-            var bComputed = await Computed.Capture(_ => counters.Get("b"));
+            var bComputed = await Computed.Capture(() => counters.Get("b"));
             _ = Task.Run(() => Watch(nameof(bComputed), bComputed));
 
             await Task.Delay(200);
@@ -234,7 +234,7 @@ namespace Tutorial
             var stateFactory = services.StateFactory();
             using var state = stateFactory.NewComputed(
                 new ComputedState<string>.Options() {
-                    UpdateDelayer = new UpdateDelayer(UIActionTracker.None, 1.0), // 1 second update delay
+                    UpdateDelayer = FixedDelayer.Get(1), // 1 second update delay
                     EventConfigurator = state1 => {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
                         state1.AddEventHandler(StateEventKind.All,

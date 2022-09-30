@@ -41,7 +41,7 @@ Project InputProject(string prompt)
 var watchedProject = InputProject("Which project do you want to continuously rebuild?");
 _ = Task.Run(async () => {
     WriteLine($"Watching: {watchedProject}");
-    var computed = await Computed.Capture(_ => builder.GetOrBuild(watchedProject.Id, default));
+    var computed = await Computed.Capture(() => builder.GetOrBuild(watchedProject.Id, default));
     while (true) {
         WriteLine($"* Build result: {computed.Value}");
         await computed.WhenInvalidated();

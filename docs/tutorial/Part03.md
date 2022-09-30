@@ -9,13 +9,13 @@ You already know two key concepts of Fusion:
 1. **Compute Services** allow to write functions that compute everything just
    once and keep the result cached till the moment it either stopped being used,
    or one of its dependencies (a similar output) gets invalidated.
-2. `IComputed<T>` &ndash; an abstraction that's actually responsible for
+2. `Computed<T>` &ndash; an abstraction that's actually responsible for
    tracking all these dependencies.
 
 The last missing piece of a puzzle is `IState<T>`, or simply speaking,
 a "state". If you used Knockout.js or MobX earlier, state would correspond
 to their versions of computed values - i.e. in fact, state simply tracks
-the most recent version of some `IComputed<T>`.
+the most recent version of some `Computed<T>`.
 
 Ok, probably it's not quite clear what I just said, but remember that:
 
@@ -27,7 +27,7 @@ Ok, probably it's not quite clear what I just said, but remember that:
 
 So `IState<T>` is what "tracks" the most up-to-date version. There are two implementations of `IState<T>`:
 
-- `IMutableState<T>` is, in fact, a variable with `IComputed<T>` envelope.
+- `IMutableState<T>` is, in fact, a variable with `Computed<T>` envelope.
   It's `Computed` property returns always-consistent computed, which gets
   replaced once the `IMutableState.Value` (or `Error`, etc.) is set;
   the old computed gets invalidated.
@@ -51,7 +51,7 @@ And finally, states have a few extra properties:
 
 - Similarly to `IEnumerable<T>` \ `IEnumerable`, there are typed
   and untyped versions of any `IState` interface.
-- Similarly to `IComputed<T>`, any state implements `IResult<T>`
+- Similarly to `Computed<T>`, any state implements `IResult<T>`
   by forwarding all the calls to its `Computed` property.
 - `IMutableState<T>` also implements `IMutableResult<T>`
 - Any state has `Snapshot` property of `IStateSnapshot<T>` type.
@@ -66,7 +66,7 @@ And finally, states have a few extra properties:
     this can't happen.
 - Both `IState<T>` and `IStateSnapshot<T>` expose
   `LatestNonErrorValue` and `LatestNonErrorValueComputed` properties - they
-  allow to access the last valid `Value` and its `IComputed<T>`
+  allow to access the last valid `Value` and its `Computed<T>`
   exposed by the state. In other words, when state exposes
   an `Error`, `LatestNonErrorValue` still exposes the previous `Value`.
   This feature is quite handy when you need to access both
@@ -202,7 +202,7 @@ var stateFactory = services.StateFactory();
 WriteLine("Creating state.");
 using var state = stateFactory.NewComputed(
     new ComputedState<string>.Options() {
-        UpdateDelayer = new UpdateDelayer(UIActionTracker.None, 1.0), // 1 second update delay
+        UpdateDelayer = FixedDelayer.Get(1), // 1 second update delay
         EventConfigurator = state1 => {
             // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
             state1.AddEventHandler(StateEventKind.All,

@@ -5,16 +5,16 @@ Video covering this part:
 [<img src="./img/Part4-Screenshot.jpg" width="200"/>](https://youtu.be/_wFhi11Eb0o)
 
 Replica Services are remote proxies of Compute Services that take
-the behavior of `IComputed<T>` into account to be more efficient
+the behavior of `Computed<T>` into account to be more efficient
 than identical web API clients.
 
 Namely:
 
-- They similarly back the result to any call with `IComputed<T>` that mimics
-  matching `IComputed<T>` on the server side. So client-side Replica Services
+- They similarly back the result to any call with `Computed<T>` that mimics
+  matching `Computed<T>` on the server side. So client-side Replica Services
   can be used in other client-side Compute Services - and as you might guess,
   invalidation of a server-side dependency will trigger invalidation of
-  its client-side replica (`IComputed<T>` too), which in turn will invalidate
+  its client-side replica (`Computed<T>` too), which in turn will invalidate
   every client-side computed that uses it.
 - They similarly cache consistent replicas. In other words, Replica Service
   won't make a remote call in case a *consistent* replica is still available.
@@ -22,7 +22,7 @@ Namely:
   the "computation" with "RPC call".
 
 It's more or less obvious how Replica Services create initial versions of replicas -
-e.g. they can simply call an HTTP endpoint to get a copy of `IComputed<T>`.
+e.g. they can simply call an HTTP endpoint to get a copy of `Computed<T>`.
 But how do they get invalidation notifications?
 
 Both invalidation and update messages are currently delivered via
@@ -33,7 +33,7 @@ further.
 
 Resiliency (reconnection on disconnect, auto-refresh of state of
 all replicas in case of reconnect, etc.) is bundled both into the implementation
-and into the protocol (e.g. that's the main reason for any `IComputed<T>` to have
+and into the protocol (e.g. that's the main reason for any `Computed<T>` to have
 `Version` property).
 
 Finally, Replica Services are just interfaces. They typically
@@ -247,7 +247,7 @@ WriteLine("Host started.");
             using var stopCts = new CancellationTokenSource();
 var cancellationToken = stopCts.Token;
 
-async Task Watch<T>(string name, IComputed<T> computed)
+async Task Watch<T>(string name, Computed<T> computed)
 {
     for (; ; )
     {
@@ -260,9 +260,9 @@ async Task Watch<T>(string name, IComputed<T> computed)
 
 var services = CreateClientServices();
 var counters = services.GetRequiredService<ICounterService>();
-var aComputed = await Computed.Capture(_ => counters.Get("a"));
+var aComputed = await Computed.Capture(() => counters.Get("a"));
 _ = Task.Run(() => Watch(nameof(aComputed), aComputed));
-var bComputed = await Computed.Capture(_ => counters.Get("b"));
+var bComputed = await Computed.Capture(() => counters.Get("b"));
 _ = Task.Run(() => Watch(nameof(bComputed), bComputed));
 
 await Task.Delay(200);
@@ -327,7 +327,7 @@ var counters = services.GetRequiredService<ICounterService>();
 var stateFactory = services.StateFactory();
 using var state = stateFactory.NewComputed(
     new ComputedState<string>.Options() {
-        UpdateDelayer = new UpdateDelayer(UIActionTracker.None, 1.0), // 1 second update delay
+        UpdateDelayer = FixedDelayer.Get(1), // 1 second update delay
         EventConfigurator = state1 => {
             // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
             state1.AddEventHandler(StateEventKind.All,

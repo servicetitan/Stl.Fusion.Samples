@@ -44,7 +44,7 @@ namespace Tutorial
         {
             #region Part02_CaptureComputed
             var counters = CreateServices().GetRequiredService<CounterService>();
-            var computed = await Computed.Capture(_ => counters.Get("a"));
+            var computed = await Computed.Capture(() => counters.Get("a"));
             WriteLine($"Computed: {computed}");
             WriteLine($"- IsConsistent(): {computed.IsConsistent()}");
             WriteLine($"- Value:          {computed.Value}");
@@ -55,7 +55,7 @@ namespace Tutorial
         {
             #region Part02_InvalidateComputed1
             var counters = CreateServices().GetRequiredService<CounterService>();
-            var computed = await Computed.Capture(_ => counters.Get("a"));
+            var computed = await Computed.Capture(() => counters.Get("a"));
             WriteLine($"computed: {computed}");
             WriteLine("computed.Invalidate()");
             computed.Invalidate();
@@ -69,13 +69,13 @@ namespace Tutorial
         {
             #region Part02_InvalidateComputed2
             var counters = CreateServices().GetRequiredService<CounterService>();
-            var computed = await Computed.Capture(_ => counters.Get("a"));
+            var computed = await Computed.Capture(() => counters.Get("a"));
             WriteLine($"computed: {computed}");
             WriteLine("using (Computed.Invalidate()) counters.Get(\"a\"))");
             using (Computed.Invalidate()) // <- This line
                 _ = counters.Get("a");
             WriteLine($"computed: {computed}");
-            var newComputed = await Computed.Capture(_ => counters.Get("a")); // <- This line
+            var newComputed = await Computed.Capture(() => counters.Get("a")); // <- This line
             WriteLine($"newComputed: {newComputed}");
             #endregion
         }
@@ -92,7 +92,7 @@ namespace Tutorial
                 }
             });
 
-            var computed = await Computed.Capture(_ => counters.Get("a"));
+            var computed = await Computed.Capture(() => counters.Get("a"));
             WriteLine($"{DateTime.Now}: {computed.Value}");
             for (var i = 0; i < 5; i++) {
                 await computed.WhenInvalidated();

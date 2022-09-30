@@ -9,6 +9,7 @@ using Stl.OS;
 using Stl.DependencyInjection;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
+using Stl.Fusion.UI;
 
 namespace Samples.HelloBlazorHybrid.UI;
 
@@ -70,7 +71,7 @@ public class Program
         // service assumes it's there, so let's register a fake one
         services.AddSingleton(new SessionFactory().CreateSession());
 
-        // Default update delay is set to min.
-        services.AddTransient<IUpdateDelayer>(_ => UpdateDelayer.MinDelay);
+        // Default update delay is set to 0.1s
+        services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UIActionTracker(), 0.1));
     }
 }

@@ -72,7 +72,7 @@ public class ScreenshotService : IScreenshotService
         var prevProducer = Interlocked.Exchange(ref _currentProducer, currentProducer) ?? currentProducer;
         Computed.GetCurrent()!.Invalidated += c => Task.Delay(1000).ContinueWith(_ => {
             // Let's dispose the bitmap in 1 second after invalidation
-            var computed = (IComputed<DirectBitmap>) c;
+            var computed = (Computed<DirectBitmap>) c;
             if (computed.HasValue)
                 computed.Value.Dispose();
         });

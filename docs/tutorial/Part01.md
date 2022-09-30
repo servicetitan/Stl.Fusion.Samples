@@ -9,15 +9,15 @@ Fusion offers 3 key abstractions enabling you to build real-time services:
 1. **Computed Value** &ndash; an object describing the result of a computation
    of type `T`, which is also capable of notifying you when this result
    becomes *invalidated* (most likely inconsistent with the ground truth).
-   Such values always implement `IComputed<T>`; you don't need to implement
+   Such values always implement `Computed<T>`; you don't need to implement
    this interface though, because the most useful implementations of it
    are already there.
 2. **Compute Service** &ndash; a service that automatically captures
    dependencies of outputs of its methods and transparently "backs" them with
-   `IComputed<T>` instances allowing anyone to learn when such outputs become
+   `Computed<T>` instances allowing anyone to learn when such outputs become
    invalidated (inconsistent with the ground truth).
    Compute Services are supposed to be written by you.
-3. **State** &ndash; an abstraction that "tracks" a single `IComputed<T>`,
+3. **State** &ndash; an abstraction that "tracks" a single `Computed<T>`,
    i.e. continuously references the most up-to-date version of it.
    Again, you typically don't need to implement your own `IState<T>` -
    Fusion provides its 3 most useful flavors.
@@ -234,11 +234,11 @@ it has to refresh `Get("a")` result first, because it was invalidated
 due to increment. But how?
 
 In reality, every compute method either gets a cached output, or builds
-a new `IComputed<T>` instance "backing" the computation it's going to run,
+a new `Computed<T>` instance "backing" the computation it's going to run,
 and *while the computation runs*, this instance stays available via
 `Computed.GetCurrent()` method. So any other compute method *invoked
 during the computation* gets a chance to enlist its own hidden output
-(`IComputed<T>` as well) as a *dependency* of the current computed instance.
+(`Computed<T>` as well) as a *dependency* of the current computed instance.
 
 The actual process is a bit more complex, because it accounts for
 scenarios you may not anticipate yet:
@@ -314,7 +314,7 @@ might produce different output, and if they were launched concurrently,
 Overall, nearly everything in Fusion supports concurrent invocations:
 
 - Compute Services are supposed to be singletons that support concurrency
-- Any `IComputed<T>` implementation is fully concurrent
+- Any `Computed<T>` implementation is fully concurrent
 - As well as any `IState<T>`
 - The exceptions are mostly such types as `XxxOptions` and methods that
   are supposed to be used during the service registration stage, as well

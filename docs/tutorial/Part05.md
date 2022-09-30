@@ -36,7 +36,7 @@ the more complex your logic is, the more you are expected to gain.
 
 ## The Fundamentals
 
-You already know that `IComputed<T>` instances are reused, but so far
+You already know that `Computed<T>` instances are reused, but so far
 we didn't talk much about the details. Let's learn some specific
 aspects of this behavior before jumping to caching.
 
@@ -74,7 +74,7 @@ reused while it's possible:
 
 ``` cs --region Part05_Caching1 --source-file Part05.cs
 var service = CreateServices().GetRequiredService<Service1>();
-// var computed = await Computed.Capture(_ => counters.Get("a"));
+// var computed = await Computed.Capture(() => counters.Get("a"));
 WriteLine(await service.Get("a"));
 WriteLine(await service.Get("a"));
 GC.Collect();
@@ -108,7 +108,7 @@ Let's prove this by uncomment the commented line:
 
 ``` cs --region Part05_Caching2 --source-file Part05.cs
 var service = CreateServices().GetRequiredService<Service1>();
-var computed = await Computed.Capture(_ => service.Get("a"));
+var computed = await Computed.Capture(() => service.Get("a"));
 WriteLine(await service.Get("a"));
 WriteLine(await service.Get("a"));
 GC.Collect();
@@ -159,7 +159,7 @@ public class Service2
 
 ``` cs --region Part05_Caching3 --source-file Part05.cs
 var service = CreateServices().GetRequiredService<Service2>();
-var computed = await Computed.Capture(_ => service.Combine("a", "b"));
+var computed = await Computed.Capture(() => service.Combine("a", "b"));
 WriteLine("computed = Combine(a, b) completed");
 WriteLine(await service.Combine("a", "b"));
 WriteLine(await service.Get("a"));
@@ -202,7 +202,7 @@ Let's check if the opposite is true as well:
 
 ``` cs --region Part05_Caching4 --source-file Part05.cs
 var service = CreateServices().GetRequiredService<Service2>();
-var computed = await Computed.Capture(_ => service.Get("a"));
+var computed = await Computed.Capture(() => service.Get("a"));
 WriteLine("computed = Get(a) completed");
 WriteLine(await service.Combine("a", "b"));
 GC.Collect();

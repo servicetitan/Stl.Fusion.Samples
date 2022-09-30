@@ -84,7 +84,7 @@ namespace Tutorial
             WriteLine("Creating state.");
             using var state = stateFactory.NewComputed(
                 new ComputedState<string>.Options() {
-                    UpdateDelayer = new UpdateDelayer(UIActionTracker.None, 1.0), // 1 second update delay
+                    UpdateDelayer = FixedDelayer.Get(1), // 1 second update delay
                     EventConfigurator = state1 => {
                         // A shortcut to attach 3 event handlers: Invalidated, Updating, Updated
                         state1.AddEventHandler(StateEventKind.All,
