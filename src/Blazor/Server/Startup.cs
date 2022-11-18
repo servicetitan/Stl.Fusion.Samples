@@ -102,7 +102,7 @@ public class Startup
                 NameClaimKeys = Array.Empty<string>(),
             });
         services.AddSingleton(new PublisherOptions() { Id = ServerSettings.PublisherId });
-        services.AddSingleton(new PresenceService.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
+        services.AddSingleton(new PresenceReporter.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
 
         // Fusion services
         fusionClient.AddClientService<IForismaticClient>();

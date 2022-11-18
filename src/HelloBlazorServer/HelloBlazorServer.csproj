@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AssemblyName>Samples.HelloBlazorServer</AssemblyName>
@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Blazor" Version="3.9.9" />
-    <PackageReference Include="Stl.Fusion.Server" Version="3.9.9" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="4.1.13" />
+    <PackageReference Include="Stl.Fusion.Server" Version="4.1.13" />
   </ItemGroup>
 
 </Project>
