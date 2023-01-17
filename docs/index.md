@@ -56,7 +56,7 @@ modified to reveal some Fusion powers. Contrary to the original app:
 If you're curious how big is the difference between the code of
 these samples and a similar code without any real-time
 features, 
-[check out this part of Fusion README.md](https://github.com/servicetitan/Stl.Fusion#enough-talk---lets-fight-show-me-the-code).
+[check out this part of Fusion README.md](https://github.com/servicetitan/Stl.Fusion#enough-talk-show-me-the-code).
 
 [HelloBlazorHybrid] is the same sample, but modified to support both
 Blazor Server and Blazor WebAssembly modes.
