@@ -73,10 +73,7 @@ On the server side the following Fusion services interact with authentication da
 They implement the same interfaces, so they can be used interchangeably - the only difference between them is where they store the data: in memory on in the database. `InMemoryAuthService` is there primarily for debugging or quick prototyping - you don't want to use it in the real app.
 
 Speaking of interfaces, these services implement two of them:
-`IAuth` and `IAuthBackend`. The first one is intended to be used on the client; the second one must be used on the server side.
-
-Here is how they look like:
-- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion/Authentication/IAuth.cs
+[`IAuth`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Ext.Contracts/Authentication/IAuth.cs) and [`IAuthBackend`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Ext.Services/Authentication/IAuthBackend.cs). The first one is intended to be used on the client; the second one must be used on the server side.
 
 The key difference is:
 - `IAuth` allows to just read the data associated with the current session
@@ -177,7 +174,7 @@ public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, Can
     }
 ```
 
-`RequireUser` here calls `GetUser` and throws an error if the result of this call is `null`; `true` argument passed to it indicates it has to wrap `ArgumentNullException` into `ResultException`, which is viewed by Fusion as a "normal" result, so it won't auto-invalidate this result in 1 second (which by default happens for any other exception thrown from compute method - Fusion assumes any of such failures might be transient). You can read more about this behavior here: https://discord.com/channels/729970863419424788/729971920476307554/995865256201027614
+`RequireUser` here calls `GetUser` and throws an error if the result of this call is `null`; `true` argument passed to it indicates it has to wrap `ArgumentNullException` into `ResultException`, which is viewed by Fusion as a "normal" result, so it won't auto-invalidate this result in 1 second (which by default happens for any other exception thrown from compute method - Fusion assumes any of such failures might be transient). You can read more about this behavior in [our Discord channel](https://discord.com/channels/729970863419424788/729971920476307554/995865256201027614).
 
 `GetSessionInfo`, `GetUser` and all other `IAuth` and `IAuthBackend` methods are compute methods, which means that the result of `GetMyOrders` call will invalidate once you sign-in into the provided `session` or sign out - generally, whenever a change that impacts on their result happens.
 
@@ -191,10 +188,7 @@ So in fact, these APIs just maintain the authentication state. It's assumed that
 
 The proposed way to sync the authentication state between ASP.NET Core and Fusion is to embed this logic into `Host.cshtml`, which is typically mapped to every unmapped route in Blazor apps, and simply propagate the authentication state from ASP.NET Core to Fusion right when it loads. We assume here that when user signs in or signs out, `Host.cshtml` gets loaded by the end of any of these flows, so it's the best place to sync.
 
-The synchronization is done by the `ServerAuthHelper.UpdateAuthState` method. `ServerAuthHelper` is a built-in Fusion helper doing exactly what's described above. It compares the authentication state exposed by `IAuth` for the current `Session` vs the state exposed in `HttpContext` and states calls `IAuthBackend.SignIn()` / `IAuthBackend.SignOut` to sync it.
-
-`ServerAuthHelper`'s source code:
-- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Server/Authentication/ServerAuthHelper.cs#L69
+The synchronization is done by the `ServerAuthHelper.UpdateAuthState` method. [`ServerAuthHelper`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Server/Authentication/ServerAuthHelper.cs) is a built-in Fusion helper doing exactly what's described above. It compares the authentication state exposed by `IAuth` for the current `Session` vs the state exposed in `HttpContext` and states calls `IAuthBackend.SignIn()` / `IAuthBackend.SignOut` to sync it.
 
 The following code snippet shows how you embed it into `Host.cshtml`:
 
@@ -237,8 +231,7 @@ The following code snippet shows how you embed it into `Host.cshtml`:
 }    
 ```
 
-Notice that it assumes there is `fusionAuth.js` - a small script embedded into `Stl.Fusion.Blazor` assembly, which is responsible for opening authentication window or performing a redirect. Its source code, if you're curious:
-- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/wwwroot/scripts/fusionAuth.js
+Notice that it assumes there is [`fusionAuth.js`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor.Authentication/wwwroot/scripts/fusionAuth.js) - a small script embedded into `Stl.Fusion.Blazor` assembly, which is responsible for opening authentication window or performing a redirect.
 
 Besides that, you need to add a couple extras to your ASP.NET Core app service container configuration:
 
@@ -294,9 +287,7 @@ services.AddAuthentication(options => {
 });
 ```
 
-Notice that we use `/signIn` and `/signOut` paths above - they're
-mapped to this controller:
-- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Server/Controllers/SignInController.cs
+Notice that we use `/signIn` and `/signOut` paths above - they're mapped to the Fusion's [`AuthController`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Server/Controllers/AuthController.cs).
 
 If you want to use some other logic for these actions, you can map them to similar actions in another controller & update the paths (+ set `window.FusionAuth.signInPath` and `window.FusionAuth.signInPath` in JS as well), or replace this controller. There is a handy helper for this: `services.AddFusion().AddServer().AddControllerFilter(...)`.
 
@@ -400,8 +391,7 @@ So all we need is to make `ISessionResolver` to resolve `Session.Default` on the
 
 You can see that when this component is initialized, it sets `SessionProvider.Session` to the value it gets as a parameter &ndash; unless we're running Blazor WASM. In this case it sets it to `Session.Default`. Any attempt to resolve `Session` (either via `ISessionResolver`, or via service provider) will return this value.  
 
-You may notice that `App.razor` wraps its content into `CascadingAuthState`, which makes Blazor authentication to work as expected as well by embedding its `ChildContent` into Blazor's `<CascadingAuthenticationState>`. If you are interested in details, see its source:
-- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Authentication/CascadingAuthState.razor
+You may notice that `App.razor` wraps its content into [`CascadingAuthState`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor.Authentication/CascadingAuthState.razor), which makes Blazor authentication to work as expected as well by embedding its `ChildContent` into Blazor's `<CascadingAuthenticationState>`.
 
 All of this implies you also need a bit special logic in `_Host.cshtml` to spawn `App.razor` on the server side:
 
@@ -475,8 +465,7 @@ As you already know, Fusion's authentication state is synced once `_Host.cshtml`
 
 Since Fusion auth state change instantly hits all the clients, you can do all of this in e.g. a separate window - this is enough to make sure every browser window that shares the same session gets signed out.
 
-`ClientAuthHelper` is a helper embedded into `Stl.Fusion.Blazor` that helps to run these flows by triggering corresponding methods on `window.fusionAuth`:
-- https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor/Authentication/ClientAuthHelper.cs
+[`ClientAuthHelper`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor.Authentication/ClientAuthHelper.cs) is a helper embedded into `Stl.Fusion.Blazor` that helps to run these flows by triggering corresponding methods on `window.fusionAuth`.
 
 This is how `Authentication.razor` page in `TodoApp` template uses it:
 
