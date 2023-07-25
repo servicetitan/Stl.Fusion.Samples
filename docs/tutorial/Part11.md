@@ -192,7 +192,7 @@ The synchronization is done by the `ServerAuthHelper.UpdateAuthState` method. [`
 
 The following code snippet shows how you embed it into `Host.cshtml`:
 
-```cs --editable false
+```xml
 @page "/"
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @namespace Templates.TodoApp.Host.Pages
