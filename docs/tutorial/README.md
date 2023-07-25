@@ -53,7 +53,9 @@ Without further ado:
 * [Part 8: Scaling Fusion Services](./Part08.md)
 * [Part 9: CommandR](./Part09.md)
 * [Part 10: Multi-Host Invalidation and CQRS with Operations Framework](./Part10.md)
-* <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [Part 11: Authentication in Fusion](./Part11.md) 
+* [Part 11: Authentication in Fusion](./Part11.md) 
+* <img src="https://img.shields.io/badge/-New!-brightgreen" valign="middle"> [Part 12: Stl.Rpc in Fusion 6.1+](./Part12.md) 
+* <img src="https://img.shields.io/badge/-Upcoming-yellow" valign="middle"> [Part 13: Migration to Fusion 6.1+](./Part13.md) 
 * [Epilogue](./PartFF.md)
   
 Finally, check out:

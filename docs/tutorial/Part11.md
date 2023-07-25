@@ -414,7 +414,7 @@ This also explains why we use `BlazorCircuitContext` here - it's a handy helper 
 Ok, now all preps are done, and we're ready to write our first Blazor component relying on `IAuth`:
 
 ```cs --editable false
-@page "/myOrders
+@page "/myOrders"
 @inherits ComputedStateComponent<List<OrderHeaderDto>>
 @inject IOrderService OrderService
 @inject IAuth Auth
@@ -564,4 +564,4 @@ After calling Fusion's `IAuthBackend.SignIn()` the authentication state will be 
 
 One thing we need to be careful with is if we edit the roles/claims of a certain user inside Identity, we will need to invalidate this inside Fusion's storage or maybe even force the user to sign out, in order to keep the two frameworks in sync. To update the authentication state inside Fusion we can simply call `IAuthBackend.SignIn` with a newly constructed `ClaimsPrincipal` object containing the updated roles/claims.
 
-#### [Next: Epilogue &raquo;](./PartFF.md) | [Tutorial Home](./README.md)
+#### [Part 12: Stl.Rpc in Fusion 6.1+ &raquo;](./Part12.md) | [Tutorial Home](./README.md)
