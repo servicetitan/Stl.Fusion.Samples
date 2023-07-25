@@ -108,7 +108,7 @@ Console.WriteLine(await myService.Ping());
 
 ## What else Stl.Rpc can do?
 
-Besides powering Fusion's client compute services (formerly - replica services), it also allows to:
+Besides powering Fusion's client compute services (formerly - replica services), it also allows you to:
 - Route calls to different servers based on call parameters - in other words, run a mesh of services & route calls to them transparently. See https://github.com/servicetitan/Stl.Fusion/tree/master/samples/MultiServerRpcApp
 - Use server-side call routers - a service wrappers routing calls to either a local service implementation or an RPC client. This model allows any of your service shards on the server side consume data from any shard (including itself), but w/o triggering any RPC at all for the local data. Unfortunately, there is no sample for this yet.
 
