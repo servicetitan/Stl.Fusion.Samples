@@ -7,7 +7,7 @@ One of the important elements in this authentication system is Fusion's own sess
 To enable Fusion session we need to call `UseFusionSession` inside the `Configure` method of the `Startup` class.
 This adds `SessionMiddleware` to the request pipeline. The actual class contains a bit more logic, but the important parts for now are the following:
 
-```cs --editable false
+```cs
 public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
     {
         // Note that now it's slightly more complex due to
@@ -31,7 +31,7 @@ public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
 
 The `Session` class in itself is very simple, it stores a single `Symbol Id` value. `Symbol` is a struct storing a string with its cached `HashCode`, its only role is to speedup dictionary lookups when it's used. Besides that, `Session` overrides equality - they're compared by `Id`.
 
-```cs --editable false
+```cs
 public sealed class Session : IHasId<Symbol>, IEquatable<Session>,
     IConvertibleTo<string>, IConvertibleTo<Symbol>
 {
@@ -45,7 +45,8 @@ public sealed class Session : IHasId<Symbol>, IEquatable<Session>,
 ```
 
 When you call `fusion.AddAuthentication()`, a number of services registered in you dependency injection container, and the most crucial ones are:
-```cs --editable false
+
+```cs
 Services.TryAddSingleton<ISessionFactory, SessionFactory>();
 Services.TryAddScoped<ISessionProvider, SessionProvider>();
 Services.TryAddTransient(c => (ISessionResolver) c.GetRequiredService<ISessionProvider>());
@@ -89,7 +90,7 @@ to the following code snippet.
 The Operations Framework is also needed for any of these services -
 hopefully you read [Part 10](./Part10.md), which covers it.
 
-```cs --editable false
+```cs
 services.AddDbContextServices<FusionDbContext>(dbContext => {
     db.AddOperations(operations => {
         operations.ConfigureOperationLogReader(_ => new() {
@@ -100,10 +101,11 @@ services.AddDbContextServices<FusionDbContext>(dbContext => {
     dbContext.AddAuthentication<long>();
 });
 ```
+
 Our `DbContext` needs to contain `DbSet`-s for the classes provided here as type parameters.
 The `DbSessionInfo` and `DbUser` classes are very simple entities provided by Fusion for storing authentication data.
 
-```cs --editable false
+```cs
 public class AppDbContext : DbContextBase
 {
     // Authentication-related tables
@@ -120,7 +122,7 @@ public class AppDbContext : DbContextBase
 
 And that's how these entity types look:
 
-```cs --editable false
+```cs
 public class DbSessionInfo<TDbUserId> : IHasId<string>, IHasVersion<long>
 {
     [Key] [StringLength(32)] public string Id { get; set; }
@@ -138,7 +140,7 @@ public class DbSessionInfo<TDbUserId> : IHasId<string>, IHasVersion<long>
 
 `DbSessionInfo` stores our sessions, and these sessions (if authenticated) can be associated with a `DbUser`
 
-```cs --editable false
+```cs
 public class DbUser<TDbUserId> : IHasId<TDbUserId>, IHasVersion<long> where TDbUserId : notnull
 {
     public DbUser();
@@ -158,7 +160,7 @@ public class DbUser<TDbUserId> : IHasId<TDbUserId>, IHasVersion<long> where TDbU
 
 Our Compute Services can receive a `Session` object that we can use to decide if we are authenticated or not and who the signed in user is:
 
-```cs --editable false
+```cs
 [ComputeMethod]
 public virtual async Task<List<OrderHeaderDto>> GetMyOrders(Session session, CancellationToken cancellationToken = default)
 {
@@ -235,7 +237,7 @@ Notice that it assumes there is [`fusionAuth.js`](https://github.com/servicetita
 
 Besides that, you need to add a couple extras to your ASP.NET Core app service container configuration:
 
-```cs --editable false
+```cs
 var fusion = services.AddFusion();
 var fusionServer = fusion.AddWebServer();
 var fusionAuth = fusion.AddAuthentication().AddServer(
@@ -293,7 +295,7 @@ If you want to use some other logic for these actions, you can map them to simil
 
 And finally, you need a bit of extras in app configuration:
 
-```cs --editable false
+```cs
 // You need this only if you use Blazor WASM w/ Fusion client
 app.UseWebSockets(new WebSocketOptions() {
     KeepAliveInterval = TimeSpan.FromSeconds(30),
@@ -322,7 +324,8 @@ app.UseEndpoints(endpoints => {
 As you know, client-side Replica Services have the same interface as their server-side Compute Service counterparts, so the client needs to pass the `Session` as a parameter for methods that require it. However the `Session` is stored in a http-only cookie, so the client can't read its value directly. This is intentional - since `Session` allows anyone to impersonate as a user associated with it, ideally we don't want it to be available on the client side.
 
 Fusion uses so-called "default session" to make it work. Let's quote the beginning of `Session` class code again:
-```cs --editable false
+
+```cs
 public sealed class Session : IHasId<Symbol>, IEquatable<Session>,
     IConvertibleTo<string>, IConvertibleTo<Symbol>
 {
@@ -342,7 +345,7 @@ And you want your Blazor components to work on Blazor Server, you need to use th
 
 Now, if you still remember the beginning of this document, there is a number of services managing `Session` in Fusion:
 
-```cs --editable false
+```cs
 Services.TryAddScoped<ISessionProvider, SessionProvider>();
 Services.TryAddTransient(c => (ISessionResolver) c.GetRequiredService<ISessionProvider>());
 Services.TryAddTransient(c => c.GetRequiredService<ISessionProvider>().Session);
@@ -350,7 +353,7 @@ Services.TryAddTransient(c => c.GetRequiredService<ISessionProvider>().Session);
 
 So all we need is to make `ISessionResolver` to resolve `Session.Default` on the Blazor WASM client. One of ways to do this is to use this `App.razor` (your root Blazor component):
 
-```cs --editable false
+```xml
 @using Stl.OS
 @implements IDisposable
 @inject BlazorCircuitContext BlazorCircuitContext
@@ -395,7 +398,7 @@ You may notice that `App.razor` wraps its content into [`CascadingAuthState`](ht
 
 All of this implies you also need a bit special logic in `_Host.cshtml` to spawn `App.razor` on the server side:
 
-```cs --editable false
+```xml
 <app id="app">
     @{
         using var prerendering = BlazorCircuitContext.Prerendering();
@@ -413,7 +416,7 @@ This also explains why we use `BlazorCircuitContext` here - it's a handy helper 
 
 Ok, now all preps are done, and we're ready to write our first Blazor component relying on `IAuth`:
 
-```cs --editable false
+```xml
 @page "/myOrders"
 @inherits ComputedStateComponent<List<OrderHeaderDto>>
 @inject IOrderService OrderService
@@ -441,7 +444,7 @@ Ok, now all preps are done, and we're ready to write our first Blazor component 
 
 Note that to make it work with Blazor WASM, you need a controller like this:
 
-```cs --editable false
+```cs
 [Route("api/[controller]/[action]")]
 [ApiController, UseDefaultSession] // <<< You need UseDefaultSession filter here!
 public class OrderController : ControllerBase, IOrderService
@@ -469,7 +472,7 @@ Since Fusion auth state change instantly hits all the clients, you can do all of
 
 This is how `Authentication.razor` page in `TodoApp` template uses it:
 
-```xml --editable false
+```xml
 <Button Color="Color.Warning"
         @onclick="_ => ClientAuthHelper.SignOut()">Sign out</Button>
 <Button Color="Color.Danger"
@@ -487,7 +490,7 @@ Our `SignIn` methods needs to receive the username and password of the user that
 - If the user is already signed in or not in Fusions authentication state
 - Whether the password/email pair is correct
 
-```cs --editable false
+```cs
 public async Task SignIn(Session session, EmailPasswordDto signInDto, CancellationToken cancellationToken)
 {
     var user = await _userManager.FindByNameAsync(signInDto.Email);
@@ -503,7 +506,7 @@ public async Task SignIn(Session session, EmailPasswordDto signInDto, Cancellati
 
 If everything was correct then we can proceed with signing the user in. The basic idea here is that we store what the claims and roles of each user with the Identity framework, inside the database, and during the sign-in process we query these roles and claims from here using the `UserManager` service that Identity provides and we can create a `ClaimsPrincipal` from these values that we can pass to the Fusion SignIn method.
 
-```cs --editable false
+```cs
 if (signInResult.Succeeded) {
     var claims = await _userManager.GetClaimsAsync(user);
     var roles = await _userManager.GetRolesAsync(user);
