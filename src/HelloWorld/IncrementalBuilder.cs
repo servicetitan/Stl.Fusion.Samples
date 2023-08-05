@@ -2,7 +2,7 @@ using static System.Console;
 
 namespace Samples.HelloWorld;
 
-public class IncrementalBuilder
+public class IncrementalBuilder : IComputeService
 {
     private readonly ConcurrentDictionary<string, Project> _projects = new();
     private readonly ConcurrentDictionary<string, long> _versions = new();

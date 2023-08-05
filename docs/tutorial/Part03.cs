@@ -2,9 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Stl.Async;
 using Stl.Fusion;
-using Stl.Fusion.UI;
 using static System.Console;
 
 namespace Tutorial
@@ -12,7 +10,7 @@ namespace Tutorial
     public static class Part03
     {
         #region Part03_CounterService
-        public class CounterService
+        public class CounterService : IComputeService
         {
             private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
@@ -35,7 +33,7 @@ namespace Tutorial
         public static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddFusion().AddComputeService<CounterService>();
+            services.AddFusion().AddService<CounterService>();
             return services.BuildServiceProvider();
         }
 
@@ -70,12 +68,12 @@ namespace Tutorial
             catch (ApplicationException) {
                 WriteLine($"Error: {state.Error.GetType()}, Computed: {state.Computed}");
             }
-            WriteLine($"LatestNonErrorValue: {state.LatestNonErrorValue}");
-            WriteLine($"Snapshot.LatestNonErrorComputed: {state.Snapshot.LatestNonErrorComputed}");
+            WriteLine($"LastNonErrorValue: {state.LastNonErrorValue}");
+            WriteLine($"Snapshot.LastNonErrorComputed: {state.Snapshot.LastNonErrorComputed}");
             #endregion
         }
 
-        public static async Task LiveState()
+        public static async Task ComputedState()
         {
             #region Part03_LiveState
             var services = CreateServices();

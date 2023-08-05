@@ -33,9 +33,9 @@ public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
     var fusion = services.AddFusion();
-    fusion.AddComputeService<CounterService>();
-    fusion.AddComputeService<CounterSumService>(); // We'll be using it later
-    fusion.AddComputeService<HelloService>();      // We'll be using it later
+    fusion.AddService<CounterService>();
+    fusion.AddService<CounterSumService>(); // We'll be using it later
+    fusion.AddService<HelloService>();      // We'll be using it later
     return services.BuildServiceProvider();
 }
 ```
@@ -43,7 +43,7 @@ public static IServiceProvider CreateServices()
 Now we're ready to declare our first Compute Service:
 
 ``` cs --editable false --region Part01_CounterService --source-file Part01.cs
-public class CounterService
+public class CounterService : IComputeService
 {
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
@@ -137,7 +137,7 @@ it was printed just for the first call.
 Now let's add another Compute Service:
 
 ``` cs --editable false --region Part01_CounterSumService --source-file Part01.cs
-public class CounterSumService
+public class CounterSumService : IComputeService
 {
     public CounterService Counters { get; }
 
@@ -255,7 +255,7 @@ To close this section, let's look at the last property closer.
 Let's create a simple service to test how Fusion handles concurrency:
 
 ``` cs --editable false --region Part01_HelloService --source-file Part01.cs
-public class HelloService
+public class HelloService : IComputeService
 {
     [ComputeMethod]
     public virtual async Task<string> Hello(string name)
@@ -321,4 +321,3 @@ Overall, nearly everything in Fusion supports concurrent invocations:
   as types that aren't supposed to be concurrent (e.g. all Blazor components - `StatefulComponentBase<TState>` and its descendants).
 
 #### [Next: Part 2 &raquo;](./Part02.md) | [Tutorial Home](./README.md)
-

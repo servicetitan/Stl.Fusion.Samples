@@ -31,28 +31,16 @@ public class Program
     public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
     {
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
-
         var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
-        var apiBaseUri = new Uri($"{baseUri}api/");
 
         // Fusion
         var fusion = services.AddFusion();
-        var fusionClient = fusion.AddRestEaseClient();
-        fusionClient.ConfigureWebSocketChannel(c => new() {
-            BaseUri = baseUri,
-            LogLevel = LogLevel.Information,
-            MessageLogLevel = LogLevel.None,
-        });
-        fusionClient.ConfigureHttpClient((c, name, o) => {
-            var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-            var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-            o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-        });
+        fusion.Rpc.AddWebSocketClient(baseUri);
 
         // Fusion service clients
-        fusionClient.AddReplicaService<ICounterService, ICounterClientDef>();
-        fusionClient.AddReplicaService<IWeatherForecastService, IWeatherForecastClientDef>();
-        fusionClient.AddReplicaService<IChatService, IChatClientDef>();
+        fusion.AddClient<ICounterService>();
+        fusion.AddClient<IWeatherForecastService>();
+        fusion.AddClient<IChatService>();
 
         ConfigureSharedServices(services);
     }
@@ -64,12 +52,8 @@ public class Program
 
         // Other UI-related services
         var fusion = services.AddFusion();
-        fusion.AddBlazorUIServices();
+        fusion.AddBlazor();
         fusion.AddFusionTime();
-        fusion.AddBackendStatus<CustomBackendStatus>();
-        // We don't care about Sessions in this sample, but IBackendStatus
-        // service assumes it's there, so let's register a fake one
-        services.AddSingleton(new SessionFactory().CreateSession());
 
         // Default update delay is set to 0.1s
         services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UIActionTracker(), 0.1));

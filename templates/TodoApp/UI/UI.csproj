@@ -7,13 +7,21 @@
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <RootNamespace>Templates.TodoApp.UI</RootNamespace>
     <AssemblyName>Templates.TodoApp.UI</AssemblyName>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <!-- CS8669: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. Auto-generated code requires an explicit '#nullable' directive in source. -->
+    <NoWarn>CS8669</NoWarn>
   </PropertyGroup>
 
   <!-- Publish & runtime properties -->
   <PropertyGroup>
-    <RunAOTCompilation>false</RunAOTCompilation>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <!--
+    <RunAOTCompilation>true</RunAOTCompilation>
+    -->
     <InvariantGlobalization>true</InvariantGlobalization>
-    <TrimMode>link</TrimMode>
   </PropertyGroup>
 
   <!-- Extra trimming roots -->
@@ -24,15 +32,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise" Version="1.1.3.1" />
-    <PackageReference Include="Blazorise.Bootstrap" Version="1.1.3.1" />
-    <PackageReference Include="Blazorise.DataGrid" Version="1.1.3.1" />
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.1.3.1" />
-    <PackageReference Include="Blazorise.Sidebar" Version="1.1.3.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
+    <PackageReference Include="Blazorise" Version="1.2.4" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="1.2.4" />
+    <PackageReference Include="Blazorise.DataGrid" Version="1.2.4" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.2.4" />
+    <PackageReference Include="Blazorise.Sidebar" Version="1.2.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="4.1.13" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="6.1.110" />
+    <PackageReference Include="Stl.Fusion.Blazor.Authentication" Version="6.1.110" />
     <PackageReference Include="UAParser" Version="3.1.47" />
   </ItemGroup>
 

@@ -42,12 +42,12 @@ public class Startup
 
         // Fusion services
         var fusion = services.AddFusion();
-        fusion.AddBlazorUIServices();
+        fusion.AddBlazor();
         fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
-        fusion.AddComputeService<CounterService>();
-        fusion.AddComputeService<WeatherForecastService>();
-        fusion.AddComputeService<ChatService>();
-        fusion.AddComputeService<ChatBotService>();
+        fusion.AddService<CounterService>();
+        fusion.AddService<WeatherForecastService>();
+        fusion.AddService<ChatService>();
+        fusion.AddService<ChatBotService>();
         // This is just to make sure ChatBotService.StartAsync is called on startup
         services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
 

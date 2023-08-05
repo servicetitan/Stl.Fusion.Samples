@@ -1,6 +1,6 @@
 ﻿namespace Samples.HelloBlazorHybrid.Abstractions;
 
-public interface ICounterService
+public interface ICounterService : IComputeService
 {
     [ComputeMethod]
     Task<int> Get(CancellationToken cancellationToken = default);

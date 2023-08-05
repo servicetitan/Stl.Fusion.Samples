@@ -43,66 +43,25 @@ using (Computed.Invalidate()) {
 Register compute service:
 ```cs
 fusion = services.AddFusion(); // services is IServiceCollection
-fusion.AddComputeService<ICartService, CartService>();
+fusion.AddService<ICartService, CartService>();
 ```
 
-## Replica Services
+## Compute Service Clients
 
-Add controller:
-```cs
-[Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors, UseDefaultSession]
-public class CartController : ControllerBase, ICartService
-{
-    private readonly ICartService _cartService;
-    private readonly ICommander _commander;
-
-    public CartController(ICartService service, ICommander commander) 
-    {
-        _service = service;
-        _commander = commander;
-    }    
-
-    [HttpGet, Publish]
-    public Task<List<Order>> GetOrders(long cartId, CancellationToken cancellationToken)
-        => _service.GetOrders(cartId, cancellationToken);
-}
-```
-
-Add client definition:
-```cs
-[BasePath("cart")]
-public interface ICartClientDef
-{
-    [Get(nameof(GetOrders))]
-    Task<List<Order>> GetOrders(long cartId, CancellationToken cancellationToken);
-}
-```
-
-Configure Fusion client (this has to be done once in a code that configures client-side `IServiceProvider`):
+Configure Fusion RPC client (this has to be done once in a code that configures client-side `IServiceProvider`):
 ```cs
 var baseUri = new Uri("http://localhost:5005");
-var apiBaseUri = new Uri($"{baseUri}api/");
 
 var fusion = services.AddFusion();
-var fusionClient = fusion.AddRestEaseClient(
-    client => {
-        client.ConfigureWebSocketChannel(_ => new() { BaseUri = baseUri });
-        client.ConfigureHttpClient((_, name, o) => {
-            var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-            var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-            o.HttpClientActions.Add(httpClient => httpClient.BaseAddress = clientBaseUri);
-        });
-    });
+fusion.Rpc.AddWebSocketClient(baseUri);
 ```
 
-Register Replica Service:
+Register Compute Service client:
 ```cs
-// After "var fusionClient = ..."
-fusionClient.AddReplicaService<ICartService, ICartClientDef>();
+fusion.AddClient<ICartService>();
 ```
 
-Use Replica Service:
+Use use it:
 ```cs
 // Just call it the same way you call the original one.
 // Any calls that are expected to produce the same result
@@ -166,7 +125,7 @@ Register command handler:
 // Nothing is needed for handlers declared inside compute services
 ```
 
-## Exposing commands to the client via Replica Services
+## Exposing commands to the client via Compute Service Clients
 
 Add controller method for the command:
 ```cs
@@ -182,25 +141,11 @@ public class CartController : ControllerBase, ICartService
         => _commander.Call(command, cancellationToken);
 ```        
 
-Add command handler in the client definition interface:
-```cs
-public interface ICartClientDef 
-{
-    // Always use [Post] and [Body] here
-    [Post(nameof(UpdateCart))]
-    Task<Unit> UpdateCart([Body] UpdateCartCommand command, CancellationToken cancellationToken);
-```        
-
-Register client-side command handler:
-```
-// Nothing is needed for handlers declared inside replica services
-```
-
 ## Working with `IComputed`
 
 Capture:
 ```cs
-var computed = await Computed.Capture(ct => service.ComputeMethod(args, ct), cancellationToken);
+var computed = await Computed.Capture(() => service.ComputeMethod(args, cancellationToken));
 ```
 
 Check whether `IComputed` is still consistent:

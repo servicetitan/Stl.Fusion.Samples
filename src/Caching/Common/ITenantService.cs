@@ -1,6 +1,6 @@
 namespace Samples.Caching.Common;
 
-public interface ITenantService
+public interface ITenantService : IComputeService
 {
     Task AddOrUpdate(Tenant tenant, long? version, CancellationToken cancellationToken = default);
     Task Remove(string tenantId, long version, CancellationToken cancellationToken = default);

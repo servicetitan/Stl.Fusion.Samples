@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Samples.Blazor.Abstractions;
-using Stl.Fusion.EntityFramework.Authentication;
+using Stl.Fusion.Authentication.Services;
 using Stl.Fusion.EntityFramework.Operations;
 
 namespace Samples.Blazor.Server.Services;

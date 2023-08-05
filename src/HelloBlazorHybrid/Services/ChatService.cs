@@ -4,12 +4,12 @@ namespace Samples.HelloBlazorHybrid.Services;
 
 public class ChatService : IChatService
 {
-    private volatile ImmutableList<IChatService.Message> _messages = ImmutableList<IChatService.Message>.Empty;
+    private volatile ImmutableList<ChatMessage> _messages = ImmutableList<ChatMessage>.Empty;
 
     private readonly object _lock = new();
 
     [CommandHandler]
-    public virtual Task PostMessage(IChatService.PostCommand command, CancellationToken cancellationToken = default)
+    public virtual Task PostMessage(Chat_Post command, CancellationToken cancellationToken = default)
     {
         if (Computed.IsInvalidating()) {
             _ = GetMessageCount();
@@ -29,7 +29,7 @@ public class ChatService : IChatService
         => Task.FromResult(_messages.Count);
 
     [ComputeMethod]
-    public virtual async Task<IChatService.Message[]> GetMessages(
+    public virtual async Task<ChatMessage[]> GetMessages(
         int count, CancellationToken cancellationToken = default)
     {
         // Fake dependency used to invalidate all GetMessages(...) independently on count argument

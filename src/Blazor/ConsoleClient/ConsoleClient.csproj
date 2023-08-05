@@ -10,12 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Client" Version="4.1.13" />
+    <PackageReference Include="Stl.Fusion" Version="6.1.110" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
-    <ProjectReference Include="..\Client\Client.csproj" />
   </ItemGroup>
 
 </Project>

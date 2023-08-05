@@ -50,7 +50,7 @@ protected StatefulComponentBase()
     StateChanged = (_, eventKind) => {
         if ((eventKind & StateHasChangedTriggers) == 0)
             return;
-        this.StateHasChangedAsync();
+        this.NotifyStateHasChanged();
     };
 }
 ```
@@ -230,16 +230,15 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 
 ## Real-time UI in Blazor WebAssembly apps
 
-If you read about [Replica Services in Part 4](./Part04.md), you
+If you read about [Compute Service Clients in Part 4](./Part04.md), you
 probably already know that WASM case actually isn't that different:
 
-- Server-side should be configured to host Replica Services -
+- Server-side should be configured to "share" Compute Services -
   i.e. its DI container should be able to resolve Compute Services and
-  Fusion's `IPublisher`; its middleware chain should include
-  Fusion's `WebSocketServer`, and finally, there must be an API controller
-  for each Replica Service.
-- Client-side should be configured to properly build Replica Service
-  clients. And since these clients behave exactly as Compute Services
+  `Stl.Rpc.RpcHub` should expose them as servers (services available 
+  for remote clients).
+- Client-side should be configured to properly build Compute Service clients. 
+  And since these clients behave exactly as Compute Services
   they replicate, you can use them the same way you'd use Compute Services
   with Server-Side Blazor.
 
@@ -249,15 +248,11 @@ So your server-side web host configuration should include these parts:
 public void ConfigureServices(IServiceCollection services)
 {
     // Fusion services
-    services.AddSingleton(new Publisher.Options() { 
-        Id = "p-<uniqueId>", 
-    });
     var fusion = services.AddFusion();
-    var fusionServer = fusion.AddWebSocketServer();
-
+    fusion.AddWebServer();
+    
+    // ASP.NET Core / Blazor services 
     services.AddRouting();
-    // Register Replica Service controllers
-    services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
     services.AddServerSideBlazor();
 }
 
@@ -273,10 +268,10 @@ public void Configure(IApplicationBuilder app, ILogger<Startup> log)
     // Static files
     app.UseBlazorFrameworkFiles(); // Needed for Blazor WASM
 
-    // API controllers
+    // Endpoints
     app.UseRouting();
     app.UseEndpoints(endpoints => {
-        endpoints.MapFusionWebSocketServer();
+        endpoints.MapRpcWebSocketServer();
         endpoints.MapControllers();
         endpoints.MapFallbackToPage("/_Host"); // Typically needed for Blazor WASM
     });
@@ -301,22 +296,8 @@ public static Task Main(string[] args)
 public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
 {
     var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
-    var apiBaseUri = new Uri($"{baseUri}api/"); // You may change this
-
     var fusion = services.AddFusion();
-    var fusionClient = fusion.AddRestEaseClient(
-        (c, o) => {
-            o.BaseUri = baseUri;
-            o.MessageLogLevel = LogLevel.Information;
-        }).ConfigureHttpClientFactory(
-        (c, name, o) => {
-            // This code configures any HttpClient, so if you use a few of them
-            // you may add some extra logic to ensure their BaseAddress-es
-            // are properly set here
-            var isFusionClient = (name ?? "").Contains("FusionClient");
-            var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-            o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-        });
+    fusion.Rpc.AddWebSocketClient(baseUri);
 }
 ```
 
@@ -328,19 +309,18 @@ Blazor WebAssembly modes.
 
 All you need is to:
 
-- Ensure all of your Replica Services implement the same interface.
+- Ensure your Compute Services implement the same interface as their clients.
   [Part 4](./Part04.md) explains how to achieve that, but overall,
-  you need to implement this interface on Compute Service, the
-  controller "exporting" it, and register its client via
-  `fusionClient.AddReplicaService<IService, IClientDef>()` call.
+  you need to implement this interface on Compute Service 
+  and register its client via `fusion.AddClient<IService>()` call.
 - Ensure the server can host Blazor components from the client
   in SSB mode. You need to host Blazor hub + a bit
   [tweaked _Host.cshtml](https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/src/Blazor/Server/Pages/_Host.cshtml)
   capable of serving the HTML of the Blazor app for both modes.
-- Configure server to resolve any `IComputeService` to
-  its actual (local) implementation.
-- Configure client to resolve any `IComputeService` to
-  its Replica Service client.
+- Configure the server-side DI container to resolve 
+  an actual implementation of your Compute Service. 
+- Configure the client-side DI container to resolve 
+  a client of Compute Service.
 - And finally, implement something allowing clients to switch
   from SSB to WASM mode and vice versa.
 
@@ -348,4 +328,3 @@ Check out [Blazor Sample](https://github.com/servicetitan/Stl.Fusion.Samples/tre
 to see how all of this works together.
 
 #### [Next: Part 7 &raquo;](./Part07.md) | [Tutorial Home](./README.md)
-

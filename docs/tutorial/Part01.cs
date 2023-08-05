@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Stl.Async;
 using Stl.Fusion;
 using static System.Console;
 
@@ -15,15 +14,15 @@ namespace Tutorial
         {
             var services = new ServiceCollection();
             var fusion = services.AddFusion();
-            fusion.AddComputeService<CounterService>();
-            fusion.AddComputeService<CounterSumService>(); // We'll be using it later
-            fusion.AddComputeService<HelloService>();      // We'll be using it later
+            fusion.AddService<CounterService>();
+            fusion.AddService<CounterSumService>(); // We'll be using it later
+            fusion.AddService<HelloService>();      // We'll be using it later
             return services.BuildServiceProvider();
         }
         #endregion
 
         #region Part01_CounterService
-        public class CounterService
+        public class CounterService : IComputeService
         {
             private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
@@ -73,7 +72,7 @@ namespace Tutorial
         }
 
         #region Part01_CounterSumService
-        public class CounterSumService
+        public class CounterSumService : IComputeService
         {
             public CounterService Counters { get; }
 
@@ -125,7 +124,7 @@ namespace Tutorial
         }
 
         #region Part01_HelloService
-        public class HelloService
+        public class HelloService : IComputeService
         {
             [ComputeMethod]
             public virtual async Task<string> Hello(string name)

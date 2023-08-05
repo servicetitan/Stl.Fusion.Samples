@@ -35,7 +35,7 @@ public abstract class BenchmarkBase
     protected virtual async Task Run(TimeSpan duration, CancellationToken cancellationToken)
     {
         Counters.Clear();
-        var startTaskSource = TaskSource.New<Unit>(true);
+        var startTaskSource = TaskCompletionSourceExt.New<Unit>(true);
         var tasks = Enumerable.Range(0, ConcurrencyLevel)
             .Select(async i => {
                 await startTaskSource.Task.ConfigureAwait(false);

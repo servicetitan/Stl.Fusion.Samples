@@ -3,7 +3,7 @@ using Samples.HelloBlazorHybrid.Abstractions;
 
 namespace Samples.HelloBlazorHybrid.Services;
 
-public class ChatBotService : IHostedService
+public class ChatBotService : IComputeService, IHostedService
 {
     private static string Morpheus = "M0rpheus";
     private static string MorpheusMessage1 =
@@ -19,16 +19,21 @@ public class ChatBotService : IHostedService
     private static readonly HashSet<string> BotNames = new() {Morpheus, Groot, TimeBot};
 
     private readonly IChatService _chatService;
+    private readonly ICommander _commander;
 
-    public ChatBotService(IChatService chatService)
-        => _chatService = chatService;
+    public ChatBotService(IChatService chatService, ICommander commander)
+    {
+        _chatService = chatService;
+        _commander = commander;
+    }
 
     public async Task StartAsync(CancellationToken cancellationToken)
-        => await _chatService.PostMessage(new(Morpheus, MorpheusMessage1), cancellationToken);
+        => await _commander.Call(new Chat_Post(Morpheus, MorpheusMessage1), cancellationToken);
+
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     [CommandHandler(Priority = 1, IsFilter = true)]
-    protected virtual async Task OnChatPost(IChatService.PostCommand command, CancellationToken cancellationToken)
+    protected virtual async Task OnChatPost(Chat_Post command, CancellationToken cancellationToken)
     {
         await CommandContext.GetCurrent().InvokeRemainingHandlers(cancellationToken);
         if (Computed.IsInvalidating()) {
@@ -41,7 +46,7 @@ public class ChatBotService : IHostedService
         }
     }
 
-    private async Task Reaction(IChatService.PostCommand command, CancellationToken cancellationToken)
+    private async Task Reaction(Chat_Post command, CancellationToken cancellationToken)
     {
         var messageCount = await _chatService.GetMessageCount();
         switch (messageCount) {
@@ -49,7 +54,7 @@ public class ChatBotService : IHostedService
             break;
         case 2:
             await Task.Delay(1000);
-            await _chatService.PostMessage(new(Morpheus, MorpheusMessage2), default);
+            await _commander.Call(new Chat_Post(Morpheus, MorpheusMessage2), default);
             break;
         default:
             var messages = await _chatService.GetMessages(1, cancellationToken);
@@ -58,9 +63,9 @@ public class ChatBotService : IHostedService
             if (name == "" || BotNames.Contains(name))
                 break;
             if (message.ToLowerInvariant().Contains("time"))
-                await _chatService.PostMessage(new(TimeBot, DateTime.Now.ToString("F")), default);
+                await _commander.Call(new Chat_Post(TimeBot, DateTime.Now.ToString("F")), default);
             else
-                await _chatService.PostMessage(new(Groot, GrootMessage), default);
+                await _commander.Call(new Chat_Post(Groot, GrootMessage), default);
             break;
         }
     }

@@ -7,9 +7,9 @@ using Microsoft.Extensions.Hosting;
 using Samples.Caching.Common;
 using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
-using Stl.Fusion.Bridge;
-using Stl.Fusion.Client;
 using Stl.Fusion.Server;
+using Stl.Rpc;
+using Stl.Rpc.Server;
 
 namespace Samples.Caching.Server;
 
@@ -58,13 +58,11 @@ public class Startup
         }, 512);
 
         // Fusion
-        var fusion = services.AddFusion();
+        var fusion = services.AddFusion(RpcServiceMode.Server, true);
         var fusionServer = fusion.AddWebServer();
-        var fusionClient = fusion.AddRestEaseClient();
-        services.AddSingleton(new PublisherOptions() { Id = ServerSettings.PublisherId });
 
         // Fusion services
-        fusion.AddComputeService<ITenantService, TenantService>();
+        fusion.AddService<ITenantService, TenantService>();
 
         // Other services
         services.AddSingleton<DbInitializer>();
@@ -93,10 +91,10 @@ public class Startup
         // Static + Swagger
         app.UseStaticFiles();
 
-        // API controllers
+        // Endpoints
         app.UseRouting();
         app.UseEndpoints(endpoints => {
-            endpoints.MapFusionWebSocketServer();
+            endpoints.MapRpcWebSocketServer();
             endpoints.MapControllers();
         });
     }

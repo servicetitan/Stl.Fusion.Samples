@@ -5,7 +5,8 @@
 @inject IScreenshotService Screenshots
 
 @{
-    var screenshot = State.LatestNonErrorValue;
+    var screenshot = State.LastNonErrorValue;
+    var src = "data:image/jpeg;base64," + Convert.ToBase64String(screenshot.Data);
     var error = State.Error;
 }
 
@@ -22,7 +23,7 @@
 </Addons>
 
 <Paragraph Margin="Margin.Is3.OnY">
-    <img src="data:image/jpeg;base64,@screenshot.Base64Content" alt="Server screen" width="100%"/><br/>
+    <img src="@src" alt="Server screen" width="100%"/><br/>
 </Paragraph>
 
 @code {

@@ -5,7 +5,7 @@
 @inject ClientAuthHelper ClientAuthHelper
 
 @{
-    var user = State.LatestNonErrorValue.OrGuest();
+    var user = State.LastNonErrorValue.OrGuest();
     var usedAuthSchemas = user.Identities.Select(kv => kv.Key.Schema).ToHashSet();
     var unusedAuthSchemas = AuthSchemas.Where(p => !usedAuthSchemas.Contains(p.Name)).ToArray();
 }
@@ -31,7 +31,7 @@
     [Parameter]
     public string Why { get; set; } = "";
 
-    protected override Task<User?> ComputeState(CancellationToken cancellationToken) 
+    protected override Task<User?> ComputeState(CancellationToken cancellationToken)
         => Auth.GetUser(Session, cancellationToken);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

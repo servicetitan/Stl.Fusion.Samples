@@ -1,6 +1,5 @@
 @page "/chat"
 @using System.Threading
-@using Stl.Fusion.Authentication.Commands
 @inherits MixedStateComponent<ChatPage.Model, ChatPage.LocalsModel>
 @inject Session Session
 @inject IAuth Auth
@@ -10,7 +9,7 @@
 
 @{
     var locals = MutableState.Value;
-    var state = State.LatestNonErrorValue;
+    var state = State.LastNonErrorValue;
     var user = state.User;
     var lastPage = state.Messages;
     var error = State.Error;
@@ -51,7 +50,7 @@
             </Addon>
         </Addons>
     </form>
-} 
+}
 
 <Table Narrow="true" Striped="true" Margin="Margin.Is3.OnY">
     <TableHeader ThemeContrast="ThemeContrast.Dark">
@@ -152,7 +151,7 @@
     private async Task SetName()
     {
         var locals = MutableState.Value;
-        var command = new EditUserCommand(Session, locals.Name ?? "");
+        var command = new Auth_EditUser(Session, locals.Name ?? "");
         var result = await UICommander.Run(LocalCommand.New(() => {
             if (command.Name!.Length < 4)
                 throw new ApplicationException("The name should be at least 4 character long.");
@@ -165,7 +164,7 @@
 
     private async Task Post()
     {
-        var result = await UICommander.Run(new IChatService.PostCommand(MutableState.Value.Message, Session));
+        var result = await UICommander.Run(new Chat_Post(MutableState.Value.Message, Session));
         if (result.HasError)
             return; // The error will be displayed in the UI anyway
 

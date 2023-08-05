@@ -372,8 +372,8 @@ public class AppV1 : AppBase
     {
         var services = new ServiceCollection();
         services.AddFusion(fusion => {
-            fusion.AddComputeService<IProductService, InMemoryProductService>();
-            fusion.AddComputeService<ICartService, InMemoryCartService>();
+            fusion.AddService<IProductService, InMemoryProductService>();
+            fusion.AddService<ICartService, InMemoryCartService>();
         });
         ClientServices = HostServices = services.BuildServiceProvider();
     }
@@ -386,7 +386,7 @@ to depict it in symbols: 🧝=🥣+🦄
 
 Seriously, so how does it work?
 
-`AddComputeService` registers so-called [Compute Service](Part01.md) -
+`AddService` registers so-called [Compute Service](Part01.md) -
 a singleton, which proxy type is generated in the runtime,
 but derives from the type you provide, i.e.
 `InMemoryProductService` / `InMemoryCartService` in above case.
@@ -659,8 +659,8 @@ Here is what code inside `AppV2` constructor does:
 ```cs
 // This is exactly the same Compute Service registration code you saw earlier
 services.AddFusion(fusion => {
-    fusion.AddComputeService<IProductService, DbProductService>();
-    fusion.AddComputeService<ICartService, DbCartService>();
+    fusion.AddService<IProductService, DbProductService>();
+    fusion.AddService<ICartService, DbCartService>();
 });
 
 // This also a usual way to add a pooled IDbContextFactory -
@@ -903,7 +903,7 @@ client for any Compute Service that mimics its behavior
 completely, including everything related to invalidation
 and dependency tracking.
 
-Such clients are called [Replica Services](Part04.md).
+Such clients are called [Compute Service Clients](Part04.md).
 They are Compute Services too - you can even cast them to
 `IComputeService` as any other compute service. But:
 
@@ -936,17 +936,11 @@ We'll start from `Host` container configuration:
 
 ```cs
 services.AddFusion(fusion => {
-    fusion.AddComputeService<IProductService, DbProductService>();
-    fusion.AddComputeService<ICartService, DbCartService>();
+    fusion.AddServer<IProductService, DbProductService>(); // Notice we use "AddServer" here instead of "AddService" 
+    fusion.AddServer<ICartService, DbCartService>(); // Same here
     fusion.AddWebServer(); // This is the only new line. 
 });
 ```
-
-`fusion.AddWebServer()` adds its WebSocket server middleware, `IPublisher`,
-and configures ASP.NET MVC to use JSON.NET - currently you can't
-use any other serializers with Fusion, but we'll definitely add support
-for more of them in future (`MessagePack` is the most likely next option
-to support).
 
 Let's look at web app configuration now:
 
@@ -956,131 +950,24 @@ app.UseWebSockets(new WebSocketOptions() { // We obviously need this
 });
 app.UseRouting();
 app.UseEndpoints(endpoints => {
-    endpoints.MapFusionWebSocketServer(); // Straightforward, right?
-    endpoints.MapControllers(); // And this is straightforward too
+    endpoints.MapRpcWebSocketServer(); // Straightforward, right?
 });
 ```
-
-Ok, and how Fusion controller looks like?
-
-```cs
-[Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors, UseDefaultSession]
-public class CartController : ControllerBase, ICartService
-{
-    private readonly ICartService _cartService;
-
-    public CartController(ICartService cartService) 
-        => _cartService = cartService;
-
-    // Commands
-
-    [HttpPost]
-    public Task Edit([FromBody] EditCommand<Cart> command, CancellationToken cancellationToken = default)
-        => _cartService.Edit(command, cancellationToken);
-
-    // Queries
-
-    [HttpGet, Publish]
-    public Task<Cart?> Get(string id, CancellationToken cancellationToken = default)
-        => _cartService.Get(id, cancellationToken);
-
-    [HttpGet, Publish]
-    public Task<decimal> GetTotal(string id, CancellationToken cancellationToken = default)
-        => _cartService.GetTotal(id, cancellationToken);
-}
-```
-
-Key points on controllers:
-
-- `[JsonifyErrors]` allows Fusion client to deserialize similar exceptions:
-  it retains only the exception type and message, but usually this is still
-  better than seeing a generic exception type for any error happening on
-  server. But you're free to replace it with whatever logic you like ;)
-- `[UseDefaultSession]` sets empty `Session`-typed argument values 
-  and `ISessionCommand.Session` property value to
-  `ISessionResolver.Session` value, which is set to cookie-based
-  session by `SessionMiddleware`. 
-- For command handler endpoints, you just need to forward the call by calling
-  the underlying command handler or `ICommander.Call`.
-  And typically you need to apply `[FromBody]` attribute to your
-  command type, because otherwise it has a little chance to properly
-  serialize-deserialize.
-- For compute method endpoints, you need to similarly route the call to
-  the corresponding compute method, but importantly, you also need to add
-  `[Publish]` filter. This filter does all the magic required to get
-  invalidation notifications via WebSocket channel.
-
-And that's it - i.e. it's 95% boilerplate code. Fusion doesn't auto-generate
-these controllers only because these endpoints are absolutely normal APIs,
-and so you might want to version them, name them in special way, use
-preferred argument binding, etc.
-
-> ☝ Did I mention these endpoints are actually callable even without Fusion?
-> You can try to call them directly e.g. [here](https://fusion-samples.servicetitan.com/swagger/index.html).
-> You might need to find your own `sessionId` or `userId` first - just perform
-> the same action [in the UI](https://fusion-samples.servicetitan.com/)
-> and see the arguments in e.g. Network tab in Chrome DevTools.
 
 Let's switch to the client side code now. The client-side container uses
 the following configuration:
 
 ```cs
 services.AddFusion(fusion => {
-    fusion.AddRestEaseClient(client => {
-        // Ensure HTTP clients are configured to get correct base URI
-        client.ConfigureHttpClientFactory((c, name, options) => {
-            var apiBaseUri = new Uri($"{baseUri}api/");
-            options.HttpClientActions.Add(httpClient => httpClient.BaseAddress = apiBaseUri);
-        });
-        // Ensure WebSocket channel will connect to the right endpoint
-        client.ConfigureWebSocketChannel((c, options) => { options.BaseUri = baseUri; });
-        // And finally, register actual Replica Services
-        client.AddReplicaService<IProductService, IProductClientDef>();
-        client.AddReplicaService<ICartService, ICartClientDef>();
-    });
+    fusion.Rpc.AddWebSocketClient(baseUri);
+    fusion.AddClient<IProductService>(); // Notice we use "AddClient" here instead of "AddService" 
+    fusion.AddClient<ICartService>(); // Same here
 });
 ```
 
-The beginning is straightforward. Let's look at `AddReplicaService` -
-more precisely, its generic arguments:
-
-- The first one is clearly the service we are going to implement -
-  it's the same `IProductService` / `ICartService` from `Abstractions.cs`
-  we've used everywhere earlier.
-- And the second one is [RestEase](https://github.com/canton7/RestEase)
-  "definition" of the client for this Replica Service.
-  It has to be an identical interface in terms of method names and
-  signatures, but with RestEase attributes telling how to "map" it
-  to the controller endpoints.
-
-This is how client interface looks for `ICartService` (see `Clients.cs` file):
-
-```cs
-[BasePath("cart")]
-public interface ICartClientDef
-{
-    [Post("edit")]
-    Task Edit([Body] EditCommand<Cart> command, CancellationToken cancellationToken);
-    [Get("tryGet")]
-    Task<Cart?> Get(string id, CancellationToken cancellationToken);
-    [Get("getTotal")]
-    Task<decimal> GetTotal(string id, CancellationToken cancellationToken);
-}
-```
-
-As you see, it's also 90% boilerplate code, and it's sole purpose
-is to tell [RestEase](https://github.com/canton7/RestEase) how to
-build a client that "matches" the controller. As you might guess,
-Fusion's Replica Services use such RestEase-generated clients
-to hit these endpionts.
-
-So where can you use such clients? Actually, everywhere!
-
+Where can you use such clients? Actually, everywhere!
 - In Blazor WebAssembly - obvously
-- In desktop apps - there is no Blazor, but as you might guess
-  already, Fusion's integration with Blazor is super thin,
-  and all it offers can work equally well in desktop apps too!
+- In console or MAUI apps
 - Finally, even on the server-side - nothing prevents you to e.g.
   aggregate the data on a dedicated set of servers there,
   but keep the results of aggregation similarly reactive to
@@ -1133,21 +1020,21 @@ And if you run this app, it will:
 - Use the client connecting to `ExtraHost` to make the changes.
 
 So if you see it reacts to some change, it means that
-both Replica Service and multi-host invalidation works.
+both Compute Service client and multi-host invalidation works.
 And they really do!
 
 And congrats - this is the end of this part, and now you know almost everything!
 The parts we didn't touch at all are:
 
 * [Part 3: State: IState&lt;T&gt; and Its Flavors](./Part03.md).
-  The key abstraction it describes is `LiveState<T>` -
+  The key abstraction it describes is `ComputedState<T>` -
   the type that implements "wait for change, make a delay, recompute"
   loop similar to the one we manually coded here, but in more robust
   and convenient way.
 * [Part 6: Real-time UI in Blazor Apps](./Part06.md) -
-  you'll learn how `LiveState<T>` is used by
+  you'll learn how `ComputedState<T>` is used by
   `LiveComponent<T>` to power real-time updates in Blazor.
-* [Part 5: Caching and Fusion on Server-Side Only](./Part05.md) -
+* [Part 5: Fusion on Server-Side Only](./Part05.md) -
   read it to fully understand how Fusion actually caches `IComputed`
   instances, and what are the levers you can use to tweak its
   caching behavior.

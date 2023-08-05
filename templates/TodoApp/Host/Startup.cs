@@ -5,30 +5,26 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi.Models;
 using Templates.TodoApp.Services;
-using Stl.DependencyInjection;
-using Stl.Fusion.Blazor;
-using Stl.Fusion.Bridge;
-using Stl.Fusion.Client;
-using Stl.Fusion.Server;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Stl.DependencyInjection;
+using Stl.Fusion.Blazor;
+using Stl.Fusion.Blazor.Authentication;
+using Stl.Fusion.Server;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.EntityFramework.Npgsql;
-using Stl.Fusion.EntityFramework.Operations;
 using Stl.Fusion.Extensions;
-using Stl.Fusion.Operations.Reprocessing;
-using Stl.Fusion.Server.Authentication;
-using Stl.Fusion.Server.Controllers;
+using Stl.Fusion.Server.Middlewares;
 using Stl.IO;
 using Stl.Multitenancy;
+using Stl.Rpc;
+using Stl.Rpc.Server;
 using Templates.TodoApp.Abstractions;
 using Templates.TodoApp.UI;
 
@@ -67,6 +63,11 @@ public class Startup
             }
         });
 
+        // IComputeService validation should be off in release
+#if !DEBUG
+        InterceptorBase.Options.Defaults.IsValidationEnabled = false;
+#endif
+
         services.AddSettings<HostSettings>();
 #pragma warning disable ASP0000
         HostSettings = services.BuildServiceProvider().GetRequiredService<HostSettings>();
@@ -77,7 +78,7 @@ public class Startup
             DefaultIsolationLevel = IsolationLevel.RepeatableRead,
         });
         services.AddDbContextServices<AppDbContext>(db => {
-            // Uncomment if you'll be using AddRedisOperationLogChangeTracking 
+            // Uncomment if you'll be using AddRedisOperationLogChangeTracking
             // db.AddRedisDb("localhost", "Fusion.Samples.TodoApp");
             db.AddOperations(operations => {
                 operations.ConfigureOperationLogReader(_ => new() {
@@ -88,9 +89,7 @@ public class Startup
                 operations.AddFileBasedOperationLogChangeTracking();
                 // db.AddRedisOperationLogChangeTracking();
             });
-            if (!HostSettings.UseInMemoryAuthService)
-                db.AddAuthentication<string>();
-            db.AddKeyValueStore();
+
             if (HostSettings.UseMultitenancy) {
                 db.AddMultitenancy(multitenancy => {
                     multitenancy.UseMultitenantMode();
@@ -114,31 +113,35 @@ public class Startup
         });
 
         // Fusion services
-        services.AddSingleton(new PublisherOptions() { Id = HostSettings.PublisherId });
-        var fusion = services.AddFusion();
+        var fusion = services.AddFusion(RpcServiceMode.Server, true);
         var fusionServer = fusion.AddWebServer();
+        // fusionServer.AddMvc().AddControllers();
+        if (HostSettings.UseInMemoryAuthService)
+            fusion.AddInMemoryAuthService();
+        else
+            fusion.AddDbAuthService<AppDbContext, string>();
+        fusion.AddDbKeyValueStore<AppDbContext>();
+
         if (HostSettings.UseMultitenancy)
             fusionServer.ConfigureSessionMiddleware(_ => new() {
                 TenantIdExtractor = TenantIdExtractors.FromSubdomain(".localhost")
                     .Or(TenantIdExtractors.FromPort((5005, 5010)))
                     .WithValidator(tenantId => tenantId.Value.StartsWith("tenant")),
             });
-        var fusionClient = fusion.AddRestEaseClient();
-        var fusionAuth = fusion.AddAuthentication().AddServer(
-            signInControllerOptionsFactory: _ => new() {
-                DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
-                SignInPropertiesBuilder = (_, properties) => {
-                    properties.IsPersistent = true;
-                }
-            },
-            serverAuthHelperOptionsFactory: _ => new() {
-                NameClaimKeys = Array.Empty<string>(),
-            });
+        fusionServer.ConfigureAuthEndpoint(_ => new() {
+            DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
+            SignInPropertiesBuilder = (_, properties) => {
+                properties.IsPersistent = true;
+            }
+        });
+        fusionServer.ConfigureServerAuthHelper(_ => new() {
+            NameClaimKeys = Array.Empty<string>(),
+        });
         fusion.AddSandboxedKeyValueStore();
         fusion.AddOperationReprocessor();
 
         // Compute service(s)
-        fusion.AddComputeService<ITodoService, TodoService>();
+        fusion.AddService<ITodos, Todos>();
 
         // Shared services
         StartupHelper.ConfigureSharedServices(services);
@@ -178,14 +181,7 @@ public class Startup
         services.AddRouting();
         services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
         services.AddServerSideBlazor(o => o.DetailedErrors = true);
-        fusionAuth.AddBlazor(o => { }); // Must follow services.AddServerSideBlazor()!
-
-        // Swagger & debug tools
-        services.AddSwaggerGen(c => {
-            c.SwaggerDoc("v1", new OpenApiInfo {
-                Title = "Templates.TodoApp API", Version = "v1"
-            });
-        });
+        fusion.AddBlazor().AddAuthentication().AddPresenceReporter(); // Must follow services.AddServerSideBlazor()!
     }
 
     private void ConfigureTenantDbContext(IServiceProvider services, Tenant tenant, DbContextOptionsBuilder db)
@@ -221,11 +217,10 @@ public class Startup
         if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
             // This is a regular build, not a build produced w/ "publish",
             // so we remap wwwroot to the client's wwwroot folder
-            wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net6.0/wwwroot"));
+            wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net7.0/wwwroot"));
         Env.WebRootPath = wwwRootPath;
         Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
         StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);
-
         if (Env.IsDevelopment()) {
             app.UseDeveloperExceptionPage();
             app.UseWebAssemblyDebugging();
@@ -241,22 +236,19 @@ public class Startup
         });
         app.UseFusionSession();
 
-        // Static + Swagger
+        // Blazor + static files
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
-        app.UseSwagger();
-        app.UseSwaggerUI(c => {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
-        });
 
-        // API controllers
+        // Endpoints
         app.UseRouting();
         app.UseAuthentication();
-        app.UseAuthorization();
         app.UseEndpoints(endpoints => {
             endpoints.MapBlazorHub();
-            endpoints.MapFusionWebSocketServer();
-            endpoints.MapControllers();
+            endpoints.MapRpcWebSocketServer();
+            endpoints.MapFusionAuth();
+            endpoints.MapFusionBlazorSwitch();
+            // endpoints.MapControllers();
             endpoints.MapFallbackToPage("/_Host");
         });
     }

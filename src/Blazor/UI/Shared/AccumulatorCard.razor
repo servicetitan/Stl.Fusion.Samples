@@ -7,7 +7,7 @@
 @inject UICommander UICommander
 
 @{
-    var accumulator = State.LatestNonErrorValue;
+    var accumulator = State.LastNonErrorValue;
     var locals = MutableState.Value;
     var error = State.Error;
 }
@@ -47,7 +47,7 @@
         public double Value => double.TryParse(ValueText, out var v) ? v : 0;
     }
 
-    [Inject] private UIActionTracker UIActionTracker { get; init; } = null!; 
+    [Inject] private UIActionTracker UIActionTracker { get; init; } = null!;
 
     [Parameter] public string CssClass { get; set; } = "";
     [Parameter] public TimeSpan UpdateDelay { get; set; } = TimeSpan.FromSeconds(1);

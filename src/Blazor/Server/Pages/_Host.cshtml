@@ -3,7 +3,7 @@
 @using Samples.Blazor.UI
 @using Stl.Fusion.Blazor
 @using Stl.Fusion.Server.Authentication
-@using Stl.Fusion.Server.Controllers
+@using Stl.Fusion.Server.Endpoints
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @inject ServerAuthHelper ServerAuthHelper
 @inject BlazorCircuitContext BlazorCircuitContext
@@ -11,7 +11,7 @@
     await ServerAuthHelper.UpdateAuthState(HttpContext);
     var authSchemas = await ServerAuthHelper.GetSchemas(HttpContext);
     var sessionId = ServerAuthHelper.Session.Id.Value;
-    var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
+    var isServerSideBlazor = BlazorSwitchEndpoint.IsServerSideBlazor(HttpContext);
     var isCloseWindowRequest = ServerAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
     Layout = null;
 }
@@ -26,7 +26,7 @@
     <link href="css/app.css" rel="stylesheet" />
 
     <partial name="Blazorise.Head" />
-    <script src="_content/Stl.Fusion.Blazor/scripts/fusionAuth.js"></script>
+    <script src="_content/Stl.Fusion.Blazor.Authentication/scripts/fusionAuth.js"></script>
     <script>
         window.FusionAuth.schemas = "@authSchemas";
     </script>

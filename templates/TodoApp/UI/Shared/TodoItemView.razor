@@ -1,3 +1,4 @@
+@inherits FusionComponentBase
 @inject Session Session
 @inject UICommander UICommander
 @inject ILogger<TodoItemView> Log
@@ -27,13 +28,10 @@
     [Parameter, ParameterComparer(typeof(ByValueParameterComparer))]
     public Todo Value { get; set; } = null!;
 
-    public override Task SetParametersAsync(ParameterView parameters)
-        => this.HasChangedParameters(parameters) ? base.SetParametersAsync(parameters) : Task.CompletedTask;
-
     private Task InvertDone()
     {
         var todo = Value with { IsDone = !Value.IsDone };
-        return UICommander.Run(new AddOrUpdateTodoCommand(Session, todo));
+        return UICommander.Run(new Todos_AddOrUpdate(Session, todo));
     }
 
     private Task UpdateTitle(string title)
@@ -42,9 +40,9 @@
         if (Value.Title == title)
             return Task.CompletedTask;
         var todo = Value with { Title = title };
-        return UICommander.Run(new AddOrUpdateTodoCommand(Session, todo));
+        return UICommander.Run(new Todos_AddOrUpdate(Session, todo));
     }
 
     private Task Remove()
-        => UICommander.Run(new RemoveTodoCommand(Session, Value.Id));
+        => UICommander.Run(new Todos_Remove(Session, Value.Id));
 }

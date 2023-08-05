@@ -24,7 +24,6 @@
     <Using Include="Stl.CommandR.Configuration" />
     <Using Include="Stl.CommandR.Commands" />
     <Using Include="Stl.Fusion" />
-    <Using Include="Stl.Fusion.Authentication" />
     <Using Include="Stl.Fusion.Operations" />
     <Using Include="Stl.Reflection" />
     <Using Include="Stl.Serialization" />

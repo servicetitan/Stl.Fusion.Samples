@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using Samples.HelloBlazorHybrid.Abstractions;
 using Samples.HelloBlazorHybrid.Services;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.Server;
+using Stl.Rpc.Server;
 
 namespace Samples.HelloBlazorHybrid.Server;
 
@@ -55,10 +55,10 @@ public class Startup
         services.AddScoped<BlazorModeHelper>();
 
         // Fusion services
-        fusion.AddComputeService<ICounterService, CounterService>();
-        fusion.AddComputeService<IWeatherForecastService, WeatherForecastService>();
-        fusion.AddComputeService<IChatService, ChatService>();
-        fusion.AddComputeService<ChatBotService>();
+        fusion.AddService<ICounterService, CounterService>();
+        fusion.AddService<IWeatherForecastService, WeatherForecastService>();
+        fusion.AddService<IChatService, ChatService>();
+        fusion.AddService<ChatBotService>();
         // This is just to make sure ChatBotService.StartAsync is called on startup
         services.AddHostedService(c => c.GetRequiredService<ChatBotService>());
 
@@ -74,13 +74,6 @@ public class Startup
         services.AddRouting();
         services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
         services.AddServerSideBlazor(o => o.DetailedErrors = true);
-
-        // Swagger & debug tools
-        services.AddSwaggerGen(c => {
-            c.SwaggerDoc("v1", new OpenApiInfo {
-                Title = "Samples.Blazor.Server API", Version = "v1"
-            });
-        });
     }
 
     public void Configure(IApplicationBuilder app, ILogger<Startup> log)
@@ -120,16 +113,12 @@ public class Startup
         // Static + Swagger
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
-        app.UseSwagger();
-        app.UseSwaggerUI(c => {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
-        });
 
-        // API controllers
+        // API endpoints
         app.UseRouting();
         app.UseEndpoints(endpoints => {
             endpoints.MapBlazorHub();
-            endpoints.MapFusionWebSocketServer();
+            endpoints.MapRpcWebSocketServer();
             endpoints.MapControllers();
             endpoints.MapFallbackToPage("/_Host");
         });

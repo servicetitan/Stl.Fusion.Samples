@@ -1,6 +1,6 @@
 namespace Samples.HelloBlazorServer.Services;
 
-public class CounterService
+public class CounterService : IComputeService
 {
     private readonly object _lock = new();
     private int _count;

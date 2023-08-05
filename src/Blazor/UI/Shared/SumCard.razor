@@ -4,7 +4,7 @@
 @inject ISumService SumService
 
 @{
-    var sum = State.LatestNonErrorValue;
+    var sum = State.LastNonErrorValue;
     var locals = MutableState.Value;
     var error = State.Error;
 }
@@ -44,7 +44,7 @@
         public double ValueB { get; set; }
     }
 
-    [Inject] private UIActionTracker UIActionTracker { get; init; } = null!; 
+    [Inject] private UIActionTracker UIActionTracker { get; init; } = null!;
 
     [Parameter] public string CssClass { get; set; } = "";
     [Parameter] public string Title { get; set; } = "Sum";

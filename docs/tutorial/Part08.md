@@ -116,11 +116,10 @@ A few important things to keep in mind:
 * Supporting multiple ways of identifying a tenant might be a good idea
   as well - especially if your tenants are actually partitions
   (the following section explains this).
-* Finally, if you use [Replica Services], keep in mind the requests
-  they send should bear the same token, and moreover, websocket
-  connections to `IPublisher`-s should be properly routed by
-  load balancers as well (i.e. publisher ID should also contain
-  tenant identification info).
+* Finally, if you use [Compute Service Clients], keep in mind the requests
+  they send should bear the same token, and moreover, WebSocket
+  connections to server should be properly routed to the right servers via
+  load balancers.
 
 ### Distributed Invalidation
 
@@ -237,7 +236,7 @@ your partitions as "tenants".
 ## Scaling Reads via Replica Hosts
 
 Fusion brings a pretty unique way of scaling read workloads:
-since [Replica Services] are almost identical to the original
+since [Compute Service Clients] are almost identical to the original
 [Compute Services] including the way they cache the outputs,
 you can re-expose them as the next layer of hosts (let's call them
 "replica hosts") to scale read workload.
@@ -363,7 +362,7 @@ your new service will need with a given caching options, and so on.
 In other words, of course there are details you need to factor in
 to use it efficiently.
 
-And if you look at its [Replica Services], you'll quickly conclude
+And if you look at its [Compute Service Clients], you'll quickly conclude
 all the same statements are equally applicable to them as well -
 the only difference is that this `O(1)` cost can have a much higher
 (but still fixed) absolute value there, because every computation and
@@ -393,6 +392,6 @@ the main point is: **yes, Fusion-based services scale**.
 
 [Consistent Hashing]: https://en.wikipedia.org/wiki/Consistent_hashing
 [Rendezvous Hashing]: https://medium.com/i0exception/rendezvous-hashing-8c00e2fb58b0
-[Replica Services]: ./Part04.md
+[Compute Service Clients]: ./Part04.md
 [Compute Services]: ./Part01.md
 [IState]: ./Part03.md

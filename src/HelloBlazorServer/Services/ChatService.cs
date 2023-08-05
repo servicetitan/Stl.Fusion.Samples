@@ -1,15 +1,13 @@
 namespace Samples.HelloBlazorServer.Services;
 
-public class ChatService
+public class ChatService : IComputeService
 {
-    public record PostCommand(string Name, string Message) : ICommand<Unit>;
-
     private volatile ImmutableList<(DateTime Time, string Name, string Message)> _messages =
         ImmutableList<(DateTime, string, string)>.Empty;
     private readonly object _lock = new();
 
     [CommandHandler]
-    public virtual Task PostMessage(PostCommand command, CancellationToken cancellationToken = default)
+    public virtual Task PostMessage(Chat_Post command, CancellationToken cancellationToken = default)
     {
         if (Computed.IsInvalidating()) {
             _ = GetMessageCount();
@@ -40,3 +38,6 @@ public class ChatService
     [ComputeMethod]
     protected virtual Task<Unit> PseudoGetAnyTail() => TaskExt.UnitTask;
 }
+
+// ReSharper disable once InconsistentNaming
+public record Chat_Post(string Name, string Message) : ICommand<Unit>;

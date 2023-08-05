@@ -24,7 +24,7 @@ public interface IChatClientDef
 {
     // Commands
     [Post(nameof(Post))]
-    Task<ChatMessage> Post([Body] IChatService.PostCommand command, CancellationToken cancellationToken = default);
+    Task<ChatMessage> Post([Body] Chat_Post command, CancellationToken cancellationToken = default);
 
     // Queries
     [Get(nameof(GetChatTail))]

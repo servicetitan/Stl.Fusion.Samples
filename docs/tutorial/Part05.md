@@ -1,8 +1,8 @@
-# Part 5: Caching and Fusion on Server-Side Only
+# Part 5: Fusion on Server-Side Only
 
-Even though Fusion supports RPC, you can use it on server-side only,
-and performance is the main benefit of this. Below is the output of
-[Caching Sample](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/Caching):
+Even though Fusion supports RPC, you can use it on server-side to cache recurring computations. 
+Below is the output of
+[Caching Sample](https://github.com/servicetitan/Stl.Fusion.Samples/tree/master/src/Caching) (slightly outdated):
 
 ```text
 Local services:
@@ -12,7 +12,7 @@ Regular Service [-> EF Core -> SQL Server]:
   Reads         : 25.05K operations/s
 
 Remote services:
-Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
+Fusion's Compute Service Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
   Reads         : 20.29M operations/s
 RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
   Reads         : 127.96K operations/s
@@ -46,7 +46,7 @@ and returns the same value as its input. We'll be using it to
 find out when `IComputed` instances are actually reused.
 
 ``` cs --editable false --region Part05_Service1 --source-file Part05.cs
-public class Service1
+public class Service1 : IComputeService
 {
     [ComputeMethod]
     public virtual async Task<string> Get(string key)
@@ -61,10 +61,10 @@ public static IServiceProvider CreateServices()
     var services = new ServiceCollection();
     services.AddSingleton<ISwapService, DemoSwapService>();
     services.AddFusion()
-        .AddComputeService<Service1>()
-        .AddComputeService<Service2>() // We'll use Service2 & other services later
-        .AddComputeService<Service3>()
-        .AddComputeService<Service4>();
+        .AddService<Service1>()
+        .AddService<Service2>() // We'll use Service2 & other services later
+        .AddService<Service3>()
+        .AddService<Service4>();
     return services.BuildServiceProvider();
 }
 ```
@@ -139,7 +139,7 @@ a computed for its output to ensure its dependencies
 are cached too? Let's test this:
 
 ``` cs --editable false --region Part05_Service2 --source-file Part05.cs
-public class Service2
+public class Service2 : IComputeService
 {
     [ComputeMethod]
     public virtual async Task<string> Get(string key)
@@ -289,7 +289,7 @@ Let's look at how they work.
 Let's just add `MinCacheDuration` to the service we were using previously:
 
 ``` cs --editable false --region Part05_Service3 --source-file Part05.cs
-public class Service3
+public class Service3 : IComputeService
 {
     [ComputeMethod]
     public virtual async Task<string> Get(string key)
@@ -384,132 +384,6 @@ A few tips on how to use it:
   actually, you can use any implementation, though if Fusion sees you return
   `Stl.Frozen.IFrozen` from compute method, it automatically freezes the output.
 
-### [Swap] attribute
-
-Let's jump straight to the example:
-
-``` cs --editable false --region Part05_Service4 --source-file Part05.cs
-public class Service4
-{
-    [ComputeMethod(MinCacheDuration = 1), Swap(0.1)]
-    public virtual async Task<string> Get(string key)
-    {
-        WriteLine($"{nameof(Get)}({key})");
-        return key;
-    }
-}
-
-public class DemoSwapService : SimpleSwapService
-{
-    public DemoSwapService(Options? options, IServiceProvider services)
-        : base(options ?? new Options(), services) { }
-
-    protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)
-    {
-        WriteLine($"Swap: {key} <- {value}");
-        return base.Store(key, value, cancellationToken);
-    }
-
-    protected override ValueTask<bool> Touch(string key, CancellationToken cancellationToken)
-    {
-        WriteLine($"Swap: {key} <- [touch]");
-        return base.Touch(key, cancellationToken);
-    }
-
-    protected override async ValueTask<string?> Load(string key, CancellationToken cancellationToken)
-    {
-        var result = await base.Load(key, cancellationToken);
-        WriteLine($"Swap: {key} -> {result}");
-        return result;
-    }
-}
-```
-
-``` cs --region Part05_Caching6 --source-file Part05.cs
-var service = CreateServices().GetRequiredService<Service4>();
-WriteLine(await service.Get("a"));
-await Task.Delay(500);
-GC.Collect();
-WriteLine("Task.Delay(500) and GC.Collect()");
-WriteLine(await service.Get("a"));
-await Task.Delay(1500);
-GC.Collect();
-WriteLine("Task.Delay(1500) and GC.Collect()");
-WriteLine(await service.Get("a"));
-```
-
-The output:
-
-```text
-Get(a)
-a
-Swap: Castle.Proxies.Service4Proxy|@26|a <- [touch]
-Swap: Castle.Proxies.Service4Proxy|@26|a <- {"$type":"Stl.ResultBox`1[[System.String, System.Private.CoreLib]], Stl","UnsafeValue":"a"}
-Task.Delay(500) and GC.Collect()
-Swap: Castle.Proxies.Service4Proxy|@26|a -> Some({"$type":"Stl.ResultBox`1[[System.String, System.Private.CoreLib]], Stl","UnsafeValue":"a"})
-a
-Swap: Castle.Proxies.Service4Proxy|@26|a <- [touch]
-Task.Delay(1500) and GC.Collect()
-Get(a)
-a
-```
-
-So what's going on here?
-
-* `[ComputeMethod(MinCacheDuration = 1)]` tells the `IComputed` describing the output
-  of `Get` should stay in RAM for 1s
-* `[Swap(0.1)]` tells its value should be swapped out once 0.1s pass after
-  the last attempt to use it, which, in turn, means that if someone tries
-  to access it after it was swapped, Fusion will try to load it back, and
-  it might take some time.
-* Our `DemoSwapService` is inherited from `SimpleSwapService`,
-  which stores keys and values in internal `ConcurrentDictionary<string, string>`.
-
-And as you see in the output, that's exactly what's going on.
-Maybe just the last part of it looks weird - i.e. it seems
-that once keep alive time passes, the value, even though it was
-swapped out, becomes unusable - why?
-
-Wait... Why do we need both `MinCacheDuration` and `[Swap]`?
-Why there is `[Swap]` at the first place? Why Fusion can't
-simply store every `[IComputed]` in external cache?
-
-If you read everything till this point, you probably already know
-the answers:
-
-* Storing the value of `IComputed` externally isn't enough -
-  you also need to store refs to dependencies and dependants,
-  otherwise the invalidation won't work properly.
-  And even though the value might stay the same, the set of dependants
-  may change over time - moreover, these changes could be
-  nearly as frequent as reads of this value!
-* In addition, the external cache you use must ensure that while
-  some dependant stays in cache, all of its dependencies stay there too.
-  And how many cache implementations do support this?
-
-In other words, storing the graph of dependencies in external cache
-seems quite inefficient due to frequent updates and the requirement
-to keep dependencies alive while their dependants are alive.
-
-What's totally reasonable though is to cache just values - obviously,
-assuming these values are expected to be large enough.
-And that's exactly what swapping does. All you need is to implement
-a service that actually does this. Sorry, but for now there is
-no built-in implementations for popular caches, but you are welcome
-to contribute, and inheriting from `SimpleSwapService<string>` or
-`SwapServiceBase` could help you a lot to add it.
-
-You probably understand now that `MinCacheDuration` should be
-higher (typically - much higher) than `SwapTime`:
-once `MinCacheDuration` passes, you may loose the `IComputed` instance.
-And once this happens, its "swapped out" value becomes unusable too,
-because its dependency graph is destroyed, and thus there
-is no way to tell if it's consistent or not now without recomputing it
-(and building a new dependency graph).
-
-This explains why the output shows the value was recomputed after 1500ms delay,
-even though it wasn't recomputed after 500ms delay.
-
 **P.S.** If you love algorithms and data structures, check out
 [ConcurrentTimerSet<TTimer>](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl/Time/ConcurrentTimerSet.cs) -
 Fusion uses its own implementation of timers to ensure they
@@ -523,4 +397,3 @@ basically, a [Radix Heap](http://ssp.impulsetrain.com/radix-heap.html)
 supporting `O(1)` find and delete operations.
 
 #### [Next: Part 6 &raquo;](./Part06.md) | [Tutorial Home](./README.md)
-

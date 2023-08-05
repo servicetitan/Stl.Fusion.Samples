@@ -2,7 +2,7 @@ using System.Security.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Samples.Blazor.Abstractions;
-using Stl.Fusion.Authentication.Commands;
+using Stl.Fusion.Authentication;
 using Stl.Fusion.EntityFramework;
 
 namespace Samples.Blazor.Server.Services;
@@ -22,7 +22,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
         ILogger<ChatService>? log = null)
         : base(services)
     {
-        _log = log ??= NullLogger<ChatService>.Instance;
+        _log = log ?? NullLogger<ChatService>.Instance;
         _auth = auth;
         _authBackend = authBackend;
         _forismaticClient = forismaticClient;
@@ -31,7 +31,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
     // Commands
 
     public virtual async Task<ChatMessage> Post(
-        IChatService.PostCommand command, CancellationToken cancellationToken = default)
+        Chat_Post command, CancellationToken cancellationToken = default)
     {
         var (text, session) = command;
         var context = CommandContext.GetCurrent();
@@ -97,7 +97,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
 
         // Composing the end result
         return new ChatMessageList() {
-            Messages = messages.ToImmutableArray(), 
+            Messages = messages.ToImmutableArray(),
             Users = users.ToImmutableDictionary(u => u.Id.Value),
         };
     }
@@ -108,7 +108,7 @@ public class ChatService : DbServiceBase<AppDbContext>, IChatService
     protected virtual Task<Unit> PseudoGetAnyChatTail() => TaskExt.UnitTask;
 
     [CommandHandler(IsFilter = true, Priority = 1)]
-    protected virtual async Task OnSignIn(SignInCommand command, CancellationToken cancellationToken)
+    protected virtual async Task OnSignIn(AuthBackend_SignIn command, CancellationToken cancellationToken)
     {
         var context = CommandContext.GetCurrent();
         await context.InvokeRemainingHandlers(cancellationToken);

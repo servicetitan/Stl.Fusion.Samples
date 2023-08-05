@@ -114,7 +114,7 @@
         <rect x="300" y="188" width="250" height="26" fill="url(#mx-gradient-e6e6e6-1-ffffff-1-s-0)" stroke="#23445d" pointer-events="none"/>
         <g fill="#000000" font-family="Helvetica" pointer-events="none" clip-path="url(#mx-clip-304-193-242-26-0)" font-size="12px">
             <text x="305.5" y="205.5">
-                + IComputed&lt;T&gt; LatestNonErrorComputed
+                + IComputed&lt;T&gt; LastNonErrorComputed
             </text>
         </g>
         <rect x="300" y="214" width="250" height="26" fill="url(#mx-gradient-e6e6e6-1-ffffff-1-s-0)" stroke="#23445d" pointer-events="none"/>
@@ -158,7 +158,7 @@
         <rect x="230" y="468" width="380" height="26" fill="url(#mx-gradient-e6e6e6-1-ffffff-1-s-0)" stroke="#23445d" pointer-events="none"/>
         <g fill="#000000" font-family="Helvetica" pointer-events="none" clip-path="url(#mx-clip-234-473-372-26-0)" font-size="12px">
             <text x="235.5" y="485.5">
-                + IComputed&lt;T&gt; LatestNonErrorComputed
+                + IComputed&lt;T&gt; LastNonErrorComputed
             </text>
         </g>
         <rect x="230" y="494" width="380" height="26" fill="url(#mx-gradient-e6e6e6-1-ffffff-1-s-0)" stroke="#23445d" pointer-events="none"/>

@@ -1,6 +1,6 @@
 namespace Samples.Blazor.Abstractions;
 
-public interface ISumService
+public interface ISumService : IComputeService
 {
     Task Reset(CancellationToken cancellationToken = default);
     Task Accumulate(double value, CancellationToken cancellationToken = default);

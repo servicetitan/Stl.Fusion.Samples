@@ -6,126 +6,70 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using RestEase;
 using Stl.Fusion;
-using Stl.Fusion.Client;
 using Stl.Fusion.Server;
-using Stl.Fusion.UI;
+using Stl.Rpc.Server;
 using static System.Console;
+
+namespace Tutorial.Part04_Classes
+{
+    #region Part04_CommonServices
+    // Ideally, we want Compute Service client to be exactly the same as corresponding
+    // Compute Service. A good way to enforce this is to expose an interface
+    // that should be implemented by Compute Service + tell Fusion to "expose"
+    // the client via the same interface.
+    public interface ICounterService : IComputeService
+    {
+        [ComputeMethod]
+        Task<int> Get(string key, CancellationToken cancellationToken = default);
+        Task Increment(string key, CancellationToken cancellationToken = default);
+        Task SetOffset(int offset, CancellationToken cancellationToken = default);
+    }
+    #endregion
+
+    #region Part04_HostServices
+    public class CounterService : ICounterService
+    {
+        private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
+        private readonly IMutableState<int> _offset;
+
+        public CounterService(IStateFactory stateFactory)
+            => _offset = stateFactory.NewMutable<int>();
+
+        [ComputeMethod] // Optional: this attribute is inherited from interface
+        public virtual async Task<int> Get(string key, CancellationToken cancellationToken = default)
+        {
+            WriteLine($"{nameof(Get)}({key})");
+            var offset = await _offset.Use(cancellationToken);
+            return offset + (_counters.TryGetValue(key, out var value) ? value : 0);
+        }
+
+        public Task Increment(string key, CancellationToken cancellationToken = default)
+        {
+            WriteLine($"{nameof(Increment)}({key})");
+            _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
+            using (Computed.Invalidate())
+                _ = Get(key, default);
+            return Task.CompletedTask;
+        }
+
+        public Task SetOffset(int offset, CancellationToken cancellationToken = default)
+        {
+            WriteLine($"{nameof(SetOffset)}({offset})");
+            _offset.Value = offset;
+            return Task.CompletedTask;
+        }
+    }
+    #endregion
+}
 
 namespace Tutorial
 {
     using Part04_Classes;
-
-    namespace Part04_Classes
-    {
-        #region Part04_CommonServices
-        // Ideally, we want Replica Service to be exactly the same as corresponding
-        // Compute Service. A good way to enforce this is to expose an interface
-        // that should be implemented by Compute Service + tell Fusion to "expose"
-        // the client via the same interface.
-        public interface ICounterService
-        {
-            [ComputeMethod]
-            Task<int> Get(string key, CancellationToken cancellationToken = default);
-            Task Increment(string key, CancellationToken cancellationToken = default);
-            Task SetOffset(int offset, CancellationToken cancellationToken = default);
-        }
-        #endregion
-
-        #region Part04_HostServices
-        public class CounterService : ICounterService
-        {
-            private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
-            private readonly IMutableState<int> _offset;
-
-            public CounterService(IStateFactory stateFactory)
-                => _offset = stateFactory.NewMutable<int>();
-
-            [ComputeMethod] // Optional: this attribute is inherited from interface
-            public virtual async Task<int> Get(string key, CancellationToken cancellationToken = default)
-            {
-                WriteLine($"{nameof(Get)}({key})");
-                var offset = await _offset.Use(cancellationToken);
-                return offset + (_counters.TryGetValue(key, out var value) ? value : 0);
-            }
-
-            public Task Increment(string key, CancellationToken cancellationToken = default)
-            {
-                WriteLine($"{nameof(Increment)}({key})");
-                _counters.AddOrUpdate(key, k => 1, (k, v) => v + 1);
-                using (Computed.Invalidate())
-                    _ = Get(key, default);
-                return Task.CompletedTask;
-            }
-
-            public Task SetOffset(int offset, CancellationToken cancellationToken = default)
-            {
-                WriteLine($"{nameof(SetOffset)}({offset})");
-                _offset.Value = offset;
-                return Task.CompletedTask;
-            }
-        }
-
-        // We need Web API controller to publish the service
-        [Route("api/[controller]/[action]")]
-        [ApiController, JsonifyErrors, UseDefaultSession]
-        public class CounterController : ControllerBase
-        {
-            private ICounterService Counters { get; }
-
-            public CounterController(ICounterService counterService)
-                => Counters = counterService;
-
-            // Publish ensures Get output is published if publication was requested by the client:
-            // - Publication is created
-            // - Its Id is shared in response header.
-            [HttpGet, Publish]
-            public Task<int> Get(string key)
-            {
-                key ??= ""; // Empty value is bound to null value by default
-                WriteLine($"{GetType().Name}.{nameof(Get)}({key})");
-                return Counters.Get(key, HttpContext.RequestAborted);
-            }
-
-            [HttpPost]
-            public Task Increment(string key)
-            {
-                key ??= ""; // Empty value is bound to null value by default
-                WriteLine($"{GetType().Name}.{nameof(Increment)}({key})");
-                return Counters.Increment(key, HttpContext.RequestAborted);
-            }
-
-            [HttpPost]
-            public Task SetOffset(int offset)
-            {
-                WriteLine($"{GetType().Name}.{nameof(SetOffset)}({offset})");
-                return Counters.SetOffset(offset, HttpContext.RequestAborted);
-            }
-        }
-        #endregion
-
-        #region Part04_ClientServices
-        // ICounterClientDef tells how ICounterService methods map to HTTP methods.
-        // As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
-        [BasePath("counter")]
-        public interface ICounterClientDef
-        {
-            [Get("get")]
-            Task<int> Get(string key, CancellationToken cancellationToken = default);
-            [Post("increment")]
-            Task Increment(string key, CancellationToken cancellationToken = default);
-            [Post("setOffset")]
-            Task SetOffset(int offset, CancellationToken cancellationToken = default);
-        }
-        #endregion
-    }
 
     public static class Part04
     {
@@ -141,7 +85,7 @@ namespace Tutorial
                 var fusion = services.AddFusion();
                 fusion.AddWebServer();
                 // Registering Compute Service
-                fusion.AddComputeService<ICounterService, CounterService>();
+                fusion.AddService<ICounterService, CounterService>();
                 services.AddRouting();
                 // And its controller
                 services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
@@ -154,7 +98,7 @@ namespace Tutorial
                     app.UseRouting();
                     app.UseEndpoints(endpoints => {
                         endpoints.MapControllers();
-                        endpoints.MapFusionWebSocketServer();
+                        endpoints.MapRpcWebSocketServer();
                     });
                 });
             });
@@ -165,20 +109,10 @@ namespace Tutorial
         {
             var services = new ServiceCollection();
             var baseUri = new Uri($"http://localhost:50050/");
-            var apiBaseUri = new Uri($"{baseUri}api/");
 
             var fusion = services.AddFusion();
-            var fusionClient = fusion.AddRestEaseClient();
-            fusionClient.ConfigureHttpClient((c, name, options) => {
-                // Replica Services construct HttpClients using IHttpClientFactory, so this is
-                // the right way to make all HttpClients to have BaseAddress = apiBaseUri by default.
-                options.HttpClientActions.Add(client => client.BaseAddress = apiBaseUri);
-            });
-            fusionClient.ConfigureWebSocketChannel(c => new () {
-                BaseUri = baseUri,
-            });
-            // Registering replica service
-            fusionClient.AddReplicaService<ICounterService, ICounterClientDef>();
+            fusion.Rpc.AddWebSocketClient(baseUri);
+            fusion.AddClient<ICounterService>();
 
             return services.BuildServiceProvider();
         }

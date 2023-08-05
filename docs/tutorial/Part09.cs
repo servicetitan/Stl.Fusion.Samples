@@ -119,7 +119,7 @@ namespace Tutorial
         }
 
         #region Part09_RecSumCommandServiceSession
-        public class RecSumCommandService
+        public class RecSumCommandService : ICommandService
         {
             [CommandHandler] // Note that ICommandHandler<RecSumCommand, long> support isn't needed
             public virtual async Task<long> RecSum( // Notice "public virtual"!
@@ -168,7 +168,7 @@ namespace Tutorial
             // Building IoC container
             var serviceBuilder = new ServiceCollection();
             var commanderBuilder = serviceBuilder.AddCommander()
-                .AddCommandService<RecSumCommandService>(); // Such services are auto-registered as singletons
+                .AddService<RecSumCommandService>(); // Such services are auto-registered as singletons
             var services = serviceBuilder.BuildServiceProvider();
 
             var commander = services.Commander();

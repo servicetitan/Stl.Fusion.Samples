@@ -1,6 +1,6 @@
 namespace Samples.Blazor.Abstractions;
 
-public interface ITimeService
+public interface ITimeService : IComputeService
 {
     [ComputeMethod]
     Task<DateTime> GetTime(CancellationToken cancellationToken = default);

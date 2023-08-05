@@ -7,7 +7,9 @@ using Samples.Caching.Server;
 using Samples.Caching.Server.Services;
 using Stl.DependencyInjection;
 using Stl.Fusion.Client;
+using Stl.Interception;
 using Stl.OS;
+using Stl.RestEase;
 using static System.Console;
 
 namespace Samples.Caching.Client;
@@ -44,7 +46,7 @@ class Program
         var remoteServices = await CreateRemoteServiceProvider(cancellationToken);
         benchmark.Services = remoteServices;
         benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantService>();
-        await benchmark.Run("Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
+        await benchmark.Run("Fusion's Compute Service Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
         benchmark.TenantServiceResolver = c => c.GetRequiredService<ITenantServiceClient>();
         await benchmark.Run("RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]", cancellationToken);
         benchmark.TenantServiceResolver = c => c.GetRequiredService<ISqlTenantService>();
@@ -60,17 +62,25 @@ class Program
         var clientSettings = services.BuildServiceProvider().GetRequiredService<ClientSettings>();
 
         var fusion = services.AddFusion();
-        var fusionClient = fusion.AddRestEaseClient();
-        fusionClient.ConfigureWebSocketChannel(c => new() {
-            BaseUri = clientSettings.BaseUri,
-            LogLevel = LogLevel.None, 
-        });
-        fusionClient.ConfigureHttpClient((c, name, o) => {
+        fusion.Rpc.AddWebSocketClient(clientSettings.BaseUri);
+        fusion.AddClient<ITenantService>();
+
+        var restEase = services.AddRestEase();
+        restEase.ConfigureHttpClient((_, name, o) => {
             o.HttpClientActions.Add(c => c.BaseAddress = clientSettings.ApiBaseUri);
         });
-        fusionClient.AddReplicaService<ITenantService, ITenantClientDef>();
-        fusionClient.AddClientService<ITenantServiceClient, ITenantClientDef>();
-        fusionClient.AddClientService<ISqlTenantService, ISqlTenantClientDef>();
+        restEase.AddClient<ITenantClientDef>();
+        restEase.AddClient<ISqlTenantClientDef>();
+        services.AddSingleton(c => {
+            var clientDef = c.GetRequiredService<ITenantClientDef>();
+            var viewFactory = c.TypeViewFactory().For<ITenantServiceClient>();
+            return viewFactory.CreateView(clientDef);
+        });
+        services.AddSingleton(c => {
+            var clientDef = c.GetRequiredService<ISqlTenantClientDef>();
+            var viewFactory = c.TypeViewFactory().For<ISqlTenantService>();
+            return viewFactory.CreateView(clientDef);
+        });
         return Task.FromResult((IServiceProvider) services.BuildServiceProvider());
     }
 

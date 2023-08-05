@@ -2,7 +2,7 @@ using Samples.HelloBlazorServer.Models;
 
 namespace Samples.HelloBlazorServer.Services;
 
-public class WeatherForecastService
+public class WeatherForecastService : IComputeService
 {
     private static readonly string[] Summaries = {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"

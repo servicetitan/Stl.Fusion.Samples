@@ -3,12 +3,13 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Samples.Blazor.Abstractions;
-using Samples.Blazor.Client;
 using Samples.Blazor.UI.Services;
 using Stl.Fusion.Client;
 using Stl.OS;
 using Stl.DependencyInjection;
+using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
+using Stl.Fusion.Blazor.Authentication;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.UI;
 
@@ -31,31 +32,19 @@ public class Program
     public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
     {
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
-
         var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
-        var apiBaseUri = new Uri($"{baseUri}api/");
 
         // Fusion
         var fusion = services.AddFusion();
-        var fusionClient = fusion.AddRestEaseClient();
-        fusionClient.ConfigureWebSocketChannel(c => new() {
-            BaseUri = baseUri,
-            LogLevel = LogLevel.Information,
-            MessageLogLevel = LogLevel.None,
-        });
-        fusionClient.ConfigureHttpClient((c, name, o) => {
-            var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-            var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-            o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-        });
-        var fusionAuth = fusion.AddAuthentication().AddRestEaseClient().AddBlazor();
+        fusion.Rpc.AddWebSocketClient(baseUri);
+        fusion.AddAuthClient();
 
         // Fusion services
-        fusionClient.AddReplicaService<ITimeService, ITimeClientDef>();
-        fusionClient.AddReplicaService<IScreenshotService, IScreenshotClientDef>();
-        fusionClient.AddReplicaService<IChatService, IChatClientDef>();
-        fusionClient.AddReplicaService<IComposerService, IComposerClientDef>();
-        fusionClient.AddReplicaService<ISumService, ISumClientDef>();
+        fusion.AddClient<ITimeService>();
+        fusion.AddClient<IScreenshotService>();
+        fusion.AddClient<IChatService>();
+        fusion.AddClient<IComposerService>();
+        fusion.AddClient<ISumService>();
 
         ConfigureSharedServices(services);
     }
@@ -67,9 +56,9 @@ public class Program
 
         // Fusion services
         var fusion = services.AddFusion();
+        fusion.AddBlazor().AddAuthentication();
         fusion.AddFusionTime();
-        fusion.AddBackendStatus();
-        fusion.AddComputeService<ILocalComposerService, LocalComposerService>();
+        fusion.AddService<ILocalComposerService, LocalComposerService>();
 
         // Default update delay is 0.1s
         services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UIActionTracker(), 0.1));

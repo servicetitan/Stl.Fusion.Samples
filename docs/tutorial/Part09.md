@@ -317,7 +317,7 @@ The most interesting way to register command handlers
 are to declare them inside so-called Command Service:
 
 ``` cs --region Part09_RecSumCommandServiceSession --source-file Part09.cs --session "Command Services and filtering handlers"
-public class RecSumCommandService
+public class RecSumCommandService : ICommandService
 {
     [CommandHandler] // Note that ICommandHandler<RecSumCommand, long> support isn't needed
     public virtual async Task<long> RecSum( // Notice "public virtual"!
@@ -403,4 +403,3 @@ So contrary to regular handlers, you can invoke such handlers
 directly - the whole CommandR pipeline gets invoked for them anyway.
 
 #### [Next: Multi-Host Invalidation and CQRS with Fusion + CommandR + Operations Framework &raquo;](./Part10.md) | [Tutorial Home](./README.md)
-

@@ -5,9 +5,10 @@
 @inject IChatService Chats
 @inject IFusionTime Time
 @inject NavigationManager Nav
+@inject ICommander Commander
 
 @{
-    var state = State.LatestNonErrorValue;
+    var state = State.LastNonErrorValue;
     var error = State.Error;
 }
 
@@ -76,7 +77,7 @@
     {
         if (Message == "")
             return;
-        await Chats.PostMessage(new(Name, Message));
+        await Commander.Call(new Chat_Post(Name, Message));
         Message = "";
     }
 }

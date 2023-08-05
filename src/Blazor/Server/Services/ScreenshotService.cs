@@ -148,8 +148,6 @@ public class ScreenshotService : IScreenshotService
             iTarget.Mutate(x => x.Resize(width, height));
             iTarget.Save(stream, _unixJpegEncoder);
         }
-        var bytes = stream.ToArray();
-        var base64Content = Convert.ToBase64String(bytes);
-        return new Screenshot(source.Width, source.Height, base64Content);
+        return new Screenshot(source.Width, source.Height, stream.ToArray());
     }
 }

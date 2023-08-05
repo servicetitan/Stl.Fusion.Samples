@@ -1,4 +1,5 @@
 using Samples.Blazor.Abstractions;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.UI.Services;
 
@@ -17,7 +18,7 @@ public class LocalComposerService : ILocalComposerService
         IAuth auth,
         ILogger<LocalComposerService>? log = null)
     {
-        Log = log ??= NullLogger<LocalComposerService>.Instance;
+        Log = log ?? NullLogger<LocalComposerService>.Instance;
         TimeService = timeService;
         SumService = sumService;
         ChatService = chatService;
@@ -25,7 +26,8 @@ public class LocalComposerService : ILocalComposerService
     }
 
     public virtual async Task<ComposedValue> GetComposedValue(
-        string parameter, Session session, CancellationToken cancellationToken)
+        Session session, string parameter,
+        CancellationToken cancellationToken)
     {
         var chatTail = await ChatService.GetChatTail(1, cancellationToken);
         var uptime = await TimeService.GetUptime(10, cancellationToken);

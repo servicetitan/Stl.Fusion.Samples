@@ -65,10 +65,10 @@ And finally, states have a few extra properties:
   - Doing the same via `Snapshot.Computed` property ensures
     this can't happen.
 - Both `IState<T>` and `IStateSnapshot<T>` expose
-  `LatestNonErrorValue` and `LatestNonErrorValueComputed` properties - they
+  `LastNonErrorValue` and `LatestNonErrorValueComputed` properties - they
   allow to access the last valid `Value` and its `Computed<T>`
   exposed by the state. In other words, when state exposes
-  an `Error`, `LatestNonErrorValue` still exposes the previous `Value`.
+  an `Error`, `LastNonErrorValue` still exposes the previous `Value`.
   This feature is quite handy when you need to access both
   the last "correct" value (to e.g. bind it to the UI)
   and the newly observed `Error` (to display it separately).
@@ -84,7 +84,7 @@ There are two ways of doing this:
 
 1. Using `IStateFactory`. Any `IServiceProvider` configured to use
    Fusion (with `.AddFusionCore()`) should resolve it.
-2. Subclassing `MutableState<T>`, `LiveState<T>`, etc.
+2. Subclassing `MutableState<T>`, `ComputedState<T>`, etc.
    and either creating its instance manually, or registering
    a new type as a service via `.AddState(...)` method and
    resolving it via `IServiceProvider`.
@@ -98,7 +98,7 @@ Time to write some code! We'll be using the same "stub"
 with `CounterService` and `CreateServices` here:
 
 ``` cs --editable false --region Part03_CounterService --source-file Part03.cs
-public class CounterService
+public class CounterService : IComputeService
 {
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
@@ -121,7 +121,7 @@ public class CounterService
 public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
-    services.AddFusion().AddComputeService<CounterService>();
+    services.AddFusion().AddService<CounterService>();
     return services.BuildServiceProvider();
 }
 ```
@@ -169,8 +169,8 @@ catch (ApplicationException)
 {
     WriteLine($"Error: {state.Error.GetType()}, Computed: {state.Computed}");
 }
-WriteLine($"LatestNonErrorValue: {state.LatestNonErrorValue}");
-WriteLine($"Snapshot.LatestNonErrorComputed: {state.Snapshot.LatestNonErrorComputed}");
+WriteLine($"LastNonErrorValue: {state.LastNonErrorValue}");
+WriteLine($"Snapshot.LastNonErrorComputed: {state.Snapshot.LastNonErrorComputed}");
 ```
 
 The output:
@@ -179,15 +179,15 @@ The output:
 Value: 0, Computed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Consistent)
 Setting state.Error.
 Error: System.ApplicationException, Computed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqej, State: Consistent)
-LatestNonErrorValue: 0
-Snapshot.LatestNonErrorComputed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Invalidated)
+LastNonErrorValue: 0
+Snapshot.LastNonErrorComputed: StateBoundComputed`1(MutableState`1(#63646052) @caJUviqcf, State: Invalidated)
 ```
 
 As you see, `Value` property throws an exception here &ndash;
 as per `IResult<T>` contract, it re-throws an exception stored
 in `Error`.
 
-The last "valid" value is still available via `LatestNonErrorValue` property;
+The last "valid" value is still available via `LastNonErrorValue` property;
 similarly, the last "valid" computed instance is still available
 via `LatestNonErrorValueComputed`.
 
@@ -260,4 +260,3 @@ Some observations:
   specified in options we've provided.
 
 #### [Next: Part 4 &raquo;](./Part04.md) | [Tutorial Home](./README.md)
-

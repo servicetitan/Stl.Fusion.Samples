@@ -1,10 +1,7 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Stl;
 using Stl.Fusion;
-using Stl.Fusion.Swapping;
 using static System.Console;
 
 namespace Tutorial
@@ -12,7 +9,7 @@ namespace Tutorial
     public static class Part05
     {
         #region Part05_Service1
-        public class Service1
+        public class Service1 : IComputeService
         {
             [ComputeMethod]
             public virtual async Task<string> Get(string key)
@@ -25,12 +22,10 @@ namespace Tutorial
         public static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ISwapService, DemoSwapService>();
             services.AddFusion()
-                .AddComputeService<Service1>()
-                .AddComputeService<Service2>() // We'll use Service2 & other services later
-                .AddComputeService<Service3>()
-                .AddComputeService<Service4>();
+                .AddService<Service1>()
+                .AddService<Service2>() // We'll use Service2 & other services later
+                .AddService<Service3>();
             return services.BuildServiceProvider();
         }
         #endregion
@@ -64,7 +59,7 @@ namespace Tutorial
         }
 
         #region Part05_Service2
-        public class Service2
+        public class Service2 : IComputeService
         {
             [ComputeMethod]
             public virtual async Task<string> Get(string key)
@@ -114,7 +109,7 @@ namespace Tutorial
         }
 
         #region Part05_Service3
-        public class Service3
+        public class Service3 : IComputeService
         {
             [ComputeMethod]
             public virtual async Task<string> Get(string key)
@@ -150,59 +145,6 @@ namespace Tutorial
             WriteLine(await service.Combine("a", "b"));
             WriteLine(await service.Get("a"));
             WriteLine(await service.Get("x"));
-            #endregion
-        }
-
-        #region Part05_Service4
-        public class Service4
-        {
-            [ComputeMethod(MinCacheDuration = 1), Swap(0.1)]
-            public virtual async Task<string> Get(string key)
-            {
-                WriteLine($"{nameof(Get)}({key})");
-                return key;
-            }
-        }
-
-        public class DemoSwapService : SimpleSwapService
-        {
-            public DemoSwapService(Options? options, IServiceProvider services)
-                : base(options ?? new Options(), services) { }
-
-            protected override ValueTask Store(string key, string value, CancellationToken cancellationToken)
-            {
-                WriteLine($"Swap: {key} <- {value}");
-                return base.Store(key, value, cancellationToken);
-            }
-
-            protected override ValueTask<bool> Touch(string key, CancellationToken cancellationToken)
-            {
-                WriteLine($"Swap: {key} <- [touch]");
-                return base.Touch(key, cancellationToken);
-            }
-
-            protected override async ValueTask<string?> Load(string key, CancellationToken cancellationToken)
-            {
-                var result = await base.Load(key, cancellationToken);
-                WriteLine($"Swap: {key} -> {result}");
-                return result;
-            }
-        }
-        #endregion
-
-        public static async Task Caching6()
-        {
-            #region Part05_Caching6
-            var service = CreateServices().GetRequiredService<Service4>();
-            WriteLine(await service.Get("a"));
-            await Task.Delay(500);
-            GC.Collect();
-            WriteLine("Task.Delay(500) and GC.Collect()");
-            WriteLine(await service.Get("a"));
-            await Task.Delay(1500);
-            GC.Collect();
-            WriteLine("Task.Delay(1500) and GC.Collect()");
-            WriteLine(await service.Get("a"));
             #endregion
         }
     }

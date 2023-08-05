@@ -1,20 +1,24 @@
-﻿namespace Samples.HelloBlazorHybrid.Abstractions;
+﻿using System.Runtime.Serialization;
+using MemoryPack;
 
-public interface IChatService
+namespace Samples.HelloBlazorHybrid.Abstractions;
+
+public interface IChatService : IComputeService
 {
-    public record PostCommand(string Name, string Text) : ICommand<Unit>;
-
-    public record Message(DateTime Time, string Name, string Text);
-
     [CommandHandler]
-    Task PostMessage(PostCommand command, CancellationToken cancellationToken = default);
+    Task PostMessage(Chat_Post command, CancellationToken cancellationToken = default);
 
     [ComputeMethod]
     Task<int> GetMessageCount();
-
     [ComputeMethod]
-    Task<Message[]> GetMessages(int count, CancellationToken cancellationToken = default);
-
+    Task<ChatMessage[]> GetMessages(int count, CancellationToken cancellationToken = default);
     [ComputeMethod]
     Task<Unit> GetAnyTail();
 }
+
+[DataContract, MemoryPackable(GenerateType.VersionTolerant)]
+// ReSharper disable once InconsistentNaming
+public partial record Chat_Post(
+    [property: DataMember, MemoryPackOrder(0)] string Name,
+    [property: DataMember, MemoryPackOrder(1)] string Text
+    ) : ICommand<Unit>;

@@ -1,40 +1,39 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using MemoryPack;
 using Microsoft.EntityFrameworkCore;
+using Stl.Fusion.Authentication;
 
 namespace Samples.Blazor.Abstractions;
 
 // Entity
 [Index(nameof(UserId))]
 [Index(nameof(CreatedAt))]
-public class ChatMessage
+[DataContract, MemoryPackable(GenerateType.VersionTolerant)]
+public partial class ChatMessage
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public long Id { get; set; }
-    public string UserId { get; set; } = "";
-    public DateTime CreatedAt { get; set; }
+    [DataMember, MemoryPackOrder(0)] public long Id { get; set; }
+    [DataMember, MemoryPackOrder(1)] public string UserId { get; set; } = "";
+    [DataMember, MemoryPackOrder(2)] public DateTime CreatedAt { get; set; }
     [Required, MaxLength(4000)]
-    public string Text { get; set; } = "";
+    [DataMember, MemoryPackOrder(3)] public string Text { get; set; } = "";
 }
 
-public record ChatMessageList
+[DataContract, MemoryPackable(GenerateType.VersionTolerant)]
+public partial record ChatMessageList
 {
     // Must be sorted by ChatMessage.Id
-    public ImmutableArray<ChatMessage> Messages { get; init; } = ImmutableArray<ChatMessage>.Empty;
-    public ImmutableDictionary<string, User> Users { get; init; } = ImmutableDictionary<string, User>.Empty;
+    [DataMember, MemoryPackOrder(0)] public ImmutableArray<ChatMessage> Messages { get; init; } = ImmutableArray<ChatMessage>.Empty;
+    [DataMember, MemoryPackOrder(1)] public ImmutableDictionary<string, User> Users { get; init; } = ImmutableDictionary<string, User>.Empty;
 }
 
-public interface IChatService
+public interface IChatService : IComputeService
 {
-    public record PostCommand(string Text, Session Session) : ISessionCommand<ChatMessage>
-    {
-        // Newtonsoft.Json needs this constructor to deserialize this record
-        public PostCommand() : this("", Session.Null) { }
-    }
-
     // Commands
     [CommandHandler]
-    Task<ChatMessage> Post(PostCommand command, CancellationToken cancellationToken = default);
+    Task<ChatMessage> Post(Chat_Post command, CancellationToken cancellationToken = default);
 
     // Queries
     [ComputeMethod]
@@ -44,3 +43,10 @@ public interface IChatService
     [ComputeMethod]
     Task<long> GetActiveUserCount(CancellationToken cancellationToken = default);
 }
+
+[DataContract, MemoryPackable(GenerateType.VersionTolerant)]
+// ReSharper disable once InconsistentNaming
+public partial record Chat_Post(
+    [property: DataMember, MemoryPackOrder(0)] string Text,
+    [property: DataMember, MemoryPackOrder(1)] Session Session
+    ) : ISessionCommand<ChatMessage>;

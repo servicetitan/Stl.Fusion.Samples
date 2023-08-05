@@ -13,18 +13,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using Samples.Blazor.Abstractions;
 using Samples.Blazor.Server.Services;
+using Samples.Blazor.UI.Services;
 using Stl.DependencyInjection;
+using Stl.Fusion.Authentication;
 using Stl.Fusion.Blazor;
-using Stl.Fusion.Bridge;
-using Stl.Fusion.Client;
+using Stl.Fusion.Blazor.Authentication;
 using Stl.Fusion.EntityFramework;
 using Stl.Fusion.Server;
-using Stl.Fusion.Server.Authentication;
-using Stl.Fusion.Server.Controllers;
 using Stl.IO;
+using Stl.RestEase;
+using Stl.Rpc;
+using Stl.Rpc.Server;
 
 namespace Samples.Blazor.Server;
 
@@ -84,36 +85,33 @@ public class Startup
                 });
                 operations.AddFileBasedOperationLogChangeTracking();
             });
-            db.AddAuthentication<long>();
         });
 
         // Fusion
-        var fusion = services.AddFusion();
-        var fusionClient = fusion.AddRestEaseClient();
+        var fusion = services.AddFusion(RpcServiceMode.Server, true);
         var fusionServer = fusion.AddWebServer();
-        var fusionAuth = fusion.AddAuthentication().AddServer(
-            signInControllerOptionsFactory: _ => new() {
-                DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
-                SignInPropertiesBuilder = (_, properties) => {
-                    properties.IsPersistent = true;
-                }
-            },
-            serverAuthHelperOptionsFactory: _ => new() {
-                NameClaimKeys = Array.Empty<string>(),
-            });
-        services.AddSingleton(new PublisherOptions() { Id = ServerSettings.PublisherId });
+        fusion.AddDbAuthService<AppDbContext, long>();
+        fusionServer.ConfigureAuthEndpoint(_ => new() {
+            DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
+            SignInPropertiesBuilder = (_, properties) => {
+                properties.IsPersistent = true;
+            }
+        });
+        fusionServer.ConfigureServerAuthHelper(_ => new() {
+            NameClaimKeys = Array.Empty<string>(),
+        });
         services.AddSingleton(new PresenceReporter.Options() { UpdatePeriod = TimeSpan.FromMinutes(1) });
 
         // Fusion services
-        fusionClient.AddClientService<IForismaticClient>();
-        fusion.AddComputeService<ITimeService, TimeService>();
-        fusion.AddComputeService<ISumService, SumService>();
-        fusion.AddComputeService<IComposerService, ComposerService>();
-        fusion.AddComputeService<IScreenshotService, ScreenshotService>();
-        fusion.AddComputeService<IChatService, ChatService>();
+        fusion.AddService<ITimeService, TimeService>();
+        fusion.AddService<ISumService, SumService>();
+        fusion.AddService<IComposerService, ComposerService>();
+        fusion.AddService<IScreenshotService, ScreenshotService>();
+        fusion.AddService<IChatService, ChatService>();
 
-        // Shared UI services
-        UI.Program.ConfigureSharedServices(services);
+        // RestEase clients
+        var restEase = services.AddRestEase();
+        restEase.AddClient<IForismaticClient>();
 
         // Data protection
         services.AddScoped(c => c.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
@@ -159,14 +157,9 @@ public class Startup
         services.AddRouting();
         services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
         services.AddServerSideBlazor(o => o.DetailedErrors = true);
-        fusionAuth.AddBlazor(o => {}); // Must follow services.AddServerSideBlazor()!
 
-        // Swagger & debug tools
-        services.AddSwaggerGen(c => {
-            c.SwaggerDoc("v1", new OpenApiInfo {
-                Title = "Samples.Blazor.Server API", Version = "v1"
-            });
-        });
+        // Shared UI services
+        UI.Program.ConfigureSharedServices(services);
     }
 
     public void Configure(IApplicationBuilder app, ILogger<Startup> log)
@@ -212,22 +205,18 @@ public class Startup
         });
         app.UseFusionSession();
 
-        // Static + Swagger
+        // Blazor framework + static files
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
-        app.UseSwagger();
-        app.UseSwaggerUI(c => {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
-        });
 
-        // API controllers
+        // Endpoints
         app.UseRouting();
         app.UseAuthentication();
-        app.UseAuthorization();
         app.UseEndpoints(endpoints => {
             endpoints.MapBlazorHub();
-            endpoints.MapFusionWebSocketServer();
-            endpoints.MapControllers();
+            endpoints.MapRpcWebSocketServer();
+            endpoints.MapFusionAuth();
+            endpoints.MapFusionBlazorSwitch();
             endpoints.MapFallbackToPage("/_Host");
         });
     }

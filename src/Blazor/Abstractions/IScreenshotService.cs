@@ -1,31 +1,34 @@
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using MemoryPack;
 
 namespace Samples.Blazor.Abstractions;
 
-public class Screenshot
+[DataContract, MemoryPackable(GenerateType.VersionTolerant)]
+public partial class Screenshot
 {
-    private static readonly string OnePixelBase64Content =
+    private static readonly byte[] OnePixelData = Convert.FromBase64String(
         "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0d" +
         "Hx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4e" +
         "Hh4eHh4eHh7/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QA" +
-        "FAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ALLAB//Z";
+        "FAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ALLAB//Z");
 
-    public int Width { get; } = 1;
-    public int Height { get; } = 1;
-    public string Base64Content { get; } = "";
+    [DataMember, MemoryPackOrder(0)] public int Width { get; } = 1;
+    [DataMember, MemoryPackOrder(1)] public int Height { get; } = 1;
+    [DataMember, MemoryPackOrder(2)] public byte[] Data { get; }
 
-    public Screenshot() => Base64Content = OnePixelBase64Content;
+    public Screenshot() => Data = OnePixelData;
 
-    [JsonConstructor]
-    public Screenshot(int width, int height, string base64Content)
+    [JsonConstructor, MemoryPackConstructor]
+    public Screenshot(int width, int height, byte[] data)
     {
         Width = width;
         Height = height;
-        Base64Content = base64Content;
+        Data = data;
     }
 }
 
-public interface IScreenshotService
+public interface IScreenshotService : IComputeService
 {
     [ComputeMethod(MinCacheDuration = 0.1)]
     Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default);

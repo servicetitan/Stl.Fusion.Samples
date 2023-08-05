@@ -14,7 +14,7 @@ We're going to use the same `CounterService` and `CreateServices` helper
 as in Part 1:
 
 ``` cs --editable false --region Part02_CounterService --source-file Part02.cs
-public class CounterService
+public class CounterService : IComputeService
 {
     private readonly ConcurrentDictionary<string, int> _counters = new ConcurrentDictionary<string, int>();
 
@@ -38,7 +38,7 @@ public static IServiceProvider CreateServices()
 {
     var services = new ServiceCollection();
     var fusion = services.AddFusion();
-    fusion.AddComputeService<CounterService>();
+    fusion.AddService<CounterService>();
     return services.BuildServiceProvider();
 }
 ```
@@ -341,4 +341,3 @@ you normally don't even need to know these abstractions exist.
 But they'll be ready to help you once you conclude you need throttling.
 
 #### [Next: Part 3 &raquo;](./Part03.md) | [Tutorial Home](./README.md)
-

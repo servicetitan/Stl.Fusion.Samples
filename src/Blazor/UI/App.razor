@@ -1,7 +1,7 @@
 @using Stl.OS
 @implements IDisposable
 @inject BlazorCircuitContext BlazorCircuitContext
-@inject ISessionProvider SessionProvider
+@inject ISessionResolver SessionResolver
 
 <CascadingAuthState>
     <ThemeProvider Theme="@Theme">
@@ -22,12 +22,12 @@
     private Theme Theme { get; } = new() { IsGradient = true, IsRounded = false };
 
     [Parameter]
-    public string SessionId { get; set; } = Session.Default.Id;
+    public string SessionId { get; set; } = "";
 
     protected override void OnInitialized()
     {
-        SessionProvider.Session = OSInfo.IsWebAssembly 
-            ? Session.Default 
+        SessionResolver.Session = OSInfo.IsWebAssembly
+            ? Session.Default
             : new Session(SessionId);
         if (!BlazorCircuitContext.IsPrerendering)
             BlazorCircuitContext.RootComponent = this;

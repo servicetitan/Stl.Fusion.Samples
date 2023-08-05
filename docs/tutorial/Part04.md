@@ -1,69 +1,37 @@
-# Part 4: Replica Services
+# Part 4: Compute Service Clients
 
 Video covering this part:
 
 [<img src="./img/Part4-Screenshot.jpg" width="200"/>](https://youtu.be/_wFhi11Eb0o)
 
-Replica Services are remote proxies of Compute Services that take
+Compute Service Clients are remote proxies of Compute Services that take
 the behavior of `Computed<T>` into account to be more efficient
 than identical web API clients.
 
 Namely:
 
 - They similarly back the result to any call with `Computed<T>` that mimics
-  matching `Computed<T>` on the server side. So client-side Replica Services
+  matching `Computed<T>` on the server side. So such client-side proxies
   can be used in other client-side Compute Services - and as you might guess,
   invalidation of a server-side dependency will trigger invalidation of
   its client-side replica (`Computed<T>` too), which in turn will invalidate
   every client-side computed that uses it.
-- They similarly cache consistent replicas. In other words, Replica Service
+- They similarly cache consistent replicas. In other words, Compute Service client
   won't make a remote call in case a *consistent* replica is still available.
   So it's exactly the same behavior as for Compute Services if we replace
   the "computation" with "RPC call".
 
-It's more or less obvious how Replica Services create initial versions of replicas -
-e.g. they can simply call an HTTP endpoint to get a copy of `Computed<T>`.
-But how do they get invalidation notifications?
+Compute Service clients communicate with the server over WebSocket channel -
+internally they use `Stl.Rpc` infrastructure to make such calls, as well as
+to receive notifications about server-side invalidations.
 
-Both invalidation and update messages are currently delivered via
-additional WebSocket-based `Publisher`-`Replicator` channel; the connection is
-made by the client when the first replica is created there; the channel
-is used to serve all of such notifications from a given `Publisher` (~ server)
-further.
+Resilience (reconnect on disconnect, refresh of every replica of `Computed<T>` on reconnect, etc.)
+is bundled - `Stl.Rpc` and `Stl.Fusion.Client` take care of that.
 
-Resiliency (reconnection on disconnect, auto-refresh of state of
-all replicas in case of reconnect, etc.) is bundled both into the implementation
-and into the protocol (e.g. that's the main reason for any `Computed<T>` to have
-`Version` property).
-
-Finally, Replica Services are just interfaces. They typically
-declare all the methods of a Compute Service they "mimic".
+Finally, Compute Service clients are just interfaces. They typically
+declare every method of a Compute Service they "mimic".
 The interfaces are needed solely to describe how method calls should be
 mapped to corresponding HTTP endpoints.
-
-Fusion implements Replica Service interfaces in runtime - currently relying
-on [RestEase](https://github.com/canton7/RestEase)
-and its own
-[Castle.DynamicProxy](http://www.castleproject.org/projects/dynamicproxy/)-based proxies,
-even though in future there might be other implementations.
-
-The sequence diagram below shows what happens when a regular Web API client
-(e.g. a regular RestEase client) processes the call.
-"Web API" is controller forwarding the call to the underlying
-service (`GreetingService` in this example):
-
-[<img src="./img/WebApi-Regular.jpg" width="600"/>](./img/WebApi-Regular.jpg)
-
-And that's a similar diagram showing what happens when a Replica Service
-processes the call + invalidates & updates the value later:
-
-[<img src="./img/WebApi-Fusion.jpg" width="600"/>](./img/WebApi-Fusion.jpg)
-
-*\* Step 6 does not actually happen. We use WebSockets, so we don't need to send a confirmation.*
-
-Gantt chart for this process could look as follows:
-
-[<img src="./img/ComputedReplica-Gantt.jpg" width="600"/>](./img/ComputedReplica-Gantt.jpg)
 
 Ok, let's write some code to learn how it works. Unfortunately this time the amount of
 code is going to explode a bit - that's mostly due to the fact we'll need a web server
@@ -72,11 +40,11 @@ hosting Compute Service itself, a controller publishing its invocable endpoints,
 1. Common interface (don't run this code yet):
 
 ``` cs --editable false --region Part04_CommonServices --source-file Part04.cs
-// Ideally, we want Replica Service to be exactly the same as corresponding
+// Ideally, we want Compute Service client to be exactly the same as corresponding
 // Compute Service. A good way to enforce this is to expose an interface
 // that should be implemented by Compute Service + tell Fusion to "expose"
 // the client via the same interface.
-public interface ICounterService
+public interface ICounterService : IComputeService
 {
     [ComputeMethod]
     Task<int> Get(string key, CancellationToken cancellationToken = default);
@@ -120,63 +88,9 @@ public class CounterService : ICounterService
         return Task.CompletedTask;
     }
 }
-
-// We need Web API controller to publish the service
-[Route("api/[controller]/[action]")]
-[ApiController, JsonifyErrors, UseDefaultSession]
-public class CounterController : ControllerBase
-{
-    private ICounterService Counters { get; }
-
-    public CounterController(ICounterService counterService)
-        => Counters = counterService;
-
-    // Publish ensures Get output is published if publication was requested by the client:
-    // - Publication is created
-    // - Its Id is shared in response header.
-    [HttpGet, Publish]
-    public Task<int> Get(string key)
-    {
-        key ??= ""; // Empty value is bound to null value by default
-        WriteLine($"{GetType().Name}.{nameof(Get)}({key})");
-        return Counters.Get(key, HttpContext.RequestAborted);
-    }
-
-    [HttpPost]
-    public Task Increment(string key)
-    {
-        key ??= ""; // Empty value is bound to null value by default
-        WriteLine($"{GetType().Name}.{nameof(Increment)}({key})");
-        return Counters.Increment(key, HttpContext.RequestAborted);
-    }
-
-    [HttpPost]
-    public Task SetOffset(int offset)
-    {
-        WriteLine($"{GetType().Name}.{nameof(SetOffset)}({offset})");
-        return Counters.SetOffset(offset, HttpContext.RequestAborted);
-    }
-}
 ```
 
-3. Client services (don't run this code yet):
-
-``` cs --editable false --region Part04_ClientServices --source-file Part04.cs
-// ICounterClientDef tells how ICounterService methods map to HTTP methods.
-// As you'll see further, it's used by Replica Service (ICounterService implementation) on the client.
-[BasePath("counter")]
-public interface ICounterClientDef
-{
-    [Get("get")]
-    Task<int> Get(string key, CancellationToken cancellationToken = default);
-    [Post("increment")]
-    Task Increment(string key, CancellationToken cancellationToken = default);
-    [Post("setOffset")]
-    Task SetOffset(int offset, CancellationToken cancellationToken = default);
-}
-```
-
-4. `CreateHost` and `CreateClientServices` methods (don't run this code yet):
+3. `CreateHost` and `CreateClientServices` methods (don't run this code yet):
 
 ``` cs --editable false --region Part04_CreateXxx --source-file Part04.cs
 public static IHost CreateHost()
@@ -191,7 +105,7 @@ public static IHost CreateHost()
         var fusion = services.AddFusion();
         fusion.AddWebServer();
         // Registering Compute Service
-        fusion.AddComputeService<ICounterService, CounterService>();
+        fusion.AddService<ICounterService, CounterService>();
         services.AddRouting();
         // And its controller
         services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
@@ -207,7 +121,7 @@ public static IHost CreateHost()
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapFusionWebSocketServer();
+                endpoints.MapRpcWebSocketServer();
             });
         });
     });
@@ -218,33 +132,23 @@ public static IServiceProvider CreateClientServices()
 {
     var services = new ServiceCollection();
     var baseUri = new Uri($"http://localhost:50050/");
-    var apiBaseUri = new Uri($"{baseUri}api/");
 
     var fusion = services.AddFusion();
-    var fusionClient = fusion.AddRestEaseClient();
-    fusionClient.ConfigureHttpClient((c, name, options) => {
-        // Replica Services construct HttpClients using IHttpClientFactory, so this is
-        // the right way to make all HttpClients to have BaseAddress = apiBaseUri by default.
-        options.HttpClientActions.Add(client => client.BaseAddress = apiBaseUri);
-    });
-    fusionClient.ConfigureWebSocketChannel(c => new () {
-        BaseUri = baseUri,
-    });
-    // Registering replica service
-    fusionClient.AddReplicaService<ICounterService, ICounterClientDef>();
+    fusion.Rpc.AddWebSocketClient(baseUri);
+    fusion.AddClient<ICounterService>();
 
     return services.BuildServiceProvider();
 }
 ```
 
-And finally, we're ready to try our Replica Service:
+And finally, we're ready to try our Compute Service client:
 
 ``` cs --region Part04_ReplicaService --source-file Part04.cs
 using var host = CreateHost();
 await host.StartAsync();
 WriteLine("Host started.");
 
-            using var stopCts = new CancellationTokenSource();
+using var stopCts = new CancellationTokenSource();
 var cancellationToken = stopCts.Token;
 
 async Task Watch<T>(string name, Computed<T> computed)
@@ -300,22 +204,18 @@ aComputed: 11, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(a, S
 bComputed: 10, ReplicaClientComputed`1(Intercepted:ICounterServiceProxy.Get(b, System.Threading.CancellationToken) @29, State: Consistent)
 ```
 
-So Replica Service does its job &ndash; it perfectly mimics the underlying Compute Service!
+So Compute Service client does its job &ndash; it perfectly mimics the underlying Compute Service!
 
 Notice that `CounterController` methods are invoked just once for a given set of arguments &ndash;
-that's because while some replica exists, Replica Services uses it to update its value, i.e. the updates
-are requested and delivered via WebSocket channel.
-
-As you might guess, the controller we were using here is a regular Web API controller.
-If you're curious whether it's possible to call its methods without Fusion - yes, it is.
-**So every Fusion endpoint is also a regular Web API endpoint!** The proof:
+that's because while some `Computed<T>` replica is consistent, Compute Service client just uses it
+and completely eliminates the RPC call.
 
 [<img src="./img/SwaggerPost.jpg" width="600"/>](https://www.youtube.com/watch?v=jYVe5yd0xuQ&t=4173s)
 
-Now, let's show that client-side `LiveState<T>` can use Replica Service
+Now, let's show that client-side `ComputedState<T>` can use Compute Service client
 to "observe" the output of server-side Compute Service. The code below
-is almost the same as you saw in previous part showcasing `LiveState<T>`,
-but it uses Replica Service instead of Computed Service.
+is almost the same as you saw in previous part showcasing `ComputedState<T>`,
+but it uses Compute Service client instead of Computed Service.
 
 ``` cs --region Part04_LiveStateFromReplica --source-file Part04.cs
 using var host = CreateHost();
@@ -374,15 +274,15 @@ Get(a)
 ```
 
 As you might guess, this is exactly the logic out Blazor samples use to update
-the UI in real time. Moreover, we similarly make Compute Services and Replica Services
-there to implement the same common interfaces - and that's precisely what allows
+the UI in real time. Moreover, we similarly use the same interface both for
+Compute Services and their clients - and that's precisely what allows
 use to have the same UI components working in WASM and Server-Side Blazor mode:
 
 - When UI components are rendered on the server side, they pick server-side
   Compute Services from host's `IServiceProvider` as implementation of
   `IWhateverService`. Replicas aren't needed there, because everything is local.
 - And when the same UI components are rendered on the client, they pick
-  Replica Services as `IWhateverService` from the client-side IoC container,
+  Compute Service client as `IWhateverService` from the client-side IoC container,
   and that's what makes any `IState<T>` to update in real time there, which
   in turn makes UI components to re-render.
 
@@ -390,4 +290,3 @@ use to have the same UI components working in WASM and Server-Side Blazor mode:
 There are details, of course, and the rest of the tutorial is mostly about them.
 
 #### [Next: Part 5 &raquo;](./Part05.md) | [Tutorial Home](./README.md)
-

@@ -6,7 +6,7 @@ using static System.Console;
 
 var services = new ServiceCollection()
     // IncrementalBuilder service is the most important piece, check it out.
-    .AddFusion(f => f.AddComputeService<IncrementalBuilder>())
+    .AddFusion(f => f.AddService<IncrementalBuilder>())
     .BuildServiceProvider();
 
 var builder = services.GetRequiredService<IncrementalBuilder>();

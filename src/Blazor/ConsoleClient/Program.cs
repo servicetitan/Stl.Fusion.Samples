@@ -1,5 +1,5 @@
 using Samples.Blazor.Abstractions;
-using Samples.Blazor.Client;
+using Stl.Fusion.Authentication;
 using Stl.Fusion.Client;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.UI;
@@ -18,7 +18,7 @@ using var timeState = stateFactory.NewComputed<ChatMessageList>(async (s, cancel
     }
     return chatPage;
 });
-WriteLine("LiveState created, waiting for new chat messages.");
+WriteLine("ComputedState created, waiting for new chat messages.");
 WriteLine("Press <Enter> to stop.");
 ReadLine();
 
@@ -36,22 +36,16 @@ static IServiceProvider CreateServiceProvider()
 
     // Fusion
     var fusion = services.AddFusion();
-    var fusionClient = fusion.AddRestEaseClient();
-    fusionClient.ConfigureWebSocketChannel(c => new() { BaseUri = baseUri });
-    fusionClient.ConfigureHttpClient((c, name, o) => {
-        var isFusionClient = (name ?? "").StartsWith("Stl.Fusion");
-        var clientBaseUri = isFusionClient ? baseUri : apiBaseUri;
-        o.HttpClientActions.Add(client => client.BaseAddress = clientBaseUri);
-    });
-    var fusionAuth = fusion.AddAuthentication().AddRestEaseClient();
+    fusion.Rpc.AddWebSocketClient(baseUri);
+    fusion.AddAuthClient();
 
     // Fusion services
     fusion.AddFusionTime();
-    fusionClient.AddReplicaService<ITimeService, ITimeClientDef>();
-    fusionClient.AddReplicaService<IScreenshotService, IScreenshotClientDef>();
-    fusionClient.AddReplicaService<IChatService, IChatClientDef>();
-    fusionClient.AddReplicaService<IComposerService, IComposerClientDef>();
-    fusionClient.AddReplicaService<ISumService, ISumClientDef>();
+    fusion.AddClient<ITimeService>();
+    fusion.AddClient<IScreenshotService>();
+    fusion.AddClient<IChatService>();
+    fusion.AddClient<IComposerService>();
+    fusion.AddClient<ISumService>();
 
     // Default update delay is 0.1s
     services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UIActionTracker(), 0.1));

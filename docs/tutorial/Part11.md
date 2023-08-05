@@ -1,5 +1,11 @@
 # Part 11: Authentication in Fusion
 
+**NOTE:** This part of Tutorial is slightly outdated - it "targets" pre-v6.1 versions of Fusion, but v6.1 brought
+pretty dramatic changes across the board, and some of them impact Fusion authentication.
+You can use the code provided here assuming you adjust it accordingly with [Part 13: Migration to Fusion 6.1+](./Part13.md).
+
+We'll eventually update this part, of course.
+
 ## Fusion Session
 
 One of the important elements in this authentication system is Fusion's own session. A session is essentially a string value, that is stored in HTTP only cookie. If the client sends this cookie with a request then we use the session specified there; if not, `SessionMiddleware` creates it. 
@@ -199,22 +205,22 @@ The following code snippet shows how you embed it into `Host.cshtml`:
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @namespace Templates.TodoApp.Host.Pages
 @using Stl.Fusion.Blazor
-@using Templates.TodoApp.UI
 @using Stl.Fusion.Server.Authentication
-@using Stl.Fusion.Server.Controllers
+@using Stl.Fusion.Server.Endpoints
+@using Templates.TodoApp.UI
 @inject ServerAuthHelper ServerAuthHelper
 @inject BlazorCircuitContext BlazorCircuitContext
 @{
     await ServerAuthHelper.UpdateAuthState(HttpContext);
     var authSchemas = await ServerAuthHelper.GetSchemas(HttpContext);
     var sessionId = ServerAuthHelper.Session.Id.Value;
-    var isServerSideBlazor = BlazorModeController.IsServerSideBlazor(HttpContext);
+    var isServerSideBlazor = BlazorSwitchEndpoint.IsServerSideBlazor(HttpContext);
     var isCloseWindowRequest = ServerAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
     Layout = null;
 }
 <head>
     // This part has to be somewhere in <head> section
-    <script src="_content/Stl.Fusion.Blazor/scripts/fusionAuth.js"></script>
+    <script src="_content/Stl.Fusion.Blazor.Authentication/scripts/fusionAuth.js"></script>
     <script>
         window.FusionAuth.schemas = "@authSchemas";
     </script>
@@ -230,7 +236,7 @@ The following code snippet shows how you embed it into `Host.cshtml`:
     <div class="alert alert-primary">
         @(closeWindowFlowName) completed, you can close this window.
     </div>
-}    
+}
 ```
 
 Notice that it assumes there is [`fusionAuth.js`](https://github.com/servicetitan/Stl.Fusion/blob/master/src/Stl.Fusion.Blazor.Authentication/wwwroot/scripts/fusionAuth.js) - a small script embedded into `Stl.Fusion.Blazor` assembly, which is responsible for opening authentication window or performing a redirect.
@@ -307,21 +313,22 @@ app.UseBlazorFrameworkFiles();
 // Required by Blazor + it serves embedded content, such as  `fusionAuth.js`
 app.UseStaticFiles(); 
 
-// API controllers
+// Endpoints
 app.UseRouting();
 app.UseAuthentication();
-app.UseAuthorization(); // ASP.NET Core authorization, use only if you need it
 app.UseEndpoints(endpoints => {
     endpoints.MapBlazorHub();
-    endpoints.MapFusionWebSocketServer(); // Needed only if you use Blazor WASM w/ Fusion client
-    endpoints.MapControllers();
+    endpoints.MapRpcWebSocketServer();
+    endpoints.MapFusionAuth();
+    endpoints.MapFusionBlazorSwitch();
+    // endpoints.MapControllers();
     endpoints.MapFallbackToPage("/_Host"); // Maps every unmapped route to _Host.cshtml
 });
 ```
 
 ## Using Fusion authentication in a Blazor WASM components
 
-As you know, client-side Replica Services have the same interface as their server-side Compute Service counterparts, so the client needs to pass the `Session` as a parameter for methods that require it. However the `Session` is stored in a http-only cookie, so the client can't read its value directly. This is intentional - since `Session` allows anyone to impersonate as a user associated with it, ideally we don't want it to be available on the client side.
+As you know, client-side Compute Service Clients have the same interface as their server-side Compute Service counterparts, so the client needs to pass the `Session` as a parameter for methods that require it. However the `Session` is stored in a http-only cookie, so the client can't read its value directly. This is intentional - since `Session` allows anyone to impersonate as a user associated with it, ideally we don't want it to be available on the client side.
 
 Fusion uses so-called "default session" to make it work. Let's quote the beginning of `Session` class code again:
 
@@ -335,9 +342,7 @@ public sealed class Session : IHasId<Symbol>, IEquatable<Session>,
     // ...
 ```
 
-Default session is a specially named `Session` which is automatically substituted by `SessionModelBinder` to the one provided by `ISessionResolver`. In other words, if you pass `Session.Default` as an argument to some Replica Service, it will get its true value on controller method invocation on the server side.
-
-In addition, there is `UseDefaultSessionAttribute` (ASP.NET Core filter) doing the same for any `ISessionCommand`.
+Default session is a specially named `Session` which is automatically substituted by `SessionModelBinder` to the one provided by `ISessionResolver`. In other words, if you pass `Session.Default` as an argument to some Compute Service client, it will get its true value on controller method invocation on the server side.
 
 All of this means your Blazor WASM client doesn't need to know the actual `Session` value to work - all you need is to configure `ISessionResolver` there to return `Session.Default` as the current session.
 

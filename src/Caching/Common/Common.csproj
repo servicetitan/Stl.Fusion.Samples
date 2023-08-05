@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <RootNamespace>Samples.Caching.Common</RootNamespace>
@@ -8,13 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Client" Version="4.1.13" />
+    <PackageReference Include="Stl.Fusion" Version="6.1.110" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.*" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('net6'))">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.*" />
+
+  <!-- Roslyn generators/analyzers -->
+  <ItemGroup>
+    <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
+    <PackageReference Include="Stl.Generators" Version="6.1.110" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('net5'))">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.*" />
-  </ItemGroup>
+
 </Project>

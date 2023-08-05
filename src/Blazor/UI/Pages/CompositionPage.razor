@@ -6,7 +6,7 @@
 @inject IComposerService Composer;
 
 @{
-    var state = State.LatestNonErrorValue;
+    var state = State.LastNonErrorValue;
     var error = State.Error;
 }
 
@@ -63,8 +63,8 @@
     protected override async Task<Model> ComputeState(CancellationToken cancellationToken)
     {
         var parameter = MutableState.Value;
-        var localValue = await LocalComposer.GetComposedValue(parameter, Session, cancellationToken);
-        var remoteValue = await Composer.GetComposedValue(parameter, Session, cancellationToken);
+        var localValue = await LocalComposer.GetComposedValue(Session, parameter, cancellationToken);
+        var remoteValue = await Composer.GetComposedValue(Session, parameter, cancellationToken);
         return new Model() {
             LocallyComposedValue = localValue,
             RemotelyComposedValue = remoteValue,

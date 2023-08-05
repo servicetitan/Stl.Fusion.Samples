@@ -11,7 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Client" Version="4.1.13" />
+    <PackageReference Include="Stl.Fusion" Version="6.1.110" />
+  </ItemGroup>
+
+  <!-- Roslyn generators/analyzers -->
+  <ItemGroup>
+    <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
+    <PackageReference Include="Stl.Generators" Version="6.1.110" />
   </ItemGroup>
 
 </Project>
