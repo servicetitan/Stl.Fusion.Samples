@@ -23,7 +23,7 @@ see https://servicetitan.github.io/Stl.Fusion.Samples/
 
 ## Running Samples
 
-Build & run locally with [.NET 6.0 SDK](https://dotnet.microsoft.com/download):
+Build & run locally with [.NET 7 SDK](https://dotnet.microsoft.com/download):
 
 ```bash
 # Run this command first
