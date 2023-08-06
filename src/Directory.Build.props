@@ -18,7 +18,6 @@
     <Using Include="System.Threading.Channels" />
     <Using Include="Stl" />
     <Using Include="Stl.Async" />
-    <Using Include="Stl.Channels" />
     <Using Include="Stl.Collections" />
     <Using Include="Stl.CommandR" />
     <Using Include="Stl.CommandR.Configuration" />
