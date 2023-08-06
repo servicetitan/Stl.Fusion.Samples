@@ -59,13 +59,13 @@ public class Benchmark : BenchmarkBase
         var tenants = TenantsFactory.Invoke();
         var isWriter = workerId < WriteConcurrencyLevel;
 
-        async Task Read()
+        async ValueTask Read()
         {
             var tenantId = rnd.Next(0, ItemCount).ToString();
             await tenants.Get(tenantId, cancellationToken);
         }
 
-        async Task Write()
+        async ValueTask Write()
         {
             var tenantId = rnd.Next(0, ItemCount).ToString();
             var tenant = await tenants.Get(tenantId, cancellationToken);
@@ -73,7 +73,7 @@ public class Benchmark : BenchmarkBase
             await tenants.AddOrUpdate(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
         }
 
-        var operation = isWriter ? (Func<Task>) Write : Read;
+        var operation = isWriter ? (Func<ValueTask>) Write : Read;
 
         // The benchmarking loop
         var count = 0L;
