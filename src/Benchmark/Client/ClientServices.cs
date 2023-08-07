@@ -6,62 +6,60 @@ namespace Samples.Benchmark.Client;
 public static class ClientServices
 {
     public static readonly IServiceProvider DbServices;
-    public static readonly Func<ITenants> LocalDbTenantsFactory;
-    public static readonly Func<ITenants> LocalFusionTenantsFactory;
-    public static readonly Func<ITenants> HttpClientToDbTenantsFactory;
-    public static readonly Func<ITenants> HttpClientToFusionTenantsFactory;
-    public static readonly Func<ITenants> RpcClientToFusionTenantsFactory;
-    public static readonly Func<ITenants> FusionClientToFusionTenantsFactory;
+    public static readonly Func<ITestService> LocalDbServiceFactory;
+    public static readonly Func<ITestService> LocalFusionServiceFactory;
+    public static readonly Func<ITestService> RemoteDbServiceViaHttpFactory;
+    public static readonly Func<ITestService> RemoteFusionServiceViaHttpFactory;
+    public static readonly Func<ITestService> RemoteFusionServiceViaRpcFactory;
+    public static readonly Func<ITestService> RemoteFusionServiceFactory;
 
     static ClientServices()
     {
         DbServices = new ServiceCollection().AddAppDbContext().BuildServiceProvider();
 
         // Local factories
-        LocalDbTenantsFactory = () => DbServices.GetRequiredService<DbTenants>();
+        LocalDbServiceFactory = () => DbServices.GetRequiredService<DbTestService>();
         {
             var services = CreateBaseServiceCollection();
             services.AddAppDbContext();
-            services.AddFusion().AddService<FusionTenants>();
+            services.AddFusion().AddService<FusionTestService>();
             var c = services.BuildServiceProvider();
-            LocalFusionTenantsFactory = () => c.GetRequiredService<FusionTenants>();
+            LocalFusionServiceFactory = () => c.GetRequiredService<FusionTestService>();
         }
 
         // Remote factories
         {
             var services = CreateBaseServiceCollection();
-            var restEase = services.AddRestEase();
-            restEase.AddClient<IDbTenantsClientDef>();
-            services.AddTransient(c => new HttpClientToDbTenants(c));
-            HttpClientToDbTenantsFactory = () => {
+            services.AddFusion().AddClient<IFusionTestService>();
+            RemoteFusionServiceFactory = () => {
                 var c = services.BuildServiceProvider();
-                return c.GetRequiredService<HttpClientToDbTenants>();
+                return c.GetRequiredService<IFusionTestService>();
             };
         }
         {
             var services = CreateBaseServiceCollection();
-            var restEase = services.AddRestEase();
-            restEase.AddClient<IFusionTenantsClientDef>();
-            services.AddTransient(c => new HttpClientToFusionTenants(c));
-            HttpClientToFusionTenantsFactory = () => {
+            services.AddFusion().Rpc.AddClient<IRpcTestService>();
+            RemoteFusionServiceViaRpcFactory = () => {
                 var c = services.BuildServiceProvider();
-                return c.GetRequiredService<HttpClientToFusionTenants>();
+                return c.GetRequiredService<IRpcTestService>();
             };
         }
         {
             var services = CreateBaseServiceCollection();
-            services.AddFusion().Rpc.AddClient<IRpcTenants>();
-            RpcClientToFusionTenantsFactory = () => {
+            services.AddRestEase().AddClient<IFusionTestServiceClientDef>();
+            services.AddSingleton<HttpFusionTestServiceClient>();
+            RemoteFusionServiceViaHttpFactory = () => {
                 var c = services.BuildServiceProvider();
-                return c.GetRequiredService<IRpcTenants>();
+                return c.GetRequiredService<HttpFusionTestServiceClient>();
             };
         }
         {
             var services = CreateBaseServiceCollection();
-            services.AddFusion().AddClient<IFusionTenants>();
-            FusionClientToFusionTenantsFactory = () => {
+            services.AddRestEase().AddClient<IDbTestServiceClientDef>();
+            services.AddSingleton<HttpDbTestServiceClient>();
+            RemoteDbServiceViaHttpFactory = () => {
                 var c = services.BuildServiceProvider();
-                return c.GetRequiredService<IFusionTenants>();
+                return c.GetRequiredService<HttpDbTestServiceClient>();
             };
         }
     }
@@ -75,8 +73,9 @@ public static class ClientServices
         fusion.Rpc.AddWebSocketClient(Settings.BaseUrl);
 
         var restEase = services.AddRestEase();
+        var baseAddress = new Uri(Settings.BaseUrl);
         restEase.ConfigureHttpClient((_, name, o) => {
-            o.HttpClientActions.Add(c => c.BaseAddress = new Uri(Settings.BaseUrl));
+            o.HttpClientActions.Add(c => c.BaseAddress = baseAddress);
         });
 
         return services;

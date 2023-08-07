@@ -4,7 +4,7 @@ namespace Samples.Benchmark;
 
 public class AppDbContext : DbContext
 {
-    public DbSet<Tenant> Tenants { get; protected set; } = null!;
+    public DbSet<TestItem> Tenants { get; protected set; } = null!;
 
     public AppDbContext(DbContextOptions options) : base(options) { }
 
@@ -12,7 +12,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        var user = modelBuilder.Entity<Tenant>();
+        var user = modelBuilder.Entity<TestItem>();
         user.HasKey(u => u.Id);
         user.HasIndex(u => u.Name);
         user.Property(u => u.Version).IsConcurrencyToken();

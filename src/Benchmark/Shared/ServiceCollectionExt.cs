@@ -12,7 +12,7 @@ public static class ServiceCollectionExt
         }, 512);
         services.AddDbContextServices<AppDbContext>();
         services.AddSingleton<DbInitializer>();
-        services.AddSingleton<DbTenants>();
+        services.AddSingleton<DbTestService>();
         return services;
     }
 }

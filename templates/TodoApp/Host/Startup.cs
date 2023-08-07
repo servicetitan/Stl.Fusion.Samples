@@ -21,6 +21,7 @@ using Stl.Fusion.EntityFramework;
 using Stl.Fusion.EntityFramework.Npgsql;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.Server.Middlewares;
+using Stl.Interception.Interceptors;
 using Stl.IO;
 using Stl.Multitenancy;
 using Stl.Rpc;

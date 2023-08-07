@@ -5,10 +5,10 @@ using MemoryPack;
 namespace Samples.Benchmark;
 
 [DataContract, MemoryPackable(GenerateType.VersionTolerant)]
-public sealed partial record Tenant : IHasId<string>
+public sealed partial record TestItem : IHasId<long>
 {
     [Key]
-    [DataMember, MemoryPackOrder(0)] public string Id { get; init; } = "";
+    [DataMember, MemoryPackOrder(0)] public long Id { get; init; }
     [DataMember, MemoryPackOrder(1)] public long Version { get; init; }
     [DataMember, MemoryPackOrder(2)] public DateTime CreatedAt { get; init; }
     [DataMember, MemoryPackOrder(3)] public DateTime ModifiedAt { get; init; }

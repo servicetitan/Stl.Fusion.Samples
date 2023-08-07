@@ -1,20 +1,24 @@
-﻿using System.Reflection;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Samples.Benchmark;
 using Samples.Benchmark.Client;
 using Samples.Benchmark.Server;
 using Stl.Fusion.Server;
-using Stl.OS;
 using Stl.Rpc;
 using Stl.Rpc.Server;
 using static System.Console;
+using static Samples.Benchmark.Settings;
 
 #pragma warning disable ASP0000
 
-using var cts = new CancellationTokenSource();
+var minThreadCount = WorkerCount * 2;
+ThreadPool.SetMinThreads(minThreadCount, minThreadCount);
+ThreadPool.SetMaxThreads(16_384, 16_384);
+ByteSerializer.Default = MessagePackByteSerializer.Default; // Remove to switch back to MemoryPack
+
+using var stopCts = new CancellationTokenSource();
 // ReSharper disable once AccessToDisposedClosure
-CancelKeyPress += (s, ea) => cts.Cancel();
-var cancellationToken = cts.Token;
+CancelKeyPress += (s, ea) => stopCts.Cancel();
+var cancellationToken = stopCts.Token;
 
 await (args switch {
     [ "server" ] => RunServer(),
@@ -26,17 +30,16 @@ async Task RunServer()
 {
     var builder = WebApplication.CreateBuilder();
     builder.Logging.ClearProviders().AddDebug();
+
+    // Core services
     var services = builder.Services;
     services.AddAppDbContext();
     var fusion = services.AddFusion(RpcServiceMode.Server);
+    fusion.AddWebServer();
 
     // Benchmark services
-    fusion.AddService<IFusionTenants, FusionTenants>();
-    fusion.Rpc.AddServer<IRpcTenants, IFusionTenants>();
-
-    // Fusion/RPC server + ASP.NET Core Controllers
-    fusion.AddWebServer();
-    services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+    fusion.AddService<IFusionTestService, FusionTestService>();
+    fusion.Rpc.AddServer<IRpcTestService, IFusionTestService>();
 
     // Build app & initialize DB
     var app = builder.Build();
@@ -44,12 +47,16 @@ async Task RunServer()
     await dbInitializer.Initialize(true);
 
     // Start Kestrel
+    app.Urls.Add(BaseUrl);
     app.UseWebSockets();
     app.MapRpcWebSocketServer();
-    app.MapControllers();
+    app.MapTestService<DbTestService>("/api/dbTestService");
+    app.MapTestService<IFusionTestService>("/api/fusionTestService");
     try {
-        await app.RunAsync(Settings.BaseUrl);
+        await app.StartAsync(cancellationToken);
+        await TaskExt.NeverEndingTask.WaitAsync(cancellationToken);
     }
+    catch (OperationCanceledException) { }
     catch (Exception error) {
         Error.WriteLine($"Server failed: {error.Message}");
     }
@@ -59,31 +66,31 @@ async Task RunClient()
 {
     // Initialize
     var dbServices = ClientServices.DbServices;
-    await ServerChecker.WhenReady(Settings.BaseUrl, cancellationToken);
+    await ServerChecker.WhenReady(BaseUrl, cancellationToken);
     await dbServices.GetRequiredService<DbInitializer>().Initialize(true, cancellationToken);
-    var benchmark = new Benchmark() {
-        TimeCheckOperationIndexMask = 7,
-        ConcurrencyLevel = HardwareInfo.ProcessorCount * 8,
-    };
+    WriteLine($"Item count:          {ItemCount}");
+    WriteLine($"Service concurrency: {TestServiceConcurrency} workers per test service");
+    if (WriterFrequency is { } writerFrequency)
+        WriteLine($"Writing worker %:    {1.0/writerFrequency:P}");
+    var benchmark = new Benchmark("Initialize", ClientServices.LocalDbServiceFactory);
     await benchmark.Initialize(cancellationToken);
-    benchmark.DumpParameters();
-    WriteLine();
 
     // Run
+    int m1 = 10;
+    int m2 = 40;
+    WriteLine();
     WriteLine("Local services:");
-    benchmark.TenantsFactory = ClientServices.LocalFusionTenantsFactory;
-    await benchmark.Run("Compute Service", cancellationToken);
-    benchmark.TenantsFactory = ClientServices.LocalDbTenantsFactory;
-    await benchmark.Run("Regular Service", cancellationToken);
+    await new Benchmark("Compute Service", ClientServices.LocalFusionServiceFactory).Run();
+    await new Benchmark("Regular Service", ClientServices.LocalDbServiceFactory, m2).Run();
 
     WriteLine();
     WriteLine("Remote services:");
-    benchmark.TenantsFactory = ClientServices.FusionClientToFusionTenantsFactory;
-    await benchmark.Run("Compute Service Client -> Stl.Rpc -> Compute Service", cancellationToken);
-    benchmark.TenantsFactory = ClientServices.RpcClientToFusionTenantsFactory;
-    await benchmark.Run("Stl.Rpc Client -> Stl.Rpc -> Compute Service", cancellationToken);
-    benchmark.TenantsFactory = ClientServices.HttpClientToFusionTenantsFactory;
-    await benchmark.Run("RestEase Client -> HTTP -> Compute Service", cancellationToken);
-    benchmark.TenantsFactory = ClientServices.HttpClientToDbTenantsFactory;
-    await benchmark.Run("RestEase Client -> HTTP -> Regular Service", cancellationToken);
+    await new Benchmark("Compute Service Client -> WebSocket -> Compute Service", ClientServices.RemoteFusionServiceFactory).Run();
+    await new Benchmark("Stl.Rpc Client -> WebSocket -> Compute Service", ClientServices.RemoteFusionServiceViaRpcFactory, m2).Run();
+    await new Benchmark("RestEase Client -> HTTP -> Compute Service", ClientServices.RemoteFusionServiceViaHttpFactory, m1).Run();
+    await new Benchmark("RestEase Client -> HTTP -> Regular Service", ClientServices.RemoteDbServiceViaHttpFactory, m1).Run();
+
+    ReadKey();
+    // ReSharper disable once AccessToDisposedClosure
+    stopCts.Cancel();
 }

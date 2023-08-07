@@ -1,42 +1,34 @@
-using Stl.OS;
 using static System.Console;
 
 namespace Samples.Benchmark.Client;
+using static Settings;
 
-public class Benchmark : BenchmarkBase
+public class Benchmark
 {
-    public int ItemCount { get; init; } = Settings.DbItemCount;
-    public int InitConcurrencyLevel { get; init; } = HardwareInfo.ProcessorCount;
-    public int WriteConcurrencyLevel { get; init; } = 1;
-    public Func<ITenants> TenantsFactory { get; set; } = ClientServices.LocalDbTenantsFactory;
+    public string Title { get; }
+    public BenchmarkWorker[] Workers { get; }
+
+    public Benchmark(string title, Func<ITestService> testServiceFactory, double workerCountMultiplier = 1)
+    {
+        Title = title;
+        var workerCount = (int)(WorkerCount * workerCountMultiplier);
+        Workers = new BenchmarkWorker[workerCount];
+        var testService = (ITestService)null!;
+        for (var i = 0; i < Workers.Length; i++) {
+            if (i % TestServiceConcurrency == 0)
+                testService = testServiceFactory.Invoke();
+            Workers[i] = new BenchmarkWorker(this, testService, i);
+        }
+    }
 
     public async Task Initialize(CancellationToken cancellationToken = default)
     {
-        WriteLine($"Initializing using {InitConcurrencyLevel} workers...");
-        var tenantIds = new ConcurrentQueue<string>(
-            Enumerable.Range(0, ItemCount).Select(i => i.ToString()).ToArray());
-        var tasks = Enumerable.Range(0, InitConcurrencyLevel).Select(async i => {
-            var tenants = TenantsFactory.Invoke();
-            var clock = SystemClock.Instance;
-            while (tenantIds.TryDequeue(out var tenantId)) {
-                var tenant = await tenants.TryGet(tenantId, cancellationToken).ConfigureAwait(false);
-                if (tenant != null)
-                    continue;
-
-                var now = clock.Now.ToDateTime();
-                tenant = new Tenant() {
-                    Id = tenantId,
-                    Version = 1,
-                    CreatedAt = now,
-                    ModifiedAt = now,
-                    Name = $"Tenant-{tenantId}",
-                };
-                await tenants.AddOrUpdate(tenant, null, cancellationToken).ConfigureAwait(false);
-            }
-        });
+        WriteLine("Initializing...");
+        var remainingItemIds = new ConcurrentQueue<int>(Enumerable.Range(1, ItemCount).ToArray());
+        var tasks = Workers.Select(w => w.Initialize(remainingItemIds, cancellationToken)).ToArray();
         _ = Task.Run(async () => {
-            while (!tenantIds.IsEmpty) {
-                WriteLine($"  Remaining tenant count: {tenantIds.Count}");
+            while (!remainingItemIds.IsEmpty) {
+                WriteLine($"  Remaining item count: {remainingItemIds.Count}");
                 await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
             }
         }, cancellationToken);
@@ -44,51 +36,40 @@ public class Benchmark : BenchmarkBase
         WriteLine("  Done.");
     }
 
-    public override void DumpParameters()
+    public async Task Run(CancellationToken cancellationToken = default)
     {
-        base.DumpParameters();
-        WriteLine($"  - {"Writer #",-12}: {WriteConcurrencyLevel}");
-        WriteLine($"  - {"Reader #",-12}: {ConcurrencyLevel - WriteConcurrencyLevel}");
+        WriteLine($"  {Title} - {Workers.Length} workers");
+        await RunWorkers(WarmupDuration, cancellationToken).ConfigureAwait(false);
+        var counters = await RunWorkers(Duration, cancellationToken).ConfigureAwait(false);
+        foreach (var (key, counter) in counters.OrderBy(p => p.Key))
+            if (counter.HasValue)
+                WriteLine($"  - {key,-8}: {counter.Format(Duration)}");
     }
 
-    protected override async Task<Dictionary<string, Counter>> RunWorker(int workerId, TimeSpan duration, CancellationToken cancellationToken)
+    // Private methods
+
+    private async Task<Dictionary<string, Counter>> RunWorkers(TimeSpan duration, CancellationToken cancellationToken)
     {
-        var rnd = new Random(workerId * 347);
-        var stopwatch = Stopwatch;
-        var tcIndexMask = TimeCheckOperationIndexMask;
-        var tenants = TenantsFactory.Invoke();
-        var isWriter = workerId < WriteConcurrencyLevel;
-
-        async ValueTask Read()
-        {
-            var tenantId = rnd.Next(0, ItemCount).ToString();
-            await tenants.Get(tenantId, cancellationToken);
+        if (ForceGCCollect) {
+            GC.Collect();
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+            GC.Collect();
         }
-
-        async ValueTask Write()
-        {
-            var tenantId = rnd.Next(0, ItemCount).ToString();
-            var tenant = await tenants.Get(tenantId, cancellationToken);
-            tenant = tenant with { Name = $"Tenant-{tenant.Id}-{tenant.Version + 1}" };
-            await tenants.AddOrUpdate(tenant, tenant.Version, cancellationToken).ConfigureAwait(false);
-        }
-
-        var operation = isWriter ? (Func<ValueTask>) Write : Read;
-
-        // The benchmarking loop
-        var count = 0L;
-        var errorCount = 0L;
-        for (; (count & tcIndexMask) != 0 || stopwatch.Elapsed < duration; count++) {
-            try {
-                await operation.Invoke().ConfigureAwait(false);
-            }
-            catch (Exception) {
-                errorCount++;
+        var whenReadySource = TaskCompletionSourceExt.New<CpuTimestamp>();
+        var runTask = Workers
+            .Select(w => Task.Run(() => w.Run(whenReadySource.Task, cancellationToken), CancellationToken.None))
+            .ToList();
+        whenReadySource.SetResult(CpuTimestamp.Now + duration);
+        var counters = new Dictionary<string, Counter>();
+        foreach (var task in runTask) {
+            var runCounters = await task.ConfigureAwait(false);
+            foreach (var (key, counter) in runCounters) {
+                if (counters.TryGetValue(key, out var existingCounter))
+                    counters[key] = existingCounter.MergeWith(counter);
+                else
+                    counters[key] = counter;
             }
         }
-        return new Dictionary<string, Counter>() {
-            { isWriter ? "Writes" : "Reads", new OpsCounter(count) },
-            { isWriter ? "Write Errors" : "Read Errors", new OpsCounter(errorCount) }
-        };
+        return counters;
     }
 }

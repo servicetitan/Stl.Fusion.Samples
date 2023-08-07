@@ -22,7 +22,7 @@ public class OpsCounter : Counter<long>
 {
     public OpsCounter(long value) : base(value) { }
 
-    public override Counter MergeWith(Counter other) => new OpsCounter(Value + ((OpsCounter) other).Value);
+    public override Counter MergeWith(Counter other) => new OpsCounter(Value + ((OpsCounter)other).Value);
 
     public override string Format(TimeSpan duration)
     {
