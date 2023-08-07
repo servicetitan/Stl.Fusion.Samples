@@ -29,7 +29,9 @@ await (args switch {
 async Task RunServer()
 {
     var builder = WebApplication.CreateBuilder();
-    builder.Logging.ClearProviders().AddDebug();
+    builder.Logging.ClearProviders()
+        .AddDebug()
+        .SetMinimumLevel(LogLevel.Warning);
 
     // Core services
     var services = builder.Services;

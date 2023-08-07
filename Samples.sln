@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiServerRpc", "src\Multi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "src\Benchmark\Benchmark.csproj", "{34E53097-8E8B-4603-88B8-DE5C5326E503}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpcBenchmark", "src\RpcBenchmark\RpcBenchmark.csproj", "{B2016757-336F-48BB-8388-04B25EE838D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,7 @@ Global
 		{4CA57D31-BF65-4FCC-9016-BB1450DC20CA} = {B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}
 		{92FD3B88-65AC-4CB0-B64A-F256C924B7BF} = {B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}
 		{34E53097-8E8B-4603-88B8-DE5C5326E503} = {B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}
+		{B2016757-336F-48BB-8388-04B25EE838D2} = {B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BA3D19EB-DDFD-4DB6-B60F-A110E22E9C48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -176,5 +179,9 @@ Global
 		{34E53097-8E8B-4603-88B8-DE5C5326E503}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34E53097-8E8B-4603-88B8-DE5C5326E503}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34E53097-8E8B-4603-88B8-DE5C5326E503}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2016757-336F-48BB-8388-04B25EE838D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2016757-336F-48BB-8388-04B25EE838D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2016757-336F-48BB-8388-04B25EE838D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2016757-336F-48BB-8388-04B25EE838D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
