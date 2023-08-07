@@ -49,7 +49,7 @@ public class BenchmarkWorker
                 var itemId = (long)(1 + Random.Next(0, ItemCount));
                 var item = await TestService.TryGet(itemId, cancellationToken).ConfigureAwait(false);
                 if (IsWriter) {
-                    item = item with { Name = $"Item-{item.Id}-{item.Version + 1}" };
+                    item = item! with { Name = $"Item-{item.Id}-{item.Version + 1}" };
                     await TestService.AddOrUpdate(item, item.Version, cancellationToken).ConfigureAwait(false);
                 }
                 count++;
