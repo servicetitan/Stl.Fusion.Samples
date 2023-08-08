@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion" Version="6.1.110" />
+    <PackageReference Include="Stl.Fusion" Version="6.1.111" />
   </ItemGroup>
 
   <ItemGroup>

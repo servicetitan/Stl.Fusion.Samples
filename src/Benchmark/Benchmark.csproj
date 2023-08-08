@@ -13,15 +13,15 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.9" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
-    <PackageReference Include="Stl.Fusion.Server" Version="6.1.110" />
-    <PackageReference Include="Stl.RestEase" Version="6.1.110" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.1.111" />
+    <PackageReference Include="Stl.RestEase" Version="6.1.111" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
     <PackageReference Include="RestEase.SourceGenerator" Version="1.6.4" />
-    <PackageReference Include="Stl.Generators" Version="6.1.110" />
+    <PackageReference Include="Stl.Generators" Version="6.1.111" />
   </ItemGroup>
 
 </Project>
