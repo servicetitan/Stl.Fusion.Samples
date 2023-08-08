@@ -37,7 +37,10 @@ dotnet build
 | [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5005/ |
 | [HelloBlazorHybrid] |  `dotnet run --project src/HelloBlazorHybrid/Server/Server.csproj` + open http://localhost:5005/ |
 | [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
-| [Caching] | `Run-Sample-Caching.cmd`. See [Run-Sample-Caching.cmd](Run-Sample-Caching.cmd) to run this sample on Unix. |
+| [MiniRpc] | `dotnet run -- src/MiniRpc/MiniRpc.csproj ` |
+| [MultiServerRpc] | `dotnet run -- src/MultiServerRpc/MultiServerRpc.csproj ` |
+| [Benchmark] | `dotnet run -c:Release -- src/Benchmark/Benchmark.csproj ` |
+| [RpcBenchmark] | `dotnet run -c:Release --project src/RpcBenchmark/RpcBenchmark.csproj` |
 | [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
 
 Build & run with [Docker](https://docs.docker.com/get-docker/) + 
@@ -55,7 +58,10 @@ docker-compose build
 | [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5005/ |
 | [HelloBlazorHybrid] | `docker-compose run --service-ports sample_hello_blazor_hybrid` + open http://localhost:5005/ |
 | [Blazor Samples] | `docker-compose run --service-ports sample_blazor` + open http://localhost:5005/ |
-| [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
+| [MiniRpc] | `docker-compose run sample_mini_rpc dotnet Samples.MiniRpc.dll` |
+| [MultiServerRpc] | `docker-compose run sample_multi_server_rpc dotnet Samples.MultiServerRpc.dll` |
+| [Benchmark] | `docker-compose run sample_benchmark dotnet Samples.Benchmark.dll` |
+| [RpcBenchmark] | `docker-compose run sample_rpc_benchmark dotnet Samples.RpcBenchmark.dll` |
 | [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
 ## Useful Links
@@ -79,7 +85,10 @@ please help us to make it better by completing [Fusion Feedback Form]
 [HelloBlazorServer]: src/HelloBlazorServer
 [HelloBlazorHybrid]: src/HelloBlazorHybrid
 [Blazor Samples]: src/Blazor
-[Caching]: src/Caching
+[MiniRpc]: src/MiniRpc
+[MultiServerRpc]: src/MultiServerRpc
+[Benchmark]: src/Benchmark
+[RpcBenchmark]: src/RpcBenchmark
 [Tutorial]: docs/tutorial/README.md
 [Fusion Tutorial]: docs/tutorial/README.md
 [Documentation Home]: https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md
@@ -90,6 +99,7 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Computed Value]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part02.md
 [Live State]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part03.md
 [Replica Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
+[Compute Service Clients]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part04.md
 [Fusion In Simple Terms]: https://medium.com/@alexyakunin/stl-fusion-in-simple-terms-65b1975967ab?source=friends_link&sk=04e73e75a52768cf7c3330744a9b1e38
 
 [Discord Server]: https://discord.gg/EKEwv6d
