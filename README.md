@@ -37,9 +37,9 @@ dotnet build
 | [HelloBlazorServer] |  `dotnet run -p src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5005/ |
 | [HelloBlazorHybrid] |  `dotnet run -p src/HelloBlazorHybrid/Server/Server.csproj` + open http://localhost:5005/ |
 | [Blazor Samples] |  `dotnet run -p src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
-| [MiniRpc] | `dotnet run -p src/MiniRpc/MiniRpc.csproj ` |
+| [MiniRpc] | `dotnet run -p src/MiniRpc/MiniRpc.csproj` |
 | [MultiServerRpc] | `dotnet run -p src/MultiServerRpc/MultiServerRpc.csproj ` |
-| [Benchmark] | `dotnet run -c:Release -p src/Benchmark/Benchmark.csproj ` |
+| [Benchmark] | `dotnet run -c:Release -p src/Benchmark/Benchmark.csproj` |
 | [RpcBenchmark] | `dotnet run -c:Release -p src/RpcBenchmark/RpcBenchmark.csproj` |
 | [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
 
