@@ -1,5 +1,3 @@
-using Stl.Async;
-using Stl.Time;
 using static System.Console;
 
 namespace Samples.RpcBenchmark.Client;
