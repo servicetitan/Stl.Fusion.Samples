@@ -34,13 +34,13 @@ dotnet build
 |-|-|
 | [HelloCart] | `dotnet run -p src/HelloCart/HelloCart.csproj` |
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
-| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5005/ |
-| [HelloBlazorHybrid] |  `dotnet run --project src/HelloBlazorHybrid/Server/Server.csproj` + open http://localhost:5005/ |
-| [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
-| [MiniRpc] | `dotnet run -- src/MiniRpc/MiniRpc.csproj ` |
-| [MultiServerRpc] | `dotnet run -- src/MultiServerRpc/MultiServerRpc.csproj ` |
-| [Benchmark] | `dotnet run -c:Release -- src/Benchmark/Benchmark.csproj ` |
-| [RpcBenchmark] | `dotnet run -c:Release --project src/RpcBenchmark/RpcBenchmark.csproj` |
+| [HelloBlazorServer] |  `dotnet run -p src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5005/ |
+| [HelloBlazorHybrid] |  `dotnet run -p src/HelloBlazorHybrid/Server/Server.csproj` + open http://localhost:5005/ |
+| [Blazor Samples] |  `dotnet run -p src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
+| [MiniRpc] | `dotnet run -p src/MiniRpc/MiniRpc.csproj ` |
+| [MultiServerRpc] | `dotnet run -p src/MultiServerRpc/MultiServerRpc.csproj ` |
+| [Benchmark] | `dotnet run -c:Release -p src/Benchmark/Benchmark.csproj ` |
+| [RpcBenchmark] | `dotnet run -c:Release -p src/RpcBenchmark/RpcBenchmark.csproj` |
 | [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
 
 Build & run with [Docker](https://docs.docker.com/get-docker/) + 
