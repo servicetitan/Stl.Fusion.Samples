@@ -5,14 +5,14 @@ Welcome to the collection of [Fusion] samples!
 > [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)  
 
 Don't know what Fusion is? [You should!](https://github.com/servicetitan/Stl.Fusion) 
-Fusion is probably your #1 partner in crime if you're 
+Fusion is your #1 partner in crime if you're 
 building a real-time app (an online app delivering
-some or all updates in real-time) or a high-load app,
-and moreover, it plays really well with Blazor.
+some or all updates in real-time) or a high-load app.
+Moreover, it plays really well with Blazor and works on MAUI.
 
-In particular, Fusion allows you to build fully 
-real-time UIs like this one as easily as if there would
-be no logic related to real-time updates at all:
+Fusion allows you to build fully real-time UIs like this one - 
+and it's nearly as easy as if there is no logic related to real-time
+updates at all:
 
 ![](docs/img/Samples-Blazor.gif)
 
