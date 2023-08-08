@@ -14,6 +14,7 @@ public static class EndpointRouteBuilderExt
             (HelloRequest request, CancellationToken cancellationToken)
                 => service.SayHello(request, cancellationToken));
         endpoints.MapGet($"{prefix}/{nameof(service.GetUser)}", service.GetUser);
+        endpoints.MapGet($"{prefix}/{nameof(service.Sum)}", service.Sum);
         return endpoints;
     }
 }

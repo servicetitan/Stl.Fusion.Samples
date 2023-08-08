@@ -14,4 +14,7 @@ public class TestHub : Hub
 
     public Task<User?> GetUser(long userId)
         => _service.GetUser(userId);
+
+    public Task<int> Sum(int a, int b)
+        => _service.Sum(a, b);
 }

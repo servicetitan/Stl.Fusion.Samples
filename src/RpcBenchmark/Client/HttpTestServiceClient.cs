@@ -14,6 +14,9 @@ public class HttpTestServiceClient : ITestService
 
     public Task<User?> GetUser(long userId, CancellationToken cancellationToken = default)
         => _client.GetUser(userId, cancellationToken);
+
+    public Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
+        => _client.Sum(a, b, cancellationToken);
 }
 
 [BasePath("api/testService")]
@@ -23,4 +26,6 @@ public interface ITestServiceClientDef
     Task<HelloReply> SayHello([Body] HelloRequest request, CancellationToken cancellationToken = default);
     [Get(nameof(GetUser))]
     Task<User?> GetUser(long userId, CancellationToken cancellationToken = default);
+    [Get(nameof(Sum))]
+    Task<int> Sum(int a, int b, CancellationToken cancellationToken = default);
 }

@@ -10,11 +10,10 @@ public class Benchmark
     public string Title { get; }
     public BenchmarkWorker[] Workers { get; }
 
-    public Benchmark(string title, Func<ITestService> testServiceFactory, double workerCountMultiplier = 1)
+    public Benchmark(string title, Func<ITestService> testServiceFactory)
     {
         Title = title;
-        var workerCount = (int)(WorkerCount * workerCountMultiplier);
-        Workers = new BenchmarkWorker[workerCount];
+        Workers = new BenchmarkWorker[WorkerCount];
         var testService = (ITestService)null!;
         for (var i = 0; i < Workers.Length; i++) {
             if (i % TestServiceConcurrency == 0)
@@ -25,16 +24,17 @@ public class Benchmark
 
     public async Task Run(CancellationToken cancellationToken = default)
     {
-        WriteLine($"{Title} - {Workers.Length} workers");
+        WriteLine($"{Title}:");
         await RunTest("SayHello", (w, whenReady) => w.TestSayHello(whenReady, cancellationToken));
         await RunTest("GetUser", (w, whenReady) => w.TestGetUser(whenReady, cancellationToken));
+        await RunTest("Sum", (w, whenReady) => w.TestSum(whenReady, cancellationToken));
     }
 
     // Private methods
 
     private async Task RunTest(string name, BenchmarkTest benchmarkTest)
     {
-        Write($"  {name,-10}: ");
+        Write($"  {name,-9}: ");
         await RunWorkers(benchmarkTest, WarmupDuration).ConfigureAwait(false);
         var count = await RunWorkers(benchmarkTest, Duration).ConfigureAwait(false);
         WriteLine(count.FormatRps(Duration));

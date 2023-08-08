@@ -27,4 +27,10 @@ public class SignalRTestServiceClient : ITestService, IHasWhenReady
         // - https://github.com/dotnet/aspnetcore/issues/11542
         // ReSharper disable once MethodSupportsCancellation
         => _connection.InvokeAsync<User?>(nameof(GetUser), userId);
+
+    public Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
+        // SignalR currently doesn't support passing CancellationToken for non-streaming calls:
+        // - https://github.com/dotnet/aspnetcore/issues/11542
+        // ReSharper disable once MethodSupportsCancellation
+        => _connection.InvokeAsync<int>(nameof(Sum), a, b);
 }

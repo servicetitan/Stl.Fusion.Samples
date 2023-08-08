@@ -71,7 +71,9 @@ async Task RunClient()
 {
     // Initialize
     await ServerChecker.WhenReady(BaseUrl, cancellationToken);
-    WriteLine($"Service concurrency: {TestServiceConcurrency} workers per test service");
+    WriteLine($"Total worker count: {WorkerCount}");
+    WriteLine($"Client concurrency: {TestServiceConcurrency} workers per client");
+    WriteLine($"Client count:       {WorkerCount / TestServiceConcurrency}");
 
     // Run
     WriteLine();
