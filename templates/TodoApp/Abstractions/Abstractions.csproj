@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>Templates.TodoApp.Abstractions</RootNamespace>
     <AssemblyName>Templates.TodoApp.Abstractions</AssemblyName>
@@ -11,10 +11,10 @@
 
   <ItemGroup>
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageReference Include="Stl.Fusion" Version="6.1.111" />
-    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.1.111" />
-    <PackageReference Include="Stl.Generators" Version="6.1.111" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0-preview.7.23375.6" />
+    <PackageReference Include="Stl.Fusion" Version="6.2.8" />
+    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.2.8" />
+    <PackageReference Include="Stl.Generators" Version="6.2.8" />
   </ItemGroup>
 
 </Project>

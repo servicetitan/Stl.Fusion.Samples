@@ -3,6 +3,13 @@
   <!--
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   -->
+  <PropertyGroup>
+    <!--
+    BL0007: Component parameter 'Samples.Blazor.UI.Shared.StateOfStateBadge.State' should be auto property
+    -->
+    <NoWarn>BL0007;$(NoWarn)</NoWarn>
+  </PropertyGroup>
+
   <!-- Global usings -->
   <ItemGroup>
     <Using Include="System" />

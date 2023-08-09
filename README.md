@@ -23,7 +23,7 @@ see https://servicetitan.github.io/Stl.Fusion.Samples/
 
 ## Running Samples
 
-Build & run locally with [.NET 7 SDK](https://dotnet.microsoft.com/download):
+Build & run locally with [.NET 8.0 Preview SDK](https://dotnet.microsoft.com/download):
 
 ```bash
 # Run this command first
@@ -69,8 +69,7 @@ docker-compose build
 * More detailed version of this page: https://servicetitan.github.io/Stl.Fusion.Samples/
 * Check out [Fusion repository on GitHub]
 * Go to [Documentation Home]
-* Join our [Discord Server] to ask questions and track project updates
-* Explore [Board Games](https://github.com/alexyakunin/BoardGames) -  a real-time multiplayer board gaming app built on Fusion.
+* Join our [Discord Server] to ask questions and track project updates.
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 

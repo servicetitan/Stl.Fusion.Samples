@@ -9,7 +9,7 @@ var host = Host.CreateDefaultBuilder()
     .ConfigureHostConfiguration(cfg => {
         // Looks like there is no better way to set _default_ URL
         cfg.Sources.Insert(0, new MemoryConfigurationSource() {
-            InitialData = new Dictionary<string, string>() {
+            InitialData = new Dictionary<string, string?>() {
                 {WebHostDefaults.ServerUrlsKey, "http://localhost:5005"},
             }
         });

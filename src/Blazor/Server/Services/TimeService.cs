@@ -20,7 +20,7 @@ public class TimeService : ITimeService
     public virtual Task<double> GetUptime(double updatePeriod, CancellationToken cancellationToken = default)
     {
         var computed = Computed.GetCurrent();
-        Task.Delay(TimeSpan.FromSeconds(updatePeriod), default)
+        Task.Delay(TimeSpan.FromSeconds(updatePeriod), CancellationToken.None)
             .ContinueWith(_ => computed!.Invalidate(), CancellationToken.None);
         return Task.FromResult((DateTime.UtcNow - _startTime).TotalSeconds);
     }

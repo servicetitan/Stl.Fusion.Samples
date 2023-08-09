@@ -2,25 +2,25 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
     <AssemblyName>Samples.RpcBenchmark</AssemblyName>
     <RootNamespace>Samples.RpcBenchmark</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.9" />
-    <PackageReference Include="Stl.Fusion" Version="6.1.111" />
-    <PackageReference Include="Stl.Rpc.Server" Version="6.1.111" />
-    <PackageReference Include="Stl.RestEase" Version="6.1.111" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.0-preview.7.23375.9" />
+    <PackageReference Include="Stl.Fusion" Version="6.2.8" />
+    <PackageReference Include="Stl.Rpc.Server" Version="6.2.8" />
+    <PackageReference Include="Stl.RestEase" Version="6.2.8" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
     <PackageReference Include="RestEase.SourceGenerator" Version="1.6.4" />
-    <PackageReference Include="Stl.Generators" Version="6.1.111" />
+    <PackageReference Include="Stl.Generators" Version="6.2.8" />
   </ItemGroup>
 
 </Project>

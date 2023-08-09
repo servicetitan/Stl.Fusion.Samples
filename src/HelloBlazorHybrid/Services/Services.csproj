@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>Samples.HelloBlazorHybrid.Services</RootNamespace>
     <AssemblyName>Samples.HelloBlazorHybrid.Services</AssemblyName>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.1.111" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.2.8" />
   </ItemGroup>
 
 </Project>

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <AssemblyName>Samples.HelloBlazorHybrid.Abstractions</AssemblyName>
     <RootNamespace>Samples.HelloBlazorHybrid.Abstractions</RootNamespace>
@@ -11,13 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion" Version="6.1.111" />
+    <PackageReference Include="Stl.Fusion" Version="6.2.8" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
-    <PackageReference Include="Stl.Generators" Version="6.1.111" />
+    <PackageReference Include="Stl.Generators" Version="6.2.8" />
   </ItemGroup>
 
 </Project>

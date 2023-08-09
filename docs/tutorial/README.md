@@ -21,7 +21,7 @@ The simplest way to run this tutorial:
 Alternatively, you can run it with `dotnet try` CLI tool:
 
 - Install **both**
-  [.NET 6.0 SDK](https://dotnet.microsoft.com/download) and
+  [.NET 8.0 Preview SDK](https://dotnet.microsoft.com/download) and
   [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core)
 - Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md).
   If its release version fails to run the code, install its preview version.

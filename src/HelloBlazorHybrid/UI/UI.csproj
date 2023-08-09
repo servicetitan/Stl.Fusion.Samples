@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <RootNamespace>Samples.HelloBlazorHybrid.UI</RootNamespace>
@@ -21,12 +21,12 @@
     <PackageReference Include="Blazorise.DataGrid" Version="1.2.4" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.2.4" />
     <PackageReference Include="Blazorise.Sidebar" Version="1.2.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="6.1.111" />
-    <PackageReference Include="Stl.Fusion.Blazor.Authentication" Version="6.1.111" />
-    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.1.111" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-preview.7.23375.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-preview.7.23375.9" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0-preview.7.23375.6" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="6.2.8" />
+    <PackageReference Include="Stl.Fusion.Blazor.Authentication" Version="6.2.8" />
+    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.2.8" />
     <PackageReference Include="UAParser" Version="3.1.47" />
   </ItemGroup>
 
