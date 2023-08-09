@@ -45,6 +45,7 @@ public class BenchmarkWorker
         var errorCount = 0L;
         var endsAt = await whenReady.ConfigureAwait(false);
         while ((count & TimeCheckCountMask) != 0 || CpuTimestamp.Now < endsAt) {
+            count++;
             try {
                 var itemId = (long)(1 + Random.Next(0, ItemCount));
                 var item = await TestService.TryGet(itemId, cancellationToken).ConfigureAwait(false);
@@ -52,7 +53,6 @@ public class BenchmarkWorker
                     item = item! with { Name = $"Item-{item.Id}-{item.Version + 1}" };
                     await TestService.AddOrUpdate(item, item.Version, cancellationToken).ConfigureAwait(false);
                 }
-                count++;
             }
             catch (OperationCanceledException) {
                 break;
@@ -62,7 +62,7 @@ public class BenchmarkWorker
             }
         }
         return new Dictionary<string, Counter>() {
-            { IsWriter ? "Writes" : "Reads", new OpsCounter(count) },
+            { IsWriter ? "Writes" : "Reads", new OpsCounter(count - errorCount) },
             { IsWriter ? "!Writes" : "!Reads", new OpsCounter(errorCount) }
         };
     }

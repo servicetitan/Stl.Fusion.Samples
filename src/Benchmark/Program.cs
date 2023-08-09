@@ -78,19 +78,17 @@ async Task RunClient()
     await benchmark.Initialize(cancellationToken);
 
     // Run
-    int m1 = 10;
-    int m2 = 40;
     WriteLine();
     WriteLine("Local services:");
     await new Benchmark("Compute Service", ClientServices.LocalFusionServiceFactory).Run();
-    await new Benchmark("Regular Service", ClientServices.LocalDbServiceFactory, m2).Run();
+    await new Benchmark("Regular Service", ClientServices.LocalDbServiceFactory, 10).Run();
 
     WriteLine();
     WriteLine("Remote services:");
     await new Benchmark("Compute Service Client -> WebSocket -> Compute Service", ClientServices.RemoteFusionServiceFactory).Run();
-    await new Benchmark("Stl.Rpc Client -> WebSocket -> Compute Service", ClientServices.RemoteFusionServiceViaRpcFactory, m2).Run();
-    await new Benchmark("RestEase Client -> HTTP -> Compute Service", ClientServices.RemoteFusionServiceViaHttpFactory, m1).Run();
-    await new Benchmark("RestEase Client -> HTTP -> Regular Service", ClientServices.RemoteDbServiceViaHttpFactory, m1).Run();
+    await new Benchmark("Stl.Rpc Client -> WebSocket -> Compute Service", ClientServices.RemoteFusionServiceViaRpcFactory, 20).Run();
+    await new Benchmark("RestEase Client -> HTTP -> Compute Service", ClientServices.RemoteFusionServiceViaHttpFactory, 2).Run();
+    await new Benchmark("RestEase Client -> HTTP -> Regular Service", ClientServices.RemoteDbServiceViaHttpFactory, 2).Run();
 
     ReadKey();
     // ReSharper disable once AccessToDisposedClosure
