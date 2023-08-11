@@ -1,30 +1,36 @@
 version: '3.4'
 services:
   db:
-    image: "mcr.microsoft.com/mssql/server"
+    image: "postgres:14.0-alpine3.14"
     environment:
-      SA_PASSWORD: "SqlServer1" # Min. 8 chars, upper-lower-digit/symbol
-      ACCEPT_EULA: "Y"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_HOST_AUTH_METHOD: "password"
     ports:
-     - "1433:1433"
-  
+      - "5432:5432"
+    expose:
+      - "5432"
+    entrypoint: ["docker-entrypoint.sh", "-c", "shared_buffers=256MB", "-c", "max_connections=1000"]
+
   tutorial:
-    build: 
+    build:
       context: .
       target: tutorial
     ports:
      - "50005:50005"
 
   sample_hello_world:
-    build: 
+    build:
       context: .
       target: sample_hello_world
+
   sample_hello_cart:
-    build: 
+    build:
       context: .
       target: sample_hello_cart
+
   sample_hello_blazor_server:
-    build: 
+    build:
       context: .
       target: sample_hello_blazor_server
     ports:
@@ -33,8 +39,9 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
       Logging__Console__FormatterName: ""
+
   sample_hello_blazor_hybrid:
-    build: 
+    build:
       context: .
       target: sample_hello_blazor_hybrid
     ports:
@@ -43,8 +50,9 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
       Logging__Console__FormatterName: ""
+
   sample_blazor:
-    build: 
+    build:
       context: .
       target: sample_blazor
     ports:
@@ -53,42 +61,33 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:5005"
       ASPNETCORE_ENVIRONMENT: "Development"
       Logging__Console__FormatterName: ""
-  sample_caching_server:
-    build: 
+
+  sample_mini_rpc:
+    build:
       context: .
-      target: sample_caching_server
-    depends_on:
-     - db
-    links:
-     - db
-    expose:
-     - "5010"
-    ports:
-     - "5010:5010"
-    environment:
-      ASPNETCORE_URLS: "http://0.0.0.0:5010"
-      DB__ServerHost: "db"
-      DB__ServerPort: "1433"
-      Logging__Console__FormatterName: ""
-  sample_caching_client:
-    build: 
+      target: sample_mini_rpc
+
+  sample_multi_server_rpc:
+    build:
       context: .
-      target: sample_caching_client
+      target: multi_server_rpc
+
+  sample_benchmark:
+    build:
+      context: .
+      target: sample_benchmark
     depends_on:
-     - db
-     - sample_caching_server
+      - db
     links:
-     - db
-     - sample_caching_server
-    environment:
-      DB__ServerHost: "db"
-      DB__ServerPort: "1433"
-      Client__ServerHost: "sample_caching_server"
-      Client__ServerPort: "5010"
-      Logging__Console__FormatterName: ""
-  
+      - db
+
+  sample_rpc_benchmark:
+    build:
+      context: .
+      target: sample_rpc_benchmark
+
   sample_blazor_ws:
-    build: 
+    build:
       context: .
       target: sample_blazor_ws
     ports:

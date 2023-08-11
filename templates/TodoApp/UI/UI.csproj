@@ -14,13 +14,11 @@
 
   <!-- Publish & runtime properties -->
   <PropertyGroup>
+    <RunAOTCompilation>false</RunAOTCompilation>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
     <IsTrimmable>true</IsTrimmable>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <!--
-    <RunAOTCompilation>true</RunAOTCompilation>
-    -->
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 

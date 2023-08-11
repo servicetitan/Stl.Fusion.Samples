@@ -16,15 +16,11 @@ ENTRYPOINT ["sh", "start.sh"]
 
 # Samples
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 as build
-RUN apt-get update \
-  && apt-get install -y --allow-unauthenticated \
-    apt-utils \
-    libc6-dev \
-    libgdiplus \
-    python3 \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+FROM mcr.microsoft.com/dotnet/nightly/sdk:8.0-preview-jammy as build
+RUN apt-get update
+RUN apt-get install -y --allow-unauthenticated apt-utils libc6-dev libgdiplus python3
+#RUN apk update
+#RUN apk add libgdiplus python3
 RUN dotnet workload install wasm-tools
 WORKDIR /samples
 COPY ["src/", "src/"]
@@ -57,14 +53,25 @@ FROM build as sample_blazor
 WORKDIR /samples/src/Blazor/Server
 ENTRYPOINT ["dotnet", "bin/Debug/net6.0/Samples.Blazor.Server.dll"]
 
-# Create Caching Server sample image
-FROM build as sample_caching_server
-WORKDIR /samples/src/Caching/Server
-ENTRYPOINT ["dotnet", "bin/Release/net6.0/Samples.Caching.Server.dll"]
+# Create MiniRpc sample image
+FROM build as mini_rpc
+WORKDIR /samples/src/MiniRpc/MiniRpc
+ENTRYPOINT ["dotnet", "bin/Release/net8.0/Samples.MiniRpc.dll"]
 
-# Create Caching Client sample image
-FROM build as sample_caching_client
-WORKDIR /samples/src/Caching/Client/bin/Release/net6.0
+# Create MultiServerRpc sample image
+FROM build as multi_server_rpc
+WORKDIR /samples/src/MultiServerRpc/MultiServerRpc
+ENTRYPOINT ["dotnet", "bin/Release/net8.0/Samples.MultiServerRpc.dll"]
+
+# Create Benchmark sample image
+FROM build as sample_benchmark
+WORKDIR /samples/src/Benchmark/Benchmark
+ENTRYPOINT ["dotnet", "bin/Release/net8.0/Samples.Benchmark.dll"]
+
+# Create RpcBenchmark sample image
+FROM build as sample_rpc_benchmark
+WORKDIR /samples/src/RpcBenchmark/RpcBenchmark
+ENTRYPOINT ["dotnet", "bin/Release/net8.0/Samples.RpcBenchmark.dll"]
 
 
 # Websites
@@ -92,4 +99,4 @@ WORKDIR /samples/src/Blazor/Server
 ENV Logging__Console__FormatterName=
 ENV Server__GitHubClientId=7d519556dd8207a36355
 ENV Server__GitHubClientSecret=8e161ca4799b7e76e1c25429728db6b2430f2057
-ENTRYPOINT ["dotnet", "bin/Release/net6.0/publish/Samples.Blazor.Server.dll"]
+ENTRYPOINT ["dotnet", "bin/Release/net8.0/publish/Samples.Blazor.Server.dll"]
