@@ -2,21 +2,16 @@ using RestEase;
 
 namespace Samples.RpcBenchmark.Client;
 
-public class HttpTestServiceClient : ITestService
+public class HttpTestServiceClient(ITestServiceClientDef client) : ITestService
 {
-    private readonly ITestServiceClientDef _client;
-
-    public HttpTestServiceClient(ITestServiceClientDef client)
-        => _client = client;
-
     public Task<HelloReply> SayHello(HelloRequest request, CancellationToken cancellationToken = default)
-        => _client.SayHello(request, cancellationToken);
+        => client.SayHello(request, cancellationToken);
 
     public Task<User?> GetUser(long userId, CancellationToken cancellationToken = default)
-        => _client.GetUser(userId, cancellationToken);
+        => client.GetUser(userId, cancellationToken);
 
     public Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
-        => _client.Sum(a, b, cancellationToken);
+        => client.Sum(a, b, cancellationToken);
 }
 
 [BasePath("api/testService")]

@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Security.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Samples.RpcBenchmark;
 using Samples.RpcBenchmark.Client;
 using Samples.RpcBenchmark.Server;
@@ -41,22 +45,32 @@ async Task RunServer()
     services.AddSignalR();
     var rpc = services.AddRpc();
     rpc.AddWebSocketServer();
-    services.AddSingleton<TestService>();
+    services.AddGrpc(o => o.IgnoreUnknownServices = true);
+    services.Configure<RouteOptions>(c => c.SuppressCheckForUnhandledSecurityMetadata = true);
 
     // Benchmark services
+    services.AddSingleton<TestService>();
     rpc.AddServer<ITestService, TestService>();
 
-    // Build app & initialize DB
+    // Kestrel
+    builder.WebHost.ConfigureKestrel(kestrel => {
+        kestrel.AddServerHeader = false;
+        kestrel.ConfigureHttpsDefaults(https => {
+            https.SslProtocols = SslProtocols.Tls13;
+        });
+    });
     var app = builder.Build();
 
-    // Start Kestrel
-    app.Urls.Add(BaseUrl);
+    //Map services there
     app.UseWebSockets();
+    app.UseMiddleware<AppServicesMiddleware>();
     app.MapRpcWebSocketServer();
+    app.MapGrpcService<GrpcTestService>();
     app.MapHub<TestHub>("hubs/testService", o => {
         o.Transports = HttpTransportType.WebSockets;
     });
     app.MapTestService<TestService>("/api/testService");
+    app.Urls.Add(BaseUrl);
     try {
         await app.StartAsync(cancellationToken);
         await TaskExt.NeverEndingTask.WaitAsync(cancellationToken);
@@ -72,13 +86,14 @@ async Task RunClient()
     // Initialize
     await ServerChecker.WhenReady(BaseUrl, cancellationToken);
     WriteLine($"Total worker count: {WorkerCount}");
-    WriteLine($"Client concurrency: {TestServiceConcurrency} workers per client");
-    WriteLine($"Client count:       {WorkerCount / TestServiceConcurrency}");
+    WriteLine($"Client concurrency: {ClientConcurrency} workers per client, {GrpcClientConcurrency} per gRPC client");
+    WriteLine($"Client count:       {WorkerCount / ClientConcurrency}");
 
     // Run
     WriteLine();
     await new Benchmark("Stl.Rpc Client", ClientServices.RpcClientService).Run();
     await new Benchmark("SignalR Client", ClientServices.SignalRClientService).Run();
+    await new Benchmark("gRPC Client", ClientServices.GrpcClientService).Run();
     await new Benchmark("RestEase (HTTP) Client", ClientServices.HttpClientService).Run();
 
     ReadKey();

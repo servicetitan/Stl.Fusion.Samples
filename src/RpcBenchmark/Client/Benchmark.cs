@@ -7,14 +7,17 @@ public class Benchmark
 {
     public string Title { get; }
     public BenchmarkWorker[] Workers { get; }
+    public bool IsGrpc { get; }
 
     public Benchmark(string title, Func<ITestService> testServiceFactory)
     {
         Title = title;
         Workers = new BenchmarkWorker[WorkerCount];
-        var testService = (ITestService)null!;
+        var testService = testServiceFactory.Invoke();
+        IsGrpc = testService is GrpcTestServiceClient;
+        var clientConcurrency = IsGrpc ? GrpcClientConcurrency : ClientConcurrency;
         for (var i = 0; i < Workers.Length; i++) {
-            if (i % TestServiceConcurrency == 0)
+            if (i % clientConcurrency == 0 && i != 0)
                 testService = testServiceFactory.Invoke();
             Workers[i] = new BenchmarkWorker(this, testService, i);
         }
@@ -23,9 +26,16 @@ public class Benchmark
     public async Task Run(CancellationToken cancellationToken = default)
     {
         WriteLine($"{Title}:");
-        await RunTest("SayHello", (w, whenReady) => w.TestSayHello(whenReady, cancellationToken));
-        await RunTest("GetUser", (w, whenReady) => w.TestGetUser(whenReady, cancellationToken));
-        await RunTest("Sum", (w, whenReady) => w.TestSum(whenReady, cancellationToken));
+        if (!IsGrpc) {
+            await RunTest("Sum", (w, whenReady) => w.TestSum(whenReady, cancellationToken));
+            await RunTest("GetUser", (w, whenReady) => w.TestGetUser(whenReady, cancellationToken));
+            await RunTest("SayHello", (w, whenReady) => w.TestSayHello(whenReady, cancellationToken));
+        }
+        else {
+            await RunTest("Sum", (w, whenReady) => w.GrpcTestSum(whenReady, cancellationToken));
+            await RunTest("GetUser", (w, whenReady) => w.GrpcTestGetUser(whenReady, cancellationToken));
+            await RunTest("SayHello", (w, whenReady) => w.GrpcTestSayHello(whenReady, cancellationToken));
+        }
     }
 
     // Private methods

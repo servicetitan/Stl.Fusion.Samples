@@ -8,6 +8,7 @@
     <AssemblyName>Samples.RpcBenchmark</AssemblyName>
     <RootNamespace>Samples.RpcBenchmark</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +16,7 @@
     <PackageReference Include="Stl.Fusion" Version="6.2.12" />
     <PackageReference Include="Stl.Rpc.Server" Version="6.2.12" />
     <PackageReference Include="Stl.RestEase" Version="6.2.12" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.50.0" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
@@ -22,6 +24,11 @@
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
     <PackageReference Include="RestEase.SourceGenerator" Version="1.6.4" />
     <PackageReference Include="Stl.Generators" Version="6.2.12" />
+  </ItemGroup>
+  
+  <!-- Protobuf files -->
+  <ItemGroup>
+    <Protobuf Include="Contracts\HelloWorld.proto" />
   </ItemGroup>
 
 </Project>

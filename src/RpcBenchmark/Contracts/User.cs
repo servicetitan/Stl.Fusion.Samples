@@ -6,14 +6,6 @@ namespace Samples.RpcBenchmark;
 [DataContract, MemoryPackable(GenerateType.VersionTolerant)]
 public sealed partial class User : IHasId<long>
 {
-    public static readonly User ExamplePayload = new() {
-        Id = 1,
-        Version = 2,
-        CreatedAt = DateTime.Now,
-        ModifiedAt = DateTime.Now,
-        Name = "Bob",
-    };
-
     [DataMember, MemoryPackOrder(0)] public long Id { get; set; }
     [DataMember, MemoryPackOrder(1)] public long Version { get; set; }
     [DataMember, MemoryPackOrder(2)] public DateTime CreatedAt { get; set; }

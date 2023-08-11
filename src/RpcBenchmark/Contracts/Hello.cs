@@ -6,22 +6,6 @@ namespace Samples.RpcBenchmark;
 [DataContract, MemoryPackable(GenerateType.VersionTolerant)]
 public sealed partial class Hello
 {
-    public static readonly Hello ExamplePayload = new() {
-        // The data is taken from:
-        // - https://github.com/LesnyRumcajs/grpc_bench/blob/master/scenarios/complex_proto/payload
-        Name = "a name",
-        Double = 4.55332,
-        Float = 232.3f,
-        Bool = true,
-        Int32 = 32,
-        Int64 = 444325235223L,
-        ChoiceString = "ofcouse",
-        Pets = new Pet[] {
-            new() { Name = "Bof the dog", Color = Color.Blue },
-            new() { Name = "Kim the cat", Color = Color.Red },
-        }
-    };
-
     [DataMember, MemoryPackOrder(0)] public string Name { get; set; } = null!;
     [DataMember, MemoryPackOrder(1)] public double Double { get; set; }
     [DataMember, MemoryPackOrder(2)] public float Float { get; set; }

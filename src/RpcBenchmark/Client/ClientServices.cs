@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stl.RestEase;
 using Stl.Rpc;
@@ -8,6 +9,7 @@ public static class ClientServices
 {
     public static readonly Func<ITestService> RpcClientService;
     public static readonly Func<ITestService> SignalRClientService;
+    public static readonly Func<ITestService> GrpcClientService;
     public static readonly Func<ITestService> HttpClientService;
 
     static ClientServices()
@@ -26,6 +28,14 @@ public static class ClientServices
             SignalRClientService = () => {
                 var c = services.BuildServiceProvider();
                 return c.GetRequiredService<SignalRTestServiceClient>();
+            };
+        }
+        {
+            var services = CreateBaseServiceCollection();
+            services.AddSingleton<GrpcTestServiceClient>();
+            GrpcClientService = () => {
+                var c = services.BuildServiceProvider();
+                return c.GetRequiredService<GrpcTestServiceClient>();
             };
         }
         {
@@ -60,9 +70,11 @@ public static class ClientServices
         var restEase = services.AddRestEase();
         var baseAddress = new Uri(Settings.BaseUrl);
         restEase.ConfigureHttpClient((_, name, o) => {
+            o.HttpMessageHandlerBuilderActions.Add(h => h.PrimaryHandler = new HttpClientHandler() {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+            });
             o.HttpClientActions.Add(c => c.BaseAddress = baseAddress);
         });
-
         return services;
     }
 }

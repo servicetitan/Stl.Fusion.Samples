@@ -1,0 +1,91 @@
+// Copyright 2015 gRPC authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "proto/helloworld";
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.helloworld";
+option java_outer_classname = "HelloWorldProto";
+option objc_class_prefix = "HLW";
+option csharp_namespace = "Samples.RpcBenchmark";
+
+package helloworld;
+
+service GrpcService {
+  rpc SayHello (GrpcHelloRequest) returns (GrpcHelloReply) {}
+  rpc GetUser (GrpcGetUserRequest) returns (GrpcGetUserReply) {}
+  rpc Sum (GrpcSumRequest) returns (GrpcSumReply) {}
+}
+
+message GrpcHello {
+  string name = 1;
+  double double = 2;
+  float float = 3;
+  bool bool = 4;
+  int32 int32 = 5;
+  int64 int64 = 6;
+  oneof choice {
+    string choiceString = 7;
+    bool choiceBool = 8;
+  }
+  message GrpcPet {
+    enum GrpcColor {
+      Black = 0;
+      White = 1;
+      Blue = 2;
+      Red = 3;
+      Yellow = 4;
+      Green = 5;
+    }
+    string name = 1;
+    GrpcColor color = 2;
+  }
+  repeated GrpcPet pets = 9;
+}
+
+message GrpcUser {
+    int64 id = 1;
+    int64 version = 2;
+    google.protobuf.Timestamp createdAt = 3;
+    google.protobuf.Timestamp modifiedAt = 4;
+    string name = 5;
+}
+
+message GrpcHelloRequest {
+  GrpcHello request = 1;
+}
+
+message GrpcHelloReply {
+  GrpcHello response = 1;
+}
+
+message GrpcGetUserRequest {
+  int64 userId = 1;
+}
+
+message GrpcGetUserReply {
+  optional GrpcUser user = 1;
+}
+
+message GrpcSumRequest {
+  int64 a = 1;
+  int64 b = 2;
+}
+
+message GrpcSumReply {
+  int64 sum = 1;
+}
