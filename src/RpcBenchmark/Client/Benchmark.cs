@@ -6,16 +6,17 @@ using static Settings;
 public class Benchmark
 {
     public string Title { get; }
-    public BenchmarkWorker[] Workers { get; }
     public bool IsGrpc { get; }
+    public BenchmarkWorker[] Workers { get; }
 
     public Benchmark(string title, Func<ITestService> testServiceFactory)
     {
         Title = title;
-        Workers = new BenchmarkWorker[WorkerCount];
         var testService = testServiceFactory.Invoke();
         IsGrpc = testService is GrpcTestServiceClient;
+        var workerCount = IsGrpc ? GrpcWorkerCount : WorkerCount;
         var clientConcurrency = IsGrpc ? GrpcClientConcurrency : ClientConcurrency;
+        Workers = new BenchmarkWorker[workerCount];
         for (var i = 0; i < Workers.Length; i++) {
             if (i % clientConcurrency == 0 && i != 0)
                 testService = testServiceFactory.Invoke();

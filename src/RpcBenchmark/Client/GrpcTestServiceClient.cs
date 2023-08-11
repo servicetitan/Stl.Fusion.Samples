@@ -9,8 +9,13 @@ public class GrpcTestServiceClient : ITestService
 
     public GrpcTestServiceClient(IServiceProvider services)
     {
-        var httpClient = services.GetRequiredService<HttpClient>();
-        var channelOptions = new GrpcChannelOptions() { HttpClient = httpClient };
+        var channelOptions = new GrpcChannelOptions() {
+            HttpHandler = new SocketsHttpHandler {
+                EnableMultipleHttp2Connections = true,
+                MaxConnectionsPerServer = int.MaxValue,
+                PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+            }
+        };
         var channel = GrpcChannel.ForAddress(Settings.BaseUrl, channelOptions);
         Client = new(channel);
     }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stl.RestEase;
@@ -73,7 +74,11 @@ public static class ClientServices
             o.HttpMessageHandlerBuilderActions.Add(h => h.PrimaryHandler = new HttpClientHandler() {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
             });
-            o.HttpClientActions.Add(c => c.BaseAddress = baseAddress);
+            o.HttpClientActions.Add(c => {
+                c.BaseAddress = baseAddress;
+                c.DefaultRequestVersion = HttpVersion.Version20;
+                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+            });
         });
         return services;
     }

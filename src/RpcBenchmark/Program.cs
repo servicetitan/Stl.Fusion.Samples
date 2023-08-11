@@ -58,6 +58,10 @@ async Task RunServer()
         kestrel.ConfigureHttpsDefaults(https => {
             https.SslProtocols = SslProtocols.Tls13;
         });
+        var http2 = kestrel.Limits.Http2;
+        http2.InitialConnectionWindowSize = 2 * 1024 * 1024;
+        http2.InitialStreamWindowSize = 1024 * 1024;
+        http2.MaxStreamsPerConnection = 16_000;
     });
     var app = builder.Build();
 
@@ -85,9 +89,10 @@ async Task RunClient()
 {
     // Initialize
     await ServerChecker.WhenReady(BaseUrl, cancellationToken);
-    WriteLine($"Total worker count: {WorkerCount}");
-    WriteLine($"Client concurrency: {ClientConcurrency} workers per client, {GrpcClientConcurrency} per gRPC client");
-    WriteLine($"Client count:       {WorkerCount / ClientConcurrency}");
+    WriteLine("Settings (default / gRPC):");
+    WriteLine($"  Total worker count: {WorkerCount} / {GrpcWorkerCount}");
+    WriteLine($"  Client concurrency: {ClientConcurrency} / {GrpcClientConcurrency}");
+    WriteLine($"  Client count:       {WorkerCount / ClientConcurrency} / {GrpcWorkerCount / GrpcClientConcurrency}");
 
     // Run
     WriteLine();
