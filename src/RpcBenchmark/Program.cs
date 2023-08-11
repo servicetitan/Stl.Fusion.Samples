@@ -69,6 +69,7 @@ async Task RunServer()
     app.UseWebSockets();
     app.UseMiddleware<AppServicesMiddleware>();
     app.MapRpcWebSocketServer();
+    // app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
     app.MapGrpcService<GrpcTestService>();
     app.MapHub<TestHub>("hubs/testService", o => {
         o.Transports = HttpTransportType.WebSockets;
