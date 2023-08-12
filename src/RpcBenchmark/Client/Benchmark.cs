@@ -54,12 +54,17 @@ public class Benchmark
         for (var i = 0; i < warmupCount; i++) {
             await RunWorkers(benchmarkTest, Command.WarmupDuration / warmupCount).ConfigureAwait(false);
             GC.Collect();
-            await Task.Delay(50);
         }
 
-        var result = await RunWorkers(benchmarkTest, Command.Duration).ConfigureAwait(false);
-        var cps = result.Count / (result.Duration / Workers.Length);
-        WriteLine($"{cps.FormatCount()} calls/s");
+        var bestCps = 0d;
+        for (var i = 0; i < Command.TryCount; i++) {
+            var result = await RunWorkers(benchmarkTest, Command.Duration).ConfigureAwait(false);
+            var cps = result.Count / (result.Duration / Workers.Length);
+            Write($"{cps.FormatCount()} ");
+            bestCps = Math.Max(bestCps, cps);
+            GC.Collect();
+        }
+        WriteLine($"-> {bestCps.FormatCount()} calls/s");
     }
 
     private async Task<BenchmarkResult> RunWorkers(BenchmarkTest benchmarkTest, double duration)
