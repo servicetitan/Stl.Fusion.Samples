@@ -47,13 +47,13 @@ public partial class ClientCommand : BenchmarkCommandBase
     [ValueDescription("Number")]
     [ValidateRange(0.1d, null)]
     [Alias("d")]
-    public double Duration { get; set; } = 10;
+    public double Duration { get; set; } = 15;
 
     [CommandLineArgument]
     [Description("Pre-test warmup duration in seconds.")]
     [ValidateRange(0.1d, null)]
     [Alias("wd")]
-    public double WarmupDuration { get; set; } = 1;
+    public double WarmupDuration { get; set; } = 5;
 
     [CommandLineArgument]
     [Description("Wait for a key press when benchmark ends.")]
@@ -70,14 +70,15 @@ public partial class ClientCommand : BenchmarkCommandBase
 
         await ServerChecker.WhenReady(Url, cancellationToken);
         WriteLine("Client settings:");
-        WriteLine($"  Server URL:         {Url}");
-        WriteLine($"  Total worker count: {Workers}");
-        WriteLine($"  Client concurrency: {ClientConcurrency}");
-        WriteLine($"  Client count:       {Workers / ClientConcurrency}");
+        WriteLine($"  Server URL:           {Url}");
+        WriteLine($"  Warmup+test duration: {WarmupDuration:N} + {Duration:N} seconds");
+        WriteLine($"  Total worker count:   {Workers}");
+        WriteLine($"  Client concurrency:   {ClientConcurrency}");
+        WriteLine($"  Client count:         {Workers / ClientConcurrency}");
         if (GrpcClientConcurrency != ClientConcurrency) {
             WriteLine("Client settings for gRPC tests:");
-            WriteLine($"  Client concurrency: {GrpcClientConcurrency}");
-            WriteLine($"  Client count:       {Workers / GrpcClientConcurrency}");
+            WriteLine($"  Client concurrency:   {GrpcClientConcurrency}");
+            WriteLine($"  Client count:         {Workers / GrpcClientConcurrency}");
         }
         await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
 
