@@ -17,7 +17,7 @@ public partial class ClientCommand : BenchmarkCommandBase
     [ValueDescription("Any subset of StlRpc,SignalR,Grpc,Http")]
     [ValidateRange(1, null)]
     [Alias("b")]
-    public string Benchmarks { get; set; } = "Http,Grpc,SignalR,StlRpc";
+    public string Benchmarks { get; set; } = "StlRpc, SignalR, Grpc, Http";
 
     [CommandLineArgument]
     [Description("Client concurrency - the number of worker tasks using a single client.")]
@@ -91,7 +91,7 @@ public partial class ClientCommand : BenchmarkCommandBase
         // Run
         WriteLine();
         var clientFactories = new ClientFactories(Url);
-        var benchmarkKinds = Benchmarks.Split(",").Select(Enum.Parse<BenchmarkKind>).ToList();
+        var benchmarkKinds = Benchmarks.Split(",").Select(x => Enum.Parse<BenchmarkKind>(x.Trim())).ToList();
         foreach (var benchmarkKind in benchmarkKinds) {
             var (name, factory) = clientFactories[benchmarkKind];
             await new Benchmark(this, $"{name} Client", factory).Run();
