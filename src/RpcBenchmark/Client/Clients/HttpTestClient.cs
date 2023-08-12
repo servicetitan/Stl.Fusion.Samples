@@ -1,17 +1,31 @@
+using System.Net.Http;
 using RestEase;
+using Stl.RestEase;
 
 namespace Samples.RpcBenchmark.Client;
 
-public class HttpTestServiceClient(ITestServiceClientDef client) : ITestService
+public class HttpTestClient : ITestService, IDisposable
 {
+    private readonly HttpClient _httpClient;
+    private readonly ITestServiceClientDef _client;
+
+    public HttpTestClient(IServiceProvider services)
+    {
+        _httpClient = services.GetRequiredService<HttpClient>();
+        _client = RestEaseBuilder.CreateRestClient(services, _httpClient).For<ITestServiceClientDef>();
+    }
+
+    public void Dispose()
+        => _httpClient.Dispose();
+
     public Task<HelloReply> SayHello(HelloRequest request, CancellationToken cancellationToken = default)
-        => client.SayHello(request, cancellationToken);
+        => _client.SayHello(request, cancellationToken);
 
     public Task<User?> GetUser(long userId, CancellationToken cancellationToken = default)
-        => client.GetUser(userId, cancellationToken);
+        => _client.GetUser(userId, cancellationToken);
 
     public Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
-        => client.Sum(a, b, cancellationToken);
+        => _client.Sum(a, b, cancellationToken);
 }
 
 [BasePath("api/testService")]

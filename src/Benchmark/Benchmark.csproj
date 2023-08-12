@@ -7,7 +7,16 @@
     <LangVersion>preview</LangVersion>
     <AssemblyName>Samples.Benchmark</AssemblyName>
     <RootNamespace>Samples.Benchmark</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Performance-related settings -->
+  <PropertyGroup>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
+    <TieredCompilationQuickJitForLoops>false</TieredCompilationQuickJitForLoops>
+    <TieredPGO>true</TieredPGO>
   </PropertyGroup>
 
   <ItemGroup>

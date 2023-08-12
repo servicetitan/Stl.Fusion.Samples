@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Samples.RpcBenchmark.Client;
 
-public class SignalRTestServiceClient(HubConnection connection) : ITestService, IHasWhenReady
+public class SignalRTestClient(HubConnection connection) : ITestService, IHasWhenReady
 {
     public Task WhenReady { get; } = connection.State == HubConnectionState.Disconnected
         ? connection.StartAsync()

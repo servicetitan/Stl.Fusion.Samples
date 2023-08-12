@@ -1,3 +1,3 @@
 namespace Samples.RpcBenchmark.Client;
 
-public delegate Task<long> BenchmarkTest(BenchmarkWorker worker, Task<CpuTimestamp> whenReady);
+public delegate Task<BenchmarkResult> BenchmarkTest(BenchmarkWorker worker, Task<CpuTimestamp> whenReady);

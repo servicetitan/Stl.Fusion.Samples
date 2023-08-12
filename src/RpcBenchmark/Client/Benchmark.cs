@@ -1,73 +1,78 @@
-using static System.Console;
-
 namespace Samples.RpcBenchmark.Client;
-using static Settings;
 
 public class Benchmark
 {
+    public ClientCommand Command { get; }
     public string Title { get; }
     public bool IsGrpc { get; }
     public BenchmarkWorker[] Workers { get; }
 
-    public Benchmark(string title, Func<ITestService> testServiceFactory)
+    public Benchmark(ClientCommand command, string title, Func<ITestService> clientFactory)
     {
+        Command = command;
         Title = title;
-        var testService = testServiceFactory.Invoke();
-        IsGrpc = testService is GrpcTestServiceClient;
-        var workerCount = IsGrpc ? GrpcWorkerCount : WorkerCount;
-        var clientConcurrency = IsGrpc ? GrpcClientConcurrency : ClientConcurrency;
-        Workers = new BenchmarkWorker[workerCount];
+        var client = clientFactory.Invoke();
+        IsGrpc = client is GrpcTestClient;
+        var clientConcurrency = IsGrpc
+            ? command.GrpcClientConcurrency
+            : command.ClientConcurrency;
+        Workers = new BenchmarkWorker[command.Workers];
         for (var i = 0; i < Workers.Length; i++) {
             if (i % clientConcurrency == 0 && i != 0)
-                testService = testServiceFactory.Invoke();
-            Workers[i] = new BenchmarkWorker(this, testService, i);
+                client = clientFactory.Invoke();
+            Workers[i] = new BenchmarkWorker(this, client, i);
         }
     }
 
-    public async Task Run(CancellationToken cancellationToken = default)
+    public async Task Run()
     {
         WriteLine($"{Title}:");
         if (!IsGrpc) {
-            await RunTest("Sum", (w, whenReady) => w.TestSum(whenReady, cancellationToken));
-            await RunTest("GetUser", (w, whenReady) => w.TestGetUser(whenReady, cancellationToken));
-            await RunTest("SayHello", (w, whenReady) => w.TestSayHello(whenReady, cancellationToken));
+            await RunOne("Sum", (w, whenReady) => w.TestSum(whenReady)).ConfigureAwait(false);
+            await RunOne("GetUser", (w, whenReady) => w.TestGetUser(whenReady)).ConfigureAwait(false);
+            await RunOne("SayHello", (w, whenReady) => w.TestSayHello(whenReady)).ConfigureAwait(false);
         }
         else {
-            await RunTest("Sum", (w, whenReady) => w.GrpcTestSum(whenReady, cancellationToken));
-            await RunTest("GetUser", (w, whenReady) => w.GrpcTestGetUser(whenReady, cancellationToken));
-            await RunTest("SayHello", (w, whenReady) => w.GrpcTestSayHello(whenReady, cancellationToken));
+            await RunOne("Sum", (w, whenReady) => w.GrpcTestSum(whenReady)).ConfigureAwait(false);
+            await RunOne("GetUser", (w, whenReady) => w.GrpcTestGetUser(whenReady)).ConfigureAwait(false);
+            await RunOne("SayHello", (w, whenReady) => w.GrpcTestSayHello(whenReady)).ConfigureAwait(false);
         }
+
+        // Dispose clients
+        var clients = Workers.Select(w => w.Client).ToHashSet();
+        foreach (var client in clients)
+            if (client is IDisposable d)
+                d.Dispose();
     }
 
     // Private methods
 
-    private async Task RunTest(string name, BenchmarkTest benchmarkTest)
+    private async Task RunOne(string name, BenchmarkTest benchmarkTest)
     {
         Write($"  {name,-9}: ");
-        await RunWorkers(benchmarkTest, WarmupDuration).ConfigureAwait(false);
-        var count = await RunWorkers(benchmarkTest, Duration).ConfigureAwait(false);
-        WriteLine(count.FormatRps(Duration));
-    }
-
-    private async Task<long> RunWorkers(BenchmarkTest benchmarkTest, TimeSpan duration)
-    {
-        if (ForceGCCollect) {
+        const int warmupCount = 3;
+        for (var i = 0; i < warmupCount; i++) {
+            await RunWorkers(benchmarkTest, Command.WarmupDuration / warmupCount).ConfigureAwait(false);
             GC.Collect();
-            await Task.Delay(100).ConfigureAwait(false);
-            GC.Collect();
+            await Task.Delay(50);
         }
 
+        var result = await RunWorkers(benchmarkTest, Command.Duration).ConfigureAwait(false);
+        var cps = result.Count / (result.Duration / Workers.Length);
+        WriteLine($"{cps.FormatCount()} calls/s");
+    }
+
+    private async Task<BenchmarkResult> RunWorkers(BenchmarkTest benchmarkTest, double duration)
+    {
         var whenReadySource = TaskCompletionSourceExt.New<CpuTimestamp>();
         var runTask = Workers
-            .Select(w => Task.Run(
-                () => benchmarkTest.Invoke(w, whenReadySource.Task),
-                CancellationToken.None))
-            .ToList();
-        whenReadySource.SetResult(CpuTimestamp.Now + duration);
+            .Select(w => benchmarkTest.Invoke(w, whenReadySource.Task))
+            .ToArray();
+        whenReadySource.SetResult(CpuTimestamp.Now + TimeSpan.FromSeconds(duration));
 
-        var count = 0L;
+        var result = new BenchmarkResult();
         foreach (var task in runTask)
-            count += await task.ConfigureAwait(false);
-        return count;
+            result += await task.ConfigureAwait(false);
+        return result;
     }
 }
