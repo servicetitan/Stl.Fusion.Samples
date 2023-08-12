@@ -57,7 +57,7 @@ public partial class ServerCommand : BenchmarkCommandBase
             var http2 = kestrel.Limits.Http2;
             http2.InitialConnectionWindowSize = 2 * 1024 * 1024;
             http2.InitialStreamWindowSize = 1024 * 1024;
-            http2.MaxStreamsPerConnection = 16_000;
+            http2.MaxStreamsPerConnection = 256;
         });
         var app = builder.Build();
 
