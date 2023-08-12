@@ -51,13 +51,13 @@ public partial class ClientCommand : BenchmarkCommandBase
 
     [CommandLineArgument]
     [Description("Pre-test warmup duration in seconds.")]
-    [ValidateRange(0.1d, null)]
+    [ValidateRange(0.01d, null)]
     [Alias("wd")]
     public double WarmupDuration { get; set; } = 5;
 
     [CommandLineArgument]
     [Description("Test (attempt) count.")]
-    [ValidateRange(0.1d, null)]
+    [ValidateRange(1, null)]
     [Alias("n")]
     public int TryCount { get; set; } = 5;
 
