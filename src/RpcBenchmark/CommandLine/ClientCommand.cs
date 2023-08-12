@@ -71,6 +71,7 @@ public partial class ClientCommand : BenchmarkCommandBase
 
     public override async Task<int> RunAsync()
     {
+        Url = FixBaseUrl(Url);
         SystemSettings.Apply(this);
         var cancellationToken = StopToken;
 
@@ -91,7 +92,10 @@ public partial class ClientCommand : BenchmarkCommandBase
         // Run
         WriteLine();
         var clientFactories = new ClientFactories(Url);
-        var benchmarkKinds = Benchmarks.Split(",").Select(x => Enum.Parse<BenchmarkKind>(x.Trim())).ToList();
+        var benchmarkKinds = Benchmarks
+            .Split(",")
+            .Select(x => Enum.Parse<BenchmarkKind>(x.Trim(), true))
+            .ToArray();
         foreach (var benchmarkKind in benchmarkKinds) {
             var (name, factory) = clientFactories[benchmarkKind];
             await new Benchmark(this, $"{name} Client", factory).Run();

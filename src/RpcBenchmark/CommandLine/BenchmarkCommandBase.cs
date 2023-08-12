@@ -28,4 +28,9 @@ public abstract class BenchmarkCommandBase : AsyncCommandBase
     [ValidateRange(1, null)]
     [Alias("z")]
     public SerializerKind Serializer { get; set; } = SerializerKind.MessagePack;
+
+    protected static string FixBaseUrl(string url)
+        => url.EndsWith("/", StringComparison.Ordinal)
+            ? url
+            : url + "/";
 }

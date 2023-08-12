@@ -23,6 +23,7 @@ public partial class ServerCommand : BenchmarkCommandBase
 
     public override async Task<int> RunAsync()
     {
+        Url = FixBaseUrl(Url);
         SystemSettings.Apply(this);
         var cancellationToken = StopToken;
         WriteLine($"Starting server @ {Url}");
@@ -50,9 +51,9 @@ public partial class ServerCommand : BenchmarkCommandBase
         // Kestrel
         builder.WebHost.ConfigureKestrel(kestrel => {
             kestrel.AddServerHeader = false;
-            kestrel.ConfigureHttpsDefaults(https => {
-                https.SslProtocols = SslProtocols.Tls13;
-            });
+            // kestrel.ConfigureHttpsDefaults(https => {
+            //     https.SslProtocols = SslProtocols.Tls13;
+            // });
             var http2 = kestrel.Limits.Http2;
             http2.InitialConnectionWindowSize = 2 * 1024 * 1024;
             http2.InitialStreamWindowSize = 1024 * 1024;
