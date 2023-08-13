@@ -192,7 +192,7 @@ or [Docker](https://www.docker.com/).
 
 ## Running Samples
 
-Build & run locally with [.NET 6.0 SDK](https://dotnet.microsoft.com/download):
+Build & run locally with [.NET 8.0 Preview SDK](https://dotnet.microsoft.com/download):
 
 ```bash
 # Run this command first
