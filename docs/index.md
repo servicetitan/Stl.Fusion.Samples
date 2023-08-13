@@ -179,9 +179,9 @@ HTTP Client:
 
 You can see that `Stl.Rpc` outperforms SignalR - the next fastest RPC option available on .NET - by **20-50%**. As for gRPC and HTTP/REST, they aren't even close on this test. 
 
-It worth to mention this test does something many of similar benchmarks miss: instead of using a single client per worker, it uses N clients (120 in this case) * M workers (120 per client) to produce the load. And this setup shows a huge difference between (Stl.Rpc, SignalR) and (gRPC, HTTP):
-- First two protocols use automatic batching (or custom framing) - they pack as many of queued messages as they can into the next network packet.
-- And on contrary, `HttpClient` and `gRPC` don't seem to do that.
+It worth to mention this test does something many of similar benchmarks miss: instead of using a single client per worker, it uses N clients (120 in this case), where each of these clients is concurrently used by M workers (120 per client). And this setup shows a huge difference between (Stl.Rpc, SignalR) and (gRPC, HTTP):
+- First two options use automatic batching (or custom framing) - they pack as many of queued messages as they can into the next network packet.
+- And on contrary, `HttpClient` and gRPC don't seem to do anything similar.
 
 Why this scenario is important? That's because this feature allows Fusion Clients and RPC in general to be efficient: Fusion assumes every of its services can be used concurrently, including Compute Service Clients, which enables to use "concurrent gather" as a typical fetch pattern. Here is an example:
 - First you call `GetContactIds`, which produces the list of `ContactId`
