@@ -133,9 +133,19 @@ What's interesting in "Remote services" part of the output?
 
 It's another console app built to compare the throughput of different kinds of RPC protocols, including Fusion's own `Stl.Rpc`. 
 
-By default it runs both the client and the server in the same process, but you can run them separately as well. Run it with `-?` switch to see its help.
+By default it runs both the client and the server in the same process, but you can run them separately as well - use `-?` switch to see the help, but overall:
 
-Its output on Ryzen Threadripper 3960X:
+To run the server:
+```bash
+dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj -- server https://0.0.0.0:8888/
+```
+
+To run the client:
+```bash
+dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj -- client https://serverIPOrHostName:8888/ -cc <ClientConcurrency> -w <TotalWorkerCount> -wait
+```
+
+The output on Ryzen Threadripper 3960X with `test -wait` switches:
 
 ```text
 System-wide settings:
