@@ -18,8 +18,9 @@ updates at all:
 
 <img src="https://img.shields.io/badge/-Live!-red" valign="middle"> Play with [live version of this app](https://fusion-samples.servicetitan.com) right now!
 
-If you're looking for detailed description of every sample,
-see https://servicetitan.github.io/Stl.Fusion.Samples/
+
+* Play with [Actual Chat] - probably the most complex app that's currently built on Fusion. It runs everywhere (there are SSB/WASM, iOS, Android, and Windows clients sharing ~95% of the codebase) and delivers nearly everything what other chats can, but also allows you to join or initiate a conversation much faster **by delivering your voice and its transcription in real-time**.
+
 
 ## Running Samples
 
@@ -64,12 +65,14 @@ docker-compose build
 | [RpcBenchmark] | `docker-compose run sample_rpc_benchmark dotnet Samples.RpcBenchmark.dll` |
 | [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
+A detailed description of nearly every sample can be found here: https://servicetitan.github.io/Stl.Fusion.Samples/
+
 ## Useful Links
 
-* More detailed version of this page: https://servicetitan.github.io/Stl.Fusion.Samples/
 * Check out [Fusion repository on GitHub]
-* Go to [Documentation Home]
-* Join our [Discord Server] to ask questions and track project updates.
+* Play with [Actual Chat] - probably the most complex app that's currently built on Fusion. It runs everywhere (there are SSB/WASM, iOS, Android, and Windows clients sharing ~95% of the codebase) and delivers nearly everything what other chats can, but also allows you to join or initiate a conversation much faster **by delivering your voice and its transcription in real-time**.
+* Join our [Discord Server] to ask questions and track project updates. We'll migrate it to [Actual Chat] soon 😉
+* Go to [Documentation Home].
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 
@@ -91,6 +94,7 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Tutorial]: docs/tutorial/README.md
 [Fusion Tutorial]: docs/tutorial/README.md
 [Documentation Home]: https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md
+[Actual Chat]: https://actual.chat
 
 [Compute Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part01.md
 [Compute Service]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/docs/tutorial/Part01.md

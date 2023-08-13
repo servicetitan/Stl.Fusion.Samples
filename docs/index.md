@@ -6,6 +6,8 @@ Welcome to a collection of [Fusion] samples!
 
 ## What's Inside?
 
+<img src="https://img.shields.io/badge/-Important!-red" valign="middle"> This description is slightly outdated - we've added a few more samples with Fusion v6.1 release.
+
 ### 0. Solution Templates
 
 We don't provide `dotnet new`-based templates yet, but you can find
@@ -98,50 +100,34 @@ you can switch the mode on its "Home" page.
 
 ![](img/Samples-Blazor-Auth.gif)
 
-Moreover, it also exposes a regular RESTful API &ndash;
-try invoking any of endpoints there right from embedded Swagger console.
-
-![](img/SwaggerDoc.jpg)
-
-### 4. Caching Sample
+### 4. Benchmark Sample
 
 It's a console app running the benchmark (`Client`) + ASP.NET Core API `Server`. Its output on Ryzen Threadripper 3960X:
 
 ```text
+Item count:         1000
+Client concurrency: 200 workers per client or test service
+Writer count:       0
+Initializing...
+  Remaining item count: 278
+  Done.
+
 Local services:
-Fusion's Compute Service [-> EF Core -> SQL Server]:
-  Reads         : 33.31M operations/s
-Regular Service [-> EF Core -> SQL Server]:
-  Reads         : 24.59K operations/s
+  Fusion Service                     480 readers: 111.53M 122.32M 122.72M 122.59M -> 122.72M calls/s
+  Regular Service                    960 readers:  78.42K  97.85K 100.09K 101.30K -> 101.30K calls/s
 
 Remote services:
-Fusion's Replica Client [-> HTTP+WebSocket -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 19.26M operations/s
-RestEase Client [-> HTTP -> ASP.NET Core -> Compute Service -> EF Core -> SQL Server]:
-  Reads         : 153.54K operations/s
-RestEase Client [-> HTTP -> ASP.NET Core -> Regular Service -> EF Core -> SQL Server]:
-  Reads         : 21.66K operations/s
+  Fusion Client -> Fusion Service    480 readers: 114.51M 117.23M 116.82M 116.83M -> 117.23M calls/s
+  Stl.Rpc Client -> Fusion Service  4800 readers: 603.72K 659.89K 658.37K 671.06K -> 671.06K calls/s
+  HTTP Client -> Fusion Service     2400 readers: 147.16K 156.39K 154.63K 154.98K -> 156.39K calls/s
+  HTTP Client -> Regular Service    2400 readers:  62.56K  64.70K  63.63K  63.88K ->  64.70K calls/s
 ```
 
-What's interesting in this output?
-- Fusion-backed API endpoint serving relatively small amount of cacheable data
-    scales to ~ **150,000 RPS** while running the test on the same machine 
-    (that's a disadvantage).
-- Identical EF Core-based API endpoint scales to just 20K RPS.
-
-So there is a ~ 7x difference for an extremely simple EF Core service 
-hitting a tiny DB running in simple recovery mode.
-In other words, use of Fusion on server-side only brings ~ an order of 
-magnitude performance boost even when there is almost nothing to speed up! 
-
-Besides that, the test shows [Replica Services] scale ~ almost as local 
-[Compute Services], i.e. to ~ **20 million "RPS"**. 
-These aren't true RPS, of course - Replica Service simply kills any RPC 
-for cached values that are known to be consistent. But nevertheless,
-it's still a pretty unique feature Fusion brings to the table &ndash; and that's
-exactly what allows it Blazor samples to share the same code for both WASM and Blazor Server
-modes. So even though Replica Service is just a client for remote Compute Service,
-its performance is very similar!
+What's interesting in "Remote services" part of the output?
+- Fusion Client performs nearly as quickly as the local Fusion service delivering ~ **120M calls/s**. The number looks crazy, but that's exactly what Fusion does by eliminating a large portion of RPC calls which results are known to be identical to the ones client already has. That's exactly what allows all Blazor samples here to share the same code in both WASM and Blazor Server modes.
+- Besides that, Fusion uses `Stl.Rpc` client instead of an HTTP Client. And the next test shows this client is much faster than HTTP-based one. In fact, this test doesn't demonstrate it's full potential - `RpcBenchmark` (read further) shows it can squeeze up to **3.3M RPS** on the same machine!
+- An HTTP API endpoint backed by Fusion service delivers **156K RPS** with both client & server running on the same machine (that's a disadvantage).
+- Identical EF Core-based API endpoint (that's what most people typically use now) scales to just **64K RPS**.
 
 ### 5. Tutorial
 
@@ -163,36 +149,21 @@ dotnet build
 |-|-|
 | [HelloCart] | `dotnet run -p src/HelloCart/HelloCart.csproj` |
 | [HelloWorld] | `dotnet run -p src/HelloWorld/HelloWorld.csproj` |
-| [HelloBlazorServer] |  `dotnet run --project src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5005/ |
-| [HelloBlazorHybrid] |  `dotnet run --project src/HelloBlazorHybrid/Server/Server.csproj` + open http://localhost:5005/ |
-| [Blazor Samples] |  `dotnet run --project src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
-| [Caching] | `Run-Sample-Caching.cmd`. See [Run-Sample-Caching.cmd](Run-Sample-Caching.cmd) to run this sample on Unix. |
+| [HelloBlazorServer] |  `dotnet run -p src/HelloBlazorServer/HelloBlazorServer.csproj` + open http://localhost:5005/ |
+| [HelloBlazorHybrid] |  `dotnet run -p src/HelloBlazorHybrid/Server/Server.csproj` + open http://localhost:5005/ |
+| [Blazor Samples] |  `dotnet run -p src/Blazor/Server/Server.csproj` + open http://localhost:5005/ |
+| [MiniRpc] | `dotnet run -p src/MiniRpc/MiniRpc.csproj` |
+| [MultiServerRpc] | `dotnet run -p src/MultiServerRpc/MultiServerRpc.csproj ` |
+| [Benchmark] | `dotnet run -c:Release -p src/Benchmark/Benchmark.csproj` |
+| [RpcBenchmark] | `dotnet run -c:Release -p src/RpcBenchmark/RpcBenchmark.csproj` |
 | [Tutorial] | [Install Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md) + `dotnet try --port 50005 docs/tutorial` |
-
-Build & run with [Docker](https://docs.docker.com/get-docker/) + 
-[Docker Compose](https://docs.docker.com/compose/install/):
-
-```bash
-# Run this command first
-docker-compose build
-```
-
-| Sample | Command |
-|-|-|
-| [HelloCart] | `docker-compose run sample_hello_cart dotnet Samples.HelloCart.dll` |
-| [HelloWorld] | `docker-compose run sample_hello_world dotnet Samples.HelloWorld.dll` |
-| [HelloBlazorServer] | `docker-compose run --service-ports sample_hello_blazor_server` + open http://localhost:5005/ |
-| [HelloBlazorHybrid] | `docker-compose run --service-ports sample_hello_blazor_hybrid` + open http://localhost:5005/ |
-| [Blazor Samples] | `docker-compose run --service-ports sample_blazor` + open http://localhost:5005/ |
-| [Caching] | `docker-compose run sample_caching_client dotnet Samples.Caching.Client.dll` |
-| [Tutorial] | `docker-compose run --service-ports tutorial` + open https://localhost:50005/README.md |
 
 ## Useful Links
 
 * Check out [Fusion repository on GitHub]
-* Go to [Documentation Home]
-* Explore [Board Games](https://github.com/alexyakunin/BoardGames) -  a real-time multiplayer board gaming app built on Fusion
-* Join our [Discord Server] to ask questions and track project updates.
+* Play with [Actual Chat] - probably the most complex app that's currently built on Fusion. It runs everywhere (there are SSB/WASM, iOS, Android, and Windows clients sharing ~95% of the codebase) and delivers nearly everything what other chats can, but also allows you to join or initiate a conversation much faster **by delivering your voice and its transcription in real-time**.
+* Join our [Discord Server] to ask questions and track project updates. We'll migrate it to [Actual Chat] soon 😉
+* Go to [Documentation Home].
 
 **P.S.** If you've already spent some time learning about Fusion, 
 please help us to make it better by completing [Fusion Feedback Form] 
@@ -211,6 +182,7 @@ please help us to make it better by completing [Fusion Feedback Form]
 [Tutorial]: tutorial/README.md
 [Fusion Tutorial]: tutorial/README.md
 [Documentation Home]: https://github.com/servicetitan/Stl.Fusion/blob/master/docs/README.md
+[Actual Chat]: https://actual.chat
 
 [Compute Services]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part01.md
 [Compute Service]: https://github.com/servicetitan/Stl.Fusion.Samples/blob/master/tutorial/Part01.md
