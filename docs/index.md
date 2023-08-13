@@ -177,7 +177,7 @@ HTTP Client:
   SayHello : 129.53K 132.30K 128.41K 130.47K -> 132.30K calls/s
 ```
 
-You can see that `Stl.Rpc` outperforms SignalR - the next fastest RPC option available on .NET - by **20-50%**. As for gRPC and HTTP/REST, they aren't even close on this test. 
+You can see that Stl.Rpc outperforms SignalR - the next fastest RPC option available on .NET - by **20-50%**. As for gRPC and HTTP/REST, they aren't even close on this test. 
 
 It worth to mention this test does something many of similar benchmarks miss: instead of using a single client per worker, it uses N clients (120 in this case), where each of these clients is concurrently used by M workers (120 per client). And this setup shows a huge difference between (Stl.Rpc, SignalR) and (gRPC, HTTP):
 - First two options use automatic batching (or custom framing) - they pack as many of queued messages as they can into the next network packet.
