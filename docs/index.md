@@ -102,7 +102,7 @@ you can switch the mode on its "Home" page.
 
 ### 4. Benchmark Sample
 
-It's a console app running the benchmark (`Client`) + ASP.NET Core API `Server`. Its output on Ryzen Threadripper 3960X:
+It's a console app running both the ASP.NET Core API Server and its client in the same process. Its output on Ryzen Threadripper 3960X:
 
 ```text
 Item count:         1000
@@ -124,12 +124,66 @@ Remote services:
 ```
 
 What's interesting in "Remote services" part of the output?
-- Fusion Client performs nearly as quickly as the local Fusion service delivering ~ **120M calls/s**. The number looks crazy, but that's exactly what Fusion does by eliminating a large portion of RPC calls which results are known to be identical to the ones client already has. That's exactly what allows all Blazor samples here to share the same code in both WASM and Blazor Server modes.
-- Besides that, Fusion uses `Stl.Rpc` client instead of an HTTP Client. And the next test shows this client is much faster than HTTP-based one. In fact, this test doesn't demonstrate it's full potential - `RpcBenchmark` (read further) shows it can squeeze up to **3.3M RPS** on the same machine!
+- Fusion Client performs nearly as quickly as the local Fusion service, delivering ~ **120M calls/s**. The number looks crazy, but that's exactly what Fusion does - by eliminating a large portion of RPC calls which results are known to be identical to the ones client already has. And that's what allows all Blazor samples here to share the same code in both WASM and Blazor Server modes: Fusion Clients are nearly indistinguishable from local services.
+- Besides that, Fusion uses `Stl.Rpc` client instead of an HTTP client. And the next test shows `Stl.Rpc` client is much faster than HTTP-based one. And this test doesn't demonstrate its full potential - `RpcBenchmark` sample (read further) shows it can squeeze up to **3.3M RPS** on the same machine!
 - An HTTP API endpoint backed by Fusion service delivers **156K RPS** with both client & server running on the same machine (that's a disadvantage).
 - Identical EF Core-based API endpoint (that's what most people typically use now) scales to just **64K RPS**.
 
-### 5. Tutorial
+### 5. RpcBenchmark Sample
+
+It's another console app built to compare the throughput of different kinds of RPC protocols, including Fusion's own `Stl.Rpc`. 
+
+By default it runs both the client and the server in the same process, but you can run them separately as well. Run it with `-?` switch to see its help.
+
+Its output on Ryzen Threadripper 3960X:
+
+```text
+System-wide settings:
+  Thread pool settings:   48+ worker, 48+ I/O threads
+  ByteSerializer.Default: MessagePack
+Starting server @ https://localhost:22444/
+Client settings:
+  Server URL:           https://localhost:22444/
+  Test plan:            5.00s warmup, 4 x 5.00s runs
+  Total worker count:   14400
+  Client concurrency:   120
+  Client count:         120
+
+Stl.Rpc Client:
+  Sum      :   3.31M   3.21M   3.17M   3.24M ->   3.31M calls/s
+  GetUser  :   2.66M   2.66M   2.62M   2.64M ->   2.66M calls/s
+  SayHello :   1.75M   1.72M   1.73M   1.72M ->   1.75M calls/s
+SignalR Client:
+  Sum      :   2.73M   2.72M   2.67M   2.71M ->   2.73M calls/s
+  GetUser  :   2.36M   2.31M   2.35M   2.35M ->   2.36M calls/s
+  SayHello :   1.21M   1.20M   1.18M   1.20M ->   1.21M calls/s
+gRPC Client:
+  Sum      : 116.31K 129.65K 125.22K 125.28K -> 129.65K calls/s
+  GetUser  : 124.57K 125.63K 126.02K 122.40K -> 126.02K calls/s
+  SayHello : 119.60K 123.33K 122.29K 120.76K -> 123.33K calls/s
+HTTP Client:
+  Sum      : 134.79K 143.42K 148.22K 143.03K -> 148.22K calls/s
+  GetUser  : 141.18K 144.50K 139.19K 145.96K -> 145.96K calls/s
+  SayHello : 129.53K 132.30K 128.41K 130.47K -> 132.30K calls/s
+```
+
+You can see that `Stl.Rpc` outperforms SignalR - the next fastest RPC option available on .NET - by **20-50%**. As for gRPC and HTTP/REST, they aren't even close on this test. 
+
+It worth to mention this test does something many of similar benchmarks miss: instead of using a single client per worker, it uses N clients (120 in this case) * M workers (120 per client) to produce the load. And this setup shows a huge difference between (Stl.Rpc, SignalR) and (gRPC, HTTP):
+- First two protocols use automatic batching (or custom framing) - they pack as many of queued messages as they can into the next network packet.
+- And on contrary, `HttpClient` and `gRPC` don't seem to do that.
+
+Why this scenario is important? That's because this feature allows Fusion Clients and RPC in general to be efficient: Fusion assumes every of its services can be used concurrently, including Compute Service Clients, which enables to use "concurrent gather" as a typical fetch pattern. Here is an example:
+- First you call `GetContactIds`, which produces the list of `ContactId`
+- Once you have the list, you call `GetContact` for every of these IDs concurrently
+- Once any of these tasks completes, you call `GetOnlinePresenceState` for every `Contact` which has `UserId` field
+- And so on.
+
+And if you think what's going on here from the RPC stack perspective, it's a ton of "outgoing call" messages, many of which are sent via RPC channel at almost exactly the same moment. So this is where automatic batching helps a lot - instead of sending them separately, it packs many of them together into a single transmission unit.
+
+P.S. We want to believe there some mistake with gRPC settings/setup we were using, so if you find any issue - please let us know. We also know that tweaking parameters specifically for gRPC on this test allows to bump its throughput by ~ 50%, but it's still quite far from even SignalR.
+
+### 6. Tutorial
 
 It's interactive &ndash; you can simply [browse it](tutorial/README.md), but to
 modify and run the C# code presented there, you need
@@ -161,8 +215,8 @@ dotnet build
 ## Useful Links
 
 * Check out [Fusion repository on GitHub]
-* Play with [Actual Chat] - probably the most complex app that's currently built on Fusion. It runs everywhere (there are SSB/WASM, iOS, Android, and Windows clients sharing ~95% of the codebase) and delivers nearly everything what other chats can, but also allows you to join or initiate a conversation much faster **by delivering your voice and its transcription in real-time**.
-* Join our [Discord Server] to ask questions and track project updates. We'll migrate it to [Actual Chat] soon 😉
+* Play with [Actual Chat] - a chat app with a mission to improve the quality of your online communication with the modern AI. It allows you to join or initiate a conversation much faster by delivering your voice and its transcription in real-time and follow other people's voice conversations even if you're late to join them. Check it out - it's a fun experience. And feel free to ask your Fusion-related questions here: https://actual.chat/chat/zu3UA03jvX
+* Join our [Discord Server] to ask questions and track project updates. We'll migrate it to [Actual Chat] as soon as it gets "Places" feature (~ Servers in Discord) 😉
 * Go to [Documentation Home].
 
 **P.S.** If you've already spent some time learning about Fusion, 
