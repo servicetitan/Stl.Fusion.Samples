@@ -12,9 +12,9 @@ public static class Program
     public static async Task<int> Main(string[] args)
     {
         TreatControlCAsInput = false;
-        CancelKeyPress += (_, e) => {
+        CancelKeyPress += (_, ea) => {
             StopTokenSource.Cancel();
-            e.Cancel = true;
+            ea.Cancel = true;
         };
 
         if (args.Length == 0)

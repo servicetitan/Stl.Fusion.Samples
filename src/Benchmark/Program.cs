@@ -10,15 +10,18 @@ using static Samples.Benchmark.Settings;
 
 #pragma warning disable ASP0000
 
-var minThreadCount = WorkerCount * 2;
-ThreadPool.SetMinThreads(minThreadCount, minThreadCount);
+// var minThreadCount = WorkerCount * 2;
+// ThreadPool.SetMinThreads(minThreadCount, minThreadCount);
 ThreadPool.SetMaxThreads(16_384, 16_384);
 ByteSerializer.Default = MessagePackByteSerializer.Default; // Remove to switch back to MemoryPack
 
-using var stopCts = new CancellationTokenSource();
-// ReSharper disable once AccessToDisposedClosure
-CancelKeyPress += (s, ea) => stopCts.Cancel();
-var cancellationToken = stopCts.Token;
+var stopCts = new CancellationTokenSource();
+var cancellationToken = StopToken = stopCts.Token;
+TreatControlCAsInput = false;
+CancelKeyPress += (_, ea) => {
+    stopCts.Cancel();
+    ea.Cancel = true;
+};
 
 await (args switch {
     [ "server" ] => RunServer(),
@@ -70,25 +73,24 @@ async Task RunClient()
     var dbServices = ClientServices.DbServices;
     await ServerChecker.WhenReady(BaseUrl, cancellationToken);
     await dbServices.GetRequiredService<DbInitializer>().Initialize(true, cancellationToken);
-    WriteLine($"Item count:          {ItemCount}");
-    WriteLine($"Service concurrency: {TestServiceConcurrency} workers per test service");
-    if (WriterFrequency is { } writerFrequency)
-        WriteLine($"Writing worker %:    {1.0/writerFrequency:P}");
-    var benchmark = new Benchmark("Initialize", ClientServices.LocalDbServiceFactory);
-    await benchmark.Initialize(cancellationToken);
+    WriteLine($"Item count:         {ItemCount}");
+    WriteLine($"Client concurrency: {TestServiceConcurrency} workers per client or test service");
+    WriteLine($"Writer count:       {WriterCount}");
+    var benchmarkRunner = new BenchmarkRunner("Initialize", ClientServices.LocalDbServiceFactory);
+    await benchmarkRunner.Initialize(cancellationToken);
 
     // Run
     WriteLine();
     WriteLine("Local services:");
-    await new Benchmark("Compute Service", ClientServices.LocalFusionServiceFactory).Run();
-    await new Benchmark("Regular Service", ClientServices.LocalDbServiceFactory, 10).Run();
+    await new BenchmarkRunner("Fusion Service", ClientServices.LocalFusionServiceFactory).Run();
+    await new BenchmarkRunner("Regular Service", ClientServices.LocalDbServiceFactory, 2).Run();
 
     WriteLine();
     WriteLine("Remote services:");
-    await new Benchmark("Compute Service Client -> WebSocket -> Compute Service", ClientServices.RemoteFusionServiceFactory).Run();
-    await new Benchmark("Stl.Rpc Client -> WebSocket -> Compute Service", ClientServices.RemoteFusionServiceViaRpcFactory, 20).Run();
-    await new Benchmark("RestEase Client -> HTTP -> Compute Service", ClientServices.RemoteFusionServiceViaHttpFactory, 2).Run();
-    await new Benchmark("RestEase Client -> HTTP -> Regular Service", ClientServices.RemoteDbServiceViaHttpFactory, 2).Run();
+    await new BenchmarkRunner("Fusion Client -> Fusion Service", ClientServices.RemoteFusionServiceFactory).Run();
+    await new BenchmarkRunner("Stl.Rpc Client -> Fusion Service", ClientServices.RemoteFusionServiceViaRpcFactory, 10).Run();
+    await new BenchmarkRunner("HTTP Client -> Fusion Service", ClientServices.RemoteFusionServiceViaHttpFactory, 5).Run();
+    await new BenchmarkRunner("HTTP Client -> Regular Service", ClientServices.RemoteDbServiceViaHttpFactory, 5).Run();
 
     ReadKey();
     // ReSharper disable once AccessToDisposedClosure

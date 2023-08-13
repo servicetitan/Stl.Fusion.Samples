@@ -23,14 +23,9 @@ public abstract class BenchmarkCommandBase : AsyncCommandBase
     public int MinIOThreads { get; set; } = HardwareInfo.ProcessorCount;
 
     [CommandLineArgument]
-    [Description("Serializer to use in Stl.Rpc tests.")]
+    [Description("ByteSerializer to use in Stl.Rpc tests.")]
     [ValueDescription("MessagePack,MemoryPack")]
     [ValidateRange(1, null)]
-    [Alias("z")]
-    public SerializerKind Serializer { get; set; } = SerializerKind.MessagePack;
-
-    protected static string FixBaseUrl(string url)
-        => url.EndsWith("/", StringComparison.Ordinal)
-            ? url
-            : url + "/";
+    [Alias("bs")]
+    public ByteSerializerKind ByteSerializer { get; set; } = ByteSerializerKind.MessagePack;
 }

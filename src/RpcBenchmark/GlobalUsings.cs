@@ -11,6 +11,7 @@ global using System.Threading.Tasks;
 global using System.Threading.Channels;
 global using Stl;
 global using Stl.Async;
+global using Stl.Benchmarking;
 global using Stl.Collections;
 global using Stl.Reflection;
 global using Stl.Serialization;

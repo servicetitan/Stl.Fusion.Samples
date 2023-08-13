@@ -23,8 +23,8 @@ public partial class ServerCommand : BenchmarkCommandBase
 
     public override async Task<int> RunAsync()
     {
-        Url = FixBaseUrl(Url);
-        SystemSettings.Apply(this);
+        Url = Url.NormalizeBaseUrl();
+        SystemSettings.Apply(MinWorkerThreads, ByteSerializer);
         var cancellationToken = StopToken;
         WriteLine($"Starting server @ {Url}");
 
@@ -55,8 +55,8 @@ public partial class ServerCommand : BenchmarkCommandBase
             //     https.SslProtocols = SslProtocols.Tls13;
             // });
             var http2 = kestrel.Limits.Http2;
-            http2.InitialConnectionWindowSize = 2 * 1024 * 1024;
-            http2.InitialStreamWindowSize = 1024 * 1024;
+            http2.InitialConnectionWindowSize = 10 * 1024 * 1024;
+            http2.InitialStreamWindowSize = 10 * 768 * 1024;
             http2.MaxStreamsPerConnection = 256;
         });
         var app = builder.Build();

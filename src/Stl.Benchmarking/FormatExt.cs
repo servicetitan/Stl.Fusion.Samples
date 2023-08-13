@@ -1,4 +1,4 @@
-namespace Samples.RpcBenchmark.Client;
+namespace Stl.Benchmarking;
 
 public static class FormatExt
 {
@@ -16,7 +16,7 @@ public static class FormatExt
         return $"{value:N}{scale}";
     }
 
-    public static string FormatLatency(this double value)
+    public static string FormatDuration(this double value)
     {
         var scale = "";
         if (value >= 1d)

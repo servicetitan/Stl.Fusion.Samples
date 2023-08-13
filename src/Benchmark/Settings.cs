@@ -11,11 +11,12 @@ public static class Settings
         "Minimum Pool Size=20;Maximum Pool Size=200;Multiplexing=true";
 
     public static readonly int ItemCount = 1_000;
-    public static readonly int WorkerCount = HardwareInfo.ProcessorCount * 30;
-    public static readonly int? WriterFrequency = null;
-    public static readonly int TestServiceConcurrency = 100;
-    public static readonly TimeSpan Duration = TimeSpan.FromSeconds(5);
-    public static readonly TimeSpan WarmupDuration = TimeSpan.FromSeconds(1);
-    public static readonly bool ForceGCCollect = true;
-    public const long TimeCheckCountMask = 3;
+    public static readonly int ReaderCount = HardwareInfo.ProcessorCount * 10;
+    public static readonly int WriterCount = 0;
+    public static readonly int TestServiceConcurrency = 200;
+    public static readonly double Duration = 5; // In seconds
+    public static readonly double WarmupDuration = 1; // In seconds
+    public static readonly int TryCount = 4;
+
+    public static CancellationToken StopToken;
 }

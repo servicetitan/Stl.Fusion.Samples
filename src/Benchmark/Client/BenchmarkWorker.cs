@@ -1,28 +1,16 @@
 namespace Samples.Benchmark.Client;
-using static Settings;
 
-public class BenchmarkWorker
+public abstract class BenchmarkWorker(ITestService client)
 {
-    public readonly Benchmark Benchmark;
-    public readonly int Index;
-    public readonly ITestService TestService;
-    public readonly bool IsWriter;
-    public readonly Random Random;
+    public readonly ITestService Client = client;
+    public readonly Random Random = new(Random.Shared.Next());
+    public Func<CancellationToken, Task> Operation = null!;
 
-    public BenchmarkWorker(Benchmark benchmark, ITestService testService, int index)
-    {
-        Benchmark = benchmark;
-        Index = index;
-        TestService = testService;
-        IsWriter = WriterFrequency is { } f && index % f == 0;
-        Random = new Random((index + 1)*347);
-    }
-
-    public virtual async Task Initialize(ConcurrentQueue<int> remainingItemIds, CancellationToken cancellationToken)
+    public async Task Initialize(ConcurrentQueue<int> remainingItemIds, CancellationToken cancellationToken)
     {
         var clock = SystemClock.Instance;
         while (remainingItemIds.TryDequeue(out var itemId)) {
-            var item = await TestService.TryGet(itemId, cancellationToken).ConfigureAwait(false);
+            var item = await Client.TryGet(itemId, cancellationToken).ConfigureAwait(false);
             if (item != null)
                 continue;
 
@@ -34,36 +22,7 @@ public class BenchmarkWorker
                 ModifiedAt = now,
                 Name = $"Item-{itemId}",
             };
-            await TestService.AddOrUpdate(item, null, cancellationToken).ConfigureAwait(false);
+            await Client.AddOrUpdate(item, null, cancellationToken).ConfigureAwait(false);
         }
-    }
-
-    public virtual async Task<Dictionary<string, Counter>> Run(
-        Task<CpuTimestamp> whenReady, CancellationToken cancellationToken)
-    {
-        var count = 0L;
-        var errorCount = 0L;
-        var endsAt = await whenReady.ConfigureAwait(false);
-        while ((count & TimeCheckCountMask) != 0 || CpuTimestamp.Now < endsAt) {
-            count++;
-            try {
-                var itemId = (long)(1 + Random.Next(0, ItemCount));
-                var item = await TestService.TryGet(itemId, cancellationToken).ConfigureAwait(false);
-                if (IsWriter) {
-                    item = item! with { Name = $"Item-{item.Id}-{item.Version + 1}" };
-                    await TestService.AddOrUpdate(item, item.Version, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException) {
-                break;
-            }
-            catch (Exception) {
-                errorCount++;
-            }
-        }
-        return new Dictionary<string, Counter>() {
-            { IsWriter ? "Writes" : "Reads", new OpsCounter(count - errorCount) },
-            { IsWriter ? "!Writes" : "!Reads", new OpsCounter(errorCount) }
-        };
     }
 }

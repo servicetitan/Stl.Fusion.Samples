@@ -26,15 +26,6 @@ public partial class ClientCommand : BenchmarkCommandBase
     [Alias("cc")]
     public int ClientConcurrency { get; set; } = 120;
 
-    [CommandLineArgument("GrpcClientConcurrency")]
-    [Description("Client concurrency for gRPC tests.")]
-    [ValueDescription("Number")]
-    [ValidateRange(1, null)]
-    [Alias("grpc-cc")]
-    public int? GrpcClientConcurrencyOverride { get; set; }
-
-    public int GrpcClientConcurrency => GrpcClientConcurrencyOverride ?? ClientConcurrency;
-
     [CommandLineArgument]
     [Description("Worker count - the total number of worker tasks.")]
     [ValueDescription("Number")]
@@ -59,7 +50,7 @@ public partial class ClientCommand : BenchmarkCommandBase
     [Description("Test (attempt) count.")]
     [ValidateRange(1, null)]
     [Alias("n")]
-    public int TryCount { get; set; } = 5;
+    public int TryCount { get; set; } = 4;
 
     [CommandLineArgument]
     [Description("Wait for a key press when benchmark ends.")]
@@ -71,22 +62,17 @@ public partial class ClientCommand : BenchmarkCommandBase
 
     public override async Task<int> RunAsync()
     {
-        Url = FixBaseUrl(Url);
-        SystemSettings.Apply(this);
+        Url = Url.NormalizeBaseUrl();
+        SystemSettings.Apply(MinWorkerThreads, ByteSerializer);
         var cancellationToken = StopToken;
 
-        await ServerChecker.WhenReady(Url, cancellationToken);
+        await TcpProbe.WhenReady(Url, cancellationToken);
         WriteLine("Client settings:");
         WriteLine($"  Server URL:           {Url}");
         WriteLine($"  Test plan:            {WarmupDuration:N}s warmup, {TryCount} x {Duration:N}s runs");
         WriteLine($"  Total worker count:   {Workers}");
         WriteLine($"  Client concurrency:   {ClientConcurrency}");
         WriteLine($"  Client count:         {Workers / ClientConcurrency}");
-        if (GrpcClientConcurrency != ClientConcurrency) {
-            WriteLine("Client settings for gRPC tests:");
-            WriteLine($"  Client concurrency:   {GrpcClientConcurrency}");
-            WriteLine($"  Client count:         {Workers / GrpcClientConcurrency}");
-        }
         await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
 
         // Run
@@ -98,7 +84,7 @@ public partial class ClientCommand : BenchmarkCommandBase
             .ToArray();
         foreach (var benchmarkKind in benchmarkKinds) {
             var (name, factory) = clientFactories[benchmarkKind];
-            await new Benchmark(this, $"{name} Client", factory).Run();
+            await new BenchmarkRunner(this, factory).RunAll($"{name} Client");
         }
 
         if (Wait)

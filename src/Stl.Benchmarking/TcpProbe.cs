@@ -1,23 +1,23 @@
 using System.Net.Sockets;
-using static System.Console;
 
-namespace Samples.RpcBenchmark.Client;
+namespace Stl.Benchmarking;
 
-public static class ServerChecker
+public static class TcpProbe
 {
     public static async Task WhenReady(string url, CancellationToken cancellationToken = default)
     {
         var uri = new Uri(url);
         var host = uri.Host;
         var port = uri.Port == 0 ? 80 : uri.Port;
+        var i = 0;
         while (!IsPortOpen(host, port)) {
-            WriteLine($"Waiting for {host}:{port} to open...");
-            await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
+            if ((++i & 1) == 0)
+                WriteLine($"Waiting for {host}:{port} to open...");
+            await Task.Delay(500, cancellationToken).ConfigureAwait(false);
         }
-        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
     }
 
-    private static bool IsPortOpen(string host, int port)
+    public static bool IsPortOpen(string host, int port)
     {
         try {
             using var client = new TcpClient(host, port);

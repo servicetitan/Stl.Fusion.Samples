@@ -70,14 +70,13 @@ public static class ClientServices
     {
         var services = new ServiceCollection();
         var fusion = services.AddFusion();
-        fusion.Rpc.AddWebSocketClient(Settings.BaseUrl);
+        fusion.Rpc.AddWebSocketClient(BaseUrl);
 
         var restEase = services.AddRestEase();
-        var baseAddress = new Uri(Settings.BaseUrl);
+        var baseAddress = new Uri(BaseUrl);
         restEase.ConfigureHttpClient((_, name, o) => {
             o.HttpClientActions.Add(c => c.BaseAddress = baseAddress);
         });
-
         return services;
     }
 }
