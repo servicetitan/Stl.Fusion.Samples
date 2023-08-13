@@ -191,7 +191,7 @@ Why this scenario is important? That's because this feature allows Fusion Client
 
 And if you think what's going on here from the RPC stack perspective, it's a ton of "outgoing call" messages, many of which are sent via RPC channel at almost exactly the same moment. So this is where automatic batching helps a lot - instead of sending them separately, it packs many of them together into a single transmission unit.
 
-P.S. We want to believe there some mistake with gRPC settings/setup we were using, so if you find any issue - please let us know. We also know that tweaking parameters specifically for gRPC on this test allows to bump its throughput by ~ 50%, but it's still quite far from even SignalR.
+**P.S.** We want to believe there is something wrong with gRPC settings/setup on this test. If you'll find any issue - please let us know / feel free to send a PR. We know that tweaking some parameters specifically for gRPC test (e.g. using `-cc 600` or so) allows to bump its throughput by ~ +40%, but it's still quite far from SignalR and Stl.Rpc, so the default params are set to maximize the throughput for the first two options.
 
 ### 6. Tutorial
 
