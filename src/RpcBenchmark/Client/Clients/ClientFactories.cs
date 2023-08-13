@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stl.RestEase;
 using Stl.Rpc;
@@ -55,11 +56,25 @@ public sealed class ClientFactories
 
         // Rpc
         services.AddRpc().AddWebSocketClient(BaseUrl);
+        services.AddTransient(_ => {
+            var ws = new ClientWebSocket();
+            ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            return ws;
+        });
 
         // SignalR
-        services.AddSingleton(_ => {
+        services.AddSingleton(c => {
             var connection = new HubConnectionBuilder()
-                .WithUrl($"{BaseUrl}hubs/testService")
+                .WithUrl($"{BaseUrl}hubs/testService",  options => {
+                    options.HttpMessageHandlerFactory = message => {
+                        if (message is HttpClientHandler httpClientHandler)
+                            httpClientHandler.ServerCertificateCustomValidationCallback += (_, _, _, _) => true;
+                        return message;
+                    };
+                    options.WebSocketConfiguration = wso => {
+                        wso.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                    };
+                })
                 .Build();
             return connection;
         });
