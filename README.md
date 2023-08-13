@@ -18,8 +18,12 @@ updates at all:
 
 <img src="https://img.shields.io/badge/-Live!-red" valign="middle"> Play with [live version of this app](https://fusion-samples.servicetitan.com) right now!
 
+<img src="https://img.shields.io/badge/-New!-green" valign="middle"> If you're curious about what Fusion allows you to build, check out [Actual Chat] - a new chat app created to maximize the efficiency of your communication with the modern AI.
 
-* Play with [Actual Chat] - probably the most complex app that's currently built on Fusion. It runs everywhere (there are SSB/WASM, iOS, Android, and Windows clients sharing ~95% of the codebase) and delivers nearly everything what other chats can, but also allows you to join or initiate a conversation much faster **by delivering your voice and its transcription in real-time**.
+- Currently it does what most of other chats do, but also allows you to **talk in chats in real-time**. When you do this, it delivers your voice and its transcription to every person reading or listening, which allows other people to join the conversation as soon as they see its very first words, or read/replay it later.
+- There are SSB/WASM, iOS, Android, and Windows clients, with nearly 100% of the code shared among them.
+- Free to ask your Fusion-related questions here: https://actual.chat/chat/zu3UA03jvX
+- As far as we know, it's one of the most complex Fusion-based apps. The startup behind Actual Chat was founded by Fusion's author.
 
 
 ## Running Samples
@@ -70,8 +74,8 @@ A detailed description of nearly every sample can be found here: https://service
 ## Useful Links
 
 * Check out [Fusion repository on GitHub]
-* Play with [Actual Chat] - probably the most complex app that's currently built on Fusion. It runs everywhere (there are SSB/WASM, iOS, Android, and Windows clients sharing ~95% of the codebase) and delivers nearly everything what other chats can, but also allows you to join or initiate a conversation much faster **by delivering your voice and its transcription in real-time**.
-* Join our [Discord Server] to ask questions and track project updates. We'll migrate it to [Actual Chat] soon 😉
+* Play with [Actual Chat] - a chat app with a mission to improve the quality of your online communication with the modern AI. It allows you to join or initiate a conversation much faster by delivering your voice and its transcription in real-time and follow other people's voice conversations even if you're late to join them. Check it out - it's a fun experience. And feel free to ask your Fusion-related questions here: https://actual.chat/chat/zu3UA03jvX
+* Join our [Discord Server] to ask questions and track project updates. We'll migrate it to [Actual Chat] as soon as it gets "Places" feature (~ Servers in Discord) 😉
 * Go to [Documentation Home].
 
 **P.S.** If you've already spent some time learning about Fusion, 
