@@ -24,7 +24,7 @@ public partial class ServerCommand : BenchmarkCommandBase
     public override async Task<int> RunAsync()
     {
         Url = Url.NormalizeBaseUrl();
-        SystemSettings.Apply(MinWorkerThreads, ByteSerializer);
+        SystemSettings.Apply(MinWorkerThreads, MinIOThreads, ByteSerializer);
         var cancellationToken = StopToken;
         WriteLine($"Starting server @ {Url}");
 

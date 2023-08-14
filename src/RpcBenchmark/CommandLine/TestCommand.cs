@@ -11,7 +11,7 @@ public partial class TestCommand : ClientCommand
 {
     public override Task<int> RunAsync()
     {
-        SystemSettings.Apply(MinWorkerThreads, ByteSerializer);
+        SystemSettings.Apply(MinWorkerThreads, MinIOThreads, ByteSerializer);
         var serverCommand = new ServerCommand() { Url = Url };
         _ = serverCommand.RunAsync();
         return base.RunAsync();

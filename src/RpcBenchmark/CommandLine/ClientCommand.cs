@@ -63,7 +63,7 @@ public partial class ClientCommand : BenchmarkCommandBase
     public override async Task<int> RunAsync()
     {
         Url = Url.NormalizeBaseUrl();
-        SystemSettings.Apply(MinWorkerThreads, ByteSerializer);
+        SystemSettings.Apply(MinWorkerThreads, MinIOThreads, ByteSerializer);
         var cancellationToken = StopToken;
 
         await TcpProbe.WhenReady(Url, cancellationToken);

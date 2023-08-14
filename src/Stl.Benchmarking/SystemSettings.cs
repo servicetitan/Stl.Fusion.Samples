@@ -5,7 +5,7 @@ public static class SystemSettings
     private static readonly object Lock = new();
     private static bool _isApplied;
 
-    public static void Apply(int minWorkerThreads, ByteSerializerKind serializerKind)
+    public static void Apply(int minWorkerThreads, int minIOThreads, ByteSerializerKind serializerKind)
     {
         lock (Lock) {
             if (_isApplied)
@@ -14,7 +14,7 @@ public static class SystemSettings
             // Thread pool
             ThreadPool.GetMinThreads(out var currentMinWorkerThreads, out var currentMinIOThreads);
             currentMinWorkerThreads = Math.Max(currentMinWorkerThreads, minWorkerThreads);
-            currentMinIOThreads = Math.Max(currentMinIOThreads, currentMinWorkerThreads);
+            currentMinIOThreads = Math.Max(currentMinIOThreads, minIOThreads);
             ThreadPool.SetMinThreads(currentMinWorkerThreads, currentMinIOThreads);
             ThreadPool.SetMaxThreads(16_384, 16_384);
 
