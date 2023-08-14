@@ -72,7 +72,7 @@ public partial class ClientCommand : BenchmarkCommandBase
         WriteLine($"  Test plan:            {WarmupDuration:N}s warmup, {TryCount} x {Duration:N}s runs");
         WriteLine($"  Total worker count:   {Workers}");
         WriteLine($"  Client concurrency:   {ClientConcurrency}");
-        WriteLine($"  Client count:         {Workers / ClientConcurrency}");
+        WriteLine($"  Client count:         {(Workers + ClientConcurrency - 1) / ClientConcurrency}");
         await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
 
         // Run
