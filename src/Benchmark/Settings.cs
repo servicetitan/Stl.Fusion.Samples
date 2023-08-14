@@ -12,7 +12,7 @@ public static class Settings
 
     public static readonly int ItemCount = 1_000;
     public static readonly int ReaderCount = HardwareInfo.ProcessorCount * 10;
-    public static readonly int WriterCount = 0;
+    public static readonly int WriterCount = 1;
     public static readonly int TestServiceConcurrency = 200;
     public static readonly double Duration = 5; // In seconds
     public static readonly double WarmupDuration = 1; // In seconds

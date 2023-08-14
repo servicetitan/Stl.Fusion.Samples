@@ -84,7 +84,7 @@ public partial class ClientCommand : BenchmarkCommandBase
             .ToArray();
         foreach (var benchmarkKind in benchmarkKinds) {
             var (name, factory) = clientFactories[benchmarkKind];
-            await new BenchmarkRunner(this, factory).RunAll($"{name} Client");
+            await new BenchmarkRunner(this, factory).RunAll(name);
         }
 
         if (Wait)

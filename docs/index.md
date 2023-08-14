@@ -159,19 +159,19 @@ Client settings:
   Client concurrency:   120
   Client count:         120
 
-Stl.Rpc Client:
+Stl.Rpc:
   Sum      :   3.31M   3.21M   3.17M   3.24M ->   3.31M calls/s
   GetUser  :   2.66M   2.66M   2.62M   2.64M ->   2.66M calls/s
   SayHello :   1.75M   1.72M   1.73M   1.72M ->   1.75M calls/s
-SignalR Client:
+SignalR:
   Sum      :   2.73M   2.72M   2.67M   2.71M ->   2.73M calls/s
   GetUser  :   2.36M   2.31M   2.35M   2.35M ->   2.36M calls/s
   SayHello :   1.21M   1.20M   1.18M   1.20M ->   1.21M calls/s
-gRPC Client:
+gRPC:
   Sum      : 116.31K 129.65K 125.22K 125.28K -> 129.65K calls/s
   GetUser  : 124.57K 125.63K 126.02K 122.40K -> 126.02K calls/s
   SayHello : 119.60K 123.33K 122.29K 120.76K -> 123.33K calls/s
-HTTP Client:
+HTTP:
   Sum      : 134.79K 143.42K 148.22K 143.03K -> 148.22K calls/s
   GetUser  : 141.18K 144.50K 139.19K 145.96K -> 145.96K calls/s
   SayHello : 129.53K 132.30K 128.41K 130.47K -> 132.30K calls/s
@@ -179,19 +179,29 @@ HTTP Client:
 
 You can see that Stl.Rpc outperforms SignalR - the next fastest RPC option available on .NET - by **20-50%**. As for gRPC and HTTP/REST, they aren't even close on this test. 
 
-It worth to mention this test does something many of similar benchmarks miss: instead of using a single client per worker, it uses N clients (120 in this case), where each of these clients is concurrently used by M workers (120 per client). And this setup shows a huge difference between (Stl.Rpc, SignalR) and (gRPC, HTTP):
-- First two options use automatic batching (or custom framing) - they pack as many of queued messages as they can into the next network packet.
+Note that this test does something many similar benchmarks don't: instead of using a single client per worker, it uses N clients, and each of these clients is used by M workers concurrently. This setup shows a huge difference between tested libraries and their underlying protocols:
+- Stl.Rpc and SignalR use automatic batching / custom framing - they try to pack multiple queued messages into a transmitted packet when it's possible. In case with Stl.Rpc, it packs the messages which could be synchronously de-queued  from the underlying `Channel<T>`, or until the packet size limit is reached (currently the limit is 4.5KB).
 - And on contrary, `HttpClient` and gRPC don't seem to do anything similar.
 
-Why this scenario is important? That's because this feature allows Fusion Clients and RPC in general to be efficient: Fusion assumes every of its services can be used concurrently, including Compute Service Clients, which enables to use "concurrent gather" as a typical fetch pattern. Here is an example:
-- First you call `GetContactIds`, which produces the list of `ContactId`
-- Once you have the list, you call `GetContact` for every of these IDs concurrently
+This scenario is important specifically in Fusion's case:
+- All Fusion's Compute Services are concurrent, including its clients, so typically you use just a single instance of every service.
+- Fusion Clients are caching clients - they don't make a call if it's known that the previous result of the same call is still consistent.
+
+All of this means that in Fusion's case you want to hit multiple, but specific endpoints to make sure that once something changes, you update just this specific piece of data rather than "everything".
+
+Note that it's totally fine to call thousands of such endpoints repeatedly: the client eliminates the calls for any cached result known to be consistent, so the calls which don't bring any changes are free. And they're free almost literally: Fusion resolves **10M calls per second per core** in "cache hit" scenario both for its Compute Services and Compute Service Clients.
+
+All of this means that contrary to commonly used "fetch as much as you can with a single RPC call" pattern, Fusion requires the opposite "concurrent gather" fetch pattern. Here is how it looks like:
+- First you call `GetContactIds()`, which produces the list of `ContactId`
+- Once you have the list, you call `GetContact(contactId)` for every of these IDs concurrently
 - Once any of these tasks completes, you call `GetOnlinePresenceState` for every `Contact` which has `UserId` field
 - And so on.
 
-And if you think what's going on here from the RPC stack perspective, it's a ton of "outgoing call" messages, many of which are sent via RPC channel at almost exactly the same moment. So this is where automatic batching helps a lot - instead of sending them separately, it packs many of them together into a single transmission unit.
+Many of these calls might be eliminated / complete instantly, because their results are already known. Others will run concurrently with each other. And if you think what's going on here from the RPC stack perspective, there are bulks of "outgoing call" RPC messages originating at almost exactly the same moment. 
 
-**P.S.** We want to believe there is something wrong with gRPC settings/setup on this test. If you'll find any issue - please let us know / feel free to send a PR. We know that tweaking some parameters specifically for gRPC test (e.g. using `-cc 600` or so) allows to bump its throughput by ~ +40%, but it's still quite far from SignalR and Stl.Rpc, so the default params are set to maximize the throughput for the first two options.
+This is where automatic batching kicks in - instead of sending them separately, it packs many of them together into a single transmission unit. If you already played with Fusion samples, you probably know there is another abstraction doing almost identical job, but for the DB key -> entity lookups: `DbEntityResolver`, which similarly reduces the number of DB queries needed for lookups you run through it. It's optional, of course, but it's there by exactly the same reason.
+
+**P.S.** This test is new, so there is a decent chance there is something wrong with gRPC settings/setup. If you'll find any issues, please let us know, or send us a PR. Tweaking some parameters specifically for gRPC test (e.g. using `-cc 600` or so) allows to bump its throughput by ~ +40%, but it's still quite far from SignalR and Stl.Rpc, so the default params (`-cc 120 -w <CoreCount>*100`) are chosen to maximize the throughput of SignalR and Stl.Rpc.
 
 ### 6. Tutorial
 
