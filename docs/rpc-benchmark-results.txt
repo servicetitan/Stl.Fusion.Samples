@@ -36,7 +36,7 @@ Run w/ default settings:
       GetUser  : 148.69K 143.76K 151.10K 143.60K -> 151.10K calls/s
       SayHello : 136.11K 137.46K 134.38K 135.96K -> 137.46K calls/s
 
-Run w/ the best settings for gRPC and MagicOnion (test -cc 1000 -b grpc,mo):
+Run w/ the best settings for gRPC and MagicOnion (`test -cc 1000 -b grpc,mo`):
 
     System-wide settings:
       Thread pool settings:   48+ worker, 48+ I/O threads
