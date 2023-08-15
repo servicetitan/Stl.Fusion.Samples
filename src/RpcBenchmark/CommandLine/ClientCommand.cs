@@ -14,10 +14,10 @@ public partial class ClientCommand : BenchmarkCommandBase
 {
     [CommandLineArgument]
     [Description("Benchmarks to run.")]
-    [ValueDescription("Any subset of StlRpc, SignalR, MagicOnion, StreamJsonRpc, Grpc, Http")]
+    [ValueDescription("Any subset of StlRpc, SignalR, StreamJsonRpc, MagicOnion, Grpc, Http")]
     [ValidateRange(1, null)]
     [Alias("b")]
-    public string Benchmarks { get; set; } = "StlRpc, SignalR, MagicOnion, StreamJsonRpc, Grpc, Http";
+    public string Benchmarks { get; set; } = "StlRpc, SignalR, StreamJsonRpc, MagicOnion, Grpc, Http";
 
     [CommandLineArgument]
     [Description("Client concurrency - the number of worker tasks using a single client.")]

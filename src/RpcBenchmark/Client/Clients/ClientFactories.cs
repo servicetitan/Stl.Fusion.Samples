@@ -21,7 +21,7 @@ public sealed class ClientFactories
         => benchmarkKind switch {
             BenchmarkKind.StlRpc => ("Stl.Rpc", Rpc),
             BenchmarkKind.SignalR => ("SignalR", SignalR),
-            BenchmarkKind.StreamJsonRpc => ("JsonRpc", JsonRpc: StreamJsonRpc),
+            BenchmarkKind.StreamJsonRpc => ("StreamJsonRpc", JsonRpc: StreamJsonRpc),
             BenchmarkKind.MagicOnion => ("MagicOnion", JsonRpc: StreamJsonRpc),
             BenchmarkKind.Grpc => ("gRPC", Grpc),
             BenchmarkKind.Http => ("HTTP", Http),
