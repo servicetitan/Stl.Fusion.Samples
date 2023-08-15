@@ -17,4 +17,13 @@ public static class EndpointRouteBuilderExt
         endpoints.MapGet($"{prefix}/{nameof(service.Sum)}", service.Sum);
         return endpoints;
     }
+
+    public static IEndpointRouteBuilder MapStreamJsonRpcService<TService>(
+        this IEndpointRouteBuilder endpoints, string pattern)
+        where TService : ITestService
+    {
+        var service = endpoints.ServiceProvider.GetRequiredService<TService>();
+        endpoints.MapGet(pattern, context => StreamJsonRpcEndpoint.Invoke(service, context));
+        return endpoints;
+    }
 }

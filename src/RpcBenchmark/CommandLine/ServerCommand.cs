@@ -70,6 +70,7 @@ public partial class ServerCommand : BenchmarkCommandBase
         app.MapHub<TestHub>("hubs/testService", o => {
             o.Transports = HttpTransportType.WebSockets;
         });
+        app.MapStreamJsonRpcService<TestService>("stream-json-rpc");
         app.MapTestService<TestService>("/api/testService");
         app.Urls.Add(Url);
         try {

@@ -12,6 +12,7 @@ public sealed class ClientFactories
     public readonly string BaseUrl;
     public readonly Func<ITestService> Rpc;
     public readonly Func<ITestService> SignalR;
+    public readonly Func<ITestService> JsonRpc;
     public readonly Func<ITestService> Grpc;
     public readonly Func<ITestService> Http;
 
@@ -19,6 +20,7 @@ public sealed class ClientFactories
         => benchmarkKind switch {
             BenchmarkKind.StlRpc => ("Stl.Rpc", Rpc),
             BenchmarkKind.SignalR => ("SignalR", SignalR),
+            BenchmarkKind.StreamJsonRpc => ("JsonRpc", JsonRpc),
             BenchmarkKind.Grpc => ("gRPC", Grpc),
             BenchmarkKind.Http => ("HTTP", Http),
             _ => throw new ArgumentOutOfRangeException(nameof(benchmarkKind), benchmarkKind, null)
@@ -29,6 +31,7 @@ public sealed class ClientFactories
         BaseUrl = baseUrl;
         Rpc = CreateClientFactory<ITestService>();
         SignalR = CreateClientFactory<SignalRTestClient>();
+        JsonRpc = CreateClientFactory<StreamJsonRpcTestClient>();
         Grpc = CreateClientFactory<GrpcTestClient>();
         Http = CreateClientFactory<HttpTestClient>();
     }
