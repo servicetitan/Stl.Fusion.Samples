@@ -42,7 +42,7 @@ public partial class ClientCommand : BenchmarkCommandBase
 
     [CommandLineArgument]
     [Description("Pre-test warmup duration in seconds.")]
-    [ValidateRange(0.01d, null)]
+    [ValidateRange(0d, null)]
     [Alias("wd")]
     public double WarmupDuration { get; set; } = 5;
 

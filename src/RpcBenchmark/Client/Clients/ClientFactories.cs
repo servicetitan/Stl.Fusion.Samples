@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using Grpc.Net.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stl.RestEase;
 using Stl.Rpc;
@@ -98,6 +99,19 @@ public sealed class ClientFactories
                 c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
             });
         });
+
+        // gRPC
+        services.AddSingleton(_ => {
+            var channelOptions = new GrpcChannelOptions() {
+                HttpHandler = new SocketsHttpHandler {
+                    EnableMultipleHttp2Connections = true,
+                    MaxConnectionsPerServer = int.MaxValue,
+                    PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+                }
+            };
+            return GrpcChannel.ForAddress(BaseUrl, channelOptions);
+        });
+
         return services;
     }
 }
