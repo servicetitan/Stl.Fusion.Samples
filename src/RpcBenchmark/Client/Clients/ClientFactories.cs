@@ -12,7 +12,8 @@ public sealed class ClientFactories
     public readonly string BaseUrl;
     public readonly Func<ITestService> Rpc;
     public readonly Func<ITestService> SignalR;
-    public readonly Func<ITestService> JsonRpc;
+    public readonly Func<ITestService> StreamJsonRpc;
+    public readonly Func<ITestService> MagicOnion;
     public readonly Func<ITestService> Grpc;
     public readonly Func<ITestService> Http;
 
@@ -20,7 +21,8 @@ public sealed class ClientFactories
         => benchmarkKind switch {
             BenchmarkKind.StlRpc => ("Stl.Rpc", Rpc),
             BenchmarkKind.SignalR => ("SignalR", SignalR),
-            BenchmarkKind.StreamJsonRpc => ("JsonRpc", JsonRpc),
+            BenchmarkKind.StreamJsonRpc => ("JsonRpc", JsonRpc: StreamJsonRpc),
+            BenchmarkKind.MagicOnion => ("MagicOnion", JsonRpc: StreamJsonRpc),
             BenchmarkKind.Grpc => ("gRPC", Grpc),
             BenchmarkKind.Http => ("HTTP", Http),
             _ => throw new ArgumentOutOfRangeException(nameof(benchmarkKind), benchmarkKind, null)
@@ -31,7 +33,8 @@ public sealed class ClientFactories
         BaseUrl = baseUrl;
         Rpc = CreateClientFactory<ITestService>();
         SignalR = CreateClientFactory<SignalRTestClient>();
-        JsonRpc = CreateClientFactory<StreamJsonRpcTestClient>();
+        StreamJsonRpc = CreateClientFactory<StreamJsonRpcTestClient>();
+        MagicOnion = CreateClientFactory<MagicOnionTestClient>();
         Grpc = CreateClientFactory<GrpcTestClient>();
         Http = CreateClientFactory<HttpTestClient>();
     }
@@ -87,7 +90,7 @@ public sealed class ClientFactories
         var baseAddress = new Uri(BaseUrl);
         restEase.ConfigureHttpClient((_, name, o) => {
             o.HttpMessageHandlerBuilderActions.Add(h => h.PrimaryHandler = new HttpClientHandler() {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
             });
             o.HttpClientActions.Add(c => {
                 c.BaseAddress = baseAddress;

@@ -40,6 +40,7 @@ public class BenchmarkRunner : BenchmarkRunnerBase<double>
         foreach (var client in clients)
             if (client is IDisposable d)
                 d.Dispose();
+        await Task.Delay(500).ConfigureAwait(false); // Wait when HTTP connections actually get closed
     }
 
     // Protected & private methods

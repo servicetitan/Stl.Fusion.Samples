@@ -10,9 +10,10 @@ public static class BenchmarkKindExt
 
         return value switch {
             "rpc" => BenchmarkKind.StlRpc,
+            "sr" => BenchmarkKind.SignalR,
+            "mo" => BenchmarkKind.MagicOnion,
             "jsonrpc" => BenchmarkKind.StreamJsonRpc,
             "vsjsonrpc" => BenchmarkKind.StreamJsonRpc,
-            "sr" => BenchmarkKind.SignalR,
             _ => throw new ArgumentOutOfRangeException(nameof(value)),
         };
     }

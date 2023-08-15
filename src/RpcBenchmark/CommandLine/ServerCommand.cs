@@ -42,6 +42,7 @@ public partial class ServerCommand : BenchmarkCommandBase
         var rpc = services.AddRpc();
         rpc.AddWebSocketServer();
         services.AddGrpc(o => o.IgnoreUnknownServices = true);
+        services.AddMagicOnion();
         services.Configure<RouteOptions>(c => c.SuppressCheckForUnhandledSecurityMetadata = true);
 
         // Benchmark services
@@ -70,6 +71,7 @@ public partial class ServerCommand : BenchmarkCommandBase
         app.MapHub<TestHub>("hubs/testService", o => {
             o.Transports = HttpTransportType.WebSockets;
         });
+        app.MapMagicOnionService();
         app.MapStreamJsonRpcService<TestService>("stream-json-rpc");
         app.MapTestService<TestService>("/api/testService");
         app.Urls.Add(Url);
