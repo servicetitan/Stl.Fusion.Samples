@@ -78,10 +78,7 @@ public partial class ClientCommand : BenchmarkCommandBase
         // Run
         WriteLine();
         var clientFactories = new ClientFactories(Url);
-        var benchmarkKinds = Benchmarks
-            .Split(",")
-            .Select(x => Enum.Parse<BenchmarkKind>(x.Trim(), true))
-            .ToArray();
+        var benchmarkKinds = Benchmarks.Split(",").Select(BenchmarkKindExt.Parse).ToArray();
         foreach (var benchmarkKind in benchmarkKinds) {
             var (name, factory) = clientFactories[benchmarkKind];
             await new BenchmarkRunner(this, factory).RunAll(name);
