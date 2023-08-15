@@ -21,8 +21,8 @@ public sealed class ClientFactories
         => benchmarkKind switch {
             BenchmarkKind.StlRpc => ("Stl.Rpc", Rpc),
             BenchmarkKind.SignalR => ("SignalR", SignalR),
-            BenchmarkKind.StreamJsonRpc => ("StreamJsonRpc", JsonRpc: StreamJsonRpc),
-            BenchmarkKind.MagicOnion => ("MagicOnion", JsonRpc: StreamJsonRpc),
+            BenchmarkKind.StreamJsonRpc => ("StreamJsonRpc", StreamJsonRpc),
+            BenchmarkKind.MagicOnion => ("MagicOnion", MagicOnion),
             BenchmarkKind.Grpc => ("gRPC", Grpc),
             BenchmarkKind.Http => ("HTTP", Http),
             _ => throw new ArgumentOutOfRangeException(nameof(benchmarkKind), benchmarkKind, null)

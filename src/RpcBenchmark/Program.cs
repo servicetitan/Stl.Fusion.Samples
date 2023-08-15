@@ -1,3 +1,5 @@
+using MessagePack;
+using MessagePack.Resolvers;
 using Ookii.CommandLine;
 using Ookii.CommandLine.Commands;
 

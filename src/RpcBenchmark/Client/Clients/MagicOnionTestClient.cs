@@ -30,11 +30,11 @@ public class MagicOnionTestClient : ITestService, IDisposable
         => _httpClient.Dispose();
 
     public async Task<HelloReply> SayHello(HelloRequest request, CancellationToken cancellationToken = default)
-        => await _client.SayHello(request, cancellationToken);
+        => await _client.SayHello(request);
 
     public async Task<User?> GetUser(long userId, CancellationToken cancellationToken = default)
-        => await _client.GetUser(userId, cancellationToken);
+        => await _client.GetUser(userId);
 
     public async Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
-        => await _client.Sum(a, b, cancellationToken);
+        => await _client.Sum(a, b);
 }

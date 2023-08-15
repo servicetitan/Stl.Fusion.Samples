@@ -1,3 +1,5 @@
+using MessagePack;
+
 namespace Stl.Benchmarking;
 
 public static class SystemSettings
