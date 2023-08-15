@@ -3,6 +3,8 @@ using StreamJsonRpc;
 
 namespace Samples.RpcBenchmark.Server;
 
+#pragma warning disable VSTHRD200
+
 public static class StreamJsonRpcEndpoint
 {
     public static async Task Invoke<TService>(TService service, HttpContext context)
