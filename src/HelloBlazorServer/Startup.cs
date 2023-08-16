@@ -54,9 +54,9 @@ public class Startup
         // Default update delay is set to 0.1s
         services.AddTransient<IUpdateDelayer>(c => new UpdateDelayer(c.UIActionTracker(), 0.1));
 
-        // Web
+        // ASP.NET Core / Blazor services
         services.AddRazorPages();
-        services.AddServerSideBlazor();
+        services.AddServerSideBlazor(o => o.DetailedErrors = true);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

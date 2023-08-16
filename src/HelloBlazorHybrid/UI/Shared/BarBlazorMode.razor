@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 
 <BarDropdown Class="@CssClass">
-    <BarDropdownToggle>@(_isPrerendering ? "Loading..." : GetModeName(_isServerSideBlazor))</BarDropdownToggle>
+    <BarDropdownToggle>@(_isPrerendering ? "Loading..." : GetModeName(BlazorModeHelper.IsBlazorServer))</BarDropdownToggle>
     <BarDropdownMenu RightAligned="true">
         @foreach(var mode in new [] {true, false}) {
             <BarDropdownItem Clicked="@(() => BlazorModeHelper.ChangeMode(mode))">@GetModeName(mode)</BarDropdownItem>
@@ -15,7 +15,6 @@
 
 @code {
     private bool _isPrerendering;
-    private bool _isServerSideBlazor = BlazorModeHelper.IsServerSideBlazor;
 
     [Parameter]
     public string CssClass { get; set; } = "";
@@ -32,6 +31,6 @@
         _isPrerendering = fClientProxy != null && clientProxy == null;
     }
 
-    private string GetModeName(bool isServerSideBlazor)
-        => isServerSideBlazor ? "Blazor Server" : "Blazor WASM";
+    private string GetModeName(bool isBlazorServer)
+        => isBlazorServer ? "Blazor Server" : "Blazor WASM";
 }

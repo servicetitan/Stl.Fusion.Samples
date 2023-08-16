@@ -11,7 +11,7 @@
     await ServerAuthHelper.UpdateAuthState(HttpContext);
     var authSchemas = await ServerAuthHelper.GetSchemas(HttpContext);
     var sessionId = ServerAuthHelper.Session.Id.Value;
-    var isServerSideBlazor = BlazorSwitchEndpoint.IsServerSideBlazor(HttpContext);
+    var isBlazorServer = BlazorModeEndpoint.IsBlazorServer(HttpContext);
     var isCloseWindowRequest = ServerAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
     Layout = null;
 }
@@ -45,7 +45,7 @@
         @{
             using var prerendering = BlazorCircuitContext.Prerendering();
             var prerenderedApp = await Html.RenderComponentAsync<App>(
-                isServerSideBlazor ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
+                isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
                 new { SessionId = sessionId });
         }
         @(prerenderedApp)
@@ -64,7 +64,7 @@
 
     <partial name="Blazorise.Body" />
     <script type="module" src="./js/app.js"></script>
-    <script src="_framework/blazor.@(isServerSideBlazor ? "server" : "webassembly").js"></script>
+    <script src="_framework/blazor.@(isBlazorServer ? "server" : "webassembly").js"></script>
 }
 </body>
 </html>

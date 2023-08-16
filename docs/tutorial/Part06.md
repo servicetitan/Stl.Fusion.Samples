@@ -210,9 +210,9 @@ public void ConfigureServices(IServiceCollection services)
     // Fusion services
     var fusion = services.AddFusion();
 
-    // Web
+    // ASP.NET Core / Blazor services 
     services.AddRazorPages();
-    services.AddServerSideBlazor();
+    services.AddServerSideBlazor(o => o.DetailedErrors = true);
 }
 
 // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -252,8 +252,8 @@ public void ConfigureServices(IServiceCollection services)
     fusion.AddWebServer();
     
     // ASP.NET Core / Blazor services 
-    services.AddRouting();
-    services.AddServerSideBlazor();
+    services.AddRazorPages();
+    services.AddServerSideBlazor(o => o.DetailedErrors = true);
 }
 
 public void Configure(IApplicationBuilder app, ILogger<Startup> log)
@@ -272,7 +272,6 @@ public void Configure(IApplicationBuilder app, ILogger<Startup> log)
     app.UseRouting();
     app.UseEndpoints(endpoints => {
         endpoints.MapRpcWebSocketServer();
-        endpoints.MapControllers();
         endpoints.MapFallbackToPage("/_Host"); // Typically needed for Blazor WASM
     });
 }

@@ -31,18 +31,12 @@ using Templates.TodoApp.UI;
 
 namespace Templates.TodoApp.Host;
 
-public class Startup
+public class Startup(IConfiguration cfg, IWebHostEnvironment environment)
 {
-    private IConfiguration Cfg { get; }
-    private IWebHostEnvironment Env { get; }
+    private IConfiguration Cfg { get; } = cfg;
+    private IWebHostEnvironment Env { get; } = environment;
     private HostSettings HostSettings { get; set; } = null!;
     private ILogger Log { get; set; } = NullLogger<Startup>.Instance;
-
-    public Startup(IConfiguration cfg, IWebHostEnvironment environment)
-    {
-        Cfg = cfg;
-        Env = environment;
-    }
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -179,8 +173,7 @@ public class Startup
         });
 
         // Web
-        services.AddRouting();
-        services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+        services.AddRazorPages();
         services.AddServerSideBlazor(o => o.DetailedErrors = true);
         fusion.AddBlazor().AddAuthentication().AddPresenceReporter(); // Must follow services.AddServerSideBlazor()!
     }
@@ -248,7 +241,7 @@ public class Startup
             endpoints.MapBlazorHub();
             endpoints.MapRpcWebSocketServer();
             endpoints.MapFusionAuth();
-            endpoints.MapFusionBlazorSwitch();
+            endpoints.MapFusionBlazorMode();
             // endpoints.MapControllers();
             endpoints.MapFallbackToPage("/_Host");
         });

@@ -106,21 +106,15 @@ public static IHost CreateHost()
         fusion.AddWebServer();
         // Registering Compute Service
         fusion.AddService<ICounterService, CounterService>();
-        services.AddRouting();
-        // And its controller
-        services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
     });
     builder.ConfigureWebHost(b =>
     {
         b.UseKestrel();
         b.UseUrls("http://localhost:50050/");
-        b.Configure((ctx, app) =>
-        {
+        b.Configure((ctx, app) => {
             app.UseWebSockets();
             app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
+            app.UseEndpoints(endpoints => {
                 endpoints.MapRpcWebSocketServer();
             });
         });

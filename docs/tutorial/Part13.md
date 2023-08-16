@@ -64,12 +64,13 @@ Replace the following _complete_ words:
 - `AddCommandService` -> `AddService`
 - `LatestNonErrorValue` -> `LastNonErrorValue`
 - `LatestNonErrorComputed` -> `LastNonErrorComputed`
-- `BlazorModeController.IsServerSideBlazor(HttpContext)` -> `BlazorSwitchEndpoint.IsServerSideBlazor(HttpContext)`
-- `MapFusionWebSocketServer` -> `MapRpcWebSocketServer`
-- `AddBackendStatus` -> `AddRpcPeerStateMonitor`
 - `Session.Null` -> `null!`
-- `StateHasChangedAsync` -> `NotifyStateHasChanged`
 - `ISessionProvider` -> `ISessionResolver` + maybe rename related variables/properties. `ISessionResolver` is the same as `ISessionProvider` in pre-v6.1, and old `ISessionResolver` is gone
+- `BlazorModeController.IsServerSideBlazor(HttpContext)` -> `BlazorModeEndpoint.IsBlazorServer(HttpContext)`
+- `MapFusionWebSocketServer` -> `MapRpcWebSocketServer`
+- `MapFusionBlazorSwitch` -> `MapFusionBlazorMode`
+- `AddBackendStatus` -> `AddRpcPeerStateMonitor`
+- `StateHasChangedAsync` -> `NotifyStateHasChanged`
 
 
 ## Server-side changes
@@ -103,7 +104,7 @@ fusionServer.ConfigureServerAuthHelper(_ => new() {
 ```cs
 endpoints.MapRpcWebSocketServer(); // Absolutely necessary
 endpoints.MapFusionAuth(); // Optional - maps /signIn & /signOut endpoints
-endpoints.MapFusionBlazorSwitch(); // Optional - maps /fusion/blazorMode/{isServerSideBlazor}
+endpoints.MapFusionBlazorMode(); // Optional - maps /fusion/blazorMode/{isBlazorServer}
 ```
 
 And if you prefer to use controllers for Fusion authentication & Blazor mode switch, add this instead:

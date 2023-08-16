@@ -148,14 +148,8 @@ public class Startup
             options.CorrelationCookie.SameSite = SameSiteMode.Lax;
         });
 
-        // Web
-        services.Configure<ForwardedHeadersOptions>(options => {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-        });
-        services.AddRouting();
-        services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+        // ASP.NET Core / Blazor services
+        services.AddRazorPages();
         services.AddServerSideBlazor(o => o.DetailedErrors = true);
 
         // Shared UI services
@@ -196,10 +190,6 @@ public class Startup
             app.UseHsts();
         }
         app.UseHttpsRedirection();
-        app.UseForwardedHeaders(new ForwardedHeadersOptions {
-            ForwardedHeaders = ForwardedHeaders.XForwardedProto
-        });
-
         app.UseWebSockets(new WebSocketOptions() {
             KeepAliveInterval = TimeSpan.FromSeconds(30),
         });
@@ -216,7 +206,7 @@ public class Startup
             endpoints.MapBlazorHub();
             endpoints.MapRpcWebSocketServer();
             endpoints.MapFusionAuth();
-            endpoints.MapFusionBlazorSwitch();
+            endpoints.MapFusionBlazorMode();
             endpoints.MapFallbackToPage("/_Host");
         });
     }

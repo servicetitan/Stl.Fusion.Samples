@@ -9,16 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.2.12" />
-    <PackageReference Include="Stl.Fusion.EntityFramework.Redis" Version="6.2.12" />
-    <PackageReference Include="Stl.Fusion.Server" Version="6.2.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.10" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.2.13" />
+    <PackageReference Include="Stl.Fusion.EntityFramework.Redis" Version="6.2.13" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.2.13" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
-    <PackageReference Include="Stl.Generators" Version="6.2.12" />
+    <PackageReference Include="Stl.Generators" Version="6.2.13" />
   </ItemGroup>
 
 </Project>

@@ -10,12 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="7.0.2" />
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="7.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.0-preview.7.23375.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-preview.7.23375.9" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.10" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.2.12" />
-    <PackageReference Include="Stl.Fusion.Server" Version="6.2.12" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.2.13" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.2.13" />
   </ItemGroup>
 
   <ItemGroup>

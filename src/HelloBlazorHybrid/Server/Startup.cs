@@ -13,6 +13,7 @@ using Samples.HelloBlazorHybrid.Services;
 using Stl.Fusion.Blazor;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.Server;
+using Stl.Rpc;
 using Stl.Rpc.Server;
 
 namespace Samples.HelloBlazorHybrid.Server;
@@ -49,8 +50,8 @@ public class Startup
         Log = tmpServices.GetRequiredService<ILogger<Startup>>();
 
         // Fusion
-        var fusion = services.AddFusion();
-        var fusionServer = fusion.AddWebServer();
+        var fusion = services.AddFusion(RpcServiceMode.Server);
+        fusion.AddWebServer();
         fusion.AddFusionTime(); // IFusionTime is one of built-in compute services you can use
         services.AddScoped<BlazorModeHelper>();
 
@@ -65,14 +66,8 @@ public class Startup
         // Shared UI services
         UI.Program.ConfigureSharedServices(services);
 
-        // Web
-        services.Configure<ForwardedHeadersOptions>(options => {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-        });
-        services.AddRouting();
-        services.AddMvc().AddApplicationPart(Assembly.GetExecutingAssembly());
+        // ASP.NET Core / Blazor services
+        services.AddRazorPages();
         services.AddServerSideBlazor(o => o.DetailedErrors = true);
     }
 
@@ -102,15 +97,11 @@ public class Startup
             app.UseHsts();
         }
         app.UseHttpsRedirection();
-        app.UseForwardedHeaders(new ForwardedHeadersOptions {
-            ForwardedHeaders = ForwardedHeaders.XForwardedProto
-        });
-
         app.UseWebSockets(new WebSocketOptions() {
             KeepAliveInterval = TimeSpan.FromSeconds(30),
         });
 
-        // Static + Swagger
+        // Blazor + static files
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
 
@@ -119,7 +110,7 @@ public class Startup
         app.UseEndpoints(endpoints => {
             endpoints.MapBlazorHub();
             endpoints.MapRpcWebSocketServer();
-            endpoints.MapControllers();
+            endpoints.MapFusionBlazorMode();
             endpoints.MapFallbackToPage("/_Host");
         });
     }

@@ -9,7 +9,7 @@
 } else {
     <RadioGroup Class="@CssClass" TValue="bool"
                 Name="BlazorMode"
-                CheckedValue="@(BlazorModeHelper.IsServerSideBlazor)"
+                CheckedValue="@(BlazorModeHelper.IsBlazorServer)"
                 CheckedValueChanged="@(v => BlazorModeHelper.ChangeMode(!v))">
         @foreach(var mode in new [] {true, false}) {
             <Radio TValue="bool" Value="@mode">@GetModeName(mode)</Radio>
@@ -19,7 +19,6 @@
 
 @code {
     private bool _isPrerendering;
-    private bool _isServerSideBlazor = BlazorModeHelper.IsServerSideBlazor;
 
     [Parameter]
     public string CssClass { get; set; } = "";
@@ -36,6 +35,6 @@
         _isPrerendering = fClientProxy != null && clientProxy == null;
     }
 
-    private string GetModeName(bool isServerSideBlazor)
-        => isServerSideBlazor ? "Blazor Server" : "Blazor WebAssembly";
+    private string GetModeName(bool isBlazorServer)
+        => isBlazorServer ? "Blazor Server" : "Blazor WebAssembly";
 }

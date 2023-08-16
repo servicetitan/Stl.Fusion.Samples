@@ -9,12 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion" Version="6.2.12" />
+    <PackageReference Include="Stl.Fusion" Version="6.2.13" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
-    <PackageReference Include="Stl.Generators" Version="6.2.12" />
+    <PackageReference Include="Stl.Generators" Version="6.2.13" />
   </ItemGroup>
 
 </Project>

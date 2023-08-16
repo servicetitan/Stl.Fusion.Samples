@@ -86,9 +86,6 @@ namespace Tutorial
                 fusion.AddWebServer();
                 // Registering Compute Service
                 fusion.AddService<ICounterService, CounterService>();
-                services.AddRouting();
-                // And its controller
-                services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
             });
             builder.ConfigureWebHost(webHost => {
                 webHost.UseKestrel();
@@ -97,7 +94,6 @@ namespace Tutorial
                     app.UseWebSockets();
                     app.UseRouting();
                     app.UseEndpoints(endpoints => {
-                        endpoints.MapControllers();
                         endpoints.MapRpcWebSocketServer();
                     });
                 });

@@ -214,7 +214,7 @@ The following code snippet shows how you embed it into `Host.cshtml`:
     await ServerAuthHelper.UpdateAuthState(HttpContext);
     var authSchemas = await ServerAuthHelper.GetSchemas(HttpContext);
     var sessionId = ServerAuthHelper.Session.Id.Value;
-    var isServerSideBlazor = BlazorSwitchEndpoint.IsServerSideBlazor(HttpContext);
+    var isBlazorServer = BlazorModeEndpoint.IsBlazorServer(HttpContext);
     var isCloseWindowRequest = ServerAuthHelper.IsCloseWindowRequest(HttpContext, out var closeWindowFlowName);
     Layout = null;
 }
@@ -320,7 +320,7 @@ app.UseEndpoints(endpoints => {
     endpoints.MapBlazorHub();
     endpoints.MapRpcWebSocketServer();
     endpoints.MapFusionAuth();
-    endpoints.MapFusionBlazorSwitch();
+    endpoints.MapFusionBlazorMode();
     // endpoints.MapControllers();
     endpoints.MapFallbackToPage("/_Host"); // Maps every unmapped route to _Host.cshtml
 });
@@ -408,8 +408,8 @@ All of this implies you also need a bit special logic in `_Host.cshtml` to spawn
     @{
         using var prerendering = BlazorCircuitContext.Prerendering();
         var prerenderedApp = await Html.RenderComponentAsync<App>(
-            isServerSideBlazor ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
-            isServerSideBlazor ? new { SessionId = sessionId } : null);
+            isBlazorServer ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered,
+            isBlazorServer ? new { SessionId = sessionId } : null);
     }
     @(prerenderedApp)
 </app>
