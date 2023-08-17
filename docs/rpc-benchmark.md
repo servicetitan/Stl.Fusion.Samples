@@ -4,7 +4,7 @@ This benchmark measures performance of all mainstream web RPC libraries for .NET
 
 ## Tested libraries
 
-- Stl.Rpc: a part of https://github.com/servicetitan/Stl.Fusion, which can be used independently
+- Stl.Rpc: a communication library used by https://github.com/servicetitan/Stl.Fusion, which can be used independently as well
 - SignalR: https://github.com/SignalR/SignalR
 - StreamJsonRpc: https://github.com/microsoft/vs-streamjsonrpc
 - MagicOnion: https://github.com/Cysharp/MagicOnion
