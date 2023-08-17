@@ -24,7 +24,7 @@ Here is what RpcBenchmark does:
 - There are 3 test workloads: `Sum`, `GetUser`, and `SayHello`. They differ only by the payload size:
   - `Sum` is the simplest one - `(int, int) -> int`
   - `GetUser` is `(long) -> User` (medium payload)
-  - `SayHello` uses exactly the same payload as this test:  https://github.com/LesnyRumcajs/grpc_bench/tree/master/dotnet_grpc_bench
+  - `SayHello` uses exactly the same payload as [in this gRPC benchmark](https://github.com/LesnyRumcajs/grpc_bench/tree/master/dotnet_grpc_bench)
 - Workers are warmed up for every workload and run every test T times for S seconds. In the end, the result with the best aggregate throughput across all the workers is selected.  
 
 ## How can I run it?
@@ -37,7 +37,7 @@ Here is what RpcBenchmark does:
 You can use `Run-RpcBenchmark.cmd <options>` or `dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj -- <options>` to run the benchmark.
 
 Where `<options>` are:
-- `server [url]` - starts test server @ the specified URL; the default one is https://localhost:22444/
+- `server [url]` - starts test server @ the specified URL; the default one is [https://localhost:22444/]()
 - `client [url] [client options]` - connect to test server @ the specified URL and run tests 
 - `test [client options]` - start both the server and the client in the same process and runs tests.  
 
