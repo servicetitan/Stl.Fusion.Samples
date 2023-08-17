@@ -79,6 +79,8 @@ Commands:
 - Server: `Run-RpcBenchmark-Server.cmd`
 - Client: `Run-RpcBenchmark-Client.cmd https://192.168.1.11:22444/ -cc 500 -w 10000`
 
+![](./img/RpcBenchmark-LAN.gif)
+
 ```
 System-wide settings:
   Thread pool settings:   48+ worker, 48+ I/O threads
@@ -194,6 +196,8 @@ HTTP:
 ### Local tests - default settings
 
 Command: `Run-RpcBenchmark.cmd test`
+
+![](./img/RpcBenchmark-Local.gif)
 
 ```
 System-wide settings:

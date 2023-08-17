@@ -133,47 +133,14 @@ What's interesting in "Remote services" part of the output?
 
 It's a console app built to compare the throughput of different RPC-over-HTTP protocols on .NET, including Fusion's own `Stl.Rpc`. 
 
-Check out [RpcBenchmark page](./rpc-benchmark.md) to read its detailed description and see its most recent results, but overall, Stl.Rpc is the fastest RPC-over-HTTP protocol for .NET right now.
-                                                           
-Here are some numbers from above document:
-```
-1 Gpbs LAN, high client concurrency / max throughput scenario
-Server CPU: i7-11800H constrained to use 6 virtual cores
-Client CPU: Ryzen Threadripper 3960X
+Check out [RpcBenchmark page](./rpc-benchmark.md) to read its detailed description and see its most recent results, but overall, Stl.Rpc is the fastest RPC-over-HTTP protocol for .NET right now. Some charts from this page:
 
-Throughput on "Sum" workload (tiny request & response):
-  Stl.Rpc:   1.19M calls/s
-  SignalR: 801.45K calls/s
-  gRPC:    109.37K calls/s
-  HTTP:     96.96K calls/s
+![](./img/RpcBenchmark-LAN.gif)
+![](./img/RpcBenchmark-Local.gif)
 
-Throughput on "SayHello" workload (medium-size request & response):
-  Stl.Rpc: 482.01K calls/s
-  SignalR: 345.35K calls/s
-  gRPC:    101.81K calls/s
-  HTTP:     87.68K calls/s
-  
-Server & client on the same machine, max throughput scenario
-CPU: Ryzen Threadripper 3960X (48 virtual hyper-threaded cores)
+Stl.Rpc and SignalR are in its own league on this test: they seem to be the only libraries capable of automatic batching / custom framing, which minimizes the number of transmitted packets by embedding multiple queued messages into a single transmission unit.
 
-Throughput on "Sum" workload:
-  Stl.Rpc:   3.30M calls/s
-  SignalR:   2.75M calls/s
-  gRPC:    128.28K calls/s
-  HTTP:    150.21K calls/s
-
-Throughput on "SayHello" workload:
-  Stl.Rpc:   1.75M calls/s
-  SignalR:   1.22M calls/s
-  gRPC:    125.11K calls/s
-  HTTP:    137.46K calls/s
-```
-
-You can see that Stl.Rpc outperforms SignalR by up to 50%; as for gRPC and HTTP/REST, they aren't even close. 
-
-Stl.Rpc and SignalR seem to be the only libraries capable of minimizing the number of transmitted packets by forming "macro" messages composed of multiple queued messages. This feature is usually called "automatic batching" or "custom framing", and that's why they are so much ahead on this test. 
-
-Automatic batching scenario is important specifically in Fusion's case:
+Automatic batching scenario is quite important in Fusion's case:
 - All Fusion's [Compute Services] are concurrent, including their clients, so typically you use just a single instance of every service.
 - [Fusion Clients] are caching clients - they don't make a call if it's known that the previous result of the same call is still consistent.
 
