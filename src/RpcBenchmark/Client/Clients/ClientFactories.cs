@@ -106,7 +106,7 @@ public sealed class ClientFactories
             var channelOptions = new GrpcChannelOptions() {
                 HttpHandler = new SocketsHttpHandler {
                     EnableMultipleHttp2Connections = true,
-                    MaxConnectionsPerServer = int.MaxValue,
+                    MaxConnectionsPerServer = 10_000,
                     PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
                     SslOptions = new SslClientAuthenticationOptions() {
                         RemoteCertificateValidationCallback = (_, _, _, _) => true,
