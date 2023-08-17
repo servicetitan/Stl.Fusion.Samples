@@ -1,6 +1,6 @@
 # RpcBenchmark
 
-This benchmark measures performance of all mainstream web RPC libraries for .NET (RPC over HTTP or WebSockets), as well as the new contender - Stl.Rpc from [Fusion](https://github.com/servicetitan/Stl.Fusion).
+The benchmark measures the performance of mainstream web RPC libraries for .NET (RPC over HTTP / WebSockets), as well as the performance of the new contender - Stl.Rpc from [Fusion](https://github.com/servicetitan/Stl.Fusion).
 
 <img src="https://img.shields.io/badge/-NOTE:-red" valign="middle"> RpcBenchmark is quite new, so there is a chance that our test setup isn't optimal for some of the tested libraries - even though we did a fair amount of research to maximize the throughput of each one of them. If you'll find any issues, please let us know / send us a Pull Request.
 
