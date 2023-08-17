@@ -102,15 +102,14 @@ public sealed class ClientFactories
         });
 
         // gRPC
-        services.AddSingleton(_ => {
+        services.AddSingleton(c => {
             var channelOptions = new GrpcChannelOptions() {
                 HttpHandler = new SocketsHttpHandler {
                     EnableMultipleHttp2Connections = true,
-                    MaxConnectionsPerServer = 10_000,
-                    PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+                    MaxConnectionsPerServer = 50_000,
                     SslOptions = new SslClientAuthenticationOptions() {
                         RemoteCertificateValidationCallback = (_, _, _, _) => true,
-                    }
+                    },
                 }
             };
             return GrpcChannel.ForAddress(BaseUrl, channelOptions);

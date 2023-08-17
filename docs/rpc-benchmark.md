@@ -1,12 +1,33 @@
 # RpcBenchmark
 
-To run the benchmark:
+This benchmark measures performance of all mainstream web RPC libraries for .NET (RPC over HTTP or WebSockets), as well as the new contender - Stl.Rpc from [Fusion](https://github.com/servicetitan/Stl.Fusion).
+
+## Tested libraries
+
+- Stl.Rpc: a part of https://github.com/servicetitan/Stl.Fusion, which can be used independently
+- SignalR: https://github.com/SignalR/SignalR
+- StreamJsonRpc: https://github.com/microsoft/vs-streamjsonrpc
+- MagicOnion: https://github.com/Cysharp/MagicOnion
+- gRPC: https://grpc.io/, you can find its official benchmarking dashboard here: https://grpc.io/docs/guides/benchmarking/; unofficial benchmarks for various platforms: https://github.com/LesnyRumcajs/grpc_bench
+- HTTP: a RESTful ASP.NET Core API endpoint on the server side, https://github.com/canton7/RestEase on the client side.
+
+## How the benchmark works?
+
+- It creates N clients and N * M worker tasks
+- Each worker task runs a loop calling a single method on its client, quickly validates its result & counts the call
+- There are 3 test workloads: `Sum`, `GetUser`, and `SayHello`. They differ only by payload size:
+  - `Sum` is the simplest one - `(int, int) -> int`
+  - `GetUser` is `(long) -> User` (medium payload)
+  - And `SayHello` uses exactly the same payload as this test:  https://github.com/LesnyRumcajs/grpc_bench/tree/master/dotnet_grpc_bench
+
+The test is designed to measure the overhead/inefficiencies. The overhead per call is ~ `1/callsPerSecond` assuming you're CPU-constrained, so so measure the efficiency of a given library, all you need is to squeeze as many `callsPerSecond` as possible.
+
+## How can I run it?
 
 1. Clone the repository: `git clone git@github.com:servicetitan/Stl.Fusion.Samples.git`
 2. Run `dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj`
 
-
-## Arguments
+## Command line arguments
 
 You can use `Run-RpcBenchmark.cmd <options>` or `dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj -- <options>` to run the benchmark.
 
@@ -27,12 +48,16 @@ The defaults for client options are:
 ```
 -cc 120 -w <CpuCount*300> -d 5 -n 4 -b <AllBenchmarks>
 ```
-         
 
-## Results on 8/16/2023
 
-OS: Windows 11
-.NET: 8.0 Preview 7 
+# Benchmark Results
+
+Last updated: 8/16/2023.
+
+Software:
+- OS: Windows 11
+- .NET: 8.0 Preview 7
+
 Hardware:
 - LAN tests:
   - Bandwidth: 1 Gbps 
@@ -40,13 +65,14 @@ Hardware:
   - Client: Ryzen Threadripper 3960X (24 CPU cores = 48 virtual hyper-threaded cores)
 - Local tests: Ryzen Threadripper 3960X
 
-### LAN tests
 
-### Best settings for Stl.Rpc + SignalR
+## LAN tests
+
+### LAN tests - high client concurrency (500)
 
 Commands:
 - Server: `Run-RpcBenchmark-Server.cmd`
-- Client: `Run-RpcBenchmark-Client.cmd https://192.168.1.11:22444/ -cc 100 -w 10000`
+- Client: `Run-RpcBenchmark-Client.cmd https://192.168.1.11:22444/ -cc 500 -w 10000`
 
 ```
 System-wide settings:
@@ -56,26 +82,113 @@ Client settings:
   Server URL:           https://192.168.1.11:22444/
   Test plan:            5.00s warmup, 4 x 5.00s runs
   Total worker count:   10000
-  Client concurrency:   100
-  Client count:         100
+  Client concurrency:   500
+  Client count:         20
 
 Stl.Rpc:
-  Sum      :   1.01M 985.48K 985.28K 996.63K ->   1.01M calls/s
-  GetUser  : 865.59K 865.36K 799.24K 798.86K -> 865.59K calls/s
-  SayHello : 478.00K 477.89K 477.45K 478.50K -> 478.50K calls/s
+  Sum      : 862.27K   1.19M   1.17M   1.19M ->   1.19M calls/s
+  GetUser  : 821.86K 809.93K 807.60K 811.07K -> 821.86K calls/s
+  SayHello : 482.01K 479.82K 480.23K 480.94K -> 482.01K calls/s
 SignalR:
-  Sum      : 640.09K 590.20K 669.51K 642.79K -> 669.51K calls/s
-  GetUser  : 616.87K 624.90K 633.10K 632.79K -> 633.10K calls/s
-  SayHello : 336.57K 333.72K 336.09K 337.83K -> 337.83K calls/s
+  Sum      : 800.22K 801.45K 794.29K 791.82K -> 801.45K calls/s
+  GetUser  : 625.54K 624.14K 627.01K 621.87K -> 627.01K calls/s
+  SayHello : 340.64K 345.35K 342.72K 332.22K -> 345.35K calls/s
 StreamJsonRpc:
-  Sum      : 174.99K 189.00K 190.19K 187.40K -> 190.19K calls/s
-  GetUser  : 139.18K 139.01K 138.86K 138.72K -> 139.18K calls/s
-  SayHello :  57.70K  56.05K  55.48K  56.57K ->  57.70K calls/s
+  Sum      : 173.71K 171.64K 161.88K 167.82K -> 173.71K calls/s
+  GetUser  : 133.28K 132.31K 131.10K 129.99K -> 133.28K calls/s
+  SayHello :  57.82K  54.53K  56.34K  53.51K ->  57.82K calls/s
+MagicOnion:
+  Sum      : 117.05K 120.05K 119.03K 116.09K -> 120.05K calls/s
+  GetUser  : 113.83K 113.36K 101.22K  94.55K -> 113.83K calls/s
+  SayHello :  91.09K  88.23K  90.37K  90.13K ->  91.09K calls/s
+gRPC:
+  Sum      : 109.37K 104.45K 102.33K  99.85K -> 109.37K calls/s
+  GetUser  : 106.62K 102.25K 102.97K 103.16K -> 106.62K calls/s
+  SayHello :  99.42K  98.16K 101.81K 100.55K -> 101.81K calls/s
+HTTP:
+  Sum      :  76.65K  95.31K  96.05K  96.96K ->  96.96K calls/s
+  GetUser  :  97.02K  95.65K  93.25K  95.62K ->  97.02K calls/s
+  SayHello :  82.91K  87.30K  86.83K  87.68K ->  87.68K calls/s  
 ```
 
-### Run with default settings
+### LAN tests - low client concurrency (10)
 
-Options: none (it's the same as just `test`)
+Commands:
+- Server: `Run-RpcBenchmark-Server.cmd`
+- Client: `Run-RpcBenchmark-Client.cmd https://192.168.1.11:22444/ -cc 10 -w 10000`
+
+```
+System-wide settings:
+  Thread pool settings:   48+ worker, 48+ I/O threads
+  ByteSerializer.Default: MessagePack
+Client settings:
+  Server URL:           https://192.168.1.11:22444/
+  Test plan:            5.00s warmup, 4 x 5.00s runs
+  Total worker count:   10000
+  Client concurrency:   10
+  Client count:         1000
+
+Stl.Rpc:
+  Sum      : 542.45K 497.41K 548.56K 498.03K -> 548.56K calls/s
+  GetUser  : 489.61K 461.83K 457.90K 413.73K -> 489.61K calls/s
+  SayHello : 352.40K 345.78K 366.69K 327.86K -> 366.69K calls/s
+SignalR:
+  Sum      : 322.26K 318.24K 318.07K 326.15K -> 326.15K calls/s
+  GetUser  : 359.93K 350.13K 360.51K 355.77K -> 360.51K calls/s
+  SayHello : 281.83K 279.91K 288.70K 263.40K -> 288.70K calls/s
+StreamJsonRpc:
+  Sum      : 143.00K 136.94K 142.42K 136.68K -> 143.00K calls/s
+  GetUser  : 115.00K 116.07K 116.07K 110.61K -> 116.07K calls/s
+  SayHello :  57.15K  53.85K  50.96K  52.62K ->  57.15K calls/s
+MagicOnion:
+  Failed with HttpRequestException: The server refused the connection.
+gRPC:
+  Failed with HttpRequestException: The server refused the connection.
+HTTP:
+  Sum      :  90.51K  91.96K  95.20K  95.78K ->  95.78K calls/s
+  GetUser  :  94.84K  94.09K  94.29K  95.17K ->  95.17K calls/s
+  SayHello :  82.65K  85.96K  86.53K  86.38K ->  86.53K calls/s
+  
+```
+
+### LAN tests - no client concurrency (1) and low number of workers (200)
+
+Commands:
+- Server: `Run-RpcBenchmark-Server.cmd`
+- Client: `Run-RpcBenchmark-Client.cmd https://192.168.1.11:22444/ -cc 1 -w 200`
+
+```
+Stl.Rpc:
+  Sum      : 125.10K 123.65K 124.99K 124.50K -> 125.10K calls/s
+  GetUser  : 105.78K 103.09K 103.36K 103.45K -> 105.78K calls/s
+  SayHello :  94.78K  94.30K  92.85K  94.26K ->  94.78K calls/s
+SignalR:
+  Sum      : 112.24K 112.34K 112.34K 112.20K -> 112.34K calls/s
+  GetUser  : 107.77K 106.51K 107.55K 107.55K -> 107.77K calls/s
+  SayHello :  89.65K  89.70K  89.49K  89.58K ->  89.70K calls/s
+StreamJsonRpc:
+  Sum      :  69.17K  69.62K  69.13K  69.55K ->  69.62K calls/s
+  GetUser  :  59.95K  59.17K  60.06K  58.99K ->  60.06K calls/s
+  SayHello :  36.99K  36.78K  36.34K  36.95K ->  36.99K calls/s
+MagicOnion:
+  Sum      :  46.67K  43.72K  46.57K  45.26K ->  46.67K calls/s
+  GetUser  :  41.46K  46.81K  42.38K  42.05K ->  46.81K calls/s
+  SayHello :  42.11K  40.16K  39.90K  41.01K ->  42.11K calls/s
+gRPC:
+  Sum      :  49.02K  49.17K  47.57K  35.68K ->  49.17K calls/s
+  GetUser  :  45.34K  44.85K  44.69K  45.57K ->  45.57K calls/s
+  SayHello :  44.93K  44.20K  42.64K  44.65K ->  44.93K calls/s
+HTTP:
+  Sum      : 117.98K 118.84K 119.00K 119.27K -> 119.27K calls/s
+  GetUser  : 116.55K 115.95K 116.99K 115.95K -> 116.99K calls/s
+  SayHello :  88.41K  89.24K  88.63K  89.26K ->  89.26K calls/s
+```
+     
+## Local tests
+
+### Local tests - default settings
+
+Command: `Run-RpcBenchmark.cmd test`
 
 ```
 System-wide settings:
@@ -115,9 +228,9 @@ HTTP:
   SayHello : 136.11K 137.46K 134.38K 135.96K -> 137.46K calls/s
 ```
 
-## Best settings for gRPC and MagicOnion
+### Local tests - best settings for gRPC and MagicOnion
 
-Options: `test -cc 1000 -b grpc,mo`
+Command: `Run-RpcBenchmark.cmd test -cc 1000 -b grpc,mo`
 
 ```
 System-wide settings:
@@ -141,7 +254,7 @@ MagicOnion:
   SayHello : 167.32K 165.32K 169.15K 169.25K -> 169.25K calls/s
 ```
 
-## Runs with server constrained to N cores
+## Local tests + server constrained to 6 cores
 
 Use:
 - `Run-RpcBenchmark-Server.cmd <CoreCount>` to start the server **pinned to the first N CPU cores** (the default is 6)
