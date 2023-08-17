@@ -1,6 +1,6 @@
 $processName = $args[0]
 $coreCount = [long] ($args[1])
-$affinity = [long] (4 * ([Math]::Pow(2, $coreCount) - 1))
+$affinity = [long] (1 * ([Math]::Pow(2, $coreCount) - 1))
 $ps = Get-Process
 foreach ($p in $ps) {
     if ($p.ProcessName -eq $processName) {

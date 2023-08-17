@@ -1,5 +1,43 @@
-Run w/ default settings:
+# RpcBenchmark
 
+To run the benchmark:
+
+1. Clone the repository: `git clone git@github.com:servicetitan/Stl.Fusion.Samples.git`
+2. Run `dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj`
+
+
+## Arguments
+
+You can use `Run-RpcBenchmark.cmd <options>` or `dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj -- <options>` to run the benchmark.
+
+Where `<options>` are:
+- `server [url]` - starts test server @ the specified URL; the default one is https://localhost:22444/
+- `client [url] [client options]` - connect to test server @ the specified URL and run tests 
+- `test [client options]` - start both the server and the client in the same process and runs tests.  
+
+Key client options:
+- `-cc <ClientConcurrency>` - the number of workers sharing a single client instance (HttpClient, gRPC Channel, SignalR client, etc.)
+- `-w <WorkerCount>` - the total number of worker tasks
+- `-d <TestDuration>` - the duration of each test in seconds, the default is `5`
+- `-n <TryCount>` - the number of times to run each test to select the best result, the default is `4`
+- `-b <Benchmarks>` - comma-separated list of tests to run, which must be a subset of `StlRpc,SignalR,StreamJsonRpc,MagicOnion,gRPC,HTTP`, the default is full set of tests
+- `-wait` - wait for a key press before terminating.
+
+The defaults for client options are:
+```
+-cc 120 -w <CpuCount*300> -d 5 -n 4 -b <AllBenchmarks>
+```
+         
+
+## Results on 8/16/2023
+
+All the tests below were performed on Ryzen Threadripper 3960X (24 CPU cores = 48 virtual hyper-threaded cores) and Windows 11.
+
+### Run with default settings
+
+Options: none (it's the same as just `test`)
+
+```
 System-wide settings:
   Thread pool settings:   48+ worker, 48+ I/O threads
   ByteSerializer.Default: MessagePack
@@ -35,9 +73,13 @@ HTTP:
   Sum      : 146.10K 150.21K 147.05K 147.35K -> 150.21K calls/s
   GetUser  : 148.69K 143.76K 151.10K 143.60K -> 151.10K calls/s
   SayHello : 136.11K 137.46K 134.38K 135.96K -> 137.46K calls/s
+```
 
-Run w/ the best settings for gRPC and MagicOnion (`test -cc 1000 -b grpc,mo`):
+## Best settings for gRPC and MagicOnion
 
+Options: `test -cc 1000 -b grpc,mo`
+
+```
 System-wide settings:
   Thread pool settings:   48+ worker, 48+ I/O threads
   ByteSerializer.Default: MessagePack
@@ -57,12 +99,21 @@ MagicOnion:
   Sum      : 180.95K 179.12K 178.14K 181.35K -> 181.35K calls/s
   GetUser  : 175.71K 173.05K 173.18K 172.31K -> 175.71K calls/s
   SayHello : 167.32K 165.32K 169.15K 169.25K -> 169.25K calls/s
+```
 
+## Runs with server constrained to N cores
 
-Runs with server constrained to 6 cores (w/ Run-RpcBenchmark-Server.cmd):
+Use:
+- `Run-RpcBenchmark-Server.cmd <CoreCount>` to start the server **pinned to the first N CPU cores** (the default is 6)
+- `Run-RpcBenchmark-Client.cmd [url] [client options]` to run the client. It's the same command as  `dotnet run -c Release --project src/RpcBenchmark/RpcBenchmark.csproj -- client [url] [client options]` 
 
-Best settings for Stl.Rpc & SignalR: Run-RpcBenchmark-Client.cmd -wait -cc 100 -w 10000
+### 6-core server, best settings for Stl.Rpc & SignalR
 
+Commands:
+- `Run-RpcBenchmark-Server.cmd`
+- `Run-RpcBenchmark-Client.cmd -wait -cc 100 -w 10000`
+
+```
 System-wide settings:
   Thread pool settings:   48+ worker, 48+ I/O threads
   ByteSerializer.Default: MessagePack
@@ -97,9 +148,15 @@ HTTP:
   Sum      :  75.53K  72.44K  75.19K  75.30K ->  75.53K calls/s
   GetUser  :  71.68K  72.56K  72.85K  70.57K ->  72.85K calls/s
   SayHello :  60.87K  58.25K  60.94K  59.99K ->  60.94K calls/s
+```
 
-Best settings for gRPC: Run-RpcBenchmark-Client.cmd -wait -cc 1000 -w 10000
+### 6-core server, best settings for gRPC
 
+Commands:
+- `Run-RpcBenchmark-Server.cmd`
+- `Run-RpcBenchmark-Client.cmd -wait -cc 1000 -w 10000`
+
+```
 System-wide settings:
   Thread pool settings:   48+ worker, 48+ I/O threads
   ByteSerializer.Default: MessagePack
@@ -134,3 +191,4 @@ HTTP:
   Sum      :  75.60K  76.56K  76.91K  76.18K ->  76.91K calls/s
   GetUser  :  74.40K  74.27K  74.48K  74.57K ->  74.57K calls/s
   SayHello :  60.99K  58.05K  61.97K  59.36K ->  61.97K calls/s
+```

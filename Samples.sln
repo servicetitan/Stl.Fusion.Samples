@@ -2,8 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{01FE6776-E788-46B2-93E4-1CEDB01AA851}"
 	ProjectSection(SolutionItems) = preProject
-		docs\rpc-benchmark-results.txt = docs\rpc-benchmark-results.txt
 		docs\index.md = docs\index.md
+		docs\rpc-benchmark.md = docs\rpc-benchmark.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B5A8469D-C4BB-4808-8E44-FF4DFCA57BDE}"
