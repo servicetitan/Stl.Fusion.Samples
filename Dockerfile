@@ -16,7 +16,7 @@ ENTRYPOINT ["sh", "start.sh"]
 
 # Samples
 
-FROM mcr.microsoft.com/dotnet/nightly/sdk:8.0-preview-jammy as build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-preview as build
 RUN apt-get update
 RUN apt-get install -y --allow-unauthenticated apt-utils libc6-dev libgdiplus python3
 #RUN apk update
