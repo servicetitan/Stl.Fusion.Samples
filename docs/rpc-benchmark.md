@@ -44,7 +44,7 @@ Key client options:
 - `-b <Benchmarks>` - comma-separated list of tests to run, which must be a subset of `StlRpc,SignalR,StreamJsonRpc,MagicOnion,gRPC,HTTP`, the default is full set of tests
 - `-wait` - wait for a key press before terminating.
 
-The defaults for client options are:
+The default client options are:
 ```
 -cc 120 -w <CpuCount*300> -d 5 -n 4 -b <AllBenchmarks>
 ```
