@@ -2,6 +2,9 @@
 
 This benchmark measures performance of all mainstream web RPC libraries for .NET (RPC over HTTP or WebSockets), as well as the new contender - Stl.Rpc from [Fusion](https://github.com/servicetitan/Stl.Fusion).
 
+<img src="https://img.shields.io/badge/-NOTE:-red" valign="middle"> RpcBenchmark is quite new, so there is a chance that our test setup isn't optimal for some of the tested libraries - even though we did a fair amount of research to maximize the throughput of each one of them. If you'll find any issues, please let us know / send us a Pull Request.
+
+
 ## Tested libraries
 
 - Stl.Rpc: a communication library used by https://github.com/servicetitan/Stl.Fusion, which can be used independently as well
@@ -11,16 +14,18 @@ This benchmark measures performance of all mainstream web RPC libraries for .NET
 - gRPC: https://grpc.io/, you can find its official benchmarking dashboard here: https://grpc.io/docs/guides/benchmarking/; unofficial benchmarks for various platforms: https://github.com/LesnyRumcajs/grpc_bench
 - HTTP: a RESTful ASP.NET Core API endpoint on the server side, https://github.com/canton7/RestEase on the client side.
 
-## How the benchmark works?
-
-- It creates N clients and N * M worker tasks
-- Each worker task runs a loop calling a single method on its client, quickly validates its result & counts the call
-- There are 3 test workloads: `Sum`, `GetUser`, and `SayHello`. They differ only by payload size:
-  - `Sum` is the simplest one - `(int, int) -> int`
-  - `GetUser` is `(long) -> User` (medium payload)
-  - And `SayHello` uses exactly the same payload as this test:  https://github.com/LesnyRumcajs/grpc_bench/tree/master/dotnet_grpc_bench
+## How RpcBenchmark works?
 
 The test is designed to measure the overhead/inefficiencies. The overhead per call is ~ `1/callsPerSecond` assuming you're CPU-constrained, so so measure the efficiency of a given library, all you need is to squeeze as many `callsPerSecond` as possible.
+
+Here is what RpcBenchmark does:
+- It creates N clients and N * M worker tasks
+- Each worker task runs a loop calling a single method on its client, quickly validates its result & counts the call
+- There are 3 test workloads: `Sum`, `GetUser`, and `SayHello`. They differ only by the payload size:
+  - `Sum` is the simplest one - `(int, int) -> int`
+  - `GetUser` is `(long) -> User` (medium payload)
+  - `SayHello` uses exactly the same payload as this test:  https://github.com/LesnyRumcajs/grpc_bench/tree/master/dotnet_grpc_bench
+- Workers are warmed up for every workload and run every test T times for S seconds. In the end, the result with the best aggregate throughput across all the workers is selected.  
 
 ## How can I run it?
 
