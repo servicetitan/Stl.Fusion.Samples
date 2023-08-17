@@ -7,12 +7,12 @@ This benchmark measures performance of all mainstream web RPC libraries for .NET
 
 ## Tested libraries
 
-- Stl.Rpc: a communication library used by https://github.com/servicetitan/Stl.Fusion, which can be used independently as well
-- SignalR: https://github.com/SignalR/SignalR
-- StreamJsonRpc: https://github.com/microsoft/vs-streamjsonrpc
-- MagicOnion: https://github.com/Cysharp/MagicOnion
-- gRPC: https://grpc.io/, you can find its official benchmarking dashboard here: https://grpc.io/docs/guides/benchmarking/; unofficial benchmarks for various platforms: https://github.com/LesnyRumcajs/grpc_bench
-- HTTP: a RESTful ASP.NET Core API endpoint on the server side, https://github.com/canton7/RestEase on the client side.
+- [Stl.Rpc](https://www.nuget.org/packages/Stl.Rpc) &ndash; a communication library used by [Fusion](https://github.com/servicetitan/Stl.Fusion), which can be used independently as well.
+- [SignalR](https://github.com/SignalR/SignalR)
+- [StreamJsonRpc](https://github.com/microsoft/vs-streamjsonrpc)
+- [MagicOnion](https://github.com/Cysharp/MagicOnion)
+- [gRPC](https://grpc.io/) &ndash; you can find its [official benchmarking dashboard here](https://grpc.io/docs/guides/benchmarking/). There are multiple unofficial benchmarks as well, such as [this one](https://github.com/LesnyRumcajs/grpc_bench).
+- HTTP: a RESTful ASP.NET Core API endpoint on the server side, and [RestEase](https://github.com/canton7/RestEase)-based  `HttpClient` wrapper on the client side.
 
 ## How RpcBenchmark works?
 
