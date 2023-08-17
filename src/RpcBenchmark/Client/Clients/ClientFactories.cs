@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Net.WebSockets;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -107,6 +108,9 @@ public sealed class ClientFactories
                     EnableMultipleHttp2Connections = true,
                     MaxConnectionsPerServer = int.MaxValue,
                     PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+                    SslOptions = new SslClientAuthenticationOptions() {
+                        RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                    }
                 }
             };
             return GrpcChannel.ForAddress(BaseUrl, channelOptions);

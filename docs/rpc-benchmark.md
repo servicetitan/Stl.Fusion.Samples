@@ -31,7 +31,47 @@ The defaults for client options are:
 
 ## Results on 8/16/2023
 
-All the tests below were performed on Ryzen Threadripper 3960X (24 CPU cores = 48 virtual hyper-threaded cores) and Windows 11.
+OS: Windows 11
+.NET: 8.0 Preview 7 
+Hardware:
+- LAN tests:
+  - Bandwidth: 1 Gbps 
+  - Server: Intel Core i7 11800H (8 CPU cores = 16 virtual hyper-threaded cores) **constrained to 6 virtual cores**
+  - Client: Ryzen Threadripper 3960X (24 CPU cores = 48 virtual hyper-threaded cores)
+- Local tests: Ryzen Threadripper 3960X
+
+### LAN tests
+
+### Best settings for Stl.Rpc + SignalR
+
+Commands:
+- Server: `Run-RpcBenchmark-Server.cmd`
+- Client: `Run-RpcBenchmark-Client.cmd https://192.168.1.11:22444/ -cc 100 -w 10000`
+
+```
+System-wide settings:
+  Thread pool settings:   48+ worker, 48+ I/O threads
+  ByteSerializer.Default: MessagePack
+Client settings:
+  Server URL:           https://192.168.1.11:22444/
+  Test plan:            5.00s warmup, 4 x 5.00s runs
+  Total worker count:   10000
+  Client concurrency:   100
+  Client count:         100
+
+Stl.Rpc:
+  Sum      :   1.01M 985.48K 985.28K 996.63K ->   1.01M calls/s
+  GetUser  : 865.59K 865.36K 799.24K 798.86K -> 865.59K calls/s
+  SayHello : 478.00K 477.89K 477.45K 478.50K -> 478.50K calls/s
+SignalR:
+  Sum      : 640.09K 590.20K 669.51K 642.79K -> 669.51K calls/s
+  GetUser  : 616.87K 624.90K 633.10K 632.79K -> 633.10K calls/s
+  SayHello : 336.57K 333.72K 336.09K 337.83K -> 337.83K calls/s
+StreamJsonRpc:
+  Sum      : 174.99K 189.00K 190.19K 187.40K -> 190.19K calls/s
+  GetUser  : 139.18K 139.01K 138.86K 138.72K -> 139.18K calls/s
+  SayHello :  57.70K  56.05K  55.48K  56.57K ->  57.70K calls/s
+```
 
 ### Run with default settings
 
