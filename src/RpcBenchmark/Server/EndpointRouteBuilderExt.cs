@@ -20,7 +20,7 @@ public static class EndpointRouteBuilderExt
 
     public static IEndpointRouteBuilder MapStreamJsonRpcService<TService>(
         this IEndpointRouteBuilder endpoints, string pattern)
-        where TService : ITestService
+        where TService : class, ITestService
     {
         var service = endpoints.ServiceProvider.GetRequiredService<TService>();
         endpoints.MapGet(pattern, context => StreamJsonRpcEndpoint.Invoke(service, context));
