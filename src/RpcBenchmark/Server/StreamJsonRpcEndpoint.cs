@@ -15,6 +15,7 @@ public static class StreamJsonRpcEndpoint
         var webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
         var webSocketMessageHandler = new WebSocketMessageHandler(webSocket);
         using var jsonRpc = new JsonRpc(webSocketMessageHandler, service);
+        jsonRpc.SynchronizationContext = null;
         jsonRpc.StartListening();
         await jsonRpc.Completion.ConfigureAwait(false);
     }
