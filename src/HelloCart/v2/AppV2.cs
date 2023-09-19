@@ -25,7 +25,7 @@ public class AppV2 : AppBase
         // Add AppDbContext & related services
         var appTempDir = FilePath.GetApplicationTempDirectory("", true);
         var dbPath = appTempDir & "HelloCart_v01.db";
-        services.AddDbContextFactory<AppDbContext>(db => {
+        services.AddTransientDbContextFactory<AppDbContext>(db => {
             db.UseSqlite($"Data Source={dbPath}");
             db.EnableSensitiveDataLogging();
         });
@@ -40,7 +40,8 @@ public class AppV2 : AppBase
     public override async Task InitializeAsync(IServiceProvider services)
     {
         // Let's re-create the database first
-        await using var dbContext = services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.EnsureCreatedAsync();
         await base.InitializeAsync(services);

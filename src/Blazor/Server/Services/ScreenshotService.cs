@@ -33,18 +33,20 @@ public class ScreenshotService : IScreenshotService
     private readonly Image<Bgra32> _sun;
     private Task<DirectBitmap>? _currentProducer;
 
+    private bool UseScreenCapture => false; // OSInfo.IsWindows;
+
     public ScreenshotService()
     {
         var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
         var resourcesDir = Path.Combine(baseDir, "Resources");
         _fontCollection = new FontCollection();
-        _fontCollection.Install($"{resourcesDir}/OpenSans-Bold.ttf");
-        _fontCollection.Install($"{resourcesDir}/OpenSans-Regular.ttf");
+        _fontCollection.Add($"{resourcesDir}/OpenSans-Bold.ttf");
+        _fontCollection.Add($"{resourcesDir}/OpenSans-Regular.ttf");
         _sun = Image.Load<Bgra32>($"{resourcesDir}/Sun.jpg");
 
         _unixJpegEncoder = _unixJpegEncoder = new JpegEncoder() { Quality = 50 };
         _jpegEncoder = (source, stream) =>source.Image.Save(stream, _unixJpegEncoder);
-        if (OSInfo.IsWindows) {
+        if (UseScreenCapture) {
             var winJpegEncoder = ImageCodecInfo
                 .GetImageDecoders()
                 .Single(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
@@ -82,12 +84,12 @@ public class ScreenshotService : IScreenshotService
     private DirectBitmap TakeScreenshot()
     {
         var (w, h) = (1280, 720);
-        if (OSInfo.IsWindows) {
+        if (UseScreenCapture) {
             var dd = DisplayInfo.PrimaryDisplayDimensions;
             (w, h) = (dd?.Width ?? 1280, dd?.Height ?? 720);
         }
         var screen = new DirectBitmap(w, h);
-        if (OSInfo.IsWindows) {
+        if (UseScreenCapture) {
             using var gScreen = Graphics.FromImage(screen.Bitmap);
             gScreen.CopyFromScreen(0, 0, 0, 0, screen.Bitmap.Size);
             return screen;
@@ -113,13 +115,9 @@ public class ScreenshotService : IScreenshotService
         }
 
         var image = screen.Image;
-        var font = _fontCollection.Find("Open Sans").CreateFont(48);
+        var font = _fontCollection.Get("Open Sans").CreateFont(48);
         var options = new DrawingOptions() {
             GraphicsOptions = { Antialias = true },
-            TextOptions = {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            }
         };
         var time = DateTime.Now.ToString("HH:mm:ss.fff");
         image.Mutate(x => x
@@ -134,7 +132,7 @@ public class ScreenshotService : IScreenshotService
         using var stream = new MemoryStream(100000);
         if (source.Width == width)
             _jpegEncoder.Invoke(source, stream);
-        else if (OSInfo.IsWindows) {
+        else if (UseScreenCapture) {
             using var target = new DirectBitmap(width, height);
             using var gTarget = Graphics.FromImage(target.Bitmap);
             gTarget.CompositingQuality = CompositingQuality.HighSpeed;

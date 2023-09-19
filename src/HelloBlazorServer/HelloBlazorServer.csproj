@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Blazor" Version="6.2.18" />
-    <PackageReference Include="Stl.Fusion.Server" Version="6.2.18" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="6.4.32" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.4.32" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
-    <PackageReference Include="Stl.Generators" Version="6.2.18" />
+    <PackageReference Include="Stl.Generators" Version="6.4.32" />
   </ItemGroup>
 
 </Project>
