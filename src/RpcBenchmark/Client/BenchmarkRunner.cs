@@ -34,6 +34,8 @@ public class BenchmarkRunner : BenchmarkRunnerBase<double>
         await RunOne("Sum", w => w.Sum);
         await RunOne("GetUser", w => w.GetUser);
         await RunOne("SayHello", w => w.SayHello);
+        // await RunOne("StreamS", w => w.StreamS);
+        // await RunOne("StreamL", w => w.StreamL);
 
         // Dispose clients
         var clients = Workers.Select(w => w.Client).ToHashSet();

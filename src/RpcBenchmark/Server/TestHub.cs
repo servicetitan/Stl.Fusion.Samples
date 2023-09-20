@@ -2,19 +2,17 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Samples.RpcBenchmark.Server;
 
-public class TestHub : Hub
+public class TestHub(TestService service) : Hub
 {
-    private readonly TestService _service;
-
-    public TestHub(TestService service)
-        => _service = service;
-
     public Task<HelloReply> SayHello(HelloRequest request)
-        => _service.SayHello(request);
+        => service.SayHello(request);
 
     public Task<User?> GetUser(long userId)
-        => _service.GetUser(userId);
+        => service.GetUser(userId);
 
     public Task<int> Sum(int a, int b)
-        => _service.Sum(a, b);
+        => service.Sum(a, b);
+
+    public IAsyncEnumerable<Item> GetItems(GetItemsRequest request, CancellationToken cancellationToken = default)
+        => StreamGenerator.GetItems(request, cancellationToken);
 }

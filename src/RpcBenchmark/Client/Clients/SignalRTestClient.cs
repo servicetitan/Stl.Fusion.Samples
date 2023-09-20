@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Stl.Rpc;
 
 namespace Samples.RpcBenchmark.Client;
 
@@ -25,4 +26,10 @@ public class SignalRTestClient(HubConnection connection) : ITestService, IHasWhe
         // - https://github.com/dotnet/aspnetcore/issues/11542
         // ReSharper disable once MethodSupportsCancellation
         => connection.InvokeAsync<int>(nameof(Sum), a, b);
+
+    public Task<RpcStream<Item>> GetItems(GetItemsRequest request, CancellationToken cancellationToken = default)
+    {
+        var items = connection.StreamAsync<Item>(nameof(GetItems), request, cancellationToken);
+        return Task.FromResult(new RpcStream<Item>(items));
+    }
 }

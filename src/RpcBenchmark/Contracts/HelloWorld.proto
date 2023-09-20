@@ -29,6 +29,7 @@ service GrpcService {
   rpc SayHello (GrpcHelloRequest) returns (GrpcHelloReply) {}
   rpc GetUser (GrpcGetUserRequest) returns (GrpcGetUserReply) {}
   rpc Sum (GrpcSumRequest) returns (GrpcSumReply) {}
+  rpc GetItems (GrpcGetItemsRequest) returns (stream GrpcItem) {}
 }
 
 message GrpcHello {
@@ -88,4 +89,15 @@ message GrpcSumRequest {
 
 message GrpcSumReply {
   int64 sum = 1;
+}
+
+message GrpcGetItemsRequest {
+  int32 dataSize = 1;
+  int32 delayEvery = 2;
+  int32 count = 3;
+}
+
+message GrpcItem {
+  int64 index = 1;
+  bytes data = 2;
 }

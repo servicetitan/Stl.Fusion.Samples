@@ -1,6 +1,9 @@
+using Google.Protobuf;
 using Grpc.Core;
 
 namespace Samples.RpcBenchmark.Server;
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 public class GrpcTestService : GrpcService.GrpcServiceBase
 {
@@ -17,4 +20,25 @@ public class GrpcTestService : GrpcService.GrpcServiceBase
 
     public override Task<GrpcSumReply> Sum(GrpcSumRequest request, ServerCallContext context)
         => Task.FromResult(new GrpcSumReply() { Sum = request.A + request.B });
+
+    public override async Task GetItems(GrpcGetItemsRequest request, IServerStreamWriter<GrpcItem> responseStream, ServerCallContext context)
+    {
+        var dataSize = request.DataSize;
+        var count = request.Count;
+        var cancellationToken = context.CancellationToken;
+        if (dataSize < 0)
+            throw new ArgumentOutOfRangeException(nameof(dataSize));
+
+        for (var i = 0; i < count; i++) {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (request.DelayEvery > 0 && (i % request.DelayEvery) == 0)
+                await Task.Delay(10, cancellationToken).ConfigureAwait(false);
+
+            var item = new GrpcItem() {
+                Index = i,
+                Data = ByteString.CopyFrom(new byte[dataSize]),
+            };
+            await responseStream.WriteAsync(item, cancellationToken).ConfigureAwait(false);
+        }
+    }
 }

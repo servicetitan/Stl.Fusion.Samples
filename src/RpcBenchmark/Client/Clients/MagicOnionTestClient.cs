@@ -1,5 +1,6 @@
 using Grpc.Net.Client;
 using MagicOnion.Client;
+using Stl.Rpc;
 
 namespace Samples.RpcBenchmark.Client;
 
@@ -18,4 +19,7 @@ public class MagicOnionTestClient(GrpcChannel grpcChannel) : ITestService, IDisp
 
     public async Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
         => await _client.Sum(a, b);
+
+    public Task<RpcStream<Item>> GetItems(GetItemsRequest request, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
 }

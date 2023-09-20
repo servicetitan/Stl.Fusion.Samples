@@ -1,3 +1,6 @@
+using Grpc.Core;
+using CallOptions = Grpc.Core.CallOptions;
+
 namespace Samples.RpcBenchmark.Client;
 
 public sealed class GrpcBenchmarkWorker(ITestService client) : BenchmarkWorker(client)
@@ -30,4 +33,40 @@ public sealed class GrpcBenchmarkWorker(ITestService client) : BenchmarkWorker(c
         if (result.Sum != 3)
             throw new InvalidOperationException("Wrong result.");
     }
+
+
+    public override async Task StreamS(CancellationToken cancellationToken)
+    {
+        var request = new GrpcGetItemsRequest() {
+            DataSize = 0,
+            DelayEvery = 1,
+            Count = StreamLength,
+        };
+        var callOptions = new CallOptions(cancellationToken: cancellationToken);
+        var stream = GrpcClient.GetItems(request, callOptions);
+        var count = await stream.ResponseStream
+            .ReadAllAsync(cancellationToken)
+            .CountAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (count != StreamLength)
+            throw new InvalidOperationException("Wrong result.");
+    }
+
+    public override async Task StreamL(CancellationToken cancellationToken)
+    {
+        var request = new GrpcGetItemsRequest() {
+            DataSize = 100,
+            DelayEvery = 2,
+            Count = StreamLength,
+        };
+        var callOptions = new CallOptions(cancellationToken: cancellationToken);
+        var stream = GrpcClient.GetItems(request, callOptions);
+        var count = await stream.ResponseStream
+            .ReadAllAsync(cancellationToken)
+            .CountAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (count != StreamLength)
+            throw new InvalidOperationException("Wrong result.");
+    }
+
 }

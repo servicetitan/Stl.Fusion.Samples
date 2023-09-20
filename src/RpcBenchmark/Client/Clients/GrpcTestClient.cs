@@ -1,4 +1,5 @@
 using Grpc.Net.Client;
+using Stl.Rpc;
 
 namespace Samples.RpcBenchmark.Client;
 
@@ -18,5 +19,8 @@ public class GrpcTestClient(GrpcChannel grpcChannel) : ITestService, IDisposable
         => throw new NotSupportedException();
 
     public Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException();
+
+    public Task<RpcStream<Item>> GetItems(GetItemsRequest request, CancellationToken cancellationToken = default)
         => throw new NotSupportedException();
 }

@@ -1,6 +1,7 @@
 using System.Net.Http;
 using RestEase;
 using Stl.RestEase;
+using Stl.Rpc;
 
 namespace Samples.RpcBenchmark.Client;
 
@@ -26,6 +27,9 @@ public class HttpTestClient : ITestService, IDisposable
 
     public Task<int> Sum(int a, int b, CancellationToken cancellationToken = default)
         => _client.Sum(a, b, cancellationToken);
+
+    public Task<RpcStream<Item>> GetItems(GetItemsRequest request, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
 }
 
 [BasePath("api/testService")]

@@ -47,6 +47,7 @@ public partial class ServerCommand : BenchmarkCommandBase
 
         // Benchmark services
         services.AddSingleton<TestService>();
+        services.AddSingleton<JsonRpcTestService>();
         rpc.AddServer<ITestService, TestService>();
 
         // Kestrel
@@ -62,7 +63,7 @@ public partial class ServerCommand : BenchmarkCommandBase
         });
         var app = builder.Build();
 
-        //Map services there
+        // Map services
         app.UseWebSockets();
         app.UseMiddleware<AppServicesMiddleware>();
         app.MapRpcWebSocketServer();
@@ -72,7 +73,7 @@ public partial class ServerCommand : BenchmarkCommandBase
             o.Transports = HttpTransportType.WebSockets;
         });
         app.MapMagicOnionService();
-        app.MapStreamJsonRpcService<TestService>("stream-json-rpc");
+        app.MapStreamJsonRpcService<JsonRpcTestService>("stream-json-rpc");
         app.MapTestService<TestService>("/api/testService");
         app.Urls.Add(Url);
         try {
