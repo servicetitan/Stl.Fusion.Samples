@@ -38,8 +38,8 @@ public sealed class GrpcBenchmarkWorker(ITestService client) : BenchmarkWorker(c
     public override async Task StreamS(CancellationToken cancellationToken)
     {
         var request = new GrpcGetItemsRequest() {
-            DataSize = 0,
-            DelayEvery = 1,
+            DataSize = DataSizeS,
+            DelayEvery = DelayEveryS,
             Count = StreamLength,
         };
         var callOptions = new CallOptions(cancellationToken: cancellationToken);
@@ -55,8 +55,8 @@ public sealed class GrpcBenchmarkWorker(ITestService client) : BenchmarkWorker(c
     public override async Task StreamL(CancellationToken cancellationToken)
     {
         var request = new GrpcGetItemsRequest() {
-            DataSize = 100,
-            DelayEvery = 2,
+            DataSize = DataSizeL,
+            DelayEvery = DelayEveryL,
             Count = StreamLength,
         };
         var callOptions = new CallOptions(cancellationToken: cancellationToken);

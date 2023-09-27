@@ -19,15 +19,15 @@ public sealed class ClientFactories
     public readonly Func<ITestService> Grpc;
     public readonly Func<ITestService> Http;
 
-    public (string Name, Func<ITestService> Factory) this[BenchmarkKind benchmarkKind]
-        => benchmarkKind switch {
-            BenchmarkKind.StlRpc => ("Stl.Rpc", Rpc),
-            BenchmarkKind.SignalR => ("SignalR", SignalR),
-            BenchmarkKind.StreamJsonRpc => ("StreamJsonRpc", StreamJsonRpc),
-            BenchmarkKind.MagicOnion => ("MagicOnion", MagicOnion),
-            BenchmarkKind.Grpc => ("gRPC", Grpc),
-            BenchmarkKind.Http => ("HTTP", Http),
-            _ => throw new ArgumentOutOfRangeException(nameof(benchmarkKind), benchmarkKind, null)
+    public (string Name, Func<ITestService> Factory) this[LibraryKind libraryKind]
+        => libraryKind switch {
+            LibraryKind.StlRpc => ("Stl.Rpc", Rpc),
+            LibraryKind.SignalR => ("SignalR", SignalR),
+            LibraryKind.StreamJsonRpc => ("StreamJsonRpc", StreamJsonRpc),
+            LibraryKind.MagicOnion => ("MagicOnion", MagicOnion),
+            LibraryKind.Grpc => ("gRPC", Grpc),
+            LibraryKind.Http => ("HTTP", Http),
+            _ => throw new ArgumentOutOfRangeException(nameof(libraryKind), libraryKind, null)
         };
 
     public ClientFactories(string baseUrl)

@@ -13,25 +13,33 @@ namespace Samples.RpcBenchmark;
 public partial class ClientCommand : BenchmarkCommandBase
 {
     [CommandLineArgument]
-    [Description("Benchmarks to run.")]
+    [Description("Benchmark kind to run.")]
+    [ValueDescription("Calls or Streams")]
+    [Alias("b")]
+    public BenchmarkKind Benchmark { get; set; }
+
+    [CommandLineArgument]
+    [Description("Libraries/APIs to benchmark.")]
     [ValueDescription("Any subset of StlRpc, SignalR, StreamJsonRpc, MagicOnion, Grpc, Http")]
     [ValidateRange(1, null)]
-    [Alias("b")]
-    public string Benchmarks { get; set; } = "StlRpc, SignalR, StreamJsonRpc, MagicOnion, Grpc, Http";
+    [Alias("l")]
+    public string Libraries { get; set; } = "StlRpc, SignalR, StreamJsonRpc, MagicOnion, Grpc, Http";
 
     [CommandLineArgument]
     [Description("Client concurrency - the number of worker tasks using a single client.")]
     [ValueDescription("Number")]
     [ValidateRange(1, null)]
     [Alias("cc")]
-    public int ClientConcurrency { get; set; } = 120;
+    public int? ClientConcurrency { get; set; }
+    public int ClientConcurrencyValue => ClientConcurrency ?? (Benchmark == BenchmarkKind.Calls ? 120 : 10);
 
     [CommandLineArgument]
     [Description("Worker count - the total number of worker tasks.")]
     [ValueDescription("Number")]
     [ValidateRange(1, null)]
     [Alias("w")]
-    public int Workers { get; set; } = HardwareInfo.ProcessorCount * 300;
+    public int? Workers { get; set; }
+    public int WorkersValue => Workers ?? HardwareInfo.ProcessorCount * (Benchmark == BenchmarkKind.Calls ? 300 : 10);
 
     [CommandLineArgument]
     [Description("Test duration in seconds.")]
@@ -70,18 +78,18 @@ public partial class ClientCommand : BenchmarkCommandBase
         WriteLine("Client settings:");
         WriteLine($"  Server URL:           {Url}");
         WriteLine($"  Test plan:            {WarmupDuration:N}s warmup, {TryCount} x {Duration:N}s runs");
-        WriteLine($"  Total worker count:   {Workers}");
-        WriteLine($"  Client concurrency:   {ClientConcurrency}");
-        WriteLine($"  Client count:         {(Workers + ClientConcurrency - 1) / ClientConcurrency}");
+        WriteLine($"  Total worker count:   {WorkersValue}");
+        WriteLine($"  Client concurrency:   {ClientConcurrencyValue}");
+        WriteLine($"  Client count:         {(WorkersValue + ClientConcurrencyValue - 1) / ClientConcurrencyValue}");
         await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
 
         // Run
         WriteLine();
         var clientFactories = new ClientFactories(Url);
-        var benchmarkKinds = Benchmarks.Split(",").Select(BenchmarkKindExt.Parse).ToArray();
+        var benchmarkKinds = Libraries.Split(",").Select(LibraryKindExt.Parse).ToArray();
         foreach (var benchmarkKind in benchmarkKinds) {
             var (name, factory) = clientFactories[benchmarkKind];
-            await new BenchmarkRunner(this, factory).RunAll(name);
+            await new BenchmarkRunner(this, factory, name.Contains("Stream")).RunAll(name);
         }
 
         if (Wait)
