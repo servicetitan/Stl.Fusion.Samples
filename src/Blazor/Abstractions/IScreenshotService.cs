@@ -1,13 +1,14 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using MemoryPack;
+using Stl.Rpc;
 
 namespace Samples.Blazor.Abstractions;
 
 [DataContract, MemoryPackable(GenerateType.VersionTolerant)]
-public partial class Screenshot
+public sealed partial class Screenshot
 {
-    private static readonly byte[] OnePixelData = Convert.FromBase64String(
+    public static readonly byte[] OnePixelData = Convert.FromBase64String(
         "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0d" +
         "Hx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4e" +
         "Hh4eHh4eHh7/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QA" +
@@ -30,6 +31,7 @@ public partial class Screenshot
 
 public interface IScreenshotService : IComputeService
 {
+    Task<RpcStream<Screenshot>> StreamScreenshots(int width, CancellationToken cancellationToken = default);
     [ComputeMethod(MinCacheDuration = 0.1)]
     Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default);
 }

@@ -12,6 +12,7 @@ using Stl.Fusion.Blazor;
 using Stl.Fusion.Blazor.Authentication;
 using Stl.Fusion.Extensions;
 using Stl.Fusion.UI;
+using Stl.Rpc;
 
 namespace Samples.Blazor.UI;
 
@@ -31,12 +32,20 @@ public class Program
 
     public static void ConfigureServices(IServiceCollection services, WebAssemblyHostBuilder builder)
     {
-        builder.Logging.SetMinimumLevel(LogLevel.Debug);
+        builder.Logging.SetMinimumLevel(LogLevel.Information);
         var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
 
         // Fusion
         var fusion = services.AddFusion();
         fusion.Rpc.AddWebSocketClient(baseUri);
+        // You may comment this out - the call below just enables RPC call logging
+        /*
+        services.AddSingleton<RpcPeerFactory>(_ =>
+            static (hub, peerRef) => peerRef.IsServer
+                ? throw new NotSupportedException("No server peers on the client.")
+                : new RpcClientPeer(hub, peerRef) { CallLogLevel = LogLevel.Information }
+        );
+        */
         fusion.AddAuthClient();
 
         // Fusion services

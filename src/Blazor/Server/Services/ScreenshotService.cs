@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Stl.OS;
 using Samples.Blazor.Abstractions;
 using SixLabors.Fonts;
@@ -12,6 +13,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Stl.Rpc;
 using Color = SixLabors.ImageSharp.Color;
 using Encoder = System.Drawing.Imaging.Encoder;
 using Image = SixLabors.ImageSharp.Image;
@@ -58,6 +60,17 @@ public class ScreenshotService : IScreenshotService
         }
     }
 
+    public virtual async Task<RpcStream<Screenshot>> StreamScreenshots(int width, CancellationToken cancellationToken = default)
+    {
+        var cScreenshot0 = await Computed
+            .Capture(() => GetScreenshot(width, cancellationToken))
+            .ConfigureAwait(false);
+        var screenshots = cScreenshot0
+            .Changes(FixedDelayer.ZeroUnsafe, CancellationToken.None)
+            .Select(c => c.Value);
+        return new RpcStream<Screenshot>(screenshots) { AckPeriod = 1, AckAdvance = 2 };
+    }
+
     public virtual async Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default)
     {
         width = Math.Min(MaxWidth, Math.Max(MinWidth, width));
@@ -65,7 +78,7 @@ public class ScreenshotService : IScreenshotService
         return CreateScreenshotFromBitmap(bitmap, width);
     }
 
-    [ComputeMethod(AutoInvalidationDelay = 0.05)]
+    [ComputeMethod(AutoInvalidationDelay = 1.0/50)] // 50fps
     protected virtual Task<DirectBitmap> GetScreenshot(CancellationToken cancellationToken = default)
     {
         // Captures a full-resolution screenshot; the code here is optimized

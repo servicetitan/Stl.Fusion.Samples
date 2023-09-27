@@ -10,15 +10,15 @@
     var error = State.Error;
 }
 
-<h1>Server Screen</h1>
+<h1>Screencast - via ComputedStateComponent</h1>
 
 <WhenUpdateError Exception="@error"/>
 
 <Addons>
     <Addon AddonType="AddonType.Start"><AddonLabel>Screenshot width (in pixels):</AddonLabel></Addon>
     <TextEdit @bind-Text="@Width" type="search" />
-    @if (Width != ActualWidth.ToString(CultureInfo.InvariantCulture)) {
-        <Addon AddonType="AddonType.End"><AddonLabel>(actual width: @ActualWidth)</AddonLabel></Addon>
+    @if (Width != ParsedWidth.ToString(CultureInfo.InvariantCulture)) {
+        <Addon AddonType="AddonType.End"><AddonLabel>(actual width: @ParsedWidth)</AddonLabel></Addon>
     }
 </Addons>
 
@@ -27,9 +27,10 @@
 </Paragraph>
 
 @code {
+    private int ParsedWidth => Math.Max(8, Math.Min(1920, int.TryParse(Width, out var v) ? v : 0));
+
     [Parameter]
     public string Width { get; set; } = "1280"; // Parameter changes trigger InvalidateState() by default
-    public int ActualWidth => Math.Max(8, Math.Min(1920, int.TryParse(Width, out var v) ? v : 0));
 
     protected override async Task OnInitializedAsync()
         => await State.Update(); // An example showing how to load the State before the first render
@@ -41,5 +42,5 @@
         };
 
     protected override Task<Screenshot> ComputeState(CancellationToken cancellationToken)
-        => Screenshots.GetScreenshot(ActualWidth, cancellationToken);
+        => Screenshots.GetScreenshot(ParsedWidth, cancellationToken);
 }

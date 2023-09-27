@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Server" Version="6.4.34" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.4.40" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.22272.1" />
   </ItemGroup>
@@ -27,7 +27,7 @@
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
-    <PackageReference Include="Stl.Generators" Version="6.4.34" />
+    <PackageReference Include="Stl.Generators" Version="6.4.40" />
   </ItemGroup>
 
 </Project>

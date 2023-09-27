@@ -1,0 +1,83 @@
+@page "/serverStream"
+@using System.Threading
+@using System.Globalization
+@implements IDisposable
+@inject IScreenshotService Screenshots
+
+@{
+    var src = "data:image/jpeg;base64," + Convert.ToBase64String(_screenshot.Data);
+}
+
+<h1>Screencast - via Stl.Rpc (RpcStream)</h1>
+
+<Addons>
+    <Addon AddonType="AddonType.Start"><AddonLabel>Screenshot width (in pixels):</AddonLabel></Addon>
+    <TextEdit @bind-Text="EditableWidth" type="search" />
+    @if (Width != ParsedWidth.ToString(CultureInfo.InvariantCulture)) {
+        <Addon AddonType="AddonType.End"><AddonLabel>(actual width: @ParsedWidth)</AddonLabel></Addon>
+    }
+</Addons>
+
+<Paragraph Margin="Margin.Is3.OnY">
+    <img src="@src" alt="Server screen" width="100%"/><br/>
+</Paragraph>
+
+@code {
+    private CancellationTokenSource? _stopCts;
+    private Screenshot _screenshot = new();
+    private string _editableWidth = "";
+
+    private string EditableWidth {
+        get => _editableWidth;
+        set {
+            _editableWidth = value;
+            RestartStreaming();
+        }
+    }
+
+    private int ParsedWidth
+        => Math.Max(8, Math.Min(1920, int.TryParse(EditableWidth, out var v) ? v : 0));
+
+    [Parameter]
+    public string Width { get; set; } = "1280"; // Parameter changes trigger InvalidateState() by default
+
+    public void Dispose()
+        => _stopCts.CancelAndDisposeSilently();
+
+    protected override void OnInitialized()
+    {
+        EditableWidth = Width;
+        RestartStreaming();
+    }
+
+    private void RestartStreaming()
+    {
+        _stopCts.CancelAndDisposeSilently();
+        _stopCts = new CancellationTokenSource();
+        _screenshot = new();
+        StateHasChanged();
+        var width = ParsedWidth;
+        var cancellationToken = _stopCts.Token;
+        _ = Task.Run(async () => {
+            while (!cancellationToken.IsCancellationRequested) {
+                try {
+                    var screenshots = await Screenshots.StreamScreenshots(width, cancellationToken).ConfigureAwait(false);
+                    var frameDuration = TimeSpan.FromMilliseconds(20);
+                    var lastRenderTime = CpuTimestamp.Now - frameDuration;
+                    await foreach (var screenshot in screenshots.WithCancellation(cancellationToken).ConfigureAwait(false)) {
+                        var delay = (lastRenderTime + frameDuration - CpuTimestamp.Now).Positive();
+                        await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                        lastRenderTime += frameDuration;
+                        await InvokeAsync(() => {
+                            _screenshot = screenshot;
+                            StateHasChanged();
+                        }).ConfigureAwait(false);
+                    }
+                }
+                catch {
+                    // Retrying until cancellation
+                }
+            }
+        }, cancellationToken);
+    }
+}
