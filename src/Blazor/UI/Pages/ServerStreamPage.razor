@@ -1,12 +1,25 @@
 @page "/serverStream"
 @using System.Threading
 @using System.Globalization
+@using Stl.Channels
 @implements IDisposable
 @inject IScreenshotService Screenshots
 
 @{
+    _fps.AddFrame();
+    var fps = _fps.Value.ToString("N1");
     var src = "data:image/jpeg;base64," + Convert.ToBase64String(_screenshot.Data);
 }
+<style>
+.fps {
+    position: absolute;
+    z-index: 1;
+    top: 5px;
+    left: 10px;
+    font-size: 1.5rem;
+    color: white
+}
+</style>
 
 <h1>Screencast - via Stl.Rpc (RpcStream)</h1>
 
@@ -18,11 +31,13 @@
     }
 </Addons>
 
-<Paragraph Margin="Margin.Is3.OnY">
-    <img src="@src" alt="Server screen" width="100%"/><br/>
+<Paragraph Margin="Margin.Is3.OnY" Style="position: relative">
+    <span class="fps">FPS: <b>@fps</b></span>
+    <img src="@src" alt="Server screen" width="99.9%"/><br/>
 </Paragraph>
 
 @code {
+    private readonly FpsCounter _fps = new();
     private CancellationTokenSource? _stopCts;
     private Screenshot _screenshot = new();
     private string _editableWidth = "";
@@ -57,17 +72,42 @@
         _screenshot = new();
         StateHasChanged();
         var width = ParsedWidth;
+        var frameDuration = TimeSpan.FromSeconds(1.0 / IScreenshotService.FrameRate);
+        var bufferDuration = TimeSpan.FromSeconds(1);
+        var delayLag = -2 * frameDuration;
+        var resetLag = 2 * bufferDuration;
         var cancellationToken = _stopCts.Token;
         _ = Task.Run(async () => {
             while (!cancellationToken.IsCancellationRequested) {
                 try {
+                    Console.WriteLine("Getting new stream...");
                     var screenshots = await Screenshots.StreamScreenshots(width, cancellationToken).ConfigureAwait(false);
-                    var frameDuration = TimeSpan.FromMilliseconds(20);
-                    var lastRenderTime = CpuTimestamp.Now - frameDuration;
-                    await foreach (var screenshot in screenshots.WithCancellation(cancellationToken).ConfigureAwait(false)) {
-                        var delay = (lastRenderTime + frameDuration - CpuTimestamp.Now).Positive();
-                        await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-                        lastRenderTime += frameDuration;
+                    var bufferedScreenshots = screenshots.WithBuffer((int)(bufferDuration / frameDuration), cancellationToken);
+                    var firstFrameAt = default(CpuTimestamp);
+                    var firstFrameOffset = default(TimeSpan);
+                    await foreach (var screenshot in bufferedScreenshots.ConfigureAwait(false)) {
+                        if (firstFrameAt == default) {
+                            firstFrameAt = CpuTimestamp.Now + 0.5 * bufferDuration; // Playing at 50% of buffer size
+                            firstFrameOffset = screenshot.FrameOffset;
+                        }
+                        var displayAt = firstFrameAt + (screenshot.FrameOffset - firstFrameOffset);
+                        var lag = CpuTimestamp.Now - displayAt;
+                        if (lag < delayLag) {
+                            // Wait & buffer more
+                            var delay = delayLag - lag;
+                            Console.WriteLine("Lag: {0:N0}ms -> delay {0:N0}ms", delay.TotalMilliseconds);
+                            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                        }
+                        else {
+                            if (lag > resetLag) {
+                                Console.WriteLine("!!! Lag: {0:N0}ms -> reset");
+                                break; // Restart streaming: the lag is too big
+                            }
+                            if (lag > bufferDuration) {
+                                Console.WriteLine("! Lag: {0:N0}ms -> skip frame");
+                                continue; // Skip the frame & display the next one
+                            }
+                        }
                         await InvokeAsync(() => {
                             _screenshot = screenshot;
                             StateHasChanged();

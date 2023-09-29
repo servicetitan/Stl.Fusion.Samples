@@ -8,7 +8,19 @@
     var screenshot = State.LastNonErrorValue;
     var src = "data:image/jpeg;base64," + Convert.ToBase64String(screenshot.Data);
     var error = State.Error;
+    _fps.AddFrame();
+    var fps = _fps.Value.ToString("N1");
 }
+<style>
+.fps {
+    position: absolute;
+    z-index: 1;
+    top: 5px;
+    left: 10px;
+    font-size: 1.5rem;
+    color: white
+}
+</style>
 
 <h1>Screencast - via ComputedStateComponent</h1>
 
@@ -22,11 +34,13 @@
     }
 </Addons>
 
-<Paragraph Margin="Margin.Is3.OnY">
-    <img src="@src" alt="Server screen" width="100%"/><br/>
+<Paragraph Margin="Margin.Is3.OnY" Style="position: relative">
+    <span class="fps">FPS: <b>@fps</b></span>
+    <img src="@src" alt="Server screen" width="99.9%"/><br/>
 </Paragraph>
 
 @code {
+    private readonly FpsCounter _fps = new();
     private int ParsedWidth => Math.Max(8, Math.Min(1920, int.TryParse(Width, out var v) ? v : 0));
 
     [Parameter]

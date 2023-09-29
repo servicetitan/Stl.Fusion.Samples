@@ -176,7 +176,7 @@ public class Startup
         if (!Directory.Exists(Path.Combine(wwwRootPath, "_framework")))
             // This is a regular build, not a build produced w/ "publish",
             // so we remap wwwroot to the client's wwwroot folder
-            wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net6.0/wwwroot"));
+            wwwRootPath = Path.GetFullPath(Path.Combine(baseDir, $"../../../../UI/{binCfgPart}/net8.0/wwwroot"));
         Env.WebRootPath = wwwRootPath;
         Env.WebRootFileProvider = new PhysicalFileProvider(Env.WebRootPath);
         StaticWebAssetsLoader.UseStaticWebAssets(Env, Cfg);

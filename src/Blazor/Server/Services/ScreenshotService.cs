@@ -1,10 +1,8 @@
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Stl.OS;
 using Samples.Blazor.Abstractions;
 using SixLabors.Fonts;
@@ -28,7 +26,7 @@ public class ScreenshotService : IScreenshotService
 {
     private const int MinWidth = 8;
     private const int MaxWidth = 1280;
-    private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
+    private readonly CpuTimestamp _startedAt = CpuTimestamp.Now;
     private readonly Action<DirectBitmap, Stream> _jpegEncoder;
     private readonly JpegEncoder _unixJpegEncoder;
     private readonly FontCollection _fontCollection;
@@ -68,7 +66,7 @@ public class ScreenshotService : IScreenshotService
         var screenshots = cScreenshot0
             .Changes(FixedDelayer.ZeroUnsafe, CancellationToken.None)
             .Select(c => c.Value);
-        return new RpcStream<Screenshot>(screenshots) { AckPeriod = 1, AckAdvance = 2 };
+        return new RpcStream<Screenshot>(screenshots) { AckPeriod = 5, AckAdvance = 11 };
     }
 
     public virtual async Task<Screenshot> GetScreenshot(int width, CancellationToken cancellationToken = default)
@@ -78,7 +76,7 @@ public class ScreenshotService : IScreenshotService
         return CreateScreenshotFromBitmap(bitmap, width);
     }
 
-    [ComputeMethod(AutoInvalidationDelay = 1.0/50)] // 50fps
+    [ComputeMethod(AutoInvalidationDelay = 1.0 / IScreenshotService.FrameRate)]
     protected virtual Task<DirectBitmap> GetScreenshot(CancellationToken cancellationToken = default)
     {
         // Captures a full-resolution screenshot; the code here is optimized
@@ -109,7 +107,7 @@ public class ScreenshotService : IScreenshotService
         }
 
         // Unix & Docker version renders the Sun, since screen capture doesn't work there
-        var now = _stopwatch.Elapsed.TotalSeconds;
+        var now = (CpuTimestamp.Now - _startedAt).TotalSeconds;
 
         PointF Wave(double xRate, double yRate, double offset = 0)
         {
@@ -159,6 +157,7 @@ public class ScreenshotService : IScreenshotService
             iTarget.Mutate(x => x.Resize(width, height));
             iTarget.Save(stream, _unixJpegEncoder);
         }
-        return new Screenshot(source.Width, source.Height, stream.ToArray());
+        var frameOffset = CpuTimestamp.Now - _startedAt;
+        return new Screenshot(source.Width, source.Height, stream.ToArray(), frameOffset);
     }
 }
