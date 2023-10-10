@@ -12,14 +12,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="7.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.1.23419.4" />
-    <PackageReference Include="Stl.Fusion" Version="6.4.49" />
-    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.4.49" />
+    <PackageReference Include="Stl.Fusion" Version="6.4.74" />
+    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.4.74" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
     <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
-    <PackageReference Include="Stl.Generators" Version="6.4.49" />
+    <PackageReference Include="Stl.Generators" Version="6.4.74" />
   </ItemGroup>
 
 </Project>
