@@ -35,7 +35,7 @@ sorry, it is temporarily broken due to issues with .NET 8 RC1 and Docker.
 
 ## Running Samples
 
-Build & run locally with [.NET 8.0 Preview SDK](https://dotnet.microsoft.com/download):
+Build & run locally with [.NET 8.0 SDK](https://dotnet.microsoft.com/download):
 
 ```bash
 # Run this command first
