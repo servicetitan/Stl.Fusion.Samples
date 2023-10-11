@@ -116,6 +116,7 @@
                 }
                 catch {
                     // Retrying until cancellation
+                    await Task.Delay(250, cancellationToken).ConfigureAwait(false);
                 }
             }
         }, cancellationToken);
