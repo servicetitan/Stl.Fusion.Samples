@@ -11,6 +11,7 @@
   <PropertyGroup>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
 
   <ItemGroup>
