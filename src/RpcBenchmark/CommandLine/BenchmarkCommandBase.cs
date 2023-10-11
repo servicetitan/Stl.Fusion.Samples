@@ -25,7 +25,7 @@ public abstract class BenchmarkCommandBase : AsyncCommandBase
     [CommandLineArgument]
     [Description("ByteSerializer to use in Stl.Rpc tests.")]
     [ValueDescription("MessagePack,MemoryPack")]
-    [ValidateRange(1, null)]
+    [ValidateRange(0, null)]
     [Alias("bs")]
     public ByteSerializerKind ByteSerializer { get; set; } = ByteSerializerKind.MessagePack;
 }
