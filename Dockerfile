@@ -16,12 +16,8 @@ ENTRYPOINT ["sh", "start.sh"]
 
 # Samples
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-preview as build
-RUN apt-get update
-RUN apt-get install -y --allow-unauthenticated apt-utils libc6-dev libgdiplus python3
-#RUN apk update
-#RUN apk add libgdiplus python3
-RUN dotnet workload install wasm-tools
+FROM mcr.microsoft.com/dotnet/sdk:8.0 as build
+#RUN dotnet workload install wasm-tools
 WORKDIR /samples
 COPY ["src/", "src/"]
 COPY ["templates/", "templates/"]
@@ -32,34 +28,34 @@ RUN dotnet build -c:Release --no-restore
 
 # Create HelloWorld sample image
 FROM build as sample_hello_world
-WORKDIR /samples/src/HelloWorld/bin/Debug/net6.0
+WORKDIR /samples/src/HelloWorld/bin/Debug/net8.0
 
 # Create HelloCart sample image
 FROM build as sample_hello_cart
-WORKDIR /samples/src/HelloCart/bin/Debug/net6.0
+WORKDIR /samples/src/HelloCart/bin/Debug/net8.0
 
 # Create HelloBlazorServer sample image
 FROM build as sample_hello_blazor_server
 WORKDIR /samples/src/HelloBlazorServer
-ENTRYPOINT ["dotnet", "bin/Debug/net6.0/Samples.HelloBlazorServer.dll"]
+ENTRYPOINT ["dotnet", "bin/Debug/net8.0/Samples.HelloBlazorServer.dll"]
 
 # Create HelloBlazorHybrid sample image
 FROM build as sample_hello_blazor_hybrid
 WORKDIR /samples/src/HelloBlazorHybrid/Server
-ENTRYPOINT ["dotnet", "bin/Debug/net6.0/Samples.HelloBlazorHybrid.Server.dll"]
+ENTRYPOINT ["dotnet", "bin/Debug/net8.0/Samples.HelloBlazorHybrid.Server.dll"]
 
 # Create Blazor sample image
 FROM build as sample_blazor
 WORKDIR /samples/src/Blazor/Server
-ENTRYPOINT ["dotnet", "bin/Debug/net6.0/Samples.Blazor.Server.dll"]
+ENTRYPOINT ["dotnet", "bin/Debug/net8.0/Samples.Blazor.Server.dll"]
 
 # Create MiniRpc sample image
-FROM build as mini_rpc
+FROM build as sample_mini_rpc
 WORKDIR /samples/src/MiniRpc/MiniRpc
 ENTRYPOINT ["dotnet", "bin/Release/net8.0/Samples.MiniRpc.dll"]
 
 # Create MultiServerRpc sample image
-FROM build as multi_server_rpc
+FROM build as sample_multi_server_rpc
 WORKDIR /samples/src/MultiServerRpc/MultiServerRpc
 ENTRYPOINT ["dotnet", "bin/Release/net8.0/Samples.MultiServerRpc.dll"]
 
@@ -80,7 +76,7 @@ FROM build as publish
 WORKDIR /samples
 RUN dotnet publish -c:Release --no-build --no-restore src/Blazor/Server/Server.csproj
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim as runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 as runtime
 RUN apt-get update \
   && apt-get install -y --allow-unauthenticated \
     apt-utils \

@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   db:
-    image: "postgres:14.0-alpine3.14"
+    image: "postgres"
     environment:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
@@ -62,6 +62,17 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       Logging__Console__FormatterName: ""
 
+  sample_blazor_ws:
+    build:
+      context: .
+      target: sample_blazor_ws
+    ports:
+     - "80:80"
+    environment:
+      ASPNETCORE_URLS: "http://*:80"
+      Server__AssumeHttps: "true"
+      Logging__Console__FormatterName: ""
+
   sample_mini_rpc:
     build:
       context: .
@@ -70,7 +81,7 @@ services:
   sample_multi_server_rpc:
     build:
       context: .
-      target: multi_server_rpc
+      target: sample_multi_server_rpc
 
   sample_benchmark:
     build:
@@ -85,14 +96,3 @@ services:
     build:
       context: .
       target: sample_rpc_benchmark
-
-  sample_blazor_ws:
-    build:
-      context: .
-      target: sample_blazor_ws
-    ports:
-     - "80:80"
-    environment:
-      ASPNETCORE_URLS: "http://*:80"
-      Server__AssumeHttps: "true"
-      Logging__Console__FormatterName: ""
