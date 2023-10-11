@@ -1,9 +1,5 @@
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
-using Stl.OS;
 using Samples.Blazor.Abstractions;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -13,7 +9,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Stl.Rpc;
 using Color = SixLabors.ImageSharp.Color;
-using Encoder = System.Drawing.Imaging.Encoder;
 using Image = SixLabors.ImageSharp.Image;
 using PointF = SixLabors.ImageSharp.PointF;
 using Point = SixLabors.ImageSharp.Point;
@@ -33,8 +28,6 @@ public class ScreenshotService : IScreenshotService
     private readonly Image<Bgra32> _sun;
     private Task<DirectBitmap>? _currentProducer;
 
-    private bool UseScreenCapture => false; // OSInfo.IsWindows;
-
     public ScreenshotService()
     {
         var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
@@ -46,16 +39,6 @@ public class ScreenshotService : IScreenshotService
 
         _unixJpegEncoder = _unixJpegEncoder = new JpegEncoder() { Quality = 50 };
         _jpegEncoder = (source, stream) =>source.Image.Save(stream, _unixJpegEncoder);
-        if (UseScreenCapture) {
-            var winJpegEncoder = ImageCodecInfo
-                .GetImageDecoders()
-                .Single(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
-            var winJpegEncoderParameters = new EncoderParameters(1) {
-                Param = new [] {new EncoderParameter(Encoder.Quality, 50L)}
-            };
-            _jpegEncoder = (source, stream) =>
-                source.Bitmap.Save(stream, winJpegEncoder, winJpegEncoderParameters);
-        }
     }
 
     public virtual async Task<RpcStream<Screenshot>> StreamScreenshots(int width, CancellationToken cancellationToken = default)
@@ -95,16 +78,7 @@ public class ScreenshotService : IScreenshotService
     private DirectBitmap TakeScreenshot()
     {
         var (w, h) = (1280, 720);
-        if (UseScreenCapture) {
-            var dd = DisplayInfo.PrimaryDisplayDimensions;
-            (w, h) = (dd?.Width ?? 1280, dd?.Height ?? 720);
-        }
         var screen = new DirectBitmap(w, h);
-        if (UseScreenCapture) {
-            using var gScreen = Graphics.FromImage(screen.Bitmap);
-            gScreen.CopyFromScreen(0, 0, 0, 0, screen.Bitmap.Size);
-            return screen;
-        }
 
         // Unix & Docker version renders the Sun, since screen capture doesn't work there
         var now = (CpuTimestamp.Now - _startedAt).TotalSeconds;
@@ -143,15 +117,6 @@ public class ScreenshotService : IScreenshotService
         using var stream = new MemoryStream(100000);
         if (source.Width == width)
             _jpegEncoder.Invoke(source, stream);
-        else if (UseScreenCapture) {
-            using var target = new DirectBitmap(width, height);
-            using var gTarget = Graphics.FromImage(target.Bitmap);
-            gTarget.CompositingQuality = CompositingQuality.HighSpeed;
-            gTarget.InterpolationMode = InterpolationMode.Bilinear;
-            gTarget.CompositingMode = CompositingMode.SourceCopy;
-            gTarget.DrawImage(source.Bitmap, 0, 0, target.Width, target.Height);
-            _jpegEncoder.Invoke(target, stream);
-        }
         else {
             using var iTarget = source.Image.Clone();
             iTarget.Mutate(x => x.Resize(width, height));

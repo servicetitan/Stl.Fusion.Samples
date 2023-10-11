@@ -11,7 +11,6 @@
   <PropertyGroup>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,7 +30,6 @@
     <PackageReference Include="Stl.Fusion.Server" Version="6.5.1" />
     <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.5.1" />
     <PackageReference Include="Stl.RestEase" Version="6.5.1" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.0-rc.2.23479.14" />
   </ItemGroup>
 
   <ItemGroup>

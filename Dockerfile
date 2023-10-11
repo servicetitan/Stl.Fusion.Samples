@@ -77,14 +77,6 @@ WORKDIR /samples
 RUN dotnet publish -c:Release --no-build --no-restore src/Blazor/Server/Server.csproj
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 as runtime
-RUN apt-get update \
-  && apt-get install -y --allow-unauthenticated \
-    apt-utils \
-    libc6-dev \
-    libgdiplus \
-    libx11-dev \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 WORKDIR /samples
 COPY --from=publish /samples .
