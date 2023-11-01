@@ -14,8 +14,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.0-rc.2.23480.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0-rc.2.23480.2" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.0-rc.*" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.5.1" />
-    <PackageReference Include="Stl.Fusion.Server" Version="6.5.1" />
+    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.5.16" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.5.16" />
   </ItemGroup>
 
   <ItemGroup>
