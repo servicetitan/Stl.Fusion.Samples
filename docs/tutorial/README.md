@@ -11,6 +11,9 @@ trying to make real-time a new normal for any connected apps.
 And although you can simply browse it, you can also run and modify any
 C# code featured here. All you need is [Try .NET] or [Docker].
 
+> **NOTE: Currently you can't run the Tutorial** (but you still can read it).
+> Microsoft is the one to blame: they don't maintain `dotnet try` tool, which still only targets .NET Core 3.1.
+
 The simplest way to run this tutorial:
 
 - Install [Docker](https://docs.docker.com/get-docker/) and
