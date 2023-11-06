@@ -7,7 +7,7 @@
 > [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)
 
 This is an *interactive* tutorial for [Fusion] - a .NET library
-trying to make real-time a new normal for any connected apps.
+making real-time a new norm for any app.
 And although you can simply browse it, you can also run and modify any
 C# code featured here. All you need is [Try .NET] or [Docker].
 
