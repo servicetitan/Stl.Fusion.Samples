@@ -6,10 +6,8 @@
 > [![NuGetVersion](https://img.shields.io/nuget/v/Stl.Fusion)](https://www.nuget.org/packages?q=Owner%3Aservicetitan+Tags%3Astl_fusion)
 > [![Discord Server](https://img.shields.io/discord/729970863419424788.svg)](https://discord.gg/EKEwv6d)
 
-This is an *interactive* tutorial for [Fusion] - a .NET library
-making real-time a new norm for any app.
-And although you can simply browse it, ~~you can also run and modify any
-C# code featured here. All you need is [Try .NET] or [Docker].~~
+This is an a tutorial for [Fusion] - a .NET library making real-time a new norm for any app.
+It used to be interactive, but this nice feature currently doesn't work.
 
 ## Tutorial
 
