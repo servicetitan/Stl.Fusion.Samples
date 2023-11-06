@@ -11,38 +11,7 @@ making real-time a new norm for any app.
 And although you can simply browse it, ~~you can also run and modify any
 C# code featured here. All you need is [Try .NET] or [Docker].~~
 
-> **NOTE: Currently you can't run the Tutorial** (but you still can read it).
-> Microsoft is the one to blame: they don't maintain `dotnet try` tool, which still targets only .NET Core 3.1.
-
-The simplest way to run this tutorial:
-
-- Install [Docker](https://docs.docker.com/get-docker/) and
-  [Docker Compose](https://docs.docker.com/compose/install/)
-- Run `docker-compose up --build tutorial` in the root folder of this repository
-- Open https://localhost:50005/README.md.
-
-Alternatively, you can run it with `dotnet try` CLI tool:
-
-- Install **both**
-  [.NET 8.0 Preview SDK](https://dotnet.microsoft.com/download) and
-  [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core)
-- Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md).
-  If its release version fails to run the code, install its preview version.
-- Run `dotnet try --port 50005 docs/tutorial` in the root folder of this repository
-- Open https://localhost:50005/README.md.
-
 ## Tutorial
-
-The code based on Fusion might look completely weird at first -
-that's because it is based on abstractions you need to learn about
-before starting to dig into the code.
-
-Understanding how they work will also eliminate a lot
-of questions you might get further, so we highly recommend you
-to complete this tutorial *before* digging into the source
-code of Fusion samples.
-
-Without further ado:
 
 * [QuickStart: Learn 80% of Fusion by walking through HelloCart sample](./QuickStart.md)
 * [Part 0: NuGet packages](./Part00.md)
@@ -66,6 +35,30 @@ Finally, check out:
 - [Overview](https://github.com/servicetitan/Stl.Fusion/blob/master/docs/Overview.md) - a high-level description of Fusion abstractions.
 
 Join our [Discord Server] to ask questions and track project updates.
+
+## Running the Tutorial
+
+**NOTE: Currently you can't run the Tutorial** (but you still can read it).
+Microsoft is the one to blame: they don't maintain `dotnet try` tool, which still targets only .NET Core 3.1.
+But if you want, you can *try trying* :)
+
+The simplest way to run this tutorial:
+
+- Install [Docker](https://docs.docker.com/get-docker/) and
+  [Docker Compose](https://docs.docker.com/compose/install/)
+- Run `docker-compose up --build tutorial` in the root folder of this repository
+- Open https://localhost:50005/README.md.
+
+Alternatively, you can run it with `dotnet try` CLI tool:
+
+- Install **both**
+  [.NET 8.0 Preview SDK](https://dotnet.microsoft.com/download) and
+  [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core)
+- Install [Try .NET](https://github.com/dotnet/try/blob/master/DotNetTryLocal.md).
+  If its release version fails to run the code, install its preview version.
+- Run `dotnet try --port 50005 docs/tutorial` in the root folder of this repository
+- Open https://localhost:50005/README.md.
+
 
 [Fusion]: https://github.com/servicetitan/Stl.Fusion
 [Discord Server]: https://discord.gg/EKEwv6d
