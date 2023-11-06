@@ -8,7 +8,7 @@
 
 This is an *interactive* tutorial for [Fusion] - a .NET library
 making real-time a new norm for any app.
-And although you can simply browse it~~, you can also run and modify any
+And although you can simply browse it, ~~you can also run and modify any
 C# code featured here. All you need is [Try .NET] or [Docker].~~
 
 > **NOTE: Currently you can't run the Tutorial** (but you still can read it).
