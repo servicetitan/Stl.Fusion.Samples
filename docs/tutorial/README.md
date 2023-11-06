@@ -67,6 +67,7 @@ Finally, check out:
 
 Join our [Discord Server] to ask questions and track project updates.
 
+[Fusion]: https://github.com/servicetitan/Stl.Fusion
 [Discord Server]: https://discord.gg/EKEwv6d
 [Fusion Feedback Form]: https://forms.gle/TpGkmTZttukhDMRB6
 [Try .NET]: https://github.com/dotnet/try/blob/master/DotNetTryLocal.md
