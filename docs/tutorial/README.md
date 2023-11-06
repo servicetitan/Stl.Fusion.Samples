@@ -34,16 +34,13 @@ Finally, check out:
 
 Join our [Discord Server] to ask questions and track project updates.
 
-## Running the Tutorial
+## Running Tutorial
 
-**NOTE: Currently you can't run the Tutorial** (but you still can read it).
-Microsoft is the one to blame: they don't maintain `dotnet try` tool, which still targets only .NET Core 3.1.
-But if you want, you can *try trying* :)
+**NOTE: Currently you can't run the Tutorial**, and Microsoft is the one to blame: they don't maintain `dotnet try` tool, which still targets only .NET Core 3.1. But if you want, you can still *try*.
 
-The simplest way to run this tutorial:
+Running with [Docker]:
 
-- Install [Docker](https://docs.docker.com/get-docker/) and
-  [Docker Compose](https://docs.docker.com/compose/install/)
+- Install and [Docker Compose](https://docs.docker.com/compose/install/)
 - Run `docker-compose up --build tutorial` in the root folder of this repository
 - Open https://localhost:50005/README.md.
 
