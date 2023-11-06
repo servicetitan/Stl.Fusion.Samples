@@ -125,22 +125,6 @@ Register command handler:
 // Nothing is needed for handlers declared inside compute services
 ```
 
-## Exposing commands to the client via Compute Service Clients
-
-Add controller method for the command:
-```cs
-public class CartController : ControllerBase, ICartService
-    // Always use [HttpPost] and [FromBody]
-    [HttpPost]
-    public Task<Unit> UpdateCart([FromBody] UpdateCartCommand command, CancellationToken cancellationToken)
-        // You can also call corresponding service method directly here,
-        // but if you're using CommanderOptions.AllowDirectCommandHandlerCalls = false,
-        // only this "style" of command invocation will work.
-        // For the note, they work the same, i.e. when a command handler
-        // is invoked directly, the call is still routed via ICommander.
-        => _commander.Call(command, cancellationToken);
-```        
-
 ## Working with `IComputed`
 
 Capture:
