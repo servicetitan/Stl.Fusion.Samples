@@ -94,8 +94,8 @@ public class ScreenshotService : IScreenshotService
         Point SunWave(double xRate, double yRate, double offset = 0)
         {
             var (hw, hh) = ((_sun.Width - w - 1) / 2f, (_sun.Height - h - 1) / 2f);
-            var x = hw + hw * (float) Math.Sin(now * xRate + offset);
-            var y = hh + hh * (float) Math.Cos(now * yRate + offset);
+            var x = hw + hw * (float)Math.Sin(now * xRate + offset);
+            var y = hh + hh * (float)Math.Cos(now * yRate + offset);
             return new Point((int) -x, (int) -y);
         }
 
