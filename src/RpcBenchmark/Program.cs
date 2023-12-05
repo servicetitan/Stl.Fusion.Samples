@@ -1,5 +1,3 @@
-using MessagePack;
-using MessagePack.Resolvers;
 using Ookii.CommandLine;
 using Ookii.CommandLine.Commands;
 
@@ -28,7 +26,7 @@ public static class Program
             ArgumentNameTransform = NameTransform.DashCase,
             StripCommandNameSuffix = "Command",
         };
-        var rootCommand = new RootCommand(options);
-        return await rootCommand.RunCommandAsync() ?? 1;
+        var commandManager = new CommandManager(options);
+        return await commandManager.RunCommandAsync(args) ?? 1;
     }
 }

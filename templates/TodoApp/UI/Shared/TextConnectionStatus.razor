@@ -1,0 +1,38 @@
+@using Stl.Rpc
+@inherits StatefulComponentBase<IState<RpcPeerState>>
+
+@{
+    var m = State.Value;
+    var isOk = m.Kind is not RpcPeerStateKind.Disconnected;
+}
+
+<Div Margin="Margin.Is1.OnY" TextColor="@(isOk ? TextColor.Default : TextColor.Warning)">
+    <span>Connection state: </span>
+    <strong>
+        <span>@(m.GetDescription(true))</span>
+        @if (m.ReconnectsIn != default) {
+            <span> Will reconnect <TimerBadge ExpiresAt="@(Clock.Now + m.ReconnectsIn)"/>. </span>
+            <Anchor TextColor="@TextColor.Success" Clicked="@Reconnect">Reconnect</Anchor>
+        }
+    </strong>
+</Div>
+
+@code {
+    [Inject] private RpcPeerStateMonitor Monitor { get; init; } = null!;
+    [Inject] private IMomentClock Clock { get; init; } = null!;
+
+    [Parameter]
+    public string CssClass { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        State = Monitor.State;
+        base.OnInitialized();
+    }
+
+    public override ValueTask DisposeAsync()
+        => default; // State shouldn't be disposed
+
+    private void Reconnect()
+        => Services.RpcHub().InternalServices.ClientPeerReconnectDelayer.CancelDelays();
+}

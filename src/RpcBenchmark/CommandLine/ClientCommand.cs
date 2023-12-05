@@ -78,9 +78,9 @@ public partial class ClientCommand : BenchmarkCommandBase
         WriteLine("Client settings:");
         WriteLine($"  Server URL:           {Url}");
         WriteLine($"  Test plan:            {WarmupDuration:N}s warmup, {TryCount} x {Duration:N}s runs");
-        WriteLine($"  Total worker count:   {WorkersValue}");
-        WriteLine($"  Client concurrency:   {ClientConcurrencyValue}");
         WriteLine($"  Client count:         {(WorkersValue + ClientConcurrencyValue - 1) / ClientConcurrencyValue}");
+        WriteLine($"  Client concurrency:   {ClientConcurrencyValue}");
+        WriteLine($"  Total worker count:   {WorkersValue}");
         await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
 
         // Run
@@ -94,7 +94,7 @@ public partial class ClientCommand : BenchmarkCommandBase
 
         if (Wait)
             ReadKey();
-        await StopTokenSource.CancelAsync(); // Stops the server if it's running
+        StopTokenSource.Cancel(); // Stops the server if it's running
         return 0;
     }
 }

@@ -306,7 +306,7 @@ All these methods take up to 3 arguments:
 - `bool isolate = false` - an optional parameter indicating whether
   the command should be executed in isolated fashion. If it's true,
   the command will be executed inside
-  [`ExecutionContext.SuppressFlow` block](https://docs.microsoft.com/en-us/dotnet/api/system.threading.executioncontext.suppressflow?view=net-5.0),
+  [`ExecutionContext.TrySuppressFlow` block](https://docs.microsoft.com/en-us/dotnet/api/system.threading.executioncontext.suppressflow?view=net-5.0),
   so it will also be the outermost for sure.
 - `CancellationToken cancellationToken = default` -
   a usual argument of almost any async method.

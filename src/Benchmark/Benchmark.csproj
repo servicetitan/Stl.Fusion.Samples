@@ -24,18 +24,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0-rc.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-rc.*" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-rc.*" />
-    <PackageReference Include="Stl.Fusion.Server" Version="6.5.16" />
-    <PackageReference Include="Stl.RestEase" Version="6.5.16" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.8.1" />
+    <PackageReference Include="Stl.RestEase" Version="6.8.1" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
-    <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
+    <PackageReference Include="MemoryPack.Generator" Version="1.10.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="RestEase.SourceGenerator" Version="1.6.4" />
-    <PackageReference Include="Stl.Generators" Version="6.5.16" />
+    <PackageReference Include="Stl.Generators" Version="6.8.1" />
   </ItemGroup>
 
 </Project>

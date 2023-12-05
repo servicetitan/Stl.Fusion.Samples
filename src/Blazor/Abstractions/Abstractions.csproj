@@ -11,15 +11,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.0-rc.*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="Stl.Fusion" Version="6.5.16" />
-    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.5.16" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Stl.Fusion" Version="6.8.1" />
+    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.8.1" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
   <ItemGroup>
-    <PackageReference Include="MemoryPack.Generator" Version="1.9.16" />
-    <PackageReference Include="Stl.Generators" Version="6.5.16" />
+    <PackageReference Include="MemoryPack.Generator" Version="1.10.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Stl.Generators" Version="6.8.1" />
   </ItemGroup>
 
 </Project>

@@ -40,7 +40,7 @@ public class ChatBotService : IComputeService, IHostedService
             // Now we need to suppress ExecutionContext flow to ensure
             // Reaction runs its commands outside of the current command context,
             // outside Computed.Invalidate() block, etc.
-            using var suppressing = ExecutionContextExt.SuppressFlow();
+            using var suppressing = ExecutionContextExt.TrySuppressFlow();
             _ = Task.Run(() => Reaction(command, default), default);
         }
     }

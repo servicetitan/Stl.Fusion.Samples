@@ -86,8 +86,8 @@ public class ScreenshotService : IScreenshotService
         PointF Wave(double xRate, double yRate, double offset = 0)
         {
             var (hw, hh) = (w / 2f, h / 2f);
-            var x = hw + hw * (float) Math.Sin(now * xRate + offset);
-            var y = hh + hh * (float) Math.Cos(now * yRate + offset);
+            var x = hw + hw * (float)Math.Sin(now * xRate + offset);
+            var y = hh + hh * (float)Math.Cos(now * yRate + offset);
             return new PointF(x, y);
         }
 
