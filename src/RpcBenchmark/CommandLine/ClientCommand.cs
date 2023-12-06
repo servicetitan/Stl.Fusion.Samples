@@ -31,7 +31,7 @@ public partial class ClientCommand : BenchmarkCommandBase
     [ValidateRange(1, null)]
     [Alias("cc")]
     public int? ClientConcurrency { get; set; }
-    public int ClientConcurrencyValue => ClientConcurrency ?? (Benchmark == BenchmarkKind.Calls ? 120 : 10);
+    public int ClientConcurrencyValue => ClientConcurrency ?? (Benchmark == BenchmarkKind.Calls ? 120 : 20);
 
     [CommandLineArgument]
     [Description("Worker count - the total number of worker tasks.")]
@@ -39,7 +39,7 @@ public partial class ClientCommand : BenchmarkCommandBase
     [ValidateRange(1, null)]
     [Alias("w")]
     public int? Workers { get; set; }
-    public int WorkersValue => Workers ?? HardwareInfo.ProcessorCount * (Benchmark == BenchmarkKind.Calls ? 300 : 10);
+    public int WorkersValue => Workers ?? HardwareInfo.ProcessorCount * (Benchmark == BenchmarkKind.Calls ? 300 : 20);
 
     [CommandLineArgument]
     [Description("Test duration in seconds.")]
