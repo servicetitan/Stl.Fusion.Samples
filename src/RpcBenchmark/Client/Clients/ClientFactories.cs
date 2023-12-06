@@ -69,7 +69,7 @@ public sealed class ClientFactories
         services.AddRpc().AddWebSocketClient(c => RpcWebSocketClient.Options.Default with {
                 HostUrlResolver = (_, _) => BaseUrl,
                 WebSocketChannelOptions = WebSocketChannel<RpcMessage>.Options.Default with {
-                    WriteFrameSize = 1400,
+                    WriteFrameSize = 1450,
                 },
                 WebSocketOwnerFactory = (_, peer) => {
                     var ws = new ClientWebSocket();
