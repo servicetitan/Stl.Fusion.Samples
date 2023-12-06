@@ -6,6 +6,8 @@ using Grpc.Net.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stl.RestEase;
 using Stl.Rpc;
+using Stl.Rpc.Clients;
+using Stl.Rpc.WebSockets;
 
 namespace Samples.RpcBenchmark.Client;
 
@@ -63,12 +65,14 @@ public sealed class ClientFactories
         services.AddSingleton(this);
 
         // Rpc
-        services.AddRpc().AddWebSocketClient(BaseUrl);
-        services.AddTransient(_ => {
-            var ws = new ClientWebSocket();
-            ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-            return ws;
-        });
+        services.AddRpc().AddWebSocketClient(c => RpcWebSocketClient.Options.Default with {
+                HostUrlResolver = (_, _) => BaseUrl,
+                WebSocketOwnerFactory = (_, peer) => {
+                    var ws = new ClientWebSocket();
+                    ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                    return new WebSocketOwner(peer.Ref.Key, ws, c);
+                },
+            });
 
         // SignalR
         services.AddSingleton(c => {
