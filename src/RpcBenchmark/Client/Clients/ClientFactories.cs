@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Stl.RestEase;
 using Stl.Rpc;
 using Stl.Rpc.Clients;
+using Stl.Rpc.Infrastructure;
 using Stl.Rpc.WebSockets;
 
 namespace Samples.RpcBenchmark.Client;
@@ -67,6 +68,9 @@ public sealed class ClientFactories
         // Rpc
         services.AddRpc().AddWebSocketClient(c => RpcWebSocketClient.Options.Default with {
                 HostUrlResolver = (_, _) => BaseUrl,
+                WebSocketChannelOptions = WebSocketChannel<RpcMessage>.Options.Default with {
+                    WriteFrameSize = 1400,
+                },
                 WebSocketOwnerFactory = (_, peer) => {
                     var ws = new ClientWebSocket();
                     ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
