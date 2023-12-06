@@ -12,9 +12,6 @@ public static class Program
 
     public static async Task<int> Main(string[] args)
     {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
-            | SecurityProtocolType.Tls11
-            | SecurityProtocolType.Tls12;
         TreatControlCAsInput = false;
         CancelKeyPress += (_, ea) => {
             StopTokenSource.Cancel();
