@@ -56,9 +56,11 @@ public partial class ServerCommand : BenchmarkCommandBase
             limits.MaxConcurrentConnections = 20_000;
             limits.MaxConcurrentUpgradedConnections = 20_000;
             kestrel.AddServerHeader = false;
-            // kestrel.ConfigureHttpsDefaults(https => {
-            //     https.SslProtocols = SslProtocols.Tls13;
-            // });
+            kestrel.ConfigureHttpsDefaults(https => {
+                https.AllowAnyClientCertificate();
+                https.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+                https.HandshakeTimeout = TimeSpan.FromSeconds(30);
+            });
             var http2 = limits.Http2;
             http2.InitialConnectionWindowSize = 10 * 1024 * 1024;
             http2.InitialStreamWindowSize = 10 * 768 * 1024;
