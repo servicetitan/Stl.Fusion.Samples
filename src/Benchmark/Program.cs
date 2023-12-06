@@ -5,8 +5,6 @@ using Samples.Benchmark.Server;
 using Stl.Fusion.Server;
 using Stl.Rpc;
 using Stl.Rpc.Server;
-using static System.Console;
-using static Samples.Benchmark.Settings;
 
 #pragma warning disable ASP0000
 

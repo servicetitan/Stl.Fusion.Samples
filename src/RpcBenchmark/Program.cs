@@ -1,4 +1,3 @@
-using System.Net;
 using Ookii.CommandLine;
 using Ookii.CommandLine.Commands;
 

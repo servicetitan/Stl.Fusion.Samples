@@ -20,7 +20,7 @@ public abstract class BenchmarkCommandBase : AsyncCommandBase
     [ValueDescription("Number")]
     [ValidateRange(1, null)]
     [Alias("iot")]
-    public int MinIOThreads { get; set; } = HardwareInfo.ProcessorCount;
+    public int MinIOThreads { get; set; } = HardwareInfo.ProcessorCount * 10;
 
     [CommandLineArgument]
     [Description("ByteSerializer to use in Stl.Rpc tests.")]
