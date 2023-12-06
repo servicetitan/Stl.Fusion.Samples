@@ -38,7 +38,9 @@ public partial class ServerCommand : BenchmarkCommandBase
 
         // Core services
         var services = builder.Services;
-        services.AddSignalR();
+        services.AddSignalR(hub => {
+            hub.MaximumParallelInvocationsPerClient = int.MaxValue;
+        });
         var rpc = services.AddRpc();
         rpc.AddWebSocketServer();
         services.AddGrpc(o => o.IgnoreUnknownServices = true);
