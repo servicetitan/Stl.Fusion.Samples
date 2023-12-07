@@ -22,10 +22,10 @@ public partial class ClientCommand : BenchmarkCommandBase
 
     [CommandLineArgument]
     [Description("Libraries/APIs to benchmark.")]
-    [ValueDescription("Any subset of StlRpc, SignalR, StreamJsonRpc, MagicOnion, Grpc, Http")]
+    [ValueDescription("Any subset of StlRpc, SignalR, Grpc, MagicOnion, StreamJsonRpc, Http")]
     [ValidateRange(1, null)]
     [Alias("l")]
-    public string Libraries { get; set; } = "StlRpc, SignalR, StreamJsonRpc, MagicOnion, Grpc, Http";
+    public string Libraries { get; set; } = "StlRpc, SignalR, Grpc, MagicOnion, StreamJsonRpc, Http";
 
     [CommandLineArgument]
     [Description("Client concurrency - the number of worker tasks using a single client.")]
