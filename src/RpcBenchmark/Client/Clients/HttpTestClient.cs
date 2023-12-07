@@ -1,23 +1,11 @@
-using System.Net.Http;
 using RestEase;
-using Stl.RestEase;
 using Stl.Rpc;
 
 namespace Samples.RpcBenchmark.Client;
 
-public class HttpTestClient : ITestService, IDisposable
+public class HttpTestClient(IServiceProvider services) : ITestService
 {
-    private readonly HttpClient _httpClient;
-    private readonly ITestServiceClientDef _client;
-
-    public HttpTestClient(IServiceProvider services)
-    {
-        _httpClient = services.GetRequiredService<HttpClient>();
-        _client = RestEaseBuilder.CreateRestClient(services, _httpClient).For<ITestServiceClientDef>();
-    }
-
-    public void Dispose()
-        => _httpClient.Dispose();
+    private readonly ITestServiceClientDef _client = services.GetRequiredService<ITestServiceClientDef>();
 
     public Task<HelloReply> SayHello(HelloRequest request, CancellationToken cancellationToken = default)
         => _client.SayHello(request, cancellationToken);

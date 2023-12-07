@@ -130,22 +130,23 @@ public sealed class ClientFactories
         });
 
         // RestEase/HTTP
-        var restEase = services.AddRestEase();
         var baseAddress = new Uri(BaseUrl);
-        restEase.ConfigureHttpClient((_, name, o) => {
-            o.HttpMessageHandlerBuilderActions.Add(h => h.PrimaryHandler = new SocketsHttpHandler() {
+        services.AddRestEase();
+        services.AddSingleton(c => {
+            var handler = new SocketsHttpHandler() {
                 PooledConnectionLifetime = TimeSpan.FromDays(1),
                 EnableMultipleHttp2Connections = true,
                 MaxConnectionsPerServer = 20_000,
                 SslOptions = new SslClientAuthenticationOptions() {
                     RemoteCertificateValidationCallback = (_, _, _, _) => true,
                 },
-            });
-            o.HttpClientActions.Add(c => {
-                c.BaseAddress = baseAddress;
-                c.DefaultRequestVersion = HttpVersion.Version20;
-                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-            });
+            };
+            var hc = new HttpClient(handler);
+            hc.BaseAddress = baseAddress;
+            hc.DefaultRequestVersion = HttpVersion.Version20;
+            hc.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            var restEaseClient = RestEaseBuilder.CreateRestClient(c, hc).For<ITestServiceClientDef>();
+            return restEaseClient;
         });
 
         return services;
