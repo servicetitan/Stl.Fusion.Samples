@@ -142,7 +142,7 @@ public sealed class ClientFactories
             });
             o.HttpClientActions.Add(c => {
                 c.BaseAddress = baseAddress;
-                c.DefaultRequestVersion = HttpVersion.Version20;
+                c.DefaultRequestVersion = HttpVersion.Version30;
                 c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             });
         });
