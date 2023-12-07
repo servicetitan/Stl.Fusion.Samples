@@ -102,6 +102,14 @@ public sealed class ClientFactories
             return connection;
         });
 
+        // StreamJsonRpc
+        services.AddTransient(c => {
+            var ws = new ClientWebSocket();
+            ws.Options.HttpVersion = HttpVersion.Version11;
+            ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            return ws;
+        });
+
         // RestEase/HTTP
         var restEase = services.AddRestEase();
         var baseAddress = new Uri(BaseUrl);
