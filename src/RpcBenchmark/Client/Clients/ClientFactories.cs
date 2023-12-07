@@ -135,6 +135,7 @@ public sealed class ClientFactories
         restEase.ConfigureHttpClient((_, name, o) => {
             o.HttpMessageHandlerBuilderActions.Add(h => h.PrimaryHandler = new SocketsHttpHandler() {
                 PooledConnectionLifetime = TimeSpan.FromDays(1),
+                EnableMultipleHttp2Connections = true,
                 MaxConnectionsPerServer = 20_000,
                 SslOptions = new SslClientAuthenticationOptions() {
                     RemoteCertificateValidationCallback = (_, _, _, _) => true,
@@ -142,8 +143,8 @@ public sealed class ClientFactories
             });
             o.HttpClientActions.Add(c => {
                 c.BaseAddress = baseAddress;
-                c.DefaultRequestVersion = HttpVersion.Version30;
-                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+                c.DefaultRequestVersion = HttpVersion.Version20;
+                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
             });
         });
 
