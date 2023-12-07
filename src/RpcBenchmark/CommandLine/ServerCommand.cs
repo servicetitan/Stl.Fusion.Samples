@@ -40,7 +40,8 @@ public partial class ServerCommand : BenchmarkCommandBase
         // Core services
         var services = builder.Services;
         services.AddSignalR(hub => {
-            hub.MaximumParallelInvocationsPerClient = 100_000_000; // Can't be int.MaxValue!
+            hub.MaximumParallelInvocationsPerClient = 1000; // Can't be too high, otherwise SignalR fails!
+            hub.DisableImplicitFromServicesParameters = true;
         });
         var rpc = services.AddRpc();
         rpc.AddWebSocketServer();
@@ -83,6 +84,7 @@ public partial class ServerCommand : BenchmarkCommandBase
         app.MapGrpcService<GrpcTestService>();
         app.MapHub<TestHub>("hubs/testService", o => {
             o.Transports = HttpTransportType.WebSockets;
+            o.AllowStatefulReconnects = false;
         });
         app.MapMagicOnionService();
         app.MapStreamJsonRpcService<JsonRpcTestService>("stream-json-rpc");

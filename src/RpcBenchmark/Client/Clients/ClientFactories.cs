@@ -93,18 +93,9 @@ public sealed class ClientFactories
             var connection = new HubConnectionBuilder()
                 .WithUrl($"{BaseUrl}hubs/testService", options => {
                     options.Transports = HttpTransportType.WebSockets;
-                    options.WebSocketFactory = async (context, ct) => {
-                        var ws = new ClientWebSocket();
-                        ws.Options.HttpVersion = HttpVersion.Version11;
-                        ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-                        try {
-                            await ws.ConnectAsync(context.Uri, ct).ConfigureAwait(false);
-                            return ws;
-                        }
-                        catch {
-                            ws.Dispose();
-                            throw;
-                        }
+                    options.WebSocketConfiguration = ws => {
+                        ws.HttpVersion = HttpVersion.Version11;
+                        ws.RemoteCertificateValidationCallback = (_, _, _, _) => true;
                     };
                 })
                 .Build();
