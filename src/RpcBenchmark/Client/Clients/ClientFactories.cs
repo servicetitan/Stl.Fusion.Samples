@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Net.WebSockets;
 using Grpc.Net.Client;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stl.RestEase;
 using Stl.Rpc;
@@ -50,6 +51,14 @@ public sealed class ClientFactories
         where TClient : class, ITestService
     {
         var services = CreateBaseServiceCollection();
+#if false
+        services.AddLogging(logging => logging
+            .AddDebug()
+            .SetMinimumLevel(LogLevel.Debug)
+            .AddFilter("Microsoft", LogLevel.Debug)
+        );
+#endif
+
         if (typeof(TClient) == typeof(ITestService))
             services.AddRpc().AddClient<ITestService>();
         else
@@ -67,28 +76,35 @@ public sealed class ClientFactories
 
         // Rpc
         services.AddRpc().AddWebSocketClient(c => RpcWebSocketClient.Options.Default with {
-                HostUrlResolver = (_, _) => BaseUrl,
-                WebSocketChannelOptions = WebSocketChannel<RpcMessage>.Options.Default with {
-                    WriteFrameSize = 4350,
-                },
-                WebSocketOwnerFactory = (_, peer) => {
-                    var ws = new ClientWebSocket();
-                    ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-                    return new WebSocketOwner(peer.Ref.Key, ws, c);
-                },
-            });
+            HostUrlResolver = (_, _) => BaseUrl,
+            WebSocketChannelOptions = WebSocketChannel<RpcMessage>.Options.Default with {
+                WriteFrameSize = 4350,
+            },
+            WebSocketOwnerFactory = (_, peer) => {
+                var ws = new ClientWebSocket();
+                ws.Options.HttpVersion = HttpVersion.Version11;
+                ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                return new WebSocketOwner(peer.Ref.Key, ws, c);
+            },
+        });
 
         // SignalR
         services.AddSingleton(c => {
             var connection = new HubConnectionBuilder()
-                .WithUrl($"{BaseUrl}hubs/testService",  options => {
-                    options.HttpMessageHandlerFactory = message => {
-                        if (message is HttpClientHandler httpClientHandler)
-                            httpClientHandler.ServerCertificateCustomValidationCallback += (_, _, _, _) => true;
-                        return message;
-                    };
-                    options.WebSocketConfiguration = wso => {
-                        wso.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                .WithUrl($"{BaseUrl}hubs/testService", options => {
+                    options.Transports = HttpTransportType.WebSockets;
+                    options.WebSocketFactory = async (context, ct) => {
+                        var ws = new ClientWebSocket();
+                        ws.Options.HttpVersion = HttpVersion.Version11;
+                        ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                        try {
+                            await ws.ConnectAsync(context.Uri, ct).ConfigureAwait(false);
+                            return ws;
+                        }
+                        catch {
+                            ws.Dispose();
+                            throw;
+                        }
                     };
                 })
                 .Build();
@@ -111,10 +127,25 @@ public sealed class ClientFactories
 
         // gRPC
         services.AddSingleton(c => {
+            /*
+            var messageHandler = new SocketsHttpHandler() {
+                PooledConnectionLifetime = TimeSpan.FromDays(1),
+                EnableMultipleHttp2Connections = true,
+                MaxConnectionsPerServer = 20_000,
+                SslOptions = new SslClientAuthenticationOptions() {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                }
+            };
+            var httpClient = new HttpClient(messageHandler) {
+                DefaultRequestVersion = HttpVersion.Version20,
+            };
+            */
             var channelOptions = new GrpcChannelOptions() {
+                // HttpClient = httpClient,
                 HttpHandler = new SocketsHttpHandler {
+                    PooledConnectionLifetime = TimeSpan.FromDays(1),
                     EnableMultipleHttp2Connections = true,
-                    MaxConnectionsPerServer = 50_000,
+                    MaxConnectionsPerServer = 20_000,
                     SslOptions = new SslClientAuthenticationOptions() {
                         RemoteCertificateValidationCallback = (_, _, _, _) => true,
                     },

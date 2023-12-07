@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Ookii.CommandLine;
 using Ookii.CommandLine.Commands;
 using Samples.RpcBenchmark.Server;
@@ -39,7 +40,7 @@ public partial class ServerCommand : BenchmarkCommandBase
         // Core services
         var services = builder.Services;
         services.AddSignalR(hub => {
-            hub.MaximumParallelInvocationsPerClient = int.MaxValue;
+            hub.MaximumParallelInvocationsPerClient = 100_000_000; // Can't be int.MaxValue!
         });
         var rpc = services.AddRpc();
         rpc.AddWebSocketServer();
@@ -54,6 +55,10 @@ public partial class ServerCommand : BenchmarkCommandBase
 
         // Kestrel
         builder.WebHost.ConfigureKestrel(kestrel => {
+            kestrel.AddServerHeader = false;
+            kestrel.ConfigureEndpointDefaults(listen => {
+                listen.Protocols = HttpProtocols.Http1 | HttpProtocols.Http2;
+            });
             var limits = kestrel.Limits;
             limits.MaxConcurrentConnections = 20_000;
             limits.MaxConcurrentUpgradedConnections = 20_000;

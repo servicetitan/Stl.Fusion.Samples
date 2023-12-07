@@ -35,17 +35,17 @@ public class BenchmarkRunner : BenchmarkRunnerBase<double>
         }
     }
 
-    public async Task RunAll(string title)
+    public async Task RunAll(string title, CancellationToken cancellationToken)
     {
         WriteLine($"{title}:");
         if (Command.Benchmark == BenchmarkKind.Calls) {
-            await RunOne("Sum", w => w.Sum);
-            await RunOne("GetUser", w => w.GetUser);
-            await RunOne("SayHello", w => w.SayHello);
+            await RunOne("Sum", w => w.Sum, cancellationToken);
+            await RunOne("GetUser", w => w.GetUser, cancellationToken);
+            await RunOne("SayHello", w => w.SayHello, cancellationToken);
         }
         else {
-            await RunOne("StreamS", w => w.StreamS);
-            await RunOne("StreamL", w => w.StreamL);
+            await RunOne("StreamS", w => w.StreamS, cancellationToken);
+            await RunOne("StreamL", w => w.StreamL, cancellationToken);
         }
 
         // Dispose clients
@@ -77,10 +77,13 @@ public class BenchmarkRunner : BenchmarkRunnerBase<double>
     private Task<double> GetCallFrequency(double duration, CancellationToken cancellationToken)
         => Benchmarks.CallFrequency(Workers, duration, cancellationToken, _currentOperationFactory, w => w.WhenReady());
 
-    private Task RunOne(string title, Func<BenchmarkWorker, Func<CancellationToken, Task>> operationFactory)
+    private Task RunOne(
+        string title,
+        Func<BenchmarkWorker, Func<CancellationToken, Task>> operationFactory,
+        CancellationToken cancellationToken)
     {
         Title = title;
         Interlocked.Exchange(ref _currentOperationFactory, operationFactory);
-        return Run();
+        return Run(cancellationToken);
     }
 }

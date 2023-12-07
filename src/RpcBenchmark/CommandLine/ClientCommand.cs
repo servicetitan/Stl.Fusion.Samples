@@ -7,6 +7,8 @@ using Stl.OS;
 
 namespace Samples.RpcBenchmark;
 
+#pragma warning disable VSTHRD103
+
 [GeneratedParser]
 [Command]
 [Description("Starts the client part of this benchmark.")]
@@ -81,7 +83,6 @@ public partial class ClientCommand : BenchmarkCommandBase
         WriteLine($"  Client count:         {(WorkersValue + ClientConcurrencyValue - 1) / ClientConcurrencyValue}");
         WriteLine($"  Client concurrency:   {ClientConcurrencyValue}");
         WriteLine($"  Total worker count:   {WorkersValue}");
-        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
 
         // Run
         WriteLine();
@@ -89,11 +90,12 @@ public partial class ClientCommand : BenchmarkCommandBase
         var benchmarkKinds = Libraries.Split(",").Select(LibraryKindExt.Parse).ToArray();
         foreach (var benchmarkKind in benchmarkKinds) {
             var (name, factory) = clientFactories[benchmarkKind];
-            await new BenchmarkRunner(this, factory, name.Contains("Stream")).RunAll(name);
+            await new BenchmarkRunner(this, factory, name.Contains("Stream")).RunAll(name, cancellationToken);
         }
 
         if (Wait)
             ReadKey();
+        // ReSharper disable once MethodHasAsyncOverload
         StopTokenSource.Cancel(); // Stops the server if it's running
         return 0;
     }
