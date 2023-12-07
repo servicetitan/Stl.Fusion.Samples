@@ -83,6 +83,7 @@ public sealed class ClientFactories
             WebSocketOwnerFactory = (_, peer) => {
                 var ws = new ClientWebSocket();
                 ws.Options.HttpVersion = HttpVersion.Version11;
+                ws.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
                 ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
                 return new WebSocketOwner(peer.Ref.Key, ws, c);
             },
@@ -95,6 +96,7 @@ public sealed class ClientFactories
                     options.Transports = HttpTransportType.WebSockets;
                     options.WebSocketConfiguration = ws => {
                         ws.HttpVersion = HttpVersion.Version11;
+                        ws.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
                         ws.RemoteCertificateValidationCallback = (_, _, _, _) => true;
                     };
                 })
@@ -102,43 +104,8 @@ public sealed class ClientFactories
             return connection;
         });
 
-        // StreamJsonRpc
-        services.AddTransient(c => {
-            var ws = new ClientWebSocket();
-            ws.Options.HttpVersion = HttpVersion.Version11;
-            ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-            return ws;
-        });
-
-        // RestEase/HTTP
-        var restEase = services.AddRestEase();
-        var baseAddress = new Uri(BaseUrl);
-        restEase.ConfigureHttpClient((_, name, o) => {
-            o.HttpMessageHandlerBuilderActions.Add(h => h.PrimaryHandler = new HttpClientHandler() {
-                ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-            });
-            o.HttpClientActions.Add(c => {
-                c.BaseAddress = baseAddress;
-                c.DefaultRequestVersion = HttpVersion.Version20;
-                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-            });
-        });
-
         // gRPC
         services.AddSingleton(c => {
-            /*
-            var messageHandler = new SocketsHttpHandler() {
-                PooledConnectionLifetime = TimeSpan.FromDays(1),
-                EnableMultipleHttp2Connections = true,
-                MaxConnectionsPerServer = 20_000,
-                SslOptions = new SslClientAuthenticationOptions() {
-                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
-                }
-            };
-            var httpClient = new HttpClient(messageHandler) {
-                DefaultRequestVersion = HttpVersion.Version20,
-            };
-            */
             var channelOptions = new GrpcChannelOptions() {
                 // HttpClient = httpClient,
                 HttpHandler = new SocketsHttpHandler {
@@ -151,6 +118,33 @@ public sealed class ClientFactories
                 }
             };
             return GrpcChannel.ForAddress(BaseUrl, channelOptions);
+        });
+
+        // StreamJsonRpc
+        services.AddTransient(c => {
+            var ws = new ClientWebSocket();
+            ws.Options.HttpVersion = HttpVersion.Version11;
+            ws.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            ws.Options.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            return ws;
+        });
+
+        // RestEase/HTTP
+        var restEase = services.AddRestEase();
+        var baseAddress = new Uri(BaseUrl);
+        restEase.ConfigureHttpClient((_, name, o) => {
+            o.HttpMessageHandlerBuilderActions.Add(h => h.PrimaryHandler = new SocketsHttpHandler() {
+                PooledConnectionLifetime = TimeSpan.FromDays(1),
+                MaxConnectionsPerServer = 20_000,
+                SslOptions = new SslClientAuthenticationOptions() {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                },
+            });
+            o.HttpClientActions.Add(c => {
+                c.BaseAddress = baseAddress;
+                c.DefaultRequestVersion = HttpVersion.Version20;
+                c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            });
         });
 
         return services;

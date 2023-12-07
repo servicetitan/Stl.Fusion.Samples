@@ -83,6 +83,7 @@ public partial class ClientCommand : BenchmarkCommandBase
         WriteLine($"  Client count:         {(WorkersValue + ClientConcurrencyValue - 1) / ClientConcurrencyValue}");
         WriteLine($"  Client concurrency:   {ClientConcurrencyValue}");
         WriteLine($"  Total worker count:   {WorkersValue}");
+        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken); // Let server to complete the startup
 
         // Run
         WriteLine();
