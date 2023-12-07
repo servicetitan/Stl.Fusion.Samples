@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Fusion.Server" Version="6.8.2" />
+    <PackageReference Include="Stl.Fusion.Server" Version="6.8.4" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
@@ -18,7 +18,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Stl.Generators" Version="6.8.2" />
+    <PackageReference Include="Stl.Generators" Version="6.8.4" />
   </ItemGroup>
 
 </Project>
