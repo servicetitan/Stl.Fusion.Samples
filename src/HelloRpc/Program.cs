@@ -24,12 +24,7 @@ async Task RunServer()
 
     app.UseWebSockets();
     app.MapRpcWebSocketServer();
-    try {
-        await app.RunAsync(baseUrl);
-    }
-    catch (Exception error) {
-        Error.WriteLine($"Server failed: {error.Message}");
-    }
+    await app.RunAsync(baseUrl);
 }
 
 async Task RunClient()
@@ -39,17 +34,11 @@ async Task RunClient()
     rpc.AddWebSocketClient(baseUrl);
     rpc.AddClient<IGreeter>();
     var serviceProvider = services.BuildServiceProvider();
-
     var greeter = serviceProvider.GetRequiredService<IGreeter>();
     while (true) {
         Write("Your name: ");
         var name = ReadLine() ?? "";
-        try {
-            var message = await greeter.SayHello(name);
-            WriteLine(message);
-        }
-        catch (Exception error) {
-            Error.WriteLine($"Error: {error.Message}");
-        }
+        var message = await greeter.SayHello(name);
+        WriteLine(message);
     }
 }
