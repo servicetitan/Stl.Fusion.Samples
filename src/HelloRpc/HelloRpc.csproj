@@ -1,19 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
-    <AssemblyName>Samples.HelloCart</AssemblyName>
-    <RootNamespace>Samples.HelloCart</RootNamespace>
+    <AssemblyName>Samples.HelloRpc</AssemblyName>
+    <RootNamespace>Samples.HelloRpc</RootNamespace>
+    <UseFusion>false</UseFusion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
-    <PackageReference Include="Stl.Fusion.EntityFramework" Version="6.8.4" />
-    <PackageReference Include="Stl.Fusion.EntityFramework.Redis" Version="6.8.4" />
-    <PackageReference Include="Stl.Fusion.Server" Version="6.8.4" />
+    <PackageReference Include="Stl.Rpc.Server" Version="6.8.4" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
@@ -24,5 +21,4 @@
     </PackageReference>
     <PackageReference Include="Stl.Generators" Version="6.8.4" />
   </ItemGroup>
-
 </Project>

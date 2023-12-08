@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <OutputType>Library</OutputType>
         <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
@@ -10,7 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Stl.Fusion" Version="6.8.4" />
+        <PackageReference Include="Stl.Fusion" Version="6.8.4"/>
     </ItemGroup>
-
 </Project>

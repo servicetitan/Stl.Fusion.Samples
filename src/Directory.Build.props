@@ -13,6 +13,11 @@
     <NoWarn>BL0007;VSTHRD200;NETSDK1206;OCL0039;$(NoWarn)</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <UseFusion>true</UseFusion>
+    <UseFusion Condition="$(Project.Contains('HelloRpc'))">false</UseFusion>
+  </PropertyGroup>
+
   <!-- Global usings -->
   <ItemGroup>
     <Using Include="System" />
@@ -29,11 +34,11 @@
     <Using Include="Stl" />
     <Using Include="Stl.Async" />
     <Using Include="Stl.Collections" />
-    <Using Include="Stl.CommandR" />
-    <Using Include="Stl.CommandR.Configuration" />
-    <Using Include="Stl.CommandR.Commands" />
-    <Using Include="Stl.Fusion" />
-    <Using Include="Stl.Fusion.Operations" />
+    <Using Condition="$(UseFusion)" Include="Stl.CommandR" />
+    <Using Condition="$(UseFusion)" Include="Stl.CommandR.Configuration" />
+    <Using Condition="$(UseFusion)" Include="Stl.CommandR.Commands" />
+    <Using Condition="$(UseFusion)" Include="Stl.Fusion" />
+    <Using Condition="$(UseFusion)" Include="Stl.Fusion.Operations" />
     <Using Include="Stl.Reflection" />
     <Using Include="Stl.Serialization" />
     <Using Include="Stl.Text" />

@@ -20,5 +20,4 @@
     </PackageReference>
     <PackageReference Include="Stl.Generators" Version="6.8.4" />
   </ItemGroup>
-
 </Project>
