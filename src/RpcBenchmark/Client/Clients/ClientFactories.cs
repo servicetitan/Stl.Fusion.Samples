@@ -94,6 +94,14 @@ public sealed class ClientFactories
             var connection = new HubConnectionBuilder()
                 .WithUrl($"{BaseUrl}hubs/testService", options => {
                     options.Transports = HttpTransportType.WebSockets;
+                    options.HttpMessageHandlerFactory = _ => new SocketsHttpHandler() {
+                        PooledConnectionLifetime = TimeSpan.FromDays(1),
+                        EnableMultipleHttp2Connections = true,
+                        MaxConnectionsPerServer = 20_000,
+                        SslOptions = new SslClientAuthenticationOptions() {
+                            RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                        },
+                    };
                     options.WebSocketConfiguration = ws => {
                         ws.HttpVersion = HttpVersion.Version11;
                         ws.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
