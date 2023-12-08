@@ -6,6 +6,8 @@ namespace Samples.RpcBenchmark.Server;
 
 public static class StreamGenerator
 {
+    [ThreadStatic] private static byte[]? _lastData;
+
     public static async IAsyncEnumerable<Item> GetItems(
         GetItemsRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -23,5 +25,12 @@ public static class StreamGenerator
                 Data = new byte[request.DataSize],
             };
         }
+    }
+
+    private static byte[] GetData(long dataSize)
+    {
+        if (_lastData?.Length != dataSize)
+            _lastData = new byte[dataSize];
+        return _lastData;
     }
 }

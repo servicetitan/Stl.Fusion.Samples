@@ -12,8 +12,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.0-rc.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-    <PackageReference Include="Stl.Fusion" Version="6.8.6" />
-    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.8.6" />
+    <PackageReference Include="Stl.Fusion" Version="6.8.9" />
+    <PackageReference Include="Stl.Fusion.Ext.Contracts" Version="6.8.9" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
@@ -22,7 +22,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Stl.Generators" Version="6.8.6" />
+    <PackageReference Include="Stl.Generators" Version="6.8.9" />
   </ItemGroup>
 
 </Project>

@@ -14,13 +14,13 @@ public abstract class BenchmarkRunnerBase<TResult>
     public async Task Run(CancellationToken cancellationToken = default)
     {
         Writer.Invoke(TitleFormatter.Invoke(Title));
-        GC.Collect();
 
+        await Reset();
         await Warmup(cancellationToken);
-        GC.Collect();
 
         var bestResult = default(TResult)!;
         for (var i = 0; i < TryCount; i++) {
+            await Reset();
             var result = await Benchmark(cancellationToken).ConfigureAwait(false);
             Writer.Invoke(ResultFormatter.Invoke(result) + " ");
 
@@ -39,4 +39,13 @@ public abstract class BenchmarkRunnerBase<TResult>
 
     protected abstract Task Warmup(CancellationToken cancellationToken);
     protected abstract Task<TResult> Benchmark(CancellationToken cancellationToken);
+
+    protected static async Task Reset()
+    {
+        for (var i = 0; i < 3; i++) {
+            if (i != 0)
+                await Task.Delay(50);
+            GC.Collect();
+        }
+    }
 }

@@ -15,9 +15,10 @@ public class TestService : ITestService
 
     public Task<RpcStream<Item>> GetItems(GetItemsRequest request, CancellationToken cancellationToken = default)
     {
+        const int ackPeriod = 900;
         var stream = new RpcStream<Item>(StreamGenerator.GetItems(request, cancellationToken)) {
-            AckPeriod = 1000,
-            AckAdvance = 3001,
+            AckPeriod = ackPeriod,
+            AckAdvance = (ackPeriod * 2) + 1,
         };
         return Task.FromResult(stream);
     }
