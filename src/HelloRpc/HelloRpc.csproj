@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stl.Rpc.Server" Version="6.8.4" />
+    <PackageReference Include="Stl.Rpc.Server" Version="6.8.6" />
   </ItemGroup>
 
   <!-- Roslyn generators/analyzers -->
@@ -19,6 +19,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Stl.Generators" Version="6.8.4" />
+    <PackageReference Include="Stl.Generators" Version="6.8.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Properties\launchSettings.json" />
   </ItemGroup>
 </Project>
