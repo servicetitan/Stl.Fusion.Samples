@@ -38,8 +38,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-    <PackageReference Include="Stl.Fusion.Blazor" Version="6.8.9" />
-    <PackageReference Include="Stl.Fusion.Blazor.Authentication" Version="6.8.9" />
+    <PackageReference Include="Stl.Fusion.Blazor" Version="6.8.11" />
+    <PackageReference Include="Stl.Fusion.Blazor.Authentication" Version="6.8.11" />
     <PackageReference Include="UAParser" Version="3.1.47" />
   </ItemGroup>
 
