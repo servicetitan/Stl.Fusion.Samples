@@ -92,7 +92,7 @@ public class Startup
         var fusionServer = fusion.AddWebServer();
         fusion.AddDbAuthService<AppDbContext, long>();
         fusionServer.ConfigureAuthEndpoint(_ => new() {
-            DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
+            DefaultSignInScheme = MicrosoftAccountDefaults.AuthenticationScheme,
             SignInPropertiesBuilder = (_, properties) => {
                 properties.IsPersistent = true;
             }
@@ -119,7 +119,7 @@ public class Startup
 
         // ASP.NET Core authentication providers
         services.AddAuthentication(options => {
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         }).AddCookie(options => {
             options.LoginPath = "/signIn";
             options.LogoutPath = "/signOut";

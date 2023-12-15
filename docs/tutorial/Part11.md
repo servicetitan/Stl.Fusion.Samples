@@ -249,7 +249,7 @@ var fusionServer = fusion.AddWebServer();
 var fusionAuth = fusion.AddAuthentication().AddServer(
     signInControllerOptionsFactory: _ => new() {
         // Set to the desired one
-        DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme, 
+        DefaultSignInScheme = MicrosoftAccountDefaults.AuthenticationScheme, 
         SignInPropertiesBuilder = (_, properties) => {
             properties.IsPersistent = true;
         }
@@ -267,7 +267,7 @@ var fusionClient = fusion.AddRestEaseClient();
 
 // Configure ASP.NET Core authentication providers:
 services.AddAuthentication(options => {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 }).AddCookie(options => {
     // You can use whatever you prefer to store the authentication info
     // in ASP.NET Core, this specific example uses a cookie.

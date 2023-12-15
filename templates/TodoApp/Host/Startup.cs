@@ -124,7 +124,7 @@ public class Startup(IConfiguration cfg, IWebHostEnvironment environment)
                     .WithValidator(tenantId => tenantId.Value.StartsWith("tenant")),
             });
         fusionServer.ConfigureAuthEndpoint(_ => new() {
-            DefaultScheme = MicrosoftAccountDefaults.AuthenticationScheme,
+            DefaultSignInScheme = MicrosoftAccountDefaults.AuthenticationScheme,
             SignInPropertiesBuilder = (_, properties) => {
                 properties.IsPersistent = true;
             }
@@ -143,7 +143,7 @@ public class Startup(IConfiguration cfg, IWebHostEnvironment environment)
 
         // ASP.NET Core authentication providers
         services.AddAuthentication(options => {
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         }).AddCookie(options => {
             options.LoginPath = "/signIn";
             options.LogoutPath = "/signOut";
