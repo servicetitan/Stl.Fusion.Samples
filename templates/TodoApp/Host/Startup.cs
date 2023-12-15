@@ -143,7 +143,7 @@ public class Startup(IConfiguration cfg, IWebHostEnvironment environment)
 
         // ASP.NET Core authentication providers
         services.AddAuthentication(options => {
-            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         }).AddCookie(options => {
             options.LoginPath = "/signIn";
             options.LogoutPath = "/signOut";

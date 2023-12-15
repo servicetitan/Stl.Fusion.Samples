@@ -267,7 +267,7 @@ var fusionClient = fusion.AddRestEaseClient();
 
 // Configure ASP.NET Core authentication providers:
 services.AddAuthentication(options => {
-    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 }).AddCookie(options => {
     // You can use whatever you prefer to store the authentication info
     // in ASP.NET Core, this specific example uses a cookie.
